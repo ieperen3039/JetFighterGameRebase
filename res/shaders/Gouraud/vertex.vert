@@ -3,7 +3,6 @@
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 vertexNormal;
-layout (location = 2) in vec3 vertColor;
 
 struct Material
 {
@@ -19,14 +18,13 @@ struct PointLight
     // light position in view coördinates.
     vec3 position;
     float intensity;
-    Attenuation att;
 };
 
 const int MAX_POINT_LIGHTS = 5;
 
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform float transparency;
+uniform vec3 ambientLight;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
@@ -59,7 +57,6 @@ vec3 newColor(vec3 P, vec3 N, PointLight light){
 		result += shine * light.colour.xyz;
 	}
 
-	result = min(result, 1.0);
 	return result;
 }
 
@@ -78,5 +75,5 @@ void main()
         }
     }
 
-    fragColor = materialColor * vec4(ambientLight, transparency) + vec4(diffuseSpecularComponent, 0.0);
+    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
 }

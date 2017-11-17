@@ -59,7 +59,7 @@ public class TestLab implements Touchable {
 
     @Override
     public void create(GL2 ms, Consumer<Shape> action, boolean takeStable) {
-        // just accept the world brah
+        // just accept the world bruh
         action.accept(world);
     }
 

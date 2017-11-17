@@ -43,7 +43,7 @@ public abstract class Vector {
 
     /**
      * returns a translation matrix resulting from rotating angle radians over vector (x, y, z)
-     * in much the same way as {@link GL2#rotate(double, double, double, double)}
+     * in much the same way as {@link GL2#rotate(double, float, float, float)}
      *
      * @param angle in RADIANS
      * @return a 3x3 matrix as 9-element array.

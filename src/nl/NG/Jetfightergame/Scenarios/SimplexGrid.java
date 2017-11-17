@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Scenarios;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
+import nl.NG.Jetfightergame.GameObjects.Structures.Mesh;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Plane;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Triangle;
@@ -13,6 +14,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -28,6 +30,7 @@ public class SimplexGrid implements Shape {
 
     private final int xSize;
     private final int ySize;
+    private final Mesh mesh;
 
     public SimplexGrid(PosVector[][] grid) {
         xSize = grid.length - 1;
@@ -36,17 +39,74 @@ public class SimplexGrid implements Shape {
         alphaGrid = new Triangle[xSize][ySize];
         betaGrid = new Triangle[xSize][ySize];
 
+        List<Mesh.Face> faces = new LinkedList<>();
+        List<PosVector> vertices = new LinkedList<>();
+        List<DirVector> normals = new LinkedList<>();
+
+        // iterate y-first
         for(int x = 0; x < xSize; x++){
             for(int y = 0; y < ySize; y++){
-                final PosVector A = grid[x][y];
-                final PosVector B = grid[x + 1][y];
-                final PosVector C = grid[x][y + 1];
-                final PosVector D = grid[x + 1][y + 1];
-                alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
-                betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
+                createAndSetTriangles(grid, x, y);
+
+                // only A due to redundancy of the loop. vertices are added y-first
+                vertices.add(grid[x][y]);
+
+                normals.add(alphaGrid[x][y].getNormal());
+                normals.add(betaGrid[x][y].getNormal());
+
+                setFaces(faces, x, y);
             }
         }
+
+        mesh = new Mesh(vertices, normals, faces);
+
         Toolbox.print("created SimplexGrid [ "+ xSize +" x "+ ySize +" ]");
+    }
+
+    /**
+     * add two faces with indices assuming vertices and normals are added y-first
+     * @param faces the list where the two new faces will be added
+     * @param x lowest x coordinate of these two faces
+     * @param y lowest y coordinate of these two faces
+     */
+    private void setFaces(List<Mesh.Face> faces, int x, int y) {
+        // normal: 2 per grid index, thus we double the indices and add one to the latter
+        faces.add(new Mesh.Face(
+                index(x, y), //A
+                index(x+1, y), //B
+                index(x, y+1), //C
+                2 * index(x, y)) //normal 1
+        );
+        faces.add(new Mesh.Face(
+                index(x+1, y+1), //D
+                index(x+1, y), //B
+                index(x, y+1), //C
+                2 * index(x, y) + 1) //normal 2
+        );
+    }
+
+    /**
+     * add triangles to {@code alphaGrid} and {@code betaGrid}
+     * @param grid a grid of positionVectors, defining a surface
+     * @param x lowest x coordinate of these two triangles
+     * @param y lowest y coordinate of these two triangles
+     */
+    private void createAndSetTriangles(PosVector[][] grid, int x, int y) {
+        final PosVector A = grid[x][y];
+        final PosVector B = grid[x + 1][y];
+        final PosVector C = grid[x][y + 1];
+        final PosVector D = grid[x + 1][y + 1];
+
+        alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
+        betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
+    }
+
+    /**
+     * numbers a grid (x, y) y-first
+     * @return index of this coordinate
+     */
+    private int index(int x, int y){
+        return x * xSize + y;
     }
 
     /**
@@ -101,40 +161,6 @@ public class SimplexGrid implements Shape {
         return list;
     }
 
-    @Override
-    public void draw(GL2 gl) {
-        gl.beginEnvironment(GL2.GL_TRIANGLES);
-        {
-            drawTriangles(gl);
-        }
-        gl.endEnvironment();
-    }
-
-    @Override
-    public void drawTriangles(GL2 gl) {
-//        int xMin = 0;
-//        int yMin = 0;
-//        int xMax = xSize;
-//        int yMax = ySize;
-//
-//        while ((xMax - xMin) > fieldDivisionSize){
-//            while ((yMax - yMin) > fieldDivisionSize){
-//            }
-//        }
-        // todo: make mesh out of it and store it in graphics card
-        for (int x = 0; x < xSize; x++){
-            for (int y = 0; y < ySize; y++){
-                alphaGrid[x][y].drawRaw(gl);
-                betaGrid[x][y].drawRaw(gl);
-            }
-        }
-    }
-
-    @Override
-    public void drawQuads(GL2 gl) {
-        // return;
-    }
-
     /**
      * much more efficient implementation than the default. should be used for all grid-based environments
      * @param linePosition a position vector on the line in local space
@@ -160,6 +186,11 @@ public class SimplexGrid implements Shape {
         }
 
         return currLeast;
+    }
+
+    @Override
+    public void render(GL2.Painter lock) {
+        mesh.render(lock);
     }
 
     /**

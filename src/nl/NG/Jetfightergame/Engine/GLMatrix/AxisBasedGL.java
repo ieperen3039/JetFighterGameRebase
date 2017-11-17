@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
+import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -27,9 +28,7 @@ public class AxisBasedGL extends ShadowMatrix {
         delegate.clearColor();
     }
 
-    /**
-     */
-    // the already stacked matrix will be passed to the new stacked matrix
+    @Override
     public void pushMatrix() {
         //save current state of matrix
         stackedMatrix = new AxisBasedGL(delegate);
@@ -54,5 +53,10 @@ public class AxisBasedGL extends ShadowMatrix {
     @Override
     public void setMaterial(Material material) {
         delegate.setMaterial(material);
+    }
+
+    @Override
+    public void draw(Shape object) {
+        delegate.draw(object);
     }
 }

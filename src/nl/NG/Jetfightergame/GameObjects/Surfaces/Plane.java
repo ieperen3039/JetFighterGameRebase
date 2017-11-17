@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameObjects.Surfaces;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -70,11 +69,6 @@ public abstract class Plane {
         DirVector normalVector = B.to(A).cross(B.to(C));
         if (normalVector.dot(direction) < 0) normalVector = normalVector.scale(-1);
         return normalVector;
-    }
-
-    public void drawRaw(GL2 gl) {
-        gl.normal(normal.x(), normal.y(), normal.z());
-        boundary.forEach(gl::vertex);
     }
 
     /**

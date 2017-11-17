@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameObjects.Surfaces;
 
-import nl.NG.Jetfightergame.GameObjects.DrawableTriangle;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -12,7 +11,7 @@ import java.util.List;
  * @author Geert van Ieperen
  *         created on 29-10-2017.
  */
-public class Triangle extends Plane implements DrawableTriangle {
+public class Triangle extends Plane {
 
     /** ABRef, BCRef, CARef are three reference vectors for collision detection */
     private PosVector ABRef, BCRef, CARef;

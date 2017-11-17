@@ -15,14 +15,6 @@ public class Pair<L, R> {
         this.right = right;
     }
 
-    /**
-     * creates a pair with [null, null]
-     */
-    public Pair() {
-        left = null;
-        right = null;
-    }
-
     @Override
     public String toString() {
         return "[" + left + ", " + right + "]";

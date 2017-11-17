@@ -225,7 +225,7 @@ public class CustomShape {
 
     /**
      * convert this object to a shape
-     * @return a shape with hardware-accelerated graphics using the {@link Mesh} object
+     * @return a shape with hardware-accelerated graphics using the {@link ShapeFromMesh} object
      */
     public Shape wrapUp(){
         PosVector[] sortedVertices = new PosVector[points.size()];
@@ -239,6 +239,6 @@ public class CustomShape {
         Collections.addAll(vertexList, sortedVertices);
         Collections.addAll(normalList, sortedNormals);
 
-        return new Mesh(vertexList, normalList, faces);
+        return new ShapeFromMesh(vertexList, normalList, faces);
     }
 }

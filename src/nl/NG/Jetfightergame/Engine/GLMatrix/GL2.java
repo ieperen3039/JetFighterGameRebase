@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
+import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -17,8 +18,30 @@ public interface GL2 {
     public static int GL_PROJECTION = GL11.GL_PROJECTION;
     public static int GL_MODELVIEW = GL11.GL_MODELVIEW;
 
+    /** TODO integrate with matrix
+     * rotates the axis frame such that the z-axis points from source to target vector,
+     * and translates the system to source
+     * if (target == source) the axis will not turn
+     * @param source the vector where the axis will have its orgin upon returning
+     * @param target the vector in which direction the z-axis will point upon returning
+     */
+    default void pointFromTo(PosVector source, PosVector target) {
+        if (target.equals(source)) return;
+        DirVector parallelVector = source.to(target)
+                .normalized();
+
+        DirVector M = DirVector.Z.cross(parallelVector);
+        double angle = Math.acos(DirVector.Z.dot(parallelVector));// in Radians
+
+        translate(source);
+        rotate(M, angle);
+    }
+
+    void draw(Shape object);
+
     void matrixMode(int matrix);
 
+    @Deprecated
     void setColor(double red, double green, double blue);
 
     void setLight(int lightNumber, DirVector dir, Color lightColor);
@@ -28,11 +51,11 @@ public interface GL2 {
     // TODO add transparency
     void setMaterial(Material material);
 
-    void rotate(double angle, double x, double y, double z);
+    void rotate(double angle, float x, float y, float z);
 
-    void translate(double x, double y, double z);
+    void translate(float x, float y, float z);
 
-    void scale(double x, double y, double z);
+    void scale(float x, float y, float z);
 
     PosVector getPosition(PosVector p);
 
@@ -42,6 +65,7 @@ public interface GL2 {
 
     void popMatrix();
 
+    @Deprecated
     default void setColor(Color color) {
         setColor(color.getRed(), color.getGreen(), color.getBlue());
     }
@@ -51,16 +75,24 @@ public interface GL2 {
     }
 
     default void rotate(DirVector axis, double angle) {
-        rotate(angle, axis.x(), axis.y(), axis.z());
+        rotate(angle, (float) axis.x(), (float) axis.y(), (float) axis.z());
     }
 
     default void translate(Vector v) {
-        translate(v.x(), v.y(), v.z());
+        translate((float) v.x(), (float) v.y(), (float) v.z());
     }
 
-    default void scale(double s) {
+    default void scale(float s) {
         scale(s, s, s);
     }
 
     void clearColor();
+
+    /**
+     * Objects should call GPU calls only in their render method. this render method may only be called by a GL2 object,
+     * to prevent drawing calls while the GPU is not initialized. For this reason, the Painter constructor is protected.
+     */
+    class Painter {
+        protected Painter(){}
+    }
 }

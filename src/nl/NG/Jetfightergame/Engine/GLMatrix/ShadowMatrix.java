@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
+import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -34,10 +35,8 @@ public class ShadowMatrix implements GL2 {
         this.stackedMatrix = master.stackedMatrix;
     }
 
-    /**
-     * @param angle in DEGREES
-     */
-    public void rotate(double angle, double x, double y, double z) {
+    @Override
+    public void rotate(double angle, float x, float y, float z) {
         if (angle != 0.0) {
             // transform rotation vector to local space
             DirVector rVec = xVec.scale(x)
@@ -52,21 +51,15 @@ public class ShadowMatrix implements GL2 {
         }
     }
 
-    /**
-     */
-    public void translate(double x, double y, double z) {
+    @Override
+    public void translate(float x, float y, float z) {
         if (x != 0.0) posVec = posVec.add(xVec.scale(x));
         if (y != 0.0) posVec = posVec.add(yVec.scale(y));
         if (z != 0.0) posVec = posVec.add(zVec.scale(z));
     }
 
-    public void translate(Vector v) {
-        translate(v.x(), v.y(), v.z());
-    }
-
-    /**
-     */
-    public void scale(double x, double y, double z) {
+    @Override
+    public void scale(float x, float y, float z) {
         xVec = xVec.scale(x);
         yVec = yVec.scale(y);
         zVec = zVec.scale(z);
@@ -117,6 +110,9 @@ public class ShadowMatrix implements GL2 {
         return newPos.subtract(posVec).toPosVector();
     }
 
+    /**
+     * the already stacked matrix will be passed to the new stacked matrix
+     */
     @Override
     public void pushMatrix() {
         //save current state of matrix
@@ -127,14 +123,9 @@ public class ShadowMatrix implements GL2 {
     /**
      * the stacked matrix of this stacked matrix will become the new stacked matrix
      */
+    @Override
     public void popMatrix() {
         setStateTo(stackedMatrix);
-    }
-
-
-    @Override
-    public void matrixMode(int matrix) {
-        throw new UnsupportedOperationException("ShadowMatrix can't switch matrix mode");
     }
 
     /**
@@ -143,6 +134,18 @@ public class ShadowMatrix implements GL2 {
     public void printAll() {
         System.out.printf("xVec: %s, yVec: %s, zVec: %s%n", xVec, yVec, zVec);
         System.out.println("position Vec: " + posVec);
+    }
+
+    // unsupported operations
+
+    @Override
+    public void draw(Shape object) {
+        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
+    }
+
+    @Override
+    public void matrixMode(int matrix) {
+        throw new UnsupportedOperationException("ShadowMatrix can't switch matrix mode");
     }
 
     @Override

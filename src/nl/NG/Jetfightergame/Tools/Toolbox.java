@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.GameObjects.Particles.TriangleParticle;
-import nl.NG.Jetfightergame.GameObjects.Structures.Mesh;
+import nl.NG.Jetfightergame.GameObjects.Structures.ShapeFromMesh;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Plane;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Shaders.Material;
@@ -94,13 +94,13 @@ public class Toolbox {
         gl.pushMatrix();
         {
             gl.setColor(0, 0, 1d);
-            Mesh.ARROW.draw(gl);
-            gl.rotate((double) 90, (double) 0, (double) 1, (double) 0);
+            ShapeFromMesh.ARROW.draw(gl);
+            gl.rotate(90, 0, 1, 0);
             gl.setColor(1d, 0, 0);
-            Mesh.ARROW.draw(gl);
-            gl.rotate((double) -90, (double) 1, (double) 0, (double) 0);
+            ShapeFromMesh.ARROW.draw(gl);
+            gl.rotate(-90, 1, 0, 0);
             gl.setColor(0, 1d, 0);
-            Mesh.ARROW.draw(gl);
+            ShapeFromMesh.ARROW.draw(gl);
         }
         gl.popMatrix();
 

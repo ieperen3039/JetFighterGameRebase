@@ -23,6 +23,6 @@ public class GeneralShapes {
         frame.addQuad(NPP, PPP);
         frame.addMirrorQuad(PPP, PPN, NPN, NPP);
 
-        return frame;
+        return frame.wrapUp();
     }
 }

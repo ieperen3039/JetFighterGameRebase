@@ -86,13 +86,4 @@ public enum Material {
         this.shininess = shininess;
     }
 
-    /**
-     * Set the value of a certain Material shader uniform
-     */
-    public void setAsMaterial(ShaderProgram shaderProgram) {
-        shaderProgram.setUniform4f("Material.ambient", diffuse);
-        shaderProgram.setUniform4f("Material.diffuse", diffuse);
-        shaderProgram.setUniform4f("Material.specular", specular);
-        shaderProgram.setUniform("Material.reflectance", shininess);
-    }
 }

@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameObjects.Structures;
 
-import nl.NG.Jetfightergame.GameObjects.Drawable;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Plane;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -14,7 +13,7 @@ import java.util.stream.Stream;
  * @author Geert van Ieperen
  *         created on 30-10-2017.
  */
-public interface Shape extends Drawable {
+public interface Shape extends Renderable {
 
     /** returns all planes of this object */
     Stream<? extends Plane> getPlanes();
