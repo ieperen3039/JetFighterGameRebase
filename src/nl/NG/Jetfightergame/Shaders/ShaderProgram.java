@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Shaders;
 
-import nl.NG.Jetfightergame.Shaders.shader.DirectionalLight;
 import nl.NG.Jetfightergame.Shaders.shader.PointLight;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -26,13 +25,6 @@ public class ShaderProgram {
     private int vertexShaderId;
     private int fragmentShaderId;
 
-    private float specularPower = 1f;
-    private Vector3f ambientLight = new Vector3f();
-    private DirectionalLight directionalLight = new DirectionalLight(
-            new Vector3f(),
-            new Vector3f(),
-            1f
-    );
     private PointLight[] pointLights = {};
 
     public ShaderProgram() throws ShaderException {
@@ -94,60 +86,6 @@ public class ShaderProgram {
     }
 
     /**
-     * Get the ambient light vector.
-     *
-     * @return The ambient light vector.
-     */
-    public Vector3f getAmbientLight() {
-        return this.ambientLight;
-    }
-
-    /**
-     * Set the ambient light vector.
-     *
-     * @param ambientLight the ambient light vector.
-     */
-    public void setAmbientLight(Vector3f ambientLight) {
-        this.ambientLight = ambientLight;
-    }
-
-    /**
-     * Get the specular power.
-     *
-     * @return the specular power.
-     */
-    public float getSpecularPower() {
-        return specularPower;
-    }
-
-    /**
-     * Set the specular power.
-     *
-     * @param specularPower the specular power.
-     */
-    void setSpecularPower(float specularPower) {
-        this.specularPower = specularPower;
-    }
-
-    /**
-     * Get the directional light.
-     *
-     * @return the DirectionalLight
-     */
-    public DirectionalLight getDirectionalLight() {
-        return this.directionalLight;
-    }
-
-    /**
-     * Set the directional light.
-     *
-     * @param directionalLight the DirectionalLight
-     */
-    public void setDirectionalLight(DirectionalLight directionalLight) {
-        this.directionalLight = directionalLight;
-    }
-
-    /**
      * Get a list of pointlights.
      *
      * @return the list of pointlights.
@@ -189,21 +127,6 @@ public class ShaderProgram {
         createUniform(uniformName + ".colour");
         createUniform(uniformName + ".position");
         createUniform(uniformName + ".intensity");
-        createUniform(uniformName + ".att.constant");
-        createUniform(uniformName + ".att.linear");
-        createUniform(uniformName + ".att.exponent");
-    }
-
-    /**
-     * Create the uniforms required for a DirectionalLight
-     *
-     * @param uniformName The name of the uniform
-     * @throws ShaderException If an error occurs getting the memory location.
-     */
-    public void createDirectionalLightUniform(String uniformName) throws ShaderException {
-        createUniform(uniformName + ".colour");
-        createUniform(uniformName + ".direction");
-        createUniform(uniformName + ".intensity");
     }
 
     /**
@@ -216,7 +139,6 @@ public class ShaderProgram {
         createUniform(uniformName + ".ambient");
         createUniform(uniformName + ".diffuse");
         createUniform(uniformName + ".specular");
-        createUniform(uniformName + ".hasTexture");
         createUniform(uniformName + ".reflectance");
     }
 
@@ -357,5 +279,9 @@ public class ShaderProgram {
         glAttachShader(programId, shaderId);
 
         return shaderId;
+    }
+
+    public void setUniform(String uniformName, boolean value) {
+        setUniform(uniformName, value ? 1 : 0);
     }
 }

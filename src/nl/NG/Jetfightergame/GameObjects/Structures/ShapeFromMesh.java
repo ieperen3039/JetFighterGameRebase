@@ -24,8 +24,8 @@ import java.util.stream.Stream;
  */
 public class ShapeFromMesh implements Shape {
 
-    public static final ShapeFromMesh BASIC = new ShapeFromMesh("res/Models/ConceptBlueprint.obj", PosVector.O, new int[]{3, 1, 2}, 1f);
-    public static final ShapeFromMesh ARROW = new ShapeFromMesh("res/Models/Arrow.obj", PosVector.Z, new int[]{3, 1, 2}, 1f);//TODO make
+    public static final ShapeFromMesh BASIC = new ShapeFromMesh("res/models/ConceptBlueprint.obj", PosVector.O, new int[]{3, 1, 2}, 1f);
+    public static final ShapeFromMesh ARROW = new ShapeFromMesh("res/models/Arrow.obj", PosVector.Z, new int[]{3, 1, 2}, 1f);//TODO make
 
     /**
      * every point of this mesh exactly once

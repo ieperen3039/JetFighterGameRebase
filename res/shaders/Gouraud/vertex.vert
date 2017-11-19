@@ -31,31 +31,25 @@ uniform mat4 projectionMatrix;
 
 smooth out vec4 fragColor;
 
-vec3 newColor(vec3 P, vec3 N, PointLight light){
+vec3 calculateLighting(vec3 P, vec3 N, PointLight light){
 
     vec3 result = vec3(0.0, 0.0, 0.0);
 
-	if(ambient){
-		result += vec3((light.colour.xyz + mat.ambient.xyz) * 0.5);
-	}
-
 	vec3 lightDirection = normalize(light.position.xyz - P); //vector towards light source
-
-	if(diffuse){ //compute diffuse contribution
-		float intensity = max(0.0, dot(N, lightDirection));
-		result += intensity * light.colour.xyz;
-	}
+    // diffuse component
+    float intensity = max(0.0, dot(N, lightDirection));
+    result += intensity * light.colour.xyz * material.diffuse.xyz;
 
 	vec3 CameraPosition = normalize(-P); //position of camera in View space
 	vec3 Reflection = (reflect(lightDirection, N));
 	vec3 VirtualLightPosition = normalize(-Reflection);
 	//vec3 HalfAngle = normalize(CameraPosition + LightPosition);
 
-	if(specular){// compute specular contribution
-		float shine = pow( max(0.0, dot(VirtualLightPosition, CameraPosition)), mat.reflectance);
-		//float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
-		result += shine * light.colour.xyz;
-	}
+	// specular component
+    float shine = pow( max(0.0, dot(VirtualLightPosition, CameraPosition)), material.reflectance);
+    //float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
+    result += shine * light.colour.xyz;
+
 
 	return result;
 }

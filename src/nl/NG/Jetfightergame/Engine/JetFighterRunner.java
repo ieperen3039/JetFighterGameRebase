@@ -4,7 +4,7 @@ package nl.NG.Jetfightergame.Engine;
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
-public class JetFighterRunner extends GameLoop {
+public class JetFighterRunner extends AbstractGameLoop {
 
     private final JetFighterGame game;
 
@@ -20,6 +20,11 @@ public class JetFighterRunner extends GameLoop {
 
     @Override
     protected boolean shouldStop() {
-        return false;
+        return game.isStopping();
+    }
+
+    @Override
+    protected void cleanup() {
+
     }
 }

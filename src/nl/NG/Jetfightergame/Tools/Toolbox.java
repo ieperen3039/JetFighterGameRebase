@@ -44,6 +44,7 @@ public class Toolbox {
     }
 
     private static String getValues(Object[] x) {
+        if (x.length == 0) return "";
         for (int i = 0; i < x.length; i++) {
             if (x[i] == null)
                 x[i] = "null";
@@ -93,14 +94,11 @@ public class Toolbox {
 
         gl.pushMatrix();
         {
-            gl.setColor(0, 0, 1d);
-            ShapeFromMesh.ARROW.draw(gl);
+            gl.draw(ShapeFromMesh.ARROW);
             gl.rotate(90, 0, 1, 0);
-            gl.setColor(1d, 0, 0);
-            ShapeFromMesh.ARROW.draw(gl);
+            gl.draw(ShapeFromMesh.ARROW);
             gl.rotate(-90, 1, 0, 0);
-            gl.setColor(0, 1d, 0);
-            ShapeFromMesh.ARROW.draw(gl);
+            gl.draw(ShapeFromMesh.ARROW);
         }
         gl.popMatrix();
 

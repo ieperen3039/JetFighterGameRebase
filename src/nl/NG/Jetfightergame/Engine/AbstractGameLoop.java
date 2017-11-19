@@ -14,36 +14,43 @@ import java.util.concurrent.CountDownLatch;
  * a general-purpose game loop
  * also usable for rendering
  */
-public abstract class GameLoop implements Runnable {
+public abstract class AbstractGameLoop implements Runnable {
 
-    public final Timer loopTimer;
     private final Extreme<Float> TPSMinimum = new Extreme<>(0f, false);
     private final int targetTps;
 
-    private CountDownLatch pauseBlock = new CountDownLatch(1); //TODO find better way?
+    private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
 
-    public GameLoop(int targetTps) {
-        loopTimer = new Timer();
+    public AbstractGameLoop(int targetTps) {
         this.targetTps = targetTps;
     }
-
     /**
      * invoked (targetTps) times per second
      * @param deltaTime
      */
-    protected abstract void update(float deltaTime);
+    protected abstract void update(float deltaTime) throws InterruptedException;
+
+    /**
+     * @return true if the game loop should end.
+     * returning true will cause the gameloop to finish its run iff isPaused returns false
+     */
+    protected abstract boolean shouldStop();
+
+    protected abstract void cleanup();
 
     /**
      * start the gameloop once game is unpaused, and never terminate.
      * wrap-up must end up in a finally bock
      */
     public void run() {
+        Toolbox.print(this.getClass().getSimpleName() + " has started");
+        Timer loopTimer = new Timer();
         try {
             while (!shouldStop()) {
                 // block if the game is paused
                 pauseBlock.await();
 
-                loopTimer.updateLoopTime();
+                loopTimer.updateLoopTime(); // TODO reset timer after pause
 
                 // do stuff
                 update(loopTimer.getElapsedSeconds());
@@ -62,15 +69,12 @@ public abstract class GameLoop implements Runnable {
         } catch (Exception ex) {
             ex.printStackTrace();
             System.err.println("The Gameloop has Crashed! Blame Menno.");
+        } finally {
+            cleanup();
         }
+
         // terminate engine
     }
-
-    /**
-     * @return true if the game loop should end.
-     * returning true will cause the gameloop to finish its run iff isPaused returns false
-     */
-    protected abstract boolean shouldStop();
 
     public void unPause(){
         pauseBlock.countDown();

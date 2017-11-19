@@ -1,10 +1,12 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
-import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
+import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.GameObjects.Structures.Renderable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -37,12 +39,12 @@ public interface GL2 {
         rotate(M, angle);
     }
 
-    void draw(Shape object);
-
-    void matrixMode(int matrix);
+    void draw(Renderable object);
 
     @Deprecated
     void setColor(double red, double green, double blue);
+
+    void setFustrum(int width, int height);
 
     void setLight(int lightNumber, DirVector dir, Color lightColor);
 
@@ -87,6 +89,14 @@ public interface GL2 {
     }
 
     void clearColor();
+
+    /**
+     * the transformation resulting from preTransformation will be applied before applying the current transformation
+     * @param preTransformation
+     */
+    void multiplyAffine(Matrix4f preTransformation);
+
+    void setCamera(Camera activeCamera);
 
     /**
      * Objects should call GPU calls only in their render method. this render method may only be called by a GL2 object,

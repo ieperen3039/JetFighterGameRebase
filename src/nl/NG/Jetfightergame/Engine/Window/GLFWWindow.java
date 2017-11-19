@@ -21,14 +21,14 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class GLFWWindow {
 
     private static final boolean CULL_FACES = false; // TODO cockwise drawing
-    private final long primaryMonitor = glfwGetPrimaryMonitor();
+    private final long primaryMonitor;
 
     private final String title;
     private final boolean resizable;
     // buffers for mouse input
     private final DoubleBuffer mousePosX;
     private final DoubleBuffer mousePosY;
-    private double lastTime = glfwGetTime();
+    private double lastTime;
     private int nbFrames = 0;
     private double frametime;
 
@@ -73,6 +73,9 @@ public class GLFWWindow {
         }
 
         window = getWindow(this.width, this.height);
+        primaryMonitor = glfwGetPrimaryMonitor();
+        lastTime = glfwGetTime();
+
         setWindowed();
 
         if (vSyncEnabled()) {
@@ -135,7 +138,7 @@ public class GLFWWindow {
      *
      * @return true if the {@link GLFWWindow} should continue running, false otherwise
      */
-    public boolean update() {
+    public void update() {
         // Measure speed
         double currentTime = glfwGetTime();
         nbFrames++;
@@ -151,17 +154,7 @@ public class GLFWWindow {
         // Poll for events
         glfwPollEvents();
 
-        if (glfwWindowShouldClose(window)) {
-            // Release window and window callbacks when window is closed
-            glfwFreeCallbacks(window);
-            glfwDestroyWindow(window);
-
-            return false;
-        }
-
         clear();
-
-        return true;
     }
 
     /**
@@ -171,7 +164,7 @@ public class GLFWWindow {
         glfwSetWindowShouldClose(window, true);
     }
 
-    private void open() {
+    public void open() {
         // Show window
         glfwShowWindow(window);
     }
@@ -180,6 +173,8 @@ public class GLFWWindow {
      * Terminate GLFW and release GLFW error callback
      */
     public void cleanup() {
+        glfwFreeCallbacks(window);
+        glfwDestroyWindow(window);
         glfwTerminate();
         glfwSetErrorCallback(null).free();
     }

@@ -13,6 +13,8 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
  */
 public class MenuTextField extends UIElement {
 
+    public static final double MARGIN = 20; //TODO adapt with textsize?
+    public static final int TEXT_SIZE_SMALL = 30;
     private final String title;
     private final String[] content;
 
@@ -35,16 +37,16 @@ public class MenuTextField extends UIElement {
     @Override
     public void draw(Hud hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(COLOR_BLUE);
-        hud.stroke(STROKE_WIDTH, COLOR_PINK);
+        hud.fill(MENU_FILL_COLOR);
+        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
 
-        hud.text(x + width /2, y + MARGIN, TEXT_LARGE, Hud.Font.MEDIUM,
-                NVG_ALIGN_CENTER | NVG_ALIGN_TOP, title, COLOR_TEXT);
+        hud.text(x + width /2, (int) (y + MARGIN), TEXT_SIZE_LARGE, Hud.Font.MEDIUM,
+                NVG_ALIGN_CENTER | NVG_ALIGN_TOP, title, TEXT_COLOR);
 
-        MenuPositioner pos = new MenuPositioner(x + width/2, (int) (y + TEXT_LARGE + 2*MARGIN), 6);
+        MenuPositioner pos = new MenuPositioner(x + width/2, (int) (y + TEXT_SIZE_LARGE + 2* MARGIN), 6);
         for (String line : content) {
-            Vector2i p = pos.place(0, (int) TEXT_SMALL, true);
-            hud.text(p.x, p.y, TEXT_SMALL, Hud.Font.MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, line, COLOR_TEXT);
+            Vector2i p = pos.place(0, TEXT_SIZE_SMALL, true);
+            hud.text(p.x, p.y, TEXT_SIZE_SMALL, Hud.Font.MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, line, TEXT_COLOR);
         }
     }
 }

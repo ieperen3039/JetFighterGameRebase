@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.FighterJets;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.Engine.GameLoop;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
-import nl.NG.Jetfightergame.GameObjects.Structures.Mesh;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
+import nl.NG.Jetfightergame.GameObjects.Structures.ShapeFromMesh;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -29,16 +29,16 @@ public class PlayerJet extends AbstractJet {
 
     private Shape shape;
 
-    public PlayerJet(GameLoop engine, Controller input) {
+    public PlayerJet(AbstractGameLoop engine, Controller input) {
         this(engine, PosVector.O, input, 0f);
     }
 
-    public PlayerJet(GameLoop engine, PosVector initialPosition, Controller input, float initialRotation) {
+    public PlayerJet(AbstractGameLoop engine, PosVector initialPosition, Controller input, float initialRotation) {
         super(engine, input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
                 1f);
-        shape = Mesh.BASIC;
+        shape = ShapeFromMesh.BASIC;
     }
 
     @Override

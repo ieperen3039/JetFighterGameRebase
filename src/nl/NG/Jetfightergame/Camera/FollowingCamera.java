@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
+import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
-import nl.NG.Jetfightergame.Engine.GLMatrix.AxisBasedGL;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -43,7 +43,7 @@ public class FollowingCamera implements Camera {
      * @return the position translated to world-space
      */
     private static PosVector getRelative(DirVector relativePosition, AbstractJet target){
-        AxisBasedGL ws = new AxisBasedGL(gl);
+        ShadowMatrix ws = new ShadowMatrix();
         return target.getPosition().add(target.getRelativeVector(relativePosition, ws));
     }
 

@@ -9,7 +9,7 @@ public interface HudElement {
     /**
      * Draw this hud element.
      *
-     * @param hud The hud on which to draw this element.
+     * @param hud The hud on which to drawObjects this element.
      */
     void draw(Hud hud);
 

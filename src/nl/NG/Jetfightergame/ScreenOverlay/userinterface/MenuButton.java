@@ -39,9 +39,11 @@ public class MenuButton extends MenuClickable {
     @Override
     public void draw(Hud hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(COLOR_BLUE);
-        hud.stroke(STROKE_WIDTH, COLOR_PINK);
-        hud.text(x + width /2, (int) (y + TEXT_LARGE + 10), TEXT_LARGE, Hud.Font.MEDIUM, NVG_ALIGN_CENTER, text, COLOR_TEXT);
+        hud.fill(MENU_FILL_COLOR);
+        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
+
+        Hud.Font font = Hud.Font.MEDIUM;
+        hud.text(x + width /2, y + TEXT_SIZE_LARGE + 10, TEXT_SIZE_LARGE, font, NVG_ALIGN_CENTER, text, TEXT_COLOR);
     }
 
     @Override

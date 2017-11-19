@@ -5,20 +5,12 @@ in vec3 mvVertexPosition;
 
 out vec4 fragColor;
 
-struct Attenuation
-{
-    float constant;
-    float linear;
-    float exponent;
-};
-
 struct PointLight
 {
     vec3 colour;
     // light position in view coordinates.
     vec3 position;
     float intensity;
-    Attenuation att;
 };
 
 struct Material
@@ -35,8 +27,8 @@ uniform float specularPower;
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 camera_pos;
-uniform bool shadowed;
-uniform bool blackAsAlpha;
+uniform int shadowed;
+uniform int blackAsAlpha;
 uniform vec3 ambientLight;
 
 vec4 materialColor;
@@ -69,11 +61,7 @@ vec4 calcPointLight(PointLight light, vec3 position, vec3 normal)
     vec3 to_light_dir  = normalize(light_direction);
     vec4 light_colour = calcLightColour(light.colour, light.intensity, position, to_light_dir, normal);
 
-    // Apply Attenuation
-    float distance = length(light_direction);
-    float attenuationInv = light.att.constant + light.att.linear * distance +
-        light.att.exponent * distance * distance;
-    return light_colour / attenuationInv;
+    return light_colour;
 }
 
 void main()
@@ -83,7 +71,6 @@ void main()
     vec4 diffuseSpecularComponent = vec4(0.0, 0.0, 0.0, 0.0);
 
     if (shadowed == 1) {
-
         for (int i=0; i < MAX_POINT_LIGHTS; i++) {
             if (pointLights[i].intensity > 0 ) {
                 diffuseSpecularComponent += calcPointLight(pointLights[i], mvVertexPosition, mvVertexNormal);

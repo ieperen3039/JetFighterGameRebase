@@ -49,7 +49,7 @@ public class TestLab implements Touchable {
     public void draw(GL2 gl) {
         gl.setMaterial(material);
         // skip a bunch of references
-        world.draw(gl);
+        gl.draw(world);
     }
 
     @Override

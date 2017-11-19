@@ -1,9 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -27,7 +24,7 @@ public class Resource {
         try (InputStream in = get(fileName);
             Scanner scanner = new Scanner(in, "UTF-8")) {
             result = scanner.useDelimiter("\\A").next();
-        } catch(NullPointerException e) {
+        } catch(FileNotFoundException e) {
             throw new IOException("Resource not found: " + fileName);
         }
         return result;
@@ -44,8 +41,8 @@ public class Resource {
         return list;
     }
 
-    public static InputStream get(String fileName) {
-        return Resource.class.getResourceAsStream(fileName);
+    public static InputStream get(String fileName) throws FileNotFoundException {
+        return new FileInputStream(fileName);
     }
 
     public static int[] listIntToArray(List<Integer> list) {

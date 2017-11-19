@@ -3,13 +3,13 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Camera.FollowingCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.*;
-import nl.NG.Jetfightergame.FighterJets.PlayerJet;
+import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.FighterJets.TestJet;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
 import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
-import nl.NG.Jetfightergame.Scenarios.SimplexCave;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -33,7 +33,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     private GameMode currentGameMode;
 
     private final Controller playerInput = new PlayerController();
-    private final AbstractJet playerJet = new PlayerJet(gameLoop, playerInput);
+    private final AbstractJet playerJet = new TestJet(gameLoop, playerInput); //PlayerJet(gameLoop, playerInput);
 
     private Collection<GameObject> objects = new LinkedList<>();
     private Collection<Touchable> staticObjects = new LinkedList<>();
@@ -50,11 +50,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         try {
             KeyTracker.getInstance().addKeyListener(this);
 
-            final BooleanSupplier gameMode = () -> this.getCurrentGameMode() == GameMode.PLAY_MODE;
+            final BooleanSupplier gameMode = () -> !this.isPaused();
             MouseTracker.getInstance().setMenuModeDecision(gameMode);
 
             gameLoop = new JetFighterRunner(this);
-            renderLoop = new JetFighterRenderer(window, camera);
+            renderLoop = new JetFighterRenderer(window, camera, this);
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
@@ -68,13 +68,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
         // remove splash frame
         splash.dispose();
+        startGame();
     }
 
     public static void main(String args[]) throws Exception {
         new JetFighterGame();
     }
 
-    protected void updateGameLoop(float deltaTime) {
+    public void updateGameLoop(float deltaTime) {
         // update positions with respect to collisions
         objects.forEach((gameObject) -> gameObject.preUpdate(deltaTime));
         if (Settings.UNIT_COLLISION || !Settings.DEBUG) {
@@ -88,7 +89,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     private void buildScene() {
-        staticObjects.add(new SimplexCave());
     }
 
     /**
@@ -114,6 +114,21 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         }));
         Toolbox.printSpamless("created " + result.size() + " combinations");
         return result;
+    }
+
+    public void drawObjects(GL2 gl) {
+        Toolbox.drawAxisFrame(gl);
+
+//        staticObjects.forEach(d -> d.draw(gl));
+//        objects.forEach(d -> d.draw(gl));
+    }
+
+    public void drawParticles(GL2 gl){
+        particles.forEach(gl::draw);
+    }
+
+    public void updateParticles(float elapsedSeconds) {
+        particles.forEach(p -> p.updateRender(elapsedSeconds));
     }
 
     @Override
@@ -150,7 +165,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         // quit when Esc is pressed
         switch (key) {
             case KeyEvent.VK_ESCAPE:
-                if (currentGameMode == GameMode.MENU_MODE) exitGame();
+                if (isPaused()) exitGame();
                 else setMenuMode();
                 break;
             case KeyEvent.VK_F11:
@@ -162,6 +177,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 renderLoop.resetTPSCounter();
                 break;
         }
+    }
+
+    public boolean isPaused() {
+        return currentGameMode == GameMode.MENU_MODE;
     }
 
     public AbstractJet getPlayerJet() {

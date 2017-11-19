@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.GameObjects;
 
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.Engine.GameLoop;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  */
 public abstract class GameObject implements MovingObject {
 
-    protected final GameLoop engine;
+    protected final AbstractGameLoop engine;
 
     /** worldspace position */
     protected TrackedVector<PosVector> position;
@@ -55,7 +55,7 @@ public abstract class GameObject implements MovingObject {
      * @param scale scalefactor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(GL2, Runnable, boolean)}
      * @param initialRotation the initial rotation around the Z-axis of this object in radians
      */
-    public GameObject(GameLoop engine, PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation) {
+    public GameObject(AbstractGameLoop engine, PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation) {
         this.engine = engine;
         this.position = new TrackedVector<>(initialPosition);
         this.surfaceMaterial = surfaceMaterial;

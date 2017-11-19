@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Resource;
-
 import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.nanovg.NVGColor;
@@ -26,10 +25,10 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class Hud {
 
     public enum Font {
-        REGULAR("/fonts/Orbitron-Regular.ttf"),
-        MEDIUM("/fonts/Orbitron-Medium.ttf"),
-        BOLD("/fonts/Orbitron-Bold.ttf"),
-        BLACK("/fonts/Orbitron-Black.ttf");
+        REGULAR("res/fonts/Orbitron-Regular.ttf"),
+        MEDIUM("res/fonts/Orbitron-Medium.ttf"),
+        BOLD("res/fonts/Orbitron-Bold.ttf"),
+        BLACK("res/fonts/Orbitron-Black.ttf");
 
         public final String name;
         public final String source;
@@ -79,8 +78,8 @@ public class Hud {
     }
 
     /**
-     * Create something for the hud to be drawn. Package the NanoVG draw commands inside a runnable which will be
-     * executed once the Hud is ready to draw.
+     * Create something for the hud to be drawn. Package the NanoVG drawObjects commands inside a runnable which will be
+     * executed once the Hud is ready to drawObjects.
      *
      * @param render The code for drawing inside the hud.
      */
@@ -89,7 +88,7 @@ public class Hud {
     }
 
     /**
-     * Remove an existing draw handler from the Hud.
+     * Remove an existing drawObjects handler from the Hud.
      *
      * @param render The handler to remove.
      */
@@ -214,9 +213,9 @@ public class Hud {
         return img;
     }
 
-    public void draw(GLFWWindow window) {
+    public void draw(int windowWidth, int windowHeight) {
         // Begin NanoVG frame
-        nvgBeginFrame(vg, window.getWidth(), window.getHeight(), 1);
+        nvgBeginFrame(vg, windowWidth, windowHeight, 1);
         // Draw all drawhandlers
         drawBuffer.forEach(Runnable::run);
         // End NanoVG frame

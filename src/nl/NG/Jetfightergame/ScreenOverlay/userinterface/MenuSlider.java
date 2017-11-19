@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
 import nl.NG.Jetfightergame.Controllers.MouseTracker;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
+import org.joml.Vector4f;
 
 import java.util.function.Consumer;
 
@@ -12,6 +13,7 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
  */
 public class MenuSlider extends MenuClickable {
 
+    public static final Vector4f COLOR_DARK = MENU_FILL_COLOR.mul(0.6f);
     private String text;
     private float value;
     private Consumer<Float> handler;
@@ -34,13 +36,13 @@ public class MenuSlider extends MenuClickable {
     @Override
     public void draw(Hud hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(COLOR_BLUE);
-        hud.stroke(STROKE_WIDTH, COLOR_PINK);
-        hud.roundedRectangle(x + STROKE_WIDTH/2, y + STROKE_WIDTH/2,
-                (int) ((width - STROKE_WIDTH) * Math.max(value, 0.05f)),height - STROKE_WIDTH, INDENT);
+        hud.fill(MENU_FILL_COLOR);
+        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
+        hud.roundedRectangle(x + MENU_STROKE_WIDTH/2, y + MENU_STROKE_WIDTH/2,
+                (int) ((width - MENU_STROKE_WIDTH) * Math.max(value, 0.05f)),height - MENU_STROKE_WIDTH, INDENT);
         hud.fill(COLOR_DARK);
-        hud.text(x + width /2, (int) (y + TEXT_LARGE + 10), TEXT_LARGE, Hud.Font.MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)), COLOR_TEXT);
+        hud.text(x + width /2, (int) (y + TEXT_SIZE_LARGE + 10), TEXT_SIZE_LARGE, Hud.Font.MEDIUM, NVG_ALIGN_CENTER,
+                String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)), TEXT_COLOR);
     }
 
     @Override

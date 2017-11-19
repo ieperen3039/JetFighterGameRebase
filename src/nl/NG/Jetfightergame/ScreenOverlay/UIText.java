@@ -5,7 +5,7 @@ import org.joml.Vector4f;
 import java.util.function.Supplier;
 
 public class UIText extends UIElement {
-    Supplier<String> supplier;
+    private Supplier<String> supplier;
     private int align = 0;
 
     public UIText(int width, int height, Supplier<String> contentSupplier) {

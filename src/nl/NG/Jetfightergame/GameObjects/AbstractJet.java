@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.GameObjects;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.Engine.GameLoop;
 import nl.NG.Jetfightergame.Engine.Updatable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -50,7 +50,7 @@ public abstract class AbstractJet extends GameObject implements Updatable {
      * @param rollAcc acceleration over the X-axis when rolling at full power in deg/s
      * @param rotationReductionFactor the fraction that the rotation is reduced every second
      */
-    public AbstractJet(GameLoop engine, Controller input, PosVector initialPosition, float initialRotation, float scale,
+    public AbstractJet(AbstractGameLoop engine, Controller input, PosVector initialPosition, float initialRotation, float scale,
                        Material material, float mass, float liftFactor, float airResistanceCoefficient,
                        float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
                        float rotationReductionFactor) {

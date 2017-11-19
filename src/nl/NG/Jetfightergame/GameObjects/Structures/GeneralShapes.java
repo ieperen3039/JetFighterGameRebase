@@ -7,7 +7,23 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  *         created on 7-11-2017.
  */
 public class GeneralShapes {
-    public static Shape CUBE = makeCube();
+
+    /** a triangle with vertices [a(1, 0, 0), b(0, 1, 0), c(0, 0, 0)] */
+    public static final Shape TRIANGLE = makeTriangle();
+    /** a 2*2*2 cube with center on (0, 0, 0) */
+    public static final Shape CUBE = makeCube();
+
+    private static Shape makeTriangle() {
+        CustomShape frame = new CustomShape();
+
+        frame.addTriangle(
+                new PosVector(1, 0, 0),
+                new PosVector(0,  1, 0),
+                new PosVector(0, 0, 0)
+        );
+
+        return frame.wrapUp();
+    }
 
     private static Shape makeCube() {
         CustomShape frame = new CustomShape();

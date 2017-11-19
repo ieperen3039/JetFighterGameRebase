@@ -1,10 +1,11 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
-import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
+import nl.NG.Jetfightergame.GameObjects.Structures.Renderable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
+import org.joml.Matrix4f;
 
 import java.awt.*;
 
@@ -139,12 +140,12 @@ public class ShadowMatrix implements GL2 {
     // unsupported operations
 
     @Override
-    public void draw(Shape object) {
+    public void draw(Renderable object) {
         throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
     }
 
     @Override
-    public void matrixMode(int matrix) {
+    public void matrixMode(int matrix) { // TODO possibly allow multiply stacks
         throw new UnsupportedOperationException("ShadowMatrix can't switch matrix mode");
     }
 
@@ -171,5 +172,10 @@ public class ShadowMatrix implements GL2 {
     @Override
     public void clearColor() {
         throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
+    }
+
+    @Override
+    public void multiplyAffine(Matrix4f preTransformation) { //TODO look for possibility to implement
+        throw new UnsupportedOperationException("ShadowMatrix has not yet implemented multiplyAffine");
     }
 }

@@ -1,14 +1,15 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
+import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
+import nl.NG.Jetfightergame.GameObjects.Structures.Renderable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Shaders.shader.PointLight;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import org.joml.AxisAngle4d;
+import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -20,15 +21,11 @@ import java.util.Stack;
  *         created on 16-11-2017.
  */
 public class ShaderUniformGL implements GL2 {
-    // z-coordinates relative to the activeCamera.
-    public static final float Z_NEAR = 0.05f;
-    public static final float Z_FAR = 1000.0f;
 
     private Stack<Matrix4f> matrixStack;
 
-    private Matrix4f currentMatrix;
-    private Matrix4f projectionMatrix = new Matrix4f();
     private Matrix4f modelViewMatrix = new Matrix4f();
+    private Matrix4f projectionMatrix = new Matrix4f();
 
     private ShaderProgram currentShader;
 
@@ -38,21 +35,10 @@ public class ShaderUniformGL implements GL2 {
     }
 
     @Override
-    public void draw(Shape object) {
+    public void draw(Renderable object) {
         currentShader.setUniform("projectionMatrix", projectionMatrix);
         currentShader.setUniform("modelViewMatrix", modelViewMatrix);
         object.render(new Painter());
-    }
-
-    @Override
-    public void matrixMode(int matrix) {
-        if (matrix == GL_PROJECTION){
-            currentMatrix = projectionMatrix;
-        } else if (matrix == GL_MODELVIEW){
-            currentMatrix = modelViewMatrix;
-        } else {
-            System.err.println("Received invalid enum of " + Toolbox.getCallingMethod(1) + " (" + matrix + ")");
-        }
     }
 
     @Override
@@ -60,9 +46,10 @@ public class ShaderUniformGL implements GL2 {
 
     }
 
-    public Matrix4f updateProjectionMatrix(int width, int height) {
+    @Override
+    public void setFustrum(int width, int height) {
         float aspectRatio = (float) width / (float) height;
-        return projectionMatrix.setPerspective(Settings.FOV, aspectRatio, Z_NEAR, Z_FAR);
+        projectionMatrix.setPerspective(Settings.FOV, aspectRatio, Settings.Z_NEAR, Settings.Z_FAR);
     }
 
     @Override
@@ -76,7 +63,6 @@ public class ShaderUniformGL implements GL2 {
         currentShader.setPointLight(lamp, lightNumber);
     }
 
-    // TODO add transparency
     @Override
     public void setMaterial(Material material){
         currentShader.setUniform4f("Material.ambient", material.diffuse);
@@ -87,45 +73,60 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void rotate(double angle, float x, float y, float z) {
-        currentMatrix.getRotation(new AxisAngle4d(angle, x, y, z));
+        modelViewMatrix.rotate(new AxisAngle4f((float) angle, x, y, z));
     }
 
     @Override
     public void translate(float x, float y, float z) {
-        currentMatrix.translate(x, y, z);
+        modelViewMatrix.translate(x, y, z);
     }
 
     @Override
     public void scale(float x, float y, float z) {
-        currentMatrix.scale(x, y, z);
+        modelViewMatrix.scale(x, y, z);
     }
 
     @Override
     public PosVector getPosition(PosVector p) {
         Vector3f result = p.toVector3f();
-        result.mulPosition(currentMatrix);
+        result.mulPosition(modelViewMatrix);
         return new PosVector(result);
     }
 
     @Override
     public DirVector getDirection(DirVector v) {
         Vector3f result = v.toVector3f();
-        result.mulDirection(currentMatrix);
+        result.mulDirection(modelViewMatrix);
         return new DirVector(result);
     }
 
     @Override
     public void pushMatrix() {
-        matrixStack.push(new Matrix4f(currentMatrix));
+        matrixStack.push(new Matrix4f(modelViewMatrix));
     }
 
     @Override
     public void popMatrix() {
-        currentMatrix = matrixStack.pop();
+        modelViewMatrix = matrixStack.pop();
     }
 
     @Override
     public void clearColor() {
         setColor(0, 0, 0);
+    }
+
+    @Override
+    public void multiplyAffine(Matrix4f preTransformation) {
+        // first apply combinedTransformation, then the viewTransformation
+        preTransformation.mul(modelViewMatrix, modelViewMatrix);
+    }
+
+    @Override
+    public void setCamera(Camera activeCamera) {
+        projectionMatrix.lookAt(
+                activeCamera.getEye().toVector3f(),
+                activeCamera.getFocus().toVector3f(),
+                activeCamera.getUpVector().toVector3f()
+        );
     }
 }

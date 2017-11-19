@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
 import org.joml.Vector2i;
+import org.joml.Vector4f;
 
 /**
  * Generic UI element that can be drawn in the hud.
@@ -8,6 +9,12 @@ import org.joml.Vector2i;
  */
 public abstract class UIElement implements HudElement {
 
+    public static final int INDENT = 10;
+    public static final Vector4f MENU_FILL_COLOR = new Vector4f(0.4f, 0.4f, 0.4f, 1.0f);
+    public static final Vector4f MENU_STROKE_COLOR = new Vector4f(0.1f, 0.1f, 0.1f, 1.0f);
+    public static final int MENU_STROKE_WIDTH = 5;
+    public static final int TEXT_SIZE_LARGE = 48;
+    public static final Vector4f TEXT_COLOR = new Vector4f();
     protected int x;
     protected int y;
     protected int width;

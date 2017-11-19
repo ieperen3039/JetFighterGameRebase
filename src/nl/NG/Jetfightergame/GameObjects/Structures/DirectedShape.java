@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.GameObjects.Structures;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.AxisBasedGL;
+import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 /**
@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  */
 public interface DirectedShape extends Shape {
 
-    void setSource(AxisBasedGL ms, PosVector source);
+    void setSource(GL2 ms, PosVector source);
 
-    void setTarget(AxisBasedGL ms, PosVector target);
+    void setTarget(GL2 ms, PosVector target);
 }

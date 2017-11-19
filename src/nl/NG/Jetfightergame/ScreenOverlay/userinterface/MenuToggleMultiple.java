@@ -45,10 +45,10 @@ public class MenuToggleMultiple extends MenuClickable {
     @Override
     public void draw(Hud hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(COLOR_BLUE);
-        hud.stroke(STROKE_WIDTH, COLOR_PINK);
-        hud.text(x + width /2, (int) (y + TEXT_LARGE + 10), TEXT_LARGE, Hud.Font.MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$s", text, names[value]), COLOR_TEXT);
+        hud.fill(MENU_FILL_COLOR);
+        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
+        hud.text(x + width /2, (int) (y + TEXT_SIZE_LARGE + 10), TEXT_SIZE_LARGE, Hud.Font.MEDIUM, NVG_ALIGN_CENTER,
+                String.format("%1$s: %2$s", text, names[value]), TEXT_COLOR);
     }
 
     @Override

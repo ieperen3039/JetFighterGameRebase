@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
 import nl.NG.Jetfightergame.Engine.Window.InputDelegate;
-import nl.NG.Jetfightergame.ScreenOverlay.Hud;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.io.IOException;
 
@@ -15,36 +15,50 @@ import java.io.IOException;
  */
 public abstract class GLFWGameEngine {
 
-    protected GameLoop renderLoop;
-    protected GameLoop gameLoop;
+    protected AbstractGameLoop renderLoop;
+    protected AbstractGameLoop gameLoop;
 
     protected GLFWWindow window;
-    private Hud hud;
     protected Camera camera;
-    private boolean isStopping = false;
 
     private boolean hudEnabled = true;
 
     public GLFWGameEngine() throws IOException {
         window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
-        hud = new Hud(window);
         camera = new PointCenteredCamera();
     }
 
+    /**
+     * create a thread for everyone who wants one, open the main window and start the game
+     * Rendering must happen in the main thread, so we do
+     */
     public void startGame(){
-        //TODO make threads and wait
+//        Thread gameLoopThread = new Thread(gameLoop);
+
+        window.open();
+
+//        gameLoopThread.start();
+
+        renderLoop.run();
+
+//        try {
+//            gameLoopThread.join();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
+        Toolbox.print("Exiting engine! Bye ~");
+
+        window.cleanup();
+        // Finish execution
     }
 
     /**
-     * Cleanup used objects and stop the game.
-     * last in the call routine
+     * Start closing and cleaning everything
      */
     public void exitGame() {
-        isStopping = true;
-        // wait for all threads
 
-        window.cleanup();
     }
 
     /**
@@ -61,6 +75,6 @@ public abstract class GLFWGameEngine {
     }
 
     public boolean isStopping() {
-        return isStopping;
+        return window.shouldClose();
     }
 }

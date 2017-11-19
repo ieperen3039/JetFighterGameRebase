@@ -14,13 +14,11 @@ public class MatrixCamera implements Camera {
 
     private GLFWGameEngine engine;
     private GLFWWindow window;
-    private GLFWGameEngine.Renderer renderer;
 
     public MatrixCamera(GLFWGameEngine engine) {
         super();
         this.engine = engine;
         this.window = engine.getWindow();
-        this.renderer = engine.getRenderer();
     }
 
     @Override

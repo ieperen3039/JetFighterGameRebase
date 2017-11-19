@@ -8,6 +8,9 @@ import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
  */
 public abstract class MenuClickable extends UIElement {
 
+    public static final int BUTTON_WIDTH = 500;
+    public static final int BUTTON_HEIGHT = 300;
+
     public MenuClickable(int x, int y, int width, int height) {
         super(x, y, width, height);
     }

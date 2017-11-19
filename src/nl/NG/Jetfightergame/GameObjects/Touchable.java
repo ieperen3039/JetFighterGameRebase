@@ -38,12 +38,12 @@ public interface Touchable extends Drawable {
     void checkCollisionWith(Touchable other);
 
     /**
-     * draw the object using the native create function and the shape.draw functions
+     * drawObjects the object using the native create function and the shape.drawObjects functions
      */
     @Override
     default void draw(GL2 gl) {
         preDraw(gl);
-        Consumer<Shape> painter = shape -> shape.draw(gl);
+        Consumer<Shape> painter = gl::draw;
         toLocalSpace(gl, (() -> create(gl, painter, false)), false);
     }
 
