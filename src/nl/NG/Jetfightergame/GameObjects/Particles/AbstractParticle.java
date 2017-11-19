@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.GameObjects.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.GameObjects.Structures.Renderable;
+import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
 
 /**
  * @author Geert van Ieperen

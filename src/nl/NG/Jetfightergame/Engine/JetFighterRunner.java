@@ -14,6 +14,11 @@ public class JetFighterRunner extends AbstractGameLoop {
     }
 
     @Override
+    protected String getName() {
+        return "the Gameloop";
+    }
+
+    @Override
     protected void update(float deltaTime) {
         game.updateGameLoop(deltaTime);
     }

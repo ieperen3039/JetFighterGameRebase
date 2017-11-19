@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.FighterJets;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.GameObjects.Structures.GeneralShapes;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
@@ -17,17 +17,14 @@ import java.util.function.Consumer;
  */
 public class TestJet extends AbstractJet {
 
-    public static final float YAW_INERTIA = 1f;
-    public static final float PITCH_INERTIA = 1f;
-    public static final float ROLL_INERTIA = 1f;
     public static final float LIFT_FACTOR = 1f;
     public static final float BRAKE_POWER = 1f;
     public static final float THROTTLE_POWER = 1f;
     public static final float MASS = 100f;
     public static final Material MATERIAL = Material.SILVER;
-    public static final float YAW_POWER = 1f;
-    public static final float PITCH_POWER = 1f;
-    public static final float ROLL_POWER = 1f;
+    public static final float YAW_POWER = 45f;
+    public static final float PITCH_POWER = 45f;
+    public static final float ROLL_POWER = 45f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
 
     public TestJet(AbstractGameLoop engine, Controller input) {
@@ -48,7 +45,7 @@ public class TestJet extends AbstractJet {
     }
 
     @Override
-    public void create(GL2 ms, Consumer<Shape> action, boolean takeStable) {
+    public void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable) {
         action.accept(GeneralShapes.CUBE);
     }
 

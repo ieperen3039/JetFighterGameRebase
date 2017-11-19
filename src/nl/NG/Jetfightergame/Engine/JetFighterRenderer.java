@@ -12,13 +12,13 @@ import org.joml.Vector3f;
 
 import java.io.IOException;
 
-import static nl.NG.Jetfightergame.Shaders.ShaderProgram.MAX_POINT_LIGHTS;
+import static nl.NG.Jetfightergame.Engine.Settings.MAX_POINT_LIGHTS;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Jorren Hendriks.
  */
-class JetFighterRenderer extends AbstractGameLoop {
+public class JetFighterRenderer extends AbstractGameLoop {
 
     private final Hud hud;
     private GLFWWindow window;
@@ -33,7 +33,6 @@ class JetFighterRenderer extends AbstractGameLoop {
     private ShaderProgram currentShader;
 
     private Vector3f ambientLight;
-    private boolean shouldStop;
 
     public JetFighterRenderer(GLFWWindow window, Camera camera, JetFighterGame engine) throws IOException, ShaderException {
         super(Settings.TARGET_TPS);
@@ -110,6 +109,8 @@ class JetFighterRenderer extends AbstractGameLoop {
 
         currentShader.bind();
 
+        currentShader.setUniform("ambientLight", Settings.AMBIENT_LIGHT);
+
         if (currentShader == phongShader) {
             currentShader.setUniform("specularPower", 1f);
             currentShader.setUniform("cameraPos", activeCamera.getEye().toVector3f());
@@ -120,7 +121,6 @@ class JetFighterRenderer extends AbstractGameLoop {
         if (!engine.isPaused()) engine.updateParticles(deltaTime);
 
         GL2 gl = new ShaderUniformGL(currentShader);
-        setLights(currentShader);
         setView(gl, windowWidth, windowHeight);
 
         //first drawObjects non transparent meshes
@@ -136,18 +136,6 @@ class JetFighterRenderer extends AbstractGameLoop {
         window.update();
     }
 
-    /**
-     * Render the lights in the scene
-     *
-     * @param sceneShader the current shader
-     */
-    private void setLights(ShaderProgram sceneShader) {
-        sceneShader.setUniform("specularPower", Settings.SHADER_SPECULAR_POWER);
-        sceneShader.setUniform("ambientLight", Settings.AMBIENT_LIGHT);
-        currentShader.setUniform("ambientLight", ambientLight);
-        //set point-lights
-    }
-
     @Override
     protected boolean shouldStop() {
         return window.shouldClose();
@@ -160,5 +148,10 @@ class JetFighterRenderer extends AbstractGameLoop {
 
         // Update the view
         gl.setCamera(activeCamera);
+    }
+
+    @Override
+    protected String getName() {
+        return "Rendering";
     }
 }

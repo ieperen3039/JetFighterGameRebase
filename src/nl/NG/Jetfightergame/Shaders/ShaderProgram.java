@@ -17,15 +17,11 @@ import static org.lwjgl.opengl.GL20.*;
  */
 public class ShaderProgram {
 
-    public final static int MAX_POINT_LIGHTS = 5;
-
     private final Map<String, Integer> uniforms;
 
     private int programId;
     private int vertexShaderId;
     private int fragmentShaderId;
-
-    private PointLight[] pointLights = {};
 
     public ShaderProgram() throws ShaderException {
         uniforms = new HashMap<>();
@@ -83,25 +79,6 @@ public class ShaderProgram {
             System.err.println("Warning validating Shader code: " + glGetProgramInfoLog(programId, 1024));
         }
 
-    }
-
-    /**
-     * Get a list of pointlights.
-     *
-     * @return the list of pointlights.
-     */
-    public PointLight[] getPointLights() {
-        return this.pointLights;
-    }
-
-    /**
-     * Set a pointlight.
-     *
-     * @param pointLight The pointlight to set.
-     * @param i The index in the pointlight array.
-     */
-    public void setPointLight(PointLight pointLight, int i) {
-        this.pointLights[i] = pointLight;
     }
 
     /**
@@ -215,8 +192,8 @@ public class ShaderProgram {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
-    public void setUniform(String uniformName, PointLight pointlight, int i) {
-        setUniform(uniformName + "[" + i + "]", pointlight);
+    public void setPointLight(PointLight pointlight, int i) {
+        setUniform("pointLights[" + i + "]", pointlight);
     }
 
     /**
@@ -229,10 +206,6 @@ public class ShaderProgram {
         setUniform(uniformName + ".colour", pointLight.getColor() );
         setUniform(uniformName + ".position", pointLight.getPosition());
         setUniform(uniformName + ".intensity", pointLight.getIntensity());
-        PointLight.Attenuation att = pointLight.getAttenuation();
-        setUniform(uniformName + ".att.constant", att.getConstant());
-        setUniform(uniformName + ".att.linear", att.getLinear());
-        setUniform(uniformName + ".att.exponent", att.getExponent());
     }
 
     /**
@@ -273,7 +246,7 @@ public class ShaderProgram {
         glCompileShader(shaderId);
 
         if (glGetShaderi(shaderId, GL_COMPILE_STATUS) == 0) {
-            throw new ShaderException("Error compiling Shader code: " + glGetShaderInfoLog(shaderId, 1024));
+            throw new ShaderException("Error compiling Shader code:\n" + glGetShaderInfoLog(shaderId, 1024));
         }
 
         glAttachShader(programId, shaderId);

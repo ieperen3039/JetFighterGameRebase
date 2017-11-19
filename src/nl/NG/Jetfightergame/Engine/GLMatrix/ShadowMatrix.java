@@ -1,13 +1,9 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
-import nl.NG.Jetfightergame.GameObjects.Structures.Renderable;
-import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.Matrix4f;
-
-import java.awt.*;
 
 import static nl.NG.Jetfightergame.Vectors.Vector.getRotationMatrix;
 
@@ -15,7 +11,7 @@ import static nl.NG.Jetfightergame.Vectors.Vector.getRotationMatrix;
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
-public class ShadowMatrix implements GL2 {
+public class ShadowMatrix implements MatrixStack {
     protected DirVector zVec = DirVector.Z;
     protected DirVector xVec = DirVector.X;
     protected DirVector yVec = DirVector.Y;
@@ -138,41 +134,6 @@ public class ShadowMatrix implements GL2 {
     }
 
     // unsupported operations
-
-    @Override
-    public void draw(Renderable object) {
-        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
-    }
-
-    @Override
-    public void matrixMode(int matrix) { // TODO possibly allow multiply stacks
-        throw new UnsupportedOperationException("ShadowMatrix can't switch matrix mode");
-    }
-
-    @Override
-    public void setColor(double red, double green, double blue) {
-        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
-    }
-
-    @Override
-    public void setLight(int lightNumber, DirVector dir, Color lightColor) {
-        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
-    }
-
-    @Override
-    public void setLight(int lightNumber, PosVector pos, Color lightColor) {
-        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
-    }
-
-    @Override
-    public void setMaterial(Material material) {
-        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
-    }
-
-    @Override
-    public void clearColor() {
-        throw new UnsupportedOperationException("ShadowMatrix can't do rendering operations!");
-    }
 
     @Override
     public void multiplyAffine(Matrix4f preTransformation) { //TODO look for possibility to implement

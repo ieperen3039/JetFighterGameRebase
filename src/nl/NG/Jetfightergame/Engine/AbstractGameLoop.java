@@ -24,6 +24,7 @@ public abstract class AbstractGameLoop implements Runnable {
     public AbstractGameLoop(int targetTps) {
         this.targetTps = targetTps;
     }
+
     /**
      * invoked (targetTps) times per second
      * @param deltaTime
@@ -43,7 +44,7 @@ public abstract class AbstractGameLoop implements Runnable {
      * wrap-up must end up in a finally bock
      */
     public void run() {
-        Toolbox.print(this.getClass().getSimpleName() + " has started");
+        Toolbox.print(getName() + " has started");
         Timer loopTimer = new Timer();
         try {
             while (!shouldStop()) {
@@ -58,8 +59,8 @@ public abstract class AbstractGameLoop implements Runnable {
                 long remainingTime = (1000 / targetTps) - loopTimer.getTimeSinceLastUpdate();
 
                 // print debug info (hit = to refresh)
-                TPSMinimum.updateAndPrint(this.getClass().getSimpleName() + ":", 1000f / loopTimer.getElapsedTime(), "per second");
-                if (remainingTime < 0) Toolbox.print("Can't keep up! Running " + -remainingTime + " milliseconds behind");
+                TPSMinimum.updateAndPrint(getName() + ":", 1000f / loopTimer.getElapsedTime(), "per second");
+                if (remainingTime < 0) Toolbox.print(getName() + " can't keep up! Running " + -remainingTime + " milliseconds behind");
 
                 // sleep at least one millisecond
                 long correctedTime = Math.max(remainingTime, 1);
@@ -68,12 +69,19 @@ public abstract class AbstractGameLoop implements Runnable {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("The Gameloop has Crashed! Blame Menno.");
+            System.err.println(getName() + " has Crashed! Blame Menno.");
         } finally {
             cleanup();
         }
 
         // terminate engine
+    }
+
+    /**
+     * @return a name that identifies this gameloop
+     */
+    protected String getName() {
+        return this.getClass().getSimpleName();
     }
 
     public void unPause(){

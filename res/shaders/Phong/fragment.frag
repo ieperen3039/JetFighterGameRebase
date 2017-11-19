@@ -21,7 +21,7 @@ struct Material
     float reflectance;
 };
 
-const int MAX_POINT_LIGHTS = 5;
+const int MAX_POINT_LIGHTS = 10;
 
 uniform float specularPower;
 uniform Material material;

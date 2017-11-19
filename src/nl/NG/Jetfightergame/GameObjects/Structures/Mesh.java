@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameObjects.Structures;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -127,6 +128,7 @@ public class Mesh implements Renderable {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glDeleteBuffers(posVboID);
         glDeleteBuffers(idVboID);
+        glDeleteBuffers(normVboID);
 
         // Delete the VAO
         glBindVertexArray(0);
@@ -137,13 +139,11 @@ public class Mesh implements Renderable {
     public void render(GL2.Painter lock) {
         glBindVertexArray(vaoId);
         glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
 
         glDrawElements(GL_TRIANGLES, vertexCount, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
         glDisableVertexAttribArray(2);
         glBindVertexArray(0);
     }

@@ -1,6 +1,4 @@
-package nl.NG.Jetfightergame.GameObjects.Structures;
-
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 /**
  * @author Geert van Ieperen

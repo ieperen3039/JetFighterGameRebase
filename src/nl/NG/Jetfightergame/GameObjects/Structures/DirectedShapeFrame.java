@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameObjects.Structures;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Plane;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -26,13 +27,13 @@ public class DirectedShapeFrame implements DirectedShape {
     }
 
     @Override
-    public void setSource(GL2 ms, PosVector source) {
+    public void setSource(MatrixStack ms, PosVector source) {
         Vector s = ms.getPosition(source);
         if (s != null) this.source = (PosVector) s;
     }
 
     @Override
-    public void setTarget(GL2 ms, PosVector target) {
+    public void setTarget(MatrixStack ms, PosVector target) {
         Vector t = ms.getPosition(target);
         if (t != null) this.target = (PosVector) t;
     }

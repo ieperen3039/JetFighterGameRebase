@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameObjects;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 
 import java.util.function.Consumer;
@@ -19,7 +20,7 @@ public interface Touchable extends Drawable {
      * @param takeStable false if the actions are done on the (stable) current points,
      *                   true if the actions are done on the (unstable) extrapolated points
      */
-    void create(GL2 ms, Consumer<Shape> action, boolean takeStable);
+    void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable);
 
     /**
      * moves the reference frame from global space to this object and executes action
@@ -29,7 +30,7 @@ public interface Touchable extends Drawable {
      * @param takeStable false if estimations may be used (e.g. the not rendered part)
      *                   true if the actions must be performed on parameters taht no longer change
      */
-    void toLocalSpace(GL2 ms, Runnable action, boolean takeStable);
+    void toLocalSpace(MatrixStack ms, Runnable action, boolean takeStable);
 
     /**
      * checks the collision with one specific object, and update this object accordingly

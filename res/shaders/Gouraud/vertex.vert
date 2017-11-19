@@ -20,7 +20,7 @@ struct PointLight
     float intensity;
 };
 
-const int MAX_POINT_LIGHTS = 5;
+const int MAX_POINT_LIGHTS = 10;
 
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];

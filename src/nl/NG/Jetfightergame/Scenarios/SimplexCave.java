@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
@@ -37,7 +38,7 @@ public class SimplexCave implements Touchable {
     }
 
     @Override
-    public void create(GL2 ms, Consumer<Shape> action, boolean takeStable) {
+    public void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable) {
         ms.pushMatrix();
         {
             ms.scale(STRETCH, STRETCH, DEPTH);
@@ -56,7 +57,7 @@ public class SimplexCave implements Touchable {
     }
 
     @Override
-    public void toLocalSpace(GL2 ms, Runnable action, boolean takeStable) {
+    public void toLocalSpace(MatrixStack ms, Runnable action, boolean takeStable) {
         action.run();
     }
 

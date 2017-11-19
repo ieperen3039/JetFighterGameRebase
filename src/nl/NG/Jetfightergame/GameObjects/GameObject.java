@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.GameObjects;
 
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
@@ -52,7 +53,7 @@ public abstract class GameObject implements MovingObject {
      * @param engine reference to the game engine
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param surfaceMaterial material properties
-     * @param scale scalefactor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(GL2, Runnable, boolean)}
+     * @param scale scalefactor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param initialRotation the initial rotation around the Z-axis of this object in radians
      */
     public GameObject(AbstractGameLoop engine, PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation) {
@@ -79,7 +80,7 @@ public abstract class GameObject implements MovingObject {
         extraRotation = rotation.current() + (rotationSpeed * deltaTime);
     }
 
-    public DirVector getRelativeVector(DirVector xVec, GL2 sm) {
+    public DirVector getRelativeVector(DirVector xVec, MatrixStack sm) {
         final DirVector[] axis = new DirVector[1];
         toLocalSpace(sm, () -> axis[0] = sm.getDirection(xVec), false);
         return axis[0];
@@ -188,7 +189,7 @@ public abstract class GameObject implements MovingObject {
     }
 
     @Override
-    public void toLocalSpace(GL2 ms, Runnable action, boolean takeStable){
+    public void toLocalSpace(MatrixStack ms, Runnable action, boolean takeStable){
         PosVector currPos = takeStable ? position.current() : extraPosition;
         double currRot = takeStable ? rotation.current() : extraRotation;
 

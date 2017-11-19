@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.GameObjects.Structures.Renderable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Shaders.shader.PointLight;
@@ -42,11 +41,6 @@ public class ShaderUniformGL implements GL2 {
     }
 
     @Override
-    public void setColor(double red, double green, double blue) {
-
-    }
-
-    @Override
     public void setFustrum(int width, int height) {
         float aspectRatio = (float) width / (float) height;
         projectionMatrix.setPerspective(Settings.FOV, aspectRatio, Settings.Z_NEAR, Settings.Z_FAR);
@@ -65,10 +59,15 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void setMaterial(Material material){
-        currentShader.setUniform4f("Material.ambient", material.diffuse);
-        currentShader.setUniform4f("Material.diffuse", material.diffuse);
-        currentShader.setUniform4f("Material.specular", material.specular);
-        currentShader.setUniform("Material.reflectance", material.shininess);
+        currentShader.setUniform4f("material.ambient", material.diffuse);
+        currentShader.setUniform4f("material.diffuse", material.diffuse);
+        currentShader.setUniform4f("material.specular", material.specular);
+        currentShader.setUniform("material.reflectance", material.shininess);
+    }
+
+    @Override
+    public void clearColor() {
+
     }
 
     @Override
@@ -108,11 +107,6 @@ public class ShaderUniformGL implements GL2 {
     @Override
     public void popMatrix() {
         modelViewMatrix = matrixStack.pop();
-    }
-
-    @Override
-    public void clearColor() {
-        setColor(0, 0, 0);
     }
 
     @Override

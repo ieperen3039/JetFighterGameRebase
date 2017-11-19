@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.GameObjects;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.Updatable;
 import nl.NG.Jetfightergame.Shaders.Material;
@@ -37,7 +37,7 @@ public abstract class AbstractJet extends GameObject implements Updatable {
      * @param input controller input, either player or AI.
      * @param initialPosition position of spawning (of the origin) in world coordinates
      * @param initialRotation the initial rotation around the Z-axis of this object in radians
-     * @param scale scale factor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(GL2, Runnable, boolean)}
+     * @param scale scale factor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param material the default material properties of the whole object.
      * @param mass the mass of the object in kilograms. this should refer to the weight of the base model in SpaceEngineers
      * @param liftFactor arbitrary factor of the lift-effect of the wings in gravitational situations.
