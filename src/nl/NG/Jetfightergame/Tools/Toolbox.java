@@ -79,7 +79,6 @@ public class Toolbox {
 
     /**
      * Draws the x-axis (red), y-axis (green), z-axis (blue), and origin (yellow).
-     * setColor is (red , green, blue)
      */
     public static void drawAxisFrame(GL2 gl) {
         if (!Settings.DEBUG) return;
@@ -95,9 +94,9 @@ public class Toolbox {
         gl.pushMatrix();
         {
             gl.draw(ShapeFromMesh.ARROW);
-            gl.rotate(90, 0, 1, 0);
+            gl.rotate(Math.toRadians(90), 0, 1, 0);
             gl.draw(ShapeFromMesh.ARROW);
-            gl.rotate(-90, 1, 0, 0);
+            gl.rotate(Math.toRadians(90), 0, 0, 1);
             gl.draw(ShapeFromMesh.ARROW);
         }
         gl.popMatrix();

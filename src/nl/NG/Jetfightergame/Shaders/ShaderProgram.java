@@ -101,7 +101,7 @@ public class ShaderProgram {
      * @throws ShaderException If an error occurs getting the memory location.
      */
     public void createPointLightUniform(String uniformName) throws ShaderException {
-        createUniform(uniformName + ".colour");
+        createUniform(uniformName + ".color");
         createUniform(uniformName + ".position");
         createUniform(uniformName + ".intensity");
     }
@@ -203,7 +203,7 @@ public class ShaderProgram {
      * @param pointLight The new value of the uniform.
      */
     public void setUniform(String uniformName, PointLight pointLight) {
-        setUniform(uniformName + ".colour", pointLight.getColor() );
+        setUniform(uniformName + ".color", pointLight.getColor() );
         setUniform(uniformName + ".position", pointLight.getPosition());
         setUniform(uniformName + ".intensity", pointLight.getIntensity());
     }

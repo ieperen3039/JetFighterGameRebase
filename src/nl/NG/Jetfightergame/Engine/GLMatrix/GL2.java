@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Shaders.shader.PointLight;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.lwjgl.opengl.GL11;
@@ -28,9 +29,12 @@ public interface GL2 extends MatrixStack {
     // TODO add transparency
     void setMaterial(Material material);
 
+    // TODO decide: re-introduce color?
     void clearColor();
 
     void setCamera(Camera activeCamera);
+
+    void setLight(PointLight pointLight, int lightNumber);
 
     /**
      * Objects should call GPU calls only in their render method. this render method may only be called by a GL2 object,

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Controllers;
 
-import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
+import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
 
 import java.util.Collection;
@@ -43,7 +43,7 @@ public class MouseTracker {
     private TrackedInteger mouseX, mouseY;
 
     /** to decide between menu-mode and ingame-mode */
-    private BooleanSupplier inGameMode = () -> false;
+    private BooleanSupplier inPlayMode = () -> false;
 
     private MouseTracker() {
         inGameMotionListeners = new LinkedList<>();
@@ -71,7 +71,7 @@ public class MouseTracker {
      *                 if it returns false, mouse is not captured, and listeners of menumode will receive notifications
      */
     public void setMenuModeDecision(BooleanSupplier isInGame){
-        this.inGameMode = isInGame;
+        this.inPlayMode = isInGame;
     }
 
     // Click listener part
@@ -115,7 +115,7 @@ public class MouseTracker {
         switch (e.getButton()) {
             case BUTTON_LEFT:
                 leftMouse = true;
-                if (!inGameMode.getAsBoolean()) {
+                if (!inPlayMode.getAsBoolean()) {
                     menuClickListeners.forEach(notify);
                 }
                 break;
@@ -126,7 +126,7 @@ public class MouseTracker {
                 rightMouse = true;
                 break;
         }
-        if (inGameMode.getAsBoolean()) {
+        if (inPlayMode.getAsBoolean()) {
             inGameClickListeners.forEach(notify);
         }
     }
@@ -172,14 +172,14 @@ public class MouseTracker {
     }
 
     public void mouseMoved(MouseEvent e) {
-        if (inGameMode.getAsBoolean()){
-            passAndUndo(e);
+        if (inPlayMode.getAsBoolean()){
+            passToMoveListeners(e);
         }
     }
 
     public void mouseDragged(MouseEvent e) {
-        if (inGameMode.getAsBoolean()){
-            passAndUndo(e);
+        if (inPlayMode.getAsBoolean()){
+            passToMoveListeners(e);
         } else {
             mouseX.update(e.getX());
             mouseY.update(e.getY());
@@ -187,7 +187,7 @@ public class MouseTracker {
         }
     }
 
-    private void passAndUndo(MouseEvent mouse) {
+    private void passToMoveListeners(MouseEvent mouse) {
         int xMid = mouse.frame.getWidth() / 2;
         int yMid = mouse.frame.getHeight() / 2;
 
@@ -196,7 +196,6 @@ public class MouseTracker {
 
         if (deltaX == 0 && deltaY == 0) return;
 
-        mouse.warpPointer(xMid, yMid);
         inGameMotionListeners.forEach(l -> l.mouseMoved(deltaX, deltaY));
     }
 
@@ -224,7 +223,7 @@ public class MouseTracker {
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
-        if (inGameMode.getAsBoolean()) {
+        if (inPlayMode.getAsBoolean()) {
             inGameScrollListener.forEach(l -> l.mouseWheelMoved(e.getScroll()));
         } else {
             menuScrollListener.forEach(l -> l.mouseWheelMoved(e.getScroll()));
@@ -247,10 +246,6 @@ public class MouseTracker {
             this.x = x;
             this.y = y;
             this.button = pressedButton;
-        }
-
-        public void warpPointer(int x, int y) {
-            //TODO implement
         }
 
         public int getX() {

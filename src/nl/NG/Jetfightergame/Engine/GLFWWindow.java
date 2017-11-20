@@ -1,6 +1,5 @@
-package nl.NG.Jetfightergame.Engine.Window;
+package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Engine.Settings;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
@@ -135,8 +134,6 @@ public class GLFWWindow {
     /**
      * update the {@link GLFWWindow}. This will deal with basic OpenGL formalities. Besides it will also poll for events
      * which occurred on the window. Finally returns whether the window should close.
-     *
-     * @return true if the {@link GLFWWindow} should continue running, false otherwise
      */
     public void update() {
         // Measure speed
@@ -327,5 +324,18 @@ public class GLFWWindow {
         else setFullScreen();
     }
 
+    /**
+     * sets mouse to invisible and restrict movement
+     */
+    public void capturePointer(){
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    }
+
+    /**
+     * sets mouse to visible
+     */
+    public void freePointer(){
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    }
 }
 

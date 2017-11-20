@@ -14,7 +14,7 @@ struct Material
 
 struct PointLight
 {
-    vec3 colour;
+    vec3 color;
     // light position in view coördinates.
     vec3 position;
     float intensity;
@@ -38,7 +38,7 @@ vec3 calculateLighting(vec3 P, vec3 N, PointLight light){
 	vec3 lightDirection = normalize(light.position.xyz - P); //vector towards light source
     // diffuse component
     float intensity = max(0.0, dot(N, lightDirection));
-    result += intensity * light.colour.xyz * material.diffuse.xyz;
+    result += intensity * light.color.xyz * material.diffuse.xyz;
 
 	vec3 CameraPosition = normalize(-P); //position of camera in View space
 	vec3 Reflection = (reflect(lightDirection, N));
@@ -48,7 +48,7 @@ vec3 calculateLighting(vec3 P, vec3 N, PointLight light){
 	// specular component
     float shine = pow( max(0.0, dot(VirtualLightPosition, CameraPosition)), material.reflectance);
     //float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
-    result += shine * light.colour.xyz;
+    result += shine * light.color.xyz;
 
 
 	return result;

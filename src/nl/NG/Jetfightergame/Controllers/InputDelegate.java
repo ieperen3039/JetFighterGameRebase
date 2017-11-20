@@ -1,7 +1,6 @@
-package nl.NG.Jetfightergame.Engine.Window;
+package nl.NG.Jetfightergame.Controllers;
 
-import nl.NG.Jetfightergame.Controllers.KeyTracker;
-import nl.NG.Jetfightergame.Controllers.MouseTracker;
+import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
@@ -61,10 +60,13 @@ public class InputDelegate {
             switch (button){
                 case GLFW_MOUSE_BUTTON_1:
                     eventButton = MouseTracker.MouseButton.BUTTON_LEFT;
+                    break;
                 case GLFW_MOUSE_BUTTON_2:
                     eventButton = MouseTracker.MouseButton.BUTTON_MIDDLE;
+                    break;
                 case GLFW_MOUSE_BUTTON_3:
                     eventButton = MouseTracker.MouseButton.BUTTON_RIGHT;
+                    break;
                 default:
                     eventButton = MouseTracker.MouseButton.BUTTON_UNDEFINED;
             }

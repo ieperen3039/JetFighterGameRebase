@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
-import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
+import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Resource;
 import org.joml.Vector2i;
 import org.joml.Vector4f;

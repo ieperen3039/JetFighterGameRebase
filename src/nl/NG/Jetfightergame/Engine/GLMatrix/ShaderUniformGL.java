@@ -54,7 +54,7 @@ public class ShaderUniformGL implements GL2 {
     @Override
     public void setLight(int lightNumber, PosVector pos, Color lightColor){
         PointLight lamp = new PointLight(Toolbox.colorVector(lightColor), pos.toVector3f(), 1f);
-        currentShader.setPointLight(lamp, lightNumber);
+        setLight(lamp, lightNumber);
     }
 
     @Override
@@ -122,5 +122,10 @@ public class ShaderUniformGL implements GL2 {
                 activeCamera.getFocus().toVector3f(),
                 activeCamera.getUpVector().toVector3f()
         );
+    }
+
+    @Override
+    public void setLight(PointLight lamp, int lightNumber) {
+        currentShader.setPointLight(lamp, lightNumber);
     }
 }

@@ -10,18 +10,21 @@ import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
 import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
+import nl.NG.Jetfightergame.Shaders.shader.PointLight;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
+import org.joml.Vector3f;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.function.BooleanSupplier;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * @author Geert van Ieperen
@@ -38,6 +41,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     private Collection<GameObject> objects = new LinkedList<>();
     private Collection<Touchable> staticObjects = new LinkedList<>();
     private Collection<AbstractParticle> particles = new LinkedList<>();
+    private Collection<PointLight> lights = new LinkedList<>();
 
     /**
      * openWindow the game by creating a frame based on this engine
@@ -48,7 +52,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.setVisible(true);
 
         try {
-            KeyTracker.getInstance().addKeyListener(this);
+            KeyTracker keyTracker = KeyTracker.getInstance();
+            keyTracker.addKeyListener(this);
+            keyTracker.addKey(GLFW_KEY_ESCAPE);
+            keyTracker.addKey(GLFW_KEY_EQUAL);
+            keyTracker.addKey(GLFW_KEY_F11);
 
             final BooleanSupplier gameMode = () -> !this.isPaused();
             MouseTracker.getInstance().setMenuModeDecision(gameMode);
@@ -89,6 +97,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     private void buildScene() {
+        lights.add(new PointLight(new Vector3f(1f, 1f, 1f), new Vector3f(5f, 5f, 5f), 0.5f));
     }
 
     /**
@@ -117,6 +126,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     public void drawObjects(GL2 gl) {
+        lights.forEach((pointLight) -> gl.setLight(pointLight, 1)); // TODO make this object-related, change Pointlight
         Toolbox.drawAxisFrame(gl);
 
 //        staticObjects.forEach(d -> d.draw(gl));
@@ -132,9 +142,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     @Override
-    public void exitGame() {
+    public void cleanup() {
         Toolbox.print("Stopping...");
-        super.exitGame();
+        super.cleanup();
     }
 
     public GameMode getCurrentGameMode() {
@@ -144,6 +154,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     public void setMenuMode() {
         // TODO set cursor visibility
         this.currentGameMode = GameMode.MENU_MODE;
+        window.freePointer();
         camera = new PointCenteredCamera(playerJet.getPosition(), DirVector.Z, 1, 1);
         gameLoop.pause();
     }
@@ -151,6 +162,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     public void setPlayMode() {
         // TODO set cursor visibility
         this.currentGameMode = GameMode.PLAY_MODE;
+        window.capturePointer();
         camera = new FollowingCamera(camera.getEye(), getPlayerJet());
         gameLoop.unPause();
     }
@@ -164,15 +176,15 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     public void keyPressed(int key) {
         // quit when Esc is pressed
         switch (key) {
-            case KeyEvent.VK_ESCAPE:
+            case GLFW_KEY_ESCAPE:
                 if (isPaused()) exitGame();
                 else setMenuMode();
                 break;
-            case KeyEvent.VK_F11:
+            case GLFW_KEY_F11:
                 Toolbox.print("Switching fullscreen");
                 window.setFullScreen();
                 break;
-            case KeyEvent.VK_EQUALS:
+            case GLFW_KEY_EQUAL:
                 gameLoop.resetTPSCounter();
                 renderLoop.resetTPSCounter();
                 break;

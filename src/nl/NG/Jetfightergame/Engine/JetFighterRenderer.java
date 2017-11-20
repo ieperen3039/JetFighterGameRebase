@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
-import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
 import nl.NG.Jetfightergame.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
@@ -88,6 +87,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // Create uniform for special lighting conditions for background elements
         phongShader.createUniform("blackAsAlpha");
         phongShader.createUniform("shadowed");
+
+        phongShader.createUniform("cameraPos");
 
         return phongShader;
     }

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.Engine.GLFWGameEngine;
-import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
+import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 

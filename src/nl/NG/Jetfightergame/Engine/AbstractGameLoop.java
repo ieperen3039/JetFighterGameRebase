@@ -20,6 +20,7 @@ public abstract class AbstractGameLoop implements Runnable {
     private final int targetTps;
 
     private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
+    private boolean isPaused;
 
     public AbstractGameLoop(int targetTps) {
         this.targetTps = targetTps;
@@ -46,15 +47,16 @@ public abstract class AbstractGameLoop implements Runnable {
     public void run() {
         Toolbox.print(getName() + " has started");
         Timer loopTimer = new Timer();
+        float deltaTime = 0;
         try {
-            while (!shouldStop()) {
-                // block if the game is paused
-                pauseBlock.await();
+            pauseBlock.await();
 
-                loopTimer.updateLoopTime(); // TODO reset timer after pause
+            while (!shouldStop()) {
+                // start measuring how long a gameloop takes
+                loopTimer.updateLoopTime();
 
                 // do stuff
-                update(loopTimer.getElapsedSeconds());
+                update(deltaTime);
 
                 long remainingTime = (1000 / targetTps) - loopTimer.getTimeSinceLastUpdate();
 
@@ -64,8 +66,13 @@ public abstract class AbstractGameLoop implements Runnable {
 
                 // sleep at least one millisecond
                 long correctedTime = Math.max(remainingTime, 1);
-
                 Thread.sleep(correctedTime);
+
+                loopTimer.updateLoopTime();
+                // store the duration and set this as length of next update
+                deltaTime = loopTimer.getElapsedSeconds();
+                // wait if the game is paused
+                pauseBlock.await();
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -86,12 +93,12 @@ public abstract class AbstractGameLoop implements Runnable {
 
     public void unPause(){
         pauseBlock.countDown();
-        Toolbox.print("unpaused game");
+        Toolbox.print("unpaused " + getName());
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        Toolbox.print("paused game");
+        Toolbox.print("paused " + getName());
     }
 
     public boolean isPaused() {

@@ -2,8 +2,7 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
-import nl.NG.Jetfightergame.Engine.Window.GLFWWindow;
-import nl.NG.Jetfightergame.Engine.Window.InputDelegate;
+import nl.NG.Jetfightergame.Controllers.InputDelegate;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.io.IOException;
@@ -34,19 +33,21 @@ public abstract class GLFWGameEngine {
      * Rendering must happen in the main thread, so we do
      */
     public void startGame(){
-//        Thread gameLoopThread = new Thread(gameLoop);
+        Thread gameLoopThread = new Thread(gameLoop);
 
         window.open();
 
-//        gameLoopThread.start();
+        gameLoopThread.start();
 
         renderLoop.run();
 
-//        try {
-//            gameLoopThread.join();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            // release block
+            gameLoop.unPause();
+            gameLoopThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         Toolbox.print("Exiting engine! Bye ~");
 
@@ -54,10 +55,15 @@ public abstract class GLFWGameEngine {
         // Finish execution
     }
 
+    public void exitGame(){
+        Toolbox.print("Exiting game: starting cleanup");
+        window.close();
+    }
+
     /**
      * Start closing and cleaning everything
      */
-    public void exitGame() {
+    public void cleanup() {
 
     }
 
