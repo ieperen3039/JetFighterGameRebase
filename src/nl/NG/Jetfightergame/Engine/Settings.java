@@ -1,8 +1,5 @@
 package nl.NG.Jetfightergame.Engine;
 
-import org.joml.Vector3f;
-
-import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Random;
 
@@ -53,11 +50,6 @@ public class Settings {
     // visual settings
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 4;
-    public static Vector3f AMBIENT_LIGHT = colorToVector(Color.LIGHT_GRAY);
     public final static int MAX_POINT_LIGHTS = 10;
-
-    private static Vector3f colorToVector(Color color){
-        return new Vector3f(color.getRed(), color.getGreen(), color.getBlue());
-    }
 
 }

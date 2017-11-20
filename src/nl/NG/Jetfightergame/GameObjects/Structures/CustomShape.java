@@ -75,7 +75,7 @@ public class CustomShape {
      */
     public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
         addTriangle(A, B, C, normal);
-        addTriangle(B, C, D, normal);
+        addTriangle(A, D, C, normal);
     }
 
     /**
@@ -124,8 +124,9 @@ public class CustomShape {
     }
 
     private int addNormal(DirVector normal) {
+        if (normal == null) throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be null");
         normals.putIfAbsent(normal, normals.size());
-        return points.get(normal);
+        return normals.get(normal);
     }
 
     /**

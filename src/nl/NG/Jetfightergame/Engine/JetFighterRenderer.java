@@ -34,7 +34,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private Vector3f ambientLight;
 
     public JetFighterRenderer(GLFWWindow window, Camera camera, JetFighterGame engine) throws IOException, ShaderException {
-        super(Settings.TARGET_TPS);
+        super("Rendering loop", Settings.TARGET_FPS, false);
         this.window = window;
         this.activeCamera = camera;
         this.engine = engine;
@@ -42,11 +42,12 @@ public class JetFighterRenderer extends AbstractGameLoop {
         gouraudShader = initGouraudShader();
         phongShader = initPhongShader(); //TODO allow toggle
         currentShader = gouraudShader;
+        window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
 //        // use built-in Gouraud shading
 //        glShadeModel( GL_FLAT );
 
-        ambientLight = Settings.AMBIENT_LIGHT;
+        ambientLight = new Vector3f(0.5f, 0.5f, 0.5f);
         this.hud = new Hud(window);
     }
 
@@ -88,8 +89,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         phongShader.createUniform("blackAsAlpha");
         phongShader.createUniform("shadowed");
 
-        phongShader.createUniform("cameraPos");
-
         return phongShader;
     }
 
@@ -110,11 +109,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         currentShader.bind();
 
-        currentShader.setUniform("ambientLight", Settings.AMBIENT_LIGHT);
+        currentShader.setUniform("ambientLight", ambientLight);
 
         if (currentShader == phongShader) {
             currentShader.setUniform("specularPower", 1f);
-            currentShader.setUniform("cameraPos", activeCamera.getEye().toVector3f());
             currentShader.setUniform("blackAsAlpha", true);
             currentShader.setUniform("shadowed", true);
         }
@@ -135,11 +133,12 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         // update window
         window.update();
-    }
+        // update stop-condition
+        if (window.shouldClose()) {
+            stopLoop();
+            engine.exitGame();
+        }
 
-    @Override
-    protected boolean shouldStop() {
-        return window.shouldClose();
     }
 
     public void setView(GL2 gl, int windowWidth, int windowHeight) {
@@ -151,8 +150,4 @@ public class JetFighterRenderer extends AbstractGameLoop {
         gl.setCamera(activeCamera);
     }
 
-    @Override
-    protected String getName() {
-        return "Rendering";
-    }
 }

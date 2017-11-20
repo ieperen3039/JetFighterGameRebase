@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.shader.PointLight;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -26,11 +27,7 @@ public interface GL2 extends MatrixStack {
 
     void setLight(int lightNumber, PosVector pos, Color lightColor);
 
-    // TODO add transparency
-    void setMaterial(Material material);
-
-    // TODO decide: re-introduce color?
-    void clearColor();
+    void setMaterial(Material material, Vector4f color);
 
     void setCamera(Camera activeCamera);
 

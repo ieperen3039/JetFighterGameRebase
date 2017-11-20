@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.OpenSimplexNoise;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.function.Consumer;
 
@@ -68,7 +69,7 @@ public class SimplexCave implements Touchable {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(GROUND);
+        gl.setMaterial(GROUND, Toolbox.COLOR_WHITE);
     }
 
     @Override

@@ -48,8 +48,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
      */
     private JetFighterGame() throws Exception {
         super();
-        Frame splash = new Splash();
-        splash.setVisible(true);
+        Splash splash = new Splash();
+        splash.run();
 
         try {
             KeyTracker keyTracker = KeyTracker.getInstance();
@@ -76,6 +76,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
         // remove splash frame
         splash.dispose();
+        // reclaim all space used for initialisation
+        System.gc();
         startGame();
     }
 
@@ -98,6 +100,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     private void buildScene() {
         lights.add(new PointLight(new Vector3f(1f, 1f, 1f), new Vector3f(5f, 5f, 5f), 0.5f));
+//        objects.add(playerJet);
     }
 
     /**
@@ -129,8 +132,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         lights.forEach((pointLight) -> gl.setLight(pointLight, 1)); // TODO make this object-related, change Pointlight
         Toolbox.drawAxisFrame(gl);
 
-//        staticObjects.forEach(d -> d.draw(gl));
-//        objects.forEach(d -> d.draw(gl));
+        staticObjects.forEach(d -> d.draw(gl));
+        objects.forEach(d -> d.draw(gl));
     }
 
     public void drawParticles(GL2 gl){
@@ -143,8 +146,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     @Override
     public void cleanup() {
-        Toolbox.print("Stopping...");
-        super.cleanup();
     }
 
     public GameMode getCurrentGameMode() {
@@ -206,31 +207,31 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     /**
      * a splash image that can be shown and disposed.
      */
-    private class Splash extends Frame {
-        private Splash() {
+    private class Splash extends Frame implements Runnable {
+        public Splash() {
             // TODO better splash image
             final String path = "res/Pictures/SplashImage.png";
 
-            Frame splash = new Frame("Loading Jet Fighter");
+            setTitle("Loading Jet Fighter");
 
             try {
                 final BufferedImage splashImage = ImageIO.read(new File(path));
-                setImage(splash, splashImage);
+                setImage(this, splashImage);
             } catch (Exception e) {
                 System.err.println("Could not find splash image!");
                 e.printStackTrace();
-                splash.setSize(new Dimension(500, 300));
+                setSize(new Dimension(500, 300));
             }
 
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             Point centerPoint = ge.getCenterPoint();
 
-            int dx = centerPoint.x - splash.getWidth() / 2;
-            int dy = centerPoint.y - splash.getHeight() / 2;
+            int dx = centerPoint.x - getWidth() / 2;
+            int dy = centerPoint.y - getHeight() / 2;
 
-            splash.setLocation(dx, dy);
-            splash.setUndecorated(true);
-            splash.setBackground(Color.WHITE);
+            setLocation(dx, dy);
+            setUndecorated(true);
+            setBackground(Color.WHITE);
         }
 
         /**
@@ -246,6 +247,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 }
             });
             target.setSize(new Dimension(image.getWidth(), image.getHeight()));
+        }
+
+        @Override
+        public void run() {
+            setVisible(true);
         }
     }
 }

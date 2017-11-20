@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.GameObjects.Structures.CustomShape;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -48,7 +49,7 @@ public class TestLab implements Touchable {
 
     @Override
     public void draw(GL2 gl) {
-        gl.setMaterial(material);
+        gl.setMaterial(material, Toolbox.COLOR_WHITE);
         // skip a bunch of references
         gl.draw(world);
     }

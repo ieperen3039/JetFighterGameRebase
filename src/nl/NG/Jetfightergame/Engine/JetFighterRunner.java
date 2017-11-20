@@ -9,23 +9,13 @@ public class JetFighterRunner extends AbstractGameLoop {
     private final JetFighterGame game;
 
     public JetFighterRunner(JetFighterGame game) {
-        super(Settings.TARGET_TPS);
+        super("GameEngine loop", Settings.TARGET_TPS, true);
         this.game = game;
-    }
-
-    @Override
-    protected String getName() {
-        return "the Gameloop";
     }
 
     @Override
     protected void update(float deltaTime) {
         game.updateGameLoop(deltaTime);
-    }
-
-    @Override
-    protected boolean shouldStop() {
-        return game.isStopping();
     }
 
     @Override

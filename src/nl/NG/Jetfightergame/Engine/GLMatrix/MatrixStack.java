@@ -19,6 +19,7 @@ public interface MatrixStack {
      */
     default void pointFromTo(PosVector source, PosVector target) {
         if (target.equals(source)) return;
+
         DirVector parallelVector = source.to(target)
                 .normalized();
 

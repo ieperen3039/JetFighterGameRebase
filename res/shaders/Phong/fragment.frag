@@ -2,6 +2,7 @@
 
 in vec3 mvVertexNormal;
 in vec3 mvVertexPosition;
+in vec3 cameraPosition;
 
 out vec4 fragColor;
 
@@ -26,7 +27,6 @@ const int MAX_POINT_LIGHTS = 10;
 uniform float specularPower;
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform vec3 camera_pos;
 uniform int shadowed;
 uniform int blackAsAlpha;
 uniform vec3 ambientLight;
@@ -45,10 +45,10 @@ vec4 calcLightcolor(vec3 light_color, float light_intensity, vec3 position, vec3
     diffusecolor = diffuseC * vec4(light_color, 1.0) * light_intensity * diffuseFactor;
 
     // Specular Light
-    vec3 camera_direction = normalize(camera_pos - position);
+    vec3 cameraDirection = normalize(cameraPosition - position);
     vec3 from_light_dir = -to_light_dir;
     vec3 reflected_light = normalize(reflect(from_light_dir , normal));
-    float specularFactor = max( dot(camera_direction, reflected_light), 0.0);
+    float specularFactor = max( dot(cameraDirection, reflected_light), 0.0);
     specularFactor = pow(specularFactor, specularPower);
     speccolor = speculrC * light_intensity  * specularFactor * material.reflectance * vec4(light_color, 1.0);
 
@@ -77,13 +77,13 @@ void main()
             }
         }
 
-        fragColor = materialColor * vec4(ambientLight, 1) + diffuseSpecularComponent;
+        fragColor = materialColor * vec4(ambientLight, 1.0) + diffuseSpecularComponent;
     } else {
         if (blackAsAlpha == 1) {
             vec3 colorstart = materialColor.xyz * vec4(ambientLight, 1).xyz;
             fragColor = vec4(colorstart.x, colorstart.y, colorstart.z, 0.0);
         } else {
-            fragColor = materialColor * vec4(ambientLight, 1);
+            fragColor = materialColor * vec4(ambientLight, 1.0);
         }
     }
 }

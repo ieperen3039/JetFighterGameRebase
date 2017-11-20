@@ -11,6 +11,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.awt.*;
 import java.util.Stack;
@@ -58,21 +59,21 @@ public class ShaderUniformGL implements GL2 {
     }
 
     @Override
-    public void setMaterial(Material material){
-        currentShader.setUniform4f("material.ambient", material.diffuse);
-        currentShader.setUniform4f("material.diffuse", material.diffuse);
+    public void setMaterial(Material material, Vector4f color){
+        float[] materialColor = material.mixWith(color);
+        currentShader.setUniform4f("material.ambient", materialColor);
+        currentShader.setUniform4f("material.diffuse", materialColor);
         currentShader.setUniform4f("material.specular", material.specular);
         currentShader.setUniform("material.reflectance", material.shininess);
     }
 
     @Override
-    public void clearColor() {
-
+    public void rotate(double angle, float x, float y, float z) {
+        rotate(new AxisAngle4f((float) angle, x, y, z));
     }
 
-    @Override
-    public void rotate(double angle, float x, float y, float z) {
-        modelViewMatrix.rotate(new AxisAngle4f((float) angle, x, y, z));
+    public void rotate(AxisAngle4f rotation){
+        modelViewMatrix.rotate(rotation);
     }
 
     @Override

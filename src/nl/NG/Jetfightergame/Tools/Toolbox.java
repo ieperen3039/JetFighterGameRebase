@@ -11,9 +11,9 @@ import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.*;
 
 /**
@@ -22,7 +22,12 @@ import java.util.*;
  */
 public class Toolbox {
 
-    private static Cursor invisibleCursor;
+    public static final Vector4f COLOR_RED = new Vector4f(1, 0, 0, 1);
+    public static final Vector4f COLOR_GREEN = new Vector4f(0, 1, 0, 1);
+    public static final Vector4f COLOR_BLUE = new Vector4f(0, 0, 1, 1);
+    public static final Vector4f COLOR_WHITE = new Vector4f(1, 1, 1, 1);
+    public static final Vector4f COLOR_BLACK = new Vector4f(0, 0, 0, 1);
+
     /** prevents spamming the chat */
     private static Set<String> callerBlacklist = new HashSet<>();
 
@@ -35,10 +40,9 @@ public class Toolbox {
 
     /**
      * prints debug information with calling method (a debugging method)
+     * @param level 0 = this method, 1 = the calling method (yourself)
      */
     public static synchronized void printFrom(int level, Object... x) {
-        if (!Settings.DEBUG) return;
-
         String source = getCallingMethod(level);
         System.out.println(source + ": " + getValues(x));
     }
@@ -71,8 +75,11 @@ public class Toolbox {
      *              0 = the calling method (yourself)
      *              1 = the caller of the method this is called in
      * @return a string that completely describes the path to the file, the method and line number where this is called
+     * If DEBUG == false, return an empty string
      */
     public static String getCallingMethod(int level) {
+        if (!Settings.DEBUG) return "";
+
         final StackTraceElement caller = new Exception().getStackTrace()[level + 1];
         return caller.getClassName() + "." + caller.getMethodName() + "(line:" + caller.getLineNumber() + ")";
     }
@@ -89,19 +96,18 @@ public class Toolbox {
             callerBlacklist.add(source);
         }
 
-        gl.setMaterial(Material.ROUGH);
-
         gl.pushMatrix();
         {
+            gl.setMaterial(Material.PLASTIC, COLOR_BLUE);
             gl.draw(ShapeFromMesh.ARROW);
             gl.rotate(Math.toRadians(90), 0, 1, 0);
+            gl.setMaterial(Material.PLASTIC, COLOR_RED);
             gl.draw(ShapeFromMesh.ARROW);
-            gl.rotate(Math.toRadians(90), 0, 0, 1);
+            gl.rotate(Math.toRadians(90), 1, 0, 0);
+            gl.setMaterial(Material.PLASTIC, COLOR_GREEN);
             gl.draw(ShapeFromMesh.ARROW);
         }
         gl.popMatrix();
-
-        gl.clearColor();
     }
 
     /**
@@ -113,10 +119,11 @@ public class Toolbox {
      * @param launchDir the direction these new particles should move to
      * @param jitter a factor that shows randomness in direction (divergence from launchDir).
      *               A jitter of 1 results in angles up to 45 degrees / (1/4pi) rads
+     * @param deprecationTime
      * @return a set of particles that completely fills the plane, without overlap and in random directions
      */
-    public static Collection<AbstractParticle> splitIntoParticles(Plane targetPlane, PosVector worldPosition,
-                                                                  int splits, DirVector launchDir, float jitter) {
+    public static Collection<AbstractParticle> splitIntoParticles(
+            Plane targetPlane, PosVector worldPosition, int splits, DirVector launchDir, float jitter, int deprecationTime) {
 
         Collection<PosVector[]> triangles = new LinkedList<>();
         Iterator<PosVector> border = targetPlane.getVertices().iterator();
@@ -157,7 +164,7 @@ public class Toolbox {
         for (PosVector[] p : splittedTriangles){
             DirVector movement = launchDir.normalized().add(DirVector.random().scale(jitter));
             particles.add(TriangleParticle.worldspaceParticle(
-                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * TriangleParticle.RANDOM_TTL)
+                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime)
             );
         }
 
@@ -181,15 +188,6 @@ public class Toolbox {
         particles.add(new PosVector[]{AtoB, AtoC, BtoC});
 
         return particles;
-    }
-
-    public static Cursor getInvisibleCursor() {
-        if (invisibleCursor == null){
-            BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-            invisibleCursor = Toolkit.getDefaultToolkit().createCustomCursor(
-                    cursorImg, new Point(0, 0), "blank cursor");
-        }
-        return invisibleCursor;
     }
 
     public static Vector3f colorVector(Color c) {

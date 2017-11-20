@@ -20,8 +20,6 @@ public abstract class GLFWGameEngine {
     protected GLFWWindow window;
     protected Camera camera;
 
-    private boolean hudEnabled = true;
-
     public GLFWGameEngine() throws IOException {
         window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
@@ -42,30 +40,28 @@ public abstract class GLFWGameEngine {
         renderLoop.run();
 
         try {
-            // release block
-            gameLoop.unPause();
             gameLoopThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        Toolbox.print("Exiting engine! Bye ~");
-
+        this.cleanup();
         window.cleanup();
+
+        Toolbox.print("Game has stopped! Bye ~");
         // Finish execution
     }
 
     public void exitGame(){
-        Toolbox.print("Exiting game: starting cleanup");
+        Toolbox.print("Stopping game...");
         window.close();
+        gameLoop.stopLoop();
     }
 
     /**
      * Start closing and cleaning everything
      */
-    public void cleanup() {
-
-    }
+    public abstract void cleanup();
 
     /**
      * Get the {@link GLFWWindow} of the currently running instance.
@@ -74,10 +70,6 @@ public abstract class GLFWGameEngine {
      */
     public GLFWWindow getWindow() {
         return window;
-    }
-
-    public void toggleHud() {
-        hudEnabled = !hudEnabled;
     }
 
     public boolean isStopping() {

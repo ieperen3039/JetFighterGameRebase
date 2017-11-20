@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -205,7 +206,7 @@ public abstract class GameObject implements MovingObject {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(surfaceMaterial);
+        gl.setMaterial(surfaceMaterial, Toolbox.COLOR_WHITE);
     }
 
     public void addForce(DirVector force) {

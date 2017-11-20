@@ -1,53 +1,11 @@
 package nl.NG.Jetfightergame.Shaders;
 
+import org.joml.Vector4f;
+
 /**
  * Materials that can be used for the robots.
  */
 public enum Material {
-
-    /**
-     * Gold material properties.
-     */
-    GOLD(
-
-            new float[]{0.82f, 0.76f, 0, 1},
-            new float[]{0.95f, 0.92f, 0.5f, 1},
-            75
-
-    ),
-
-    /**
-     * Gray material that shines blueish
-     */
-    SILVER(
-
-            new float[]{0.75f, 0.75f, 0.75f, 1},
-            new float[]{0.90f, 0.90f, 1.0f, 1},
-            50
-
-    ),
-
-    /**
-     * Orange material properties.
-     */
-    PLASTIC(
-
-            new float[]{1, 0.71f, 0.14f, 1},
-            new float[]{1, 0.71f, 0.51f, 1},
-            2
-
-    ),
-
-    /**
-     * Rough, brown material
-     */
-    WOOD(
-
-            new float[]{0.5f, 0.27f, 0.14f, 1},
-            new float[]{0.02f, 0.04f, 0.06f, 1},
-            1
-
-    ),
 
     /**
      * standard material for non-metals
@@ -65,6 +23,42 @@ public enum Material {
             new float[]{1f, 1f, 1f, 1f},
             new float[]{0f, 0f, 0f, 1f},
             0
+    ),
+
+    /**
+     * Gold material properties.
+     */
+    GOLD(
+            new float[]{0.82f, 0.76f, 0, 1},
+            new float[]{0.95f, 0.92f, 0.5f, 1},
+            75
+    ),
+
+    /**
+     * Gray material that shines blueish
+     */
+    SILVER(
+            new float[]{0.75f, 0.75f, 0.75f, 1},
+            new float[]{0.90f, 0.90f, 1.0f, 1},
+            50
+    ),
+
+    /**
+     * regular material properties.
+     */
+    PLASTIC(
+            new float[]{1f, 1f, 1f, 1},
+            new float[]{0.8f, 0.8f, 0.8f, 1},
+            2
+    ),
+
+    /**
+     * Rough, brown material
+     */
+    WOOD(
+            new float[]{0.5f, 0.27f, 0.14f, 1},
+            new float[]{0.02f, 0.04f, 0.06f, 1},
+            1
     );
 
     /**
@@ -86,4 +80,11 @@ public enum Material {
         this.shininess = shininess;
     }
 
+    public float[] mixWith(Vector4f color){
+        float[] result = new float[4];
+        for (int i = 0; i < 4; i++) {
+            result[i] = diffuse[i] * color.get(i);
+        }
+        return result;
+    }
 }

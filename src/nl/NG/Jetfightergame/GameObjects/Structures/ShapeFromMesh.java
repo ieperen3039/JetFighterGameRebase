@@ -25,10 +25,10 @@ import java.util.stream.Stream;
 public class ShapeFromMesh implements Shape {
 
 
-    public static final ShapeFromMesh BASIC = new ShapeFromMesh("res/models/ConceptBlueprint.obj", PosVector.O, new int[]{3, 1, 2}, 1f);
+    public static final ShapeFromMesh BASIC = new ShapeFromMesh("res/models/ConceptBlueprint.obj");
 
     /** an arrow along the Z-axis, 1 long */
-    public static final ShapeFromMesh ARROW = new ShapeFromMesh("res/testobjects/arrow.obj", PosVector.Z, new int[]{3, 1, 2}, 1f);//TODO make
+    public static final ShapeFromMesh ARROW = new ShapeFromMesh("res/models/arrow.obj");
 
     /**
      * every point of this mesh exactly once
@@ -43,9 +43,17 @@ public class ShapeFromMesh implements Shape {
 
     /**
      * @param fileName path to the .obj file
+     *
+     */
+    private ShapeFromMesh(String fileName) {
+        this(fileName, PosVector.O, new int[]{3, 1, 2}, 1f);
+    }
+
+    /**
+     * @param fileName path to the .obj file
      * @param offSet   offset of the gravity middle in this mesh as {@code GM * -1}
      * @param XYZ      determines the definition of the axes. maps {forward, right, up} for X=1, Y=2, Z=3.
-     * @param scale    the scale applied to this object
+     * @param scale    the scale standard applied to this object, to let it correspond to its contract
      */
     private ShapeFromMesh(String fileName, PosVector offSet, int[] XYZ, float scale) {
         this(new MeshParameters(fileName, offSet, XYZ, scale), fileName);
