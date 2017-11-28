@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Camera.FollowingCamera;
-import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.*;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.TestJet;
@@ -10,11 +8,10 @@ import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
 import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
-import nl.NG.Jetfightergame.Shaders.shader.PointLight;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import org.joml.Vector3f;
+import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -33,20 +30,18 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
 
-    private GameMode currentGameMode;
-
     private final Controller playerInput = new PlayerController();
-    private final AbstractJet playerJet = new TestJet(gameLoop, playerInput); //PlayerJet(gameLoop, playerInput);
+    protected AbstractJet playerJet = new TestJet(gameLoop, playerInput);
 
-    private Collection<GameObject> objects = new LinkedList<>();
-    private Collection<Touchable> staticObjects = new LinkedList<>();
-    private Collection<AbstractParticle> particles = new LinkedList<>();
-    private Collection<PointLight> lights = new LinkedList<>();
+    protected Collection<GameObject> objects = new LinkedList<>();
+    protected Collection<Touchable> staticObjects = new LinkedList<>();
+    protected Collection<AbstractParticle> particles = new LinkedList<>();
+    protected Collection<Pair<PosVector, Color4f>> lights = new LinkedList<>();
 
     /**
      * openWindow the game by creating a frame based on this engine
      */
-    private JetFighterGame() throws Exception {
+    public JetFighterGame() throws Exception {
         super();
         Splash splash = new Splash();
         splash.run();
@@ -67,6 +62,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             // set currentGameMode and engine.isPaused
             setMenuMode();
 
+            // playerJet = new PlayerJet(gameLoop, playerInput);
             buildScene();
 
         } catch (Exception e) { // prevent game from freezing upon crashing
@@ -78,59 +74,64 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.dispose();
         // reclaim all space used for initialisation
         System.gc();
-        startGame();
     }
 
     public static void main(String args[]) throws Exception {
-        new JetFighterGame();
+        new JetFighterGame().startGame();
     }
 
     public void updateGameLoop(float deltaTime) {
         // update positions with respect to collisions
         objects.forEach((gameObject) -> gameObject.preUpdate(deltaTime));
-        if (Settings.UNIT_COLLISION || !Settings.DEBUG) {
-            Collection<Pair<Touchable, Touchable>> candidates = getIntersectingPairs();
-            candidates.parallelStream().forEach(p -> {
-                p.left.checkCollisionWith(p.right);
-                p.right.checkCollisionWith(p.left);
-            });
+        if (Settings.UNIT_COLLISION) {
+            getIntersectingPairs().parallelStream()
+                    .forEach(JetFighterGame::checkPair);
         }
         objects.forEach(MovingObject::postUpdate);
     }
 
-    private void buildScene() {
-        lights.add(new PointLight(new Vector3f(1f, 1f, 1f), new Vector3f(5f, 5f, 5f), 0.5f));
-//        objects.add(playerJet);
+    /**
+     * let each object of the pair check for collisions, but does not make any changes just yet.
+     * these only take effect after calling {@link MovingObject#postUpdate()}
+     * @param p a pair of objects that may have collided.
+     */
+    private static void checkPair(Pair<Touchable, MovingObject> p) {
+        Touchable either = p.left;
+        MovingObject moving = p.right;
+
+        moving.checkCollisionWith(either);
+        if (either instanceof MovingObject) ((MovingObject) either).checkCollisionWith(moving);
     }
 
-    /**
+    protected void buildScene() {
+    }
+
+    /** TODO efficient implementation
      * generate a list (possibly empty) of all objects that may have collided.
      * this may include (parts of) the ground, but not an object with itself.
      * one pair should not occur the other way around
      *
      * @return a collection of pairs of objects that are close to each other
      */
-    private Collection<Pair<Touchable, Touchable>> getIntersectingPairs() {
-        final Collection<Pair<Touchable, Touchable>> result = new LinkedList<>();
+    private Collection<Pair<Touchable, MovingObject>> getIntersectingPairs() {
+        final Collection<Pair<Touchable, MovingObject>> result = new LinkedList<>();
 
         // Naive solution: return all n^2 options
-        Collection<Touchable> touchables = new LinkedList<>();
-        touchables.addAll(objects);
-        touchables.addAll(staticObjects);
-        touchables.forEach(a -> touchables.forEach(b -> {
-            if (a != b) {
-                final Pair<Touchable, Touchable> p = new Pair<>(a, b);
-                result.add(p);
-                Toolbox.printSpamless(p);
-            }
-        }));
+        // check all moving objects against (1: all other moving objects, 2: all static objects)
+        objects.parallelStream().forEach(obj -> {
+            objects.stream()
+                    .filter(o -> obj != o) // only other objects
+                    .forEach(other -> result.add(new Pair<>(other, obj)));
+            staticObjects
+                    .forEach(other -> result.add(new Pair<>(other, obj)));
+        });
+
         Toolbox.printSpamless("created " + result.size() + " combinations");
         return result;
     }
 
     public void drawObjects(GL2 gl) {
-        lights.forEach((pointLight) -> gl.setLight(pointLight, 1)); // TODO make this object-related, change Pointlight
-        Toolbox.drawAxisFrame(gl);
+        lights.forEach((pointLight) -> gl.setLight(pointLight.left, pointLight.right));
 
         staticObjects.forEach(d -> d.draw(gl));
         objects.forEach(d -> d.draw(gl));
@@ -148,29 +149,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     public void cleanup() {
     }
 
-    public GameMode getCurrentGameMode() {
-        return currentGameMode;
-    }
-
-    public void setMenuMode() {
-        // TODO set cursor visibility
-        this.currentGameMode = GameMode.MENU_MODE;
-        window.freePointer();
-        camera = new PointCenteredCamera(playerJet.getPosition(), DirVector.Z, 1, 1);
-        gameLoop.pause();
-    }
-
-    public void setPlayMode() {
-        // TODO set cursor visibility
-        this.currentGameMode = GameMode.PLAY_MODE;
-        window.capturePointer();
-        camera = new FollowingCamera(camera.getEye(), getPlayerJet());
-        gameLoop.unPause();
-    }
-
     /**
      * basic keybindings.
-     * Should be removed in later stage
+     * Should be moved to testInstance in later stage
      * @param key
      */
     @Override
@@ -192,16 +173,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         }
     }
 
-    public boolean isPaused() {
-        return currentGameMode == GameMode.MENU_MODE;
-    }
-
-    public AbstractJet getPlayerJet() {
+    @Override
+    public AbstractJet getPlayer() {
         return playerJet;
-    }
-
-    public enum GameMode {
-        PLAY_MODE, MENU_MODE
     }
 
     /**

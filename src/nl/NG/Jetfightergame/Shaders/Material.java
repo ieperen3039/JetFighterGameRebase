@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Shaders;
 
-import org.joml.Vector4f;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 
 /**
  * Materials that can be used for the robots.
@@ -12,7 +12,7 @@ public enum Material {
      */
     ROUGH(
             new float[]{0.9f, 0.9f, 0.9f, 1},
-            new float[]{0.1f, 0.1f, 0.1f, 1},
+            new float[]{0.1f, 0.1f, 0.1f, 0.5f},
             1f
     ),
 
@@ -80,11 +80,12 @@ public enum Material {
         this.shininess = shininess;
     }
 
-    public float[] mixWith(Vector4f color){
+    public float[] mixWith(Color4f color){
         float[] result = new float[4];
-        for (int i = 0; i < 4; i++) {
-            result[i] = diffuse[i] * color.get(i);
-        }
+        result[0] = diffuse[0] * color.red;
+        result[1] = diffuse[1] * color.green;
+        result[2] = diffuse[2] * color.blue;
+        result[3] = diffuse[3] * color.alpha;
         return result;
     }
 }

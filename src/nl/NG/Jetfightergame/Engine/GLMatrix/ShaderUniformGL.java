@@ -4,16 +4,13 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
-import nl.NG.Jetfightergame.Shaders.shader.PointLight;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.AxisAngle4f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
-import java.awt.*;
 import java.util.Stack;
 
 /**
@@ -28,6 +25,7 @@ public class ShaderUniformGL implements GL2 {
     private Matrix4f projectionMatrix = new Matrix4f();
 
     private ShaderProgram currentShader;
+    private int nextLightIndex = 0;
 
     public ShaderUniformGL(ShaderProgram shader) {
         currentShader = shader;
@@ -39,6 +37,8 @@ public class ShaderUniformGL implements GL2 {
         currentShader.setUniform("projectionMatrix", projectionMatrix);
         currentShader.setUniform("modelViewMatrix", modelViewMatrix);
         object.render(new Painter());
+        projectionMatrix.assumePerspective();
+        modelViewMatrix.assumeAffine();
     }
 
     @Override
@@ -48,18 +48,25 @@ public class ShaderUniformGL implements GL2 {
     }
 
     @Override
-    public void setLight(int lightNumber, DirVector dir, Color lightColor){
-        this.setLight(lightNumber, dir.toPosVector(), lightColor);
+    public void setLight(DirVector dir, Color4f lightColor){
+        this.setLight(dir.toPosVector(), lightColor);
     }
 
     @Override
-    public void setLight(int lightNumber, PosVector pos, Color lightColor){
-        PointLight lamp = new PointLight(Toolbox.colorVector(lightColor), pos.toVector3f(), 1f);
-        setLight(lamp, lightNumber);
+    public void setLight(PosVector pos, Color4f lightColor){
+        Vector3f mvPosition = pos.toVector3f();
+        mvPosition.mulPosition(modelViewMatrix);
+        currentShader.setPointLight(nextLightIndex++, mvPosition, lightColor);
+
+//        setMaterial(Material.PLASTIC, lightColor);
+//        pushMatrix();
+//        scale(0.2f);
+//        draw(GeneralShapes.CUBE);
+//        popMatrix();
     }
 
     @Override
-    public void setMaterial(Material material, Vector4f color){
+    public void setMaterial(Material material, Color4f color){
         float[] materialColor = material.mixWith(color);
         currentShader.setUniform4f("material.ambient", materialColor);
         currentShader.setUniform4f("material.diffuse", materialColor);
@@ -125,8 +132,4 @@ public class ShaderUniformGL implements GL2 {
         );
     }
 
-    @Override
-    public void setLight(PointLight lamp, int lightNumber) {
-        currentShader.setPointLight(lamp, lightNumber);
-    }
 }

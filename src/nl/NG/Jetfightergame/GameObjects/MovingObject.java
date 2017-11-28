@@ -1,8 +1,12 @@
 package nl.NG.Jetfightergame.GameObjects;
 
+import nl.NG.Jetfightergame.Vectors.DirVector;
+import nl.NG.Jetfightergame.Vectors.PosVector;
+
 /**
  * {@author Geert van Ieperen
  *         created on 7-11-2017.
+ * an object that moves, and may be influenced by other objects
  */
 public interface MovingObject extends Touchable {
 
@@ -24,5 +28,21 @@ public interface MovingObject extends Touchable {
      *
      */
     void postUpdate();
+
+    /**
+     * checks the movement of the hitpoints of this object against the planes of 'other'.
+     * @param other an object that may hit this object
+     */
+    void checkCollisionWith(Touchable other);
+
+    /**
+     * @return position of the center of mass of this object
+     */
+    PosVector getPosition();
+
+    /**
+     * @return movement of the center of mass of this object in world-space
+     */
+    DirVector getMovement();
 }
 

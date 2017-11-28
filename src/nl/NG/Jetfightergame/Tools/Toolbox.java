@@ -4,16 +4,16 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.GameObjects.Particles.TriangleParticle;
+import nl.NG.Jetfightergame.GameObjects.Structures.GeneralShapes;
 import nl.NG.Jetfightergame.GameObjects.Structures.ShapeFromMesh;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Plane;
 import nl.NG.Jetfightergame.GameObjects.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import java.awt.*;
 import java.util.*;
 
 /**
@@ -98,14 +98,17 @@ public class Toolbox {
 
         gl.pushMatrix();
         {
-            gl.setMaterial(Material.PLASTIC, COLOR_BLUE);
+            gl.setMaterial(Material.PLASTIC, Color4f.BLUE);
             gl.draw(ShapeFromMesh.ARROW);
             gl.rotate(Math.toRadians(90), 0, 1, 0);
-            gl.setMaterial(Material.PLASTIC, COLOR_RED);
+            gl.setMaterial(Material.PLASTIC, Color4f.RED);
             gl.draw(ShapeFromMesh.ARROW);
-            gl.rotate(Math.toRadians(90), 1, 0, 0);
-            gl.setMaterial(Material.PLASTIC, COLOR_GREEN);
+            gl.rotate(Math.toRadians(-90), 1, 0, 0);
+            gl.setMaterial(Material.PLASTIC, Color4f.GREEN);
             gl.draw(ShapeFromMesh.ARROW);
+            gl.scale(0.3f);
+            gl.setMaterial(Material.SILVER, Color4f.WHITE);
+            gl.draw(GeneralShapes.CUBE);
         }
         gl.popMatrix();
     }
@@ -190,7 +193,4 @@ public class Toolbox {
         return particles;
     }
 
-    public static Vector3f colorVector(Color c) {
-        return new Vector3f(c.getRed(), c.getGreen(), c.getBlue());
-    }
 }

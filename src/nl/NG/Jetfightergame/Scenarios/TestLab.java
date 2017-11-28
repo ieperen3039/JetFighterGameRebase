@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.GameObjects.Structures.CustomShape;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -17,25 +16,27 @@ import java.util.function.Consumer;
  *         created on 8-11-2017.
  */
 public class TestLab implements Touchable {
-    public static final int SIZE = 100;
-    private final Shape world = createBox();
+    public final int labSize;
+    private final Shape world;
     private final Material material = Material.PLASTIC;
 
-    public TestLab() {
+    public TestLab(int labSize) {
         super();
+        this.labSize = labSize;
+        world = createBox(labSize);
     }
 
-    private static Shape createBox(){
+    private static Shape createBox(int size){
         CustomShape frame = new CustomShape();
 
-        PosVector PPP = new PosVector(SIZE, SIZE, SIZE);
-        PosVector PPN = new PosVector(SIZE, SIZE, -SIZE);
-        PosVector PNP = new PosVector(SIZE, -SIZE, SIZE);
-        PosVector PNN = new PosVector(SIZE, -SIZE, -SIZE);
-        PosVector NPP = new PosVector(-SIZE, SIZE, SIZE);
-        PosVector NPN = new PosVector(-SIZE, SIZE, -SIZE);
-        PosVector NNP = new PosVector(-SIZE, -SIZE, SIZE);
-        PosVector NNN = new PosVector(-SIZE, -SIZE, -SIZE);
+        PosVector PPP = new PosVector(size, size, size);
+        PosVector PPN = new PosVector(size, size, -size);
+        PosVector PNP = new PosVector(size, -size, size);
+        PosVector PNN = new PosVector(size, -size, -size);
+        PosVector NPP = new PosVector(-size, size, size);
+        PosVector NPN = new PosVector(-size, size, -size);
+        PosVector NNP = new PosVector(-size, -size, size);
+        PosVector NNN = new PosVector(-size, -size, -size);
 
         frame.addQuad(PPP, PPN, PNN, PNP, new DirVector(-1, 0, 0));
         frame.addQuad(PPN, NPN, NNN, PNN, new DirVector(0, 0, 1));
@@ -49,7 +50,7 @@ public class TestLab implements Touchable {
 
     @Override
     public void draw(GL2 gl) {
-        gl.setMaterial(material, Toolbox.COLOR_WHITE);
+        gl.setMaterial(material);
         // skip a bunch of references
         gl.draw(world);
     }
@@ -71,13 +72,8 @@ public class TestLab implements Touchable {
     }
 
     @Override
-    public void checkCollisionWith(Touchable other) {
-        // Yup, gay.
-    }
-
-    @Override
     public String toString() {
         return "Testlab {" +
-                "size: " + SIZE + "}";
+                "size: " + labSize + "}";
     }
 }

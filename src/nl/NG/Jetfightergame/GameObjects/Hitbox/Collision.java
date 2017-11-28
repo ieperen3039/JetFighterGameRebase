@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
  * @author Geert van Ieperen
  *         created on 7-11-2017.
  */
-public class Collision implements Comparable {
+public class Collision implements Comparable<Collision> {
     public final double timeToImpact;
     public final DirVector normal;
 
@@ -24,12 +24,7 @@ public class Collision implements Comparable {
     }
 
     @Override
-    public int compareTo(Object o) {
-        if (o instanceof Collision) {
-            return Double.compare(((Collision) o).timeToImpact, timeToImpact);
-        } else if (o == null){
-            return 0;
-        }
-        throw new ClassCastException("compared Collision with non-Collision object");
+    public int compareTo(Collision c) {
+        return c == null ? 0 : Double.compare(c.timeToImpact, timeToImpact);
     }
 }

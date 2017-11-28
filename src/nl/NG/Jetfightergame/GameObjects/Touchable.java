@@ -33,12 +33,6 @@ public interface Touchable extends Drawable {
     void toLocalSpace(MatrixStack ms, Runnable action, boolean takeStable);
 
     /**
-     * checks the collision with one specific object, and update this object accordingly
-     * @param other an object that may hit this object
-     */
-    void checkCollisionWith(Touchable other);
-
-    /**
      * drawObjects the object using the native create function and the shape.drawObjects functions
      */
     @Override

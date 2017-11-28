@@ -1,9 +1,12 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.Camera.FollowingCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.InputDelegate;
+import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 
 import java.io.IOException;
 
@@ -19,7 +22,12 @@ public abstract class GLFWGameEngine {
 
     protected GLFWWindow window;
     protected Camera camera;
+    protected GameMode currentGameMode;
 
+    /**
+     * Classes that extend this engine should implement their own gameloop and rendering loop
+     * @throws IOException
+     */
     public GLFWGameEngine() throws IOException {
         window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
@@ -31,16 +39,18 @@ public abstract class GLFWGameEngine {
      * Rendering must happen in the main thread, so we do
      */
     public void startGame(){
-        Thread gameLoopThread = new Thread(gameLoop);
-
         window.open();
 
-        gameLoopThread.start();
-
-        renderLoop.run();
+        gameLoop.runThread();
 
         try {
-            gameLoopThread.join();
+            renderLoop.run();
+        } catch (Exception ex){
+            renderLoop.cleanup();
+        }
+
+        try {
+            gameLoop.waitForExit();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -52,6 +62,7 @@ public abstract class GLFWGameEngine {
         // Finish execution
     }
 
+    // TODO analyze callsites of exit, centralize shutting down
     public void exitGame(){
         Toolbox.print("Stopping game...");
         window.close();
@@ -74,5 +85,35 @@ public abstract class GLFWGameEngine {
 
     public boolean isStopping() {
         return window.shouldClose();
+    }
+
+    public GameMode getCurrentGameMode() {
+        return currentGameMode;
+    }
+
+    public void setMenuMode() {
+        // TODO set cursor visibility
+        this.currentGameMode = GameMode.MENU_MODE;
+        window.freePointer();
+        camera = new PointCenteredCamera(getPlayer().getPosition(), DirVector.Z, 1, 1);
+        gameLoop.pause();
+    }
+
+    public void setPlayMode() {
+        // TODO set cursor visibility
+        this.currentGameMode = GameMode.PLAY_MODE;
+        window.capturePointer();
+        camera = new FollowingCamera(camera.getEye(), getPlayer());
+        gameLoop.unPause();
+    }
+
+    public boolean isPaused() {
+        return getCurrentGameMode() == GameMode.MENU_MODE;
+    }
+
+    public abstract AbstractJet getPlayer();
+
+    public enum GameMode {
+        PLAY_MODE, MENU_MODE
     }
 }

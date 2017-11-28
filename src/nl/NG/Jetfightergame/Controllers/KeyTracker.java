@@ -43,6 +43,7 @@ public class KeyTracker {
 
     public void keyPressed(KeyEvent e) {
         final int keyCode = e.getKeyCode();
+//        Toolbox.print("pressed key", keyCode);
         registeredKeys.replace(keyCode, true);
         eventListeners.forEach(l -> l.keyPressed(keyCode));
     }
@@ -57,7 +58,8 @@ public class KeyTracker {
     }
 
     /**
-     * @param key keycode of the key of which the button should be get
+     * @param key keycode of the key of which the button should be get.
+     *            The correct code depends on with which code {@link #keyPressed(KeyEvent)} is called
      * @return  true    if the key is pressed
      *          false   if the key is not pressed
      *          null    if the key is not registered by {@link #addKey(int)}
@@ -67,7 +69,6 @@ public class KeyTracker {
     }
 
     public static class KeyEvent {
-
 
         private final int keyCode;
 

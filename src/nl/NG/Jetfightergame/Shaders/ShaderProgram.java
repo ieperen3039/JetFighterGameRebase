@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Shaders;
 
-import nl.NG.Jetfightergame.Shaders.shader.PointLight;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -84,13 +84,12 @@ public class ShaderProgram {
     /**
      * Create an uniform for a pointslight array.
      *
-     * @param uniformName The name of the uniform.
      * @param size The size of the array.
      * @throws ShaderException If an error occurs getting the memory location.
      */
-    public void createPointLightsUniform(String uniformName, int size) throws ShaderException {
+    public void createPointLightsUniform(int size) throws ShaderException {
         for (int i = 0; i < size; i++) {
-            createPointLightUniform(uniformName + "[" + i + "]");
+            createPointLightUniform("pointLights" + "[" + i + "]");
         }
     }
 
@@ -102,7 +101,7 @@ public class ShaderProgram {
      */
     public void createPointLightUniform(String uniformName) throws ShaderException {
         createUniform(uniformName + ".color");
-        createUniform(uniformName + ".position");
+        createUniform(uniformName + ".mvPosition");
         createUniform(uniformName + ".intensity");
     }
 
@@ -192,20 +191,25 @@ public class ShaderProgram {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
-    public void setPointLight(PointLight pointlight, int i) {
-        setUniform("pointLights[" + i + "]", pointlight);
+    public void setPointLight(int lightNumber, Vector3f mvPosition, Color4f color) {
+        setUniform("pointLights[" + lightNumber + "]", mvPosition, color);
     }
 
     /**
      * Set the value of a certain PointLight shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param pointLight The new value of the uniform.
+     * @param mvPosition position in modelViewSpace
+     * @param color the light color with its intensity as alpha value
      */
-    public void setUniform(String uniformName, PointLight pointLight) {
-        setUniform(uniformName + ".color", pointLight.getColor() );
-        setUniform(uniformName + ".position", pointLight.getPosition());
-        setUniform(uniformName + ".intensity", pointLight.getIntensity());
+    public void setUniform(String uniformName, Vector3f mvPosition, Color4f color) {
+        setUniform(uniformName + ".color", color.toVector3f());
+        setUniform(uniformName + ".mvPosition", mvPosition);
+        setUniform(uniformName + ".intensity", color.alpha);
+    }
+
+    private void setUniform(String uniformName, Color4f color) {
+        glUniform4f(uniforms.get(uniformName), color.red, color.green, color.blue, color.alpha);
     }
 
     /**

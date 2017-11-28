@@ -27,13 +27,21 @@ public class Extreme<T extends Comparable<T>> {
         this.max = getMax;
     }
 
-    public boolean update(T newItem) {
-        int larger = max ? 1 : -1;
-        if (extremest == null || (newItem.compareTo(extremest) == larger)){
-            extremest = newItem;
-            return true;
+    /**
+     * compares the current value with the next, updating the current iff
+     * (the current is null or the comparator returns that the new item is strictly extremer than the current)
+     * @param newItem a new value, possibly null
+     * @return true if the current value was updated, false otherwise
+     */
+    public boolean check(T newItem) {
+        if (extremest != null) {
+            int comparision = newItem.compareTo(extremest);
+            if (comparision == 0 || (comparision < 0) == max) {
+                return false;
+            }
         }
-        return false;
+        extremest = newItem;
+        return true;
     }
 
     public T get() {
@@ -41,7 +49,7 @@ public class Extreme<T extends Comparable<T>> {
     }
 
     public void updateAndPrint(String name, T newItem, String unit) {
-        if (update(newItem)) Toolbox.printFrom(2, name + ": " + newItem + " " + unit);
+        if (check(newItem)) Toolbox.printFrom(2, name + ": " + newItem + " " + unit);
     }
 
     public void reset(){

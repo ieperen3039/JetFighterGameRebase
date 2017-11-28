@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.OpenSimplexNoise;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 
 import java.util.function.Consumer;
 
@@ -62,14 +62,17 @@ public class SimplexCave implements Touchable {
         action.run();
     }
 
-    @Override
+    /**
+         * checks the movement of the hitpoints of this object agains the planes of 'other'.
+         * @param other an object that may hit this object
+         */
     public void checkCollisionWith(Touchable other) {
 
     }
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(GROUND, Toolbox.COLOR_WHITE);
+        gl.setMaterial(GROUND, Color4f.GREY);
     }
 
     @Override

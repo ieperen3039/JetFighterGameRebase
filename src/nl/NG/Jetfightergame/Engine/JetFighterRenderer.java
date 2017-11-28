@@ -65,7 +65,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         gouraudShader.createMaterialUniform("material");
         // Create the lighting uniforms
         gouraudShader.createUniform("ambientLight");
-        gouraudShader.createPointLightsUniform("pointLights", MAX_POINT_LIGHTS);
+        gouraudShader.createPointLightsUniform(MAX_POINT_LIGHTS);
         return gouraudShader;
     }
 
@@ -83,7 +83,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // Create the lighting uniforms
         phongShader.createUniform("specularPower");
         phongShader.createUniform("ambientLight");
-        phongShader.createPointLightsUniform("pointLights", MAX_POINT_LIGHTS);
+        phongShader.createPointLightsUniform(MAX_POINT_LIGHTS);
 
         // Create uniform for special lighting conditions for background elements
         phongShader.createUniform("blackAsAlpha");
@@ -104,8 +104,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         int windowWidth = window.getWidth();
         int windowHeight = window.getHeight();
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, windowWidth, windowHeight);
+        GL2 gl = new ShaderUniformGL(currentShader);
+        setView(gl, windowWidth, windowHeight);
 
         currentShader.bind();
 
@@ -119,13 +119,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         if (!engine.isPaused()) engine.updateParticles(deltaTime);
 
-        GL2 gl = new ShaderUniformGL(currentShader);
-        setView(gl, windowWidth, windowHeight);
 
-        //first drawObjects non transparent meshes
+        // first draw the non-transparent objects
         engine.drawObjects(gl);
         engine.drawParticles(gl);
-        //overlay with transparent meshes
+        // overlay with transparent objects
 
         currentShader.unbind();
 
@@ -143,9 +141,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
     public void setView(GL2 gl, int windowWidth, int windowHeight) {
 
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, windowWidth, windowHeight);
+
         // Set the perspective.
         gl.setFustrum(windowWidth , windowHeight);
-
         // Update the view
         gl.setCamera(activeCamera);
     }

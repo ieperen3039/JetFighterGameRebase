@@ -7,7 +7,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -42,7 +42,7 @@ public abstract class GameObject implements MovingObject {
     /** rotationspeed in rad/s */
     protected float rotationSpeed;
     /** collision of this gametick, null if it doesn't hit */
-    protected Collision nextCrash;
+    protected Extreme<Collision> nextCrash;
     /** cached positions of the hitpoints*/
     private Collection<TrackedVector<PosVector>> hitPoints = null;
     /** worldspace / localspace */
@@ -75,7 +75,7 @@ public abstract class GameObject implements MovingObject {
     public void preUpdate(float deltaTime) {
         applyPhisics(deltaTime);
         // 1st law of Newton
-        nextCrash = new Collision();
+        nextCrash = new Extreme<>(false);
         // collect extrapolated variables
         extraPosition = position.current().add(movement);
         extraRotation = rotation.current() + (rotationSpeed * deltaTime);
@@ -92,24 +92,6 @@ public abstract class GameObject implements MovingObject {
     @Override
     public void postUpdate() {
         hitPoints = null;
-    }
-
-    /**
-     * checks the collision with one specific object
-     * @param other an object that may hit this object
-     *              @return the countering impulse, or null if it didn't hit
-     */
-    private Collision checkCollision(Touchable other){
-
-        return getHitpointMovement().stream()
-                // see which points collide with the world
-                .map(point -> getCollisionEffect(point, other))
-                // exclude points that didn't hit
-                .filter(Objects::nonNull)
-                // select first point hit
-                .min(Collision::compareTo)
-                // return the final rotation
-                .orElse(null);
     }
 
     /**
@@ -152,10 +134,17 @@ public abstract class GameObject implements MovingObject {
 
     @Override
     public void checkCollisionWith(Touchable other){
-        Collision newCollision = checkCollision(other);
-        if (newCollision != null && newCollision.compareTo(nextCrash) < 0) {
-            nextCrash = newCollision;
-        }
+        Collision newCollision = getHitpointMovement().stream()
+                // see which points collide with the world
+                .map(point -> getCollisionEffect(point, other))
+                // exclude points that didn't hit
+                .filter(Objects::nonNull)
+                // select first point hit
+                .min(Collision::compareTo)
+                // return the final rotation
+                .orElse(null);
+
+        nextCrash.check(newCollision);
     }
 
     /**
@@ -206,17 +195,19 @@ public abstract class GameObject implements MovingObject {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(surfaceMaterial, Toolbox.COLOR_WHITE);
+        gl.setMaterial(surfaceMaterial);
     }
 
     public void addForce(DirVector force) {
         netForce = netForce.add(force);
     }
 
+    @Override
     public PosVector getPosition() {
         return position.current();
     }
 
+    @Override
     public DirVector getMovement() {
         return movement;
     }

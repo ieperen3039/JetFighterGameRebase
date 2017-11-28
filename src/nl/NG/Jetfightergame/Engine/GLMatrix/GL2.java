@@ -2,13 +2,10 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Shaders.Material;
-import nl.NG.Jetfightergame.Shaders.shader.PointLight;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import org.joml.Vector4f;
 import org.lwjgl.opengl.GL11;
-
-import java.awt.*;
 
 /**
  * @author Geert van Ieperen
@@ -23,15 +20,17 @@ public interface GL2 extends MatrixStack {
 
     void setFustrum(int width, int height);
 
-    void setLight(int lightNumber, DirVector dir, Color lightColor);
+    void setLight(DirVector dir, Color4f lightColor);
 
-    void setLight(int lightNumber, PosVector pos, Color lightColor);
+    void setLight(PosVector pos, Color4f lightColor);
 
-    void setMaterial(Material material, Vector4f color);
+    void setMaterial(Material material, Color4f color);
+
+    default void setMaterial(Material material){
+        setMaterial(material, Color4f.WHITE);
+    }
 
     void setCamera(Camera activeCamera);
-
-    void setLight(PointLight pointLight, int lightNumber);
 
     /**
      * Objects should call GPU calls only in their render method. this render method may only be called by a GL2 object,

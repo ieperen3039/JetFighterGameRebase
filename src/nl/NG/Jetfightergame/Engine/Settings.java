@@ -21,7 +21,6 @@ public class Settings {
     // final music settings
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
-    public static final float SHADER_SPECULAR_POWER = 2f;
 
     // engine settings
     public static int TARGET_FPS = 60;
@@ -32,6 +31,7 @@ public class Settings {
     public static int THROTTLE_DOWN = KeyEvent.VK_S;
     public static int YAW_UP = KeyEvent.VK_D;
     public static int YAW_DOWN = KeyEvent.VK_A;
+    // these modifiers are also use to inverse direction
     public static float PITCH_MODIFIER = 1f;
     public static float ROLL_MODIFIER = 1f;
 

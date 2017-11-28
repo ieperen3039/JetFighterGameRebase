@@ -15,8 +15,8 @@ struct Material
 struct PointLight
 {
     vec3 color;
-    // light position in modelview coordinates.
-    vec3 mvPosition;
+    // light position in view coördinates.
+    vec3 position;
     float intensity;
 };
 
@@ -35,7 +35,7 @@ vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 
     vec3 result = vec3(0.0, 0.0, 0.0);
 
-	vec3 lightDirection = normalize(light.mvPosition.xyz - P); //vector towards light source
+	vec3 lightDirection = normalize(light.position.xyz - P); //vector towards light source
     // diffuse component
     float intensity = max(0.0, dot(N, lightDirection));
     result += intensity * light.color.xyz * material.diffuse.xyz;

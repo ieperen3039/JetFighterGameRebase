@@ -23,6 +23,7 @@ public abstract class AbstractGameLoop implements Runnable {
     private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
     private boolean shouldStop;
     private final boolean notifyDelay;
+    private Thread runningThread;
 
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
         this.targetTps = targetTps;
@@ -47,11 +48,19 @@ public abstract class AbstractGameLoop implements Runnable {
     protected abstract void cleanup();
 
     /**
+     * create a thread for this object, and start it
+     */
+    public void runThread(){
+        runningThread = new Thread(this);
+        runningThread.start();
+    }
+
+    /**
      * start the gameloop once game is unpaused, and never terminate.
      * wrap-up must end up in a finally bock
      */
     public void run() {
-        Toolbox.print(loopName + " has started");
+        Toolbox.print(loopName + " is started");
         Timer loopTimer = new Timer();
         float deltaTime = 0;
         try {
@@ -89,7 +98,7 @@ public abstract class AbstractGameLoop implements Runnable {
         }
 
         // terminate engine
-        Toolbox.print(loopName + " has ended");
+        Toolbox.print(loopName + " is stopped");
     }
 
     public void unPause(){
@@ -108,5 +117,9 @@ public abstract class AbstractGameLoop implements Runnable {
 
     public void resetTPSCounter(){
         TPSMinimum.reset();
+    }
+
+    public void waitForExit() throws InterruptedException {
+        runningThread.join();
     }
 }

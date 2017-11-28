@@ -9,8 +9,8 @@ out vec4 fragColor;
 struct PointLight
 {
     vec3 color;
-    // light position in view coordinates.
-    vec3 position;
+    // light position in modelview coordinates.
+    vec3 mvPosition;
     float intensity;
 };
 
@@ -57,7 +57,7 @@ vec4 calcLightcolor(vec3 light_color, float light_intensity, vec3 position, vec3
 
 vec4 calcPointLight(PointLight light, vec3 position, vec3 normal)
 {
-    vec3 light_direction = light.position - position;
+    vec3 light_direction = light.mvPosition - position;
     vec3 to_light_dir  = normalize(light_direction);
     vec4 light_color = calcLightcolor(light.color, light.intensity, position, to_light_dir, normal);
 
