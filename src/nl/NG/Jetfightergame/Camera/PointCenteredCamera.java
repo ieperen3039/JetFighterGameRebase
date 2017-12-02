@@ -51,8 +51,16 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         input.addScrollListener(this, false);
     }
 
+    /**
+     * updates the eye position
+     * @param deltaTime not used
+     */
     @Override
     public void updatePosition(float deltaTime) {
+        updatePosition();
+    }
+
+    private void updatePosition() {
         eye.update(getEyePosition());
     }
 

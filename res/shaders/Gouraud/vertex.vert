@@ -1,6 +1,5 @@
 #version 330
 
-
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 vertexNormal;
 
@@ -16,7 +15,7 @@ struct PointLight
 {
     vec3 color;
     // light position in modelview coordinates.
-    vec3 mvPosition;
+    vec3 mPosition;
     float intensity;
 };
 
@@ -26,8 +25,8 @@ uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 ambientLight;
 
-uniform mat4 modelViewMatrix;
-uniform mat4 projectionMatrix;
+uniform mat4 modelMatrix;
+uniform mat4 viewProjectionMatrix;
 
 smooth out vec4 fragColor;
 
@@ -35,7 +34,7 @@ vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 
     vec3 result = vec3(0.0, 0.0, 0.0);
 
-	vec3 lightDirection = normalize(light.mvPosition.xyz - P); //vector towards light source
+	vec3 lightDirection = normalize(light.mPosition.xyz - P); //vector towards light source
     // diffuse component
     float intensity = max(0.0, dot(N, lightDirection));
     result += intensity * light.color.xyz * material.diffuse.xyz;
@@ -54,17 +53,17 @@ vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 
 void main()
 {
-    vec4 mvPosition4 = modelViewMatrix * vec4(position, 1.0);
-    gl_Position = projectionMatrix * mvPosition4;
+    vec4 modelPosition4 = modelMatrix * vec4(position, 1.0);
+    gl_Position = viewProjectionMatrix * modelPosition4;
 
-    vec3 mvPosition = mvPosition4.xyz;
-    vec3 mvNormal = normalize(modelViewMatrix * vec4(vertexNormal, 0.0)).xyz;
-    vec3 cameraPosition = normalize(-mvPosition); //position of camera in View space
+    vec3 mPosition = modelPosition4.xyz;
+    vec3 mNormal = normalize(modelMatrix * vec4(vertexNormal, 0.0)).xyz;
+    vec3 cameraPosition = normalize(-mPosition); //position of camera in View space
 
     vec3 diffuseSpecularComponent = vec3(0.0, 0.0, 0.0);
     for (int i=0; i < MAX_POINT_LIGHTS; i++) {
         if (pointLights[i].intensity > 0 ) {
-            diffuseSpecularComponent += calculateLighting(mvPosition, mvNormal, cameraPosition, pointLights[i]);
+            diffuseSpecularComponent += calculateLighting(mPosition, mNormal, cameraPosition, pointLights[i]);
         }
     }
 

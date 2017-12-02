@@ -30,6 +30,13 @@ public class Mesh implements Renderable {
     private int idVboID;
     private int normVboID;
 
+    /**
+     * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.
+     *
+     * @param posList a list of vertices, possibly with unique entries
+     * @param normList a list of normals, possibly with unique entries
+     * @param facesList a list of references to the posList and normList, describing planes
+     */
     public Mesh(List<PosVector> posList, List<DirVector> normList, List<Face> facesList) {
 
         List<Integer> indices = new ArrayList<>();
@@ -40,7 +47,7 @@ public class Mesh implements Renderable {
             putInList(posList, posArr, i);
         }
 
-        float[] normArr = new float[posList.size() * 3];
+        float[] normArr = new float[normList.size() * 3];
 
         for (Face face : facesList) {
             Pair<Integer, Integer> alpha = face.A;
@@ -63,7 +70,8 @@ public class Mesh implements Renderable {
         array[i * 3 + 2] = (float) vec.z();
     }
 
-    private void processFaceVertex(List<DirVector> normList, List<Integer> indicesList, float[] normArr, int posIndex, Integer normalIndex) {
+    private void processFaceVertex(List<DirVector> normList, List<Integer> indicesList,
+                                   float[] normArr, int posIndex, Integer normalIndex) {
         // Set index for vertex coordinates
         indicesList.add(posIndex);
 

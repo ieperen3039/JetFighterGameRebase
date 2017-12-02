@@ -10,3 +10,4 @@ out
 MANIFEST.MF
 README.md
 Unused Sources/
+/src/unrelated/dynamics/

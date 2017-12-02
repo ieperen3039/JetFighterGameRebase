@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
  * a general-purpose game loop
  * also usable for rendering
  */
-public abstract class AbstractGameLoop implements Runnable {
+public abstract class AbstractGameLoop extends Thread {
 
     private final Extreme<Float> TPSMinimum = new Extreme<>(0f, false);
     private final int targetTps;
@@ -46,14 +46,6 @@ public abstract class AbstractGameLoop implements Runnable {
     }
 
     protected abstract void cleanup();
-
-    /**
-     * create a thread for this object, and start it
-     */
-    public void runThread(){
-        runningThread = new Thread(this);
-        runningThread.start();
-    }
 
     /**
      * start the gameloop once game is unpaused, and never terminate.
@@ -117,9 +109,5 @@ public abstract class AbstractGameLoop implements Runnable {
 
     public void resetTPSCounter(){
         TPSMinimum.reset();
-    }
-
-    public void waitForExit() throws InterruptedException {
-        runningThread.join();
     }
 }

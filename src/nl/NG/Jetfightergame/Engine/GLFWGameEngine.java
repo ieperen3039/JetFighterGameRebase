@@ -41,7 +41,7 @@ public abstract class GLFWGameEngine {
     public void startGame(){
         window.open();
 
-        gameLoop.runThread();
+        gameLoop.start();
 
         try {
             renderLoop.run();
@@ -50,7 +50,7 @@ public abstract class GLFWGameEngine {
         }
 
         try {
-            gameLoop.waitForExit();
+            gameLoop.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

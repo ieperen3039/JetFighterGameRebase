@@ -104,6 +104,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     protected void buildScene() {
+        objects.add(new TestJet(gameLoop, playerInput));
     }
 
     /** TODO efficient implementation

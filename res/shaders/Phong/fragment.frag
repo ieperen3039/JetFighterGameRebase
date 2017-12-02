@@ -1,7 +1,7 @@
 #version 330
 
-in vec3 mvVertexNormal;
-in vec3 mvVertexPosition;
+in vec3 mVertexNormal;
+in vec3 mVertexPosition;
 in vec3 cameraPosition;
 
 out vec4 fragColor;
@@ -10,7 +10,7 @@ struct PointLight
 {
     vec3 color;
     // light position in modelview coordinates.
-    vec3 mvPosition;
+    vec3 mPosition;
     float intensity;
 };
 
@@ -57,7 +57,7 @@ vec4 calcLightcolor(vec3 light_color, float light_intensity, vec3 position, vec3
 
 vec4 calcPointLight(PointLight light, vec3 position, vec3 normal)
 {
-    vec3 light_direction = light.mvPosition - position;
+    vec3 light_direction = light.mPosition - position;
     vec3 to_light_dir  = normalize(light_direction);
     vec4 light_color = calcLightcolor(light.color, light.intensity, position, to_light_dir, normal);
 
@@ -73,7 +73,7 @@ void main()
     if (shadowed == 1) {
         for (int i=0; i < MAX_POINT_LIGHTS; i++) {
             if (pointLights[i].intensity > 0 ) {
-                diffuseSpecularComponent += calcPointLight(pointLights[i], mvVertexPosition, mvVertexNormal);
+                diffuseSpecularComponent += calcPointLight(pointLights[i], mVertexPosition, mVertexNormal);
             }
         }
 

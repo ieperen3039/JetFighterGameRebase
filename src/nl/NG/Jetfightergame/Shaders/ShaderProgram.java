@@ -1,11 +1,13 @@
 package nl.NG.Jetfightergame.Shaders;
 
+import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
+import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +16,9 @@ import static org.lwjgl.opengl.GL20.*;
 
 /**
  *  @author Yoeri Poels
+ *  @author Geert van Ieperen
  */
-public class ShaderProgram {
+public abstract class ShaderProgram {
 
     private final Map<String, Integer> uniforms;
 
@@ -23,13 +26,25 @@ public class ShaderProgram {
     private int vertexShaderId;
     private int fragmentShaderId;
 
-    public ShaderProgram() throws ShaderException {
+    public ShaderProgram(String vertexPath, String fragmentPath) throws ShaderException, IOException {
         uniforms = new HashMap<>();
 
         programId = glCreateProgram();
         if (programId == 0) {
             throw new ShaderException("Could not create Shader");
         }
+
+        if (vertexPath != null)
+            vertexShaderId = createShader(Resource.load(vertexPath), GL_VERTEX_SHADER);
+
+        if (fragmentPath != null)
+            fragmentShaderId = createShader(Resource.load(fragmentPath), GL_FRAGMENT_SHADER);
+
+        link();
+
+        // Create uniforms for world and projection matrices
+        createUniform("viewProjectionMatrix");
+        createUniform("modelMatrix");
     }
 
     /**
@@ -82,49 +97,12 @@ public class ShaderProgram {
     }
 
     /**
-     * Create an uniform for a pointslight array.
-     *
-     * @param size The size of the array.
-     * @throws ShaderException If an error occurs getting the memory location.
-     */
-    public void createPointLightsUniform(int size) throws ShaderException {
-        for (int i = 0; i < size; i++) {
-            createPointLightUniform("pointLights" + "[" + i + "]");
-        }
-    }
-
-    /**
-     * Create the uniforms required for a PointLight
-     *
-     * @param uniformName The name of the uniform
-     * @throws ShaderException If an error occurs getting the memory location.
-     */
-    public void createPointLightUniform(String uniformName) throws ShaderException {
-        createUniform(uniformName + ".color");
-        createUniform(uniformName + ".mvPosition");
-        createUniform(uniformName + ".intensity");
-    }
-
-    /**
-     * Create the uniforms required for a Material
-     *
-     * @param uniformName The name of the uniform
-     * @throws ShaderException If an error occurs getting the memory location.
-     */
-    public void createMaterialUniform(String uniformName) throws ShaderException {
-        createUniform(uniformName + ".ambient");
-        createUniform(uniformName + ".diffuse");
-        createUniform(uniformName + ".specular");
-        createUniform(uniformName + ".reflectance");
-    }
-
-    /**
      * Create a new uniform and get its memory location.
      *
      * @param uniformName The name of the uniform.
-     * @throws ShaderException If an error occurs getting the memory location.
+     * @throws ShaderException If an error occurs while fetching the memory location.
      */
-    public void createUniform(String uniformName) throws ShaderException {
+    protected void createUniform(String uniformName) throws ShaderException {
         int uniformLocation = glGetUniformLocation(programId, uniformName);
         if (uniformLocation < 0) {
             throw new ShaderException("Could not find uniform:" + uniformName);
@@ -138,7 +116,7 @@ public class ShaderProgram {
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
      */
-    public void setUniform(String uniformName, Matrix4f value) {
+    protected void setUniform(String uniformName, Matrix4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             // Dump the matrix into a float buffer
             FloatBuffer fb = stack.mallocFloat(16);
@@ -153,7 +131,7 @@ public class ShaderProgram {
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
      */
-    public void setUniform(String uniformName, int value) {
+    protected void setUniform(String uniformName, int value) {
         glUniform1i(uniforms.get(uniformName), value);
     }
 
@@ -163,7 +141,7 @@ public class ShaderProgram {
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
      */
-    public void setUniform(String uniformName, float value) {
+    protected void setUniform(String uniformName, float value) {
         glUniform1f(uniforms.get(uniformName), value);
     }
 
@@ -173,11 +151,11 @@ public class ShaderProgram {
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
      */
-    public void setUniform(String uniformName, Vector3f value) {
+    protected void setUniform(String uniformName, Vector3f value) {
         glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
     }
 
-    public void setUniform4f(String uniformName, float[] value){
+    protected void setUniform4f(String uniformName, float[] value){
         glUniform4f(uniforms.get(uniformName), value[0], value[1], value[2], value[3]);
     }
 
@@ -187,13 +165,11 @@ public class ShaderProgram {
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
      */
-    public void setUniform4f(String uniformName, Vector4f value) {
+    protected void setUniform4f(String uniformName, Vector4f value) {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
-    public void setPointLight(int lightNumber, Vector3f mvPosition, Color4f color) {
-        setUniform("pointLights[" + lightNumber + "]", mvPosition, color);
-    }
+    public abstract void setPointLight(int lightNumber, Vector3f mvPosition, Color4f color);
 
     /**
      * Set the value of a certain PointLight shader uniform
@@ -202,34 +178,14 @@ public class ShaderProgram {
      * @param mvPosition position in modelViewSpace
      * @param color the light color with its intensity as alpha value
      */
-    public void setUniform(String uniformName, Vector3f mvPosition, Color4f color) {
+    protected void setUniform(String uniformName, Vector3f mvPosition, Color4f color) {
         setUniform(uniformName + ".color", color.toVector3f());
         setUniform(uniformName + ".mvPosition", mvPosition);
         setUniform(uniformName + ".intensity", color.alpha);
     }
 
-    private void setUniform(String uniformName, Color4f color) {
+    protected void setUniform(String uniformName, Color4f color) {
         glUniform4f(uniforms.get(uniformName), color.red, color.green, color.blue, color.alpha);
-    }
-
-    /**
-     * Create a new vertexshader and set the vertexshader id field to that of the newly created shader.
-     *
-     * @param shaderCode The shaderCode as a String.
-     * @throws ShaderException If an error occurs during the creation of a shader.
-     */
-    public void createVertexShader(String shaderCode) throws ShaderException {
-        vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER);
-    }
-
-    /**
-     * Create a new fragmentshader and set the fragmentshader id field to that of the newly created shader.
-     *
-     * @param shaderCode The shaderCode as a String.
-     * @throws ShaderException If an error occurs during the creation of a shader.
-     */
-    public void createFragmentShader(String shaderCode) throws ShaderException {
-        fragmentShaderId = createShader(shaderCode, GL_FRAGMENT_SHADER);
     }
 
     /**
@@ -240,7 +196,7 @@ public class ShaderProgram {
      * @return The id of the newly created shader.
      * @throws ShaderException If an error occurs during the creation of a shader.
      */
-    public int createShader(String shaderCode, int shaderType) throws ShaderException {
+    private int createShader(String shaderCode, int shaderType) throws ShaderException {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
             throw new ShaderException("Error creating shader. Type: " + shaderType);
@@ -258,7 +214,21 @@ public class ShaderProgram {
         return shaderId;
     }
 
-    public void setUniform(String uniformName, boolean value) {
+    protected void setUniform(String uniformName, boolean value) {
         setUniform(uniformName, value ? 1 : 0);
     }
+
+    public void setProjectionMatrix(Matrix4f viewProjectionMatrix) {
+        setUniform("viewProjectionMatrix", viewProjectionMatrix);
+    }
+
+    public void setModelMatrix(Matrix4f modelMatrix) {
+        setUniform("modelMatrix", modelMatrix);
+    }
+
+    public void setMaterial(Material mat){
+        setMaterial(mat, Color4f.WHITE);
+    }
+
+    public abstract void setMaterial(Material material, Color4f color);
 }
