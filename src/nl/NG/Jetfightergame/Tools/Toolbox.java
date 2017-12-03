@@ -16,6 +16,9 @@ import org.joml.Vector4f;
 
 import java.util.*;
 
+import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
+import static org.lwjgl.opengl.GL11.glGetError;
+
 /**
  * Created by Geert van Ieperen on 31-1-2017.
  * a class with various tools
@@ -194,4 +197,11 @@ public class Toolbox {
         return particles;
     }
 
+    public static void checkGLError(){
+        if (!Settings.DEBUG) return;
+        int error;
+        while ((error = glGetError()) != GL_NO_ERROR) {
+            printFrom(2, ": glError " + error);
+        }
+    }
 }

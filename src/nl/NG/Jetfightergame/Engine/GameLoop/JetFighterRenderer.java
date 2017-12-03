@@ -11,12 +11,14 @@ import nl.NG.Jetfightergame.Shaders.GouraudShader;
 import nl.NG.Jetfightergame.Shaders.PhongShader;
 import nl.NG.Jetfightergame.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
 import java.io.IOException;
 
 /**
  * @author Jorren Hendriks.
+ * @author Geert van Ieperen
  */
 public class JetFighterRenderer extends AbstractGameLoop {
 
@@ -24,11 +26,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
-
-    // generic shader
-    private final ShaderProgram gouraudShader;
-    // advanced shader
-    private final ShaderProgram phongShader;
 
     private ShaderProgram currentShader;
 
@@ -40,32 +37,35 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.activeCamera = camera;
         this.engine = engine;
 
-        gouraudShader = new GouraudShader();
-        phongShader = new PhongShader(); //TODO allow toggle
-        currentShader = gouraudShader;
-        window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+        // TODO allow toggle shader
+        currentShader = new GouraudShader();
 
-//        // use built-in Gouraud shading
-//        glShadeModel( GL_FLAT );
+        window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
         ambientLight = Color4f.LIGHT_GREY;
         this.hud = new Hud(window);
     }
 
     @Override
-    protected void update(float deltaTime) throws InterruptedException {
+    protected void update(float deltaTime) {
+        Toolbox.checkGLError();
         GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
+        Toolbox.checkGLError();
 
         initShader();
+        Toolbox.checkGLError();
 
         if (!engine.isPaused()) engine.updateParticles(deltaTime);
 
         // activate lights in the scene
         engine.setLights(gl);
+        Toolbox.checkGLError();
 
         // first draw the non-transparent objects
         engine.drawObjects(gl);
+        Toolbox.checkGLError();
         engine.drawParticles(gl);
+        Toolbox.checkGLError();
 
         // overlay with transparent objects
         // TODO transparent meshes?
@@ -81,6 +81,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         if (window.shouldClose()) {
             engine.exitGame();
         }
+        Toolbox.checkGLError();
     }
 
     private void initShader() {
@@ -95,13 +96,13 @@ public class JetFighterRenderer extends AbstractGameLoop {
         } else if (currentShader instanceof GouraudShader){
             GouraudShader shader = (GouraudShader) currentShader;
             shader.setAmbientLight(ambientLight);
+        } else {
+            Toolbox.print("loaded shader without advanced parameters: " + currentShader.getClass().getSimpleName());
         }
     }
 
-
     @Override
     public void cleanup() {
-        phongShader.cleanup();
-        gouraudShader.cleanup();
+        currentShader.cleanup();
     }
 }

@@ -78,9 +78,10 @@ public class ShaderUniformGL implements GL2 {
         mPosition.mulPosition(modelMatrix);
         currentShader.setPointLight(nextLightIndex++, mPosition, lightColor);
 
-        setMaterial(Material.PLASTIC, lightColor);
+        setMaterial(Material.GLOWING, lightColor);
         pushMatrix();
-        scale(0.2f);
+        translate(pos);
+        scale(0.1f);
         draw(GeneralShapes.CUBE);
         popMatrix();
     }

@@ -55,7 +55,6 @@ vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 void main()
 {
     // opaque black
-
     vec4 modelPosition4 = modelMatrix * vec4(position, 1.0);
     gl_Position = viewProjectionMatrix * modelPosition4;
 
@@ -72,5 +71,5 @@ void main()
 
     fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
 
-//    fragColor = vec4(normalize(vertexNormal + vec3(0.1, 0.1, 0.1)), 1);
+//    fragColor = vec4(vec3(1, 1, 1) * length(vertexNormal), 1.0);
 }

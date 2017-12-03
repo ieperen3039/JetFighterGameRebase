@@ -195,7 +195,8 @@ public abstract class ShaderProgram {
     }
 
     protected void setUniform(String uniformName, Color4f color) {
-        glUniform4f(uniforms.get(uniformName), color.red, color.green, color.blue, color.alpha);
+        setUniform(uniformName, color.toVector3f().div(color.alpha));
+        Toolbox.checkGLError();
     }
 
     /**

@@ -70,16 +70,16 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             // playerJet = new PlayerJet(gameLoop, playerInput);
             buildScene();
 
+            ShapeFromMesh.initAll();
+            GeneralShapes.initAll();
         } catch (Exception e) { // prevent game from freezing upon crashing
             splash.dispose();
             throw e;
+        } finally {
+            // remove splash frame
+            splash.dispose();
         }
 
-        ShapeFromMesh.initAll();
-        GeneralShapes.initAll();
-
-        // remove splash frame
-        splash.dispose();
         // reclaim all space used for initialisation
         System.gc();
     }
@@ -113,7 +113,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     protected void buildScene() {
 //        objects.add(new TestJet(gameLoop, playerInput));
-        lights.add(new Pair<>(new PosVector(2, 2, 1), Color4f.WHITE));
+        lights.add(new Pair<>(new PosVector(4, 3, 1), Color4f.WHITE));
     }
 
     /** TODO efficient implementation

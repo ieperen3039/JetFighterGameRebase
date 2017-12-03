@@ -1,9 +1,11 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
 
 import java.nio.DoubleBuffer;
 
@@ -20,6 +22,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class GLFWWindow {
 
     private static final boolean CULL_FACES = false; // TODO cockwise drawing
+    private static final boolean GL_DEBUG_MESSAGES = false;
     private final long primaryMonitor;
 
     private final String title;
@@ -82,7 +85,6 @@ public class GLFWWindow {
             glfwSwapInterval(1);
         }
 
-
         GL.createCapabilities();
 
         // Set clear color to black
@@ -101,6 +103,13 @@ public class GLFWWindow {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
         }
+
+        if (Settings.DEBUG && GL_DEBUG_MESSAGES) {
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+            GLUtil.setupDebugMessageCallback();
+        }
+
+        Toolbox.checkGLError();
     }
 
     public static boolean antialiasing() {

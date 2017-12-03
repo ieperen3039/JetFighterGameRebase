@@ -125,8 +125,9 @@ public class CustomShape {
 
     private int addNormal(DirVector normal) {
         if (normal == null) throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be null");
-        normals.putIfAbsent(normal, normals.size());
-        return normals.get(normal);
+        DirVector normalizedNormal = normal.normalized();
+        normals.putIfAbsent(normalizedNormal, normals.size());
+        return normals.get(normalizedNormal);
     }
 
     /**

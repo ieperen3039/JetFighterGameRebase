@@ -68,7 +68,7 @@ public abstract class Plane {
     public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, DirVector direction){
         DirVector normalVector = B.to(A).cross(B.to(C));
         if (normalVector.dot(direction) < 0) normalVector = normalVector.scale(-1);
-        return normalVector;
+        return normalVector.normalized();
     }
 
     /**

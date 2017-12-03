@@ -60,7 +60,7 @@ public abstract class GLFWGameEngine {
     }
 
     /** tells the renderloop to stop, renderloop must call back to clean up others */
-    public void exitGame(){
+    public void exitGame(){ // TODO add timer for forced shutdown
         System.out.println();
         Toolbox.print("Stopping game...");
         renderLoop.stopLoop();

@@ -23,6 +23,7 @@ public class Color4f {
 
     /** a color with alpha == 0, thus (technically) not visible */
     public static final Color4f INVISIBLE = new Color4f(0, 0, 0, 0);
+    public static final Color4f TRANSPARENT_GREY = new Color4f(0.5f, 0.5f, 0.5f, 0.5f);
 
     public final float red;
     public final float green;
