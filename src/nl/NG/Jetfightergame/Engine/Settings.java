@@ -40,12 +40,7 @@ public class Settings {
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
     public static float Z_FAR = 500.0f;
-    public static float PHI_MIN = -(float) Math.PI / 2f + 0.01f;
-    public static float PHI_MAX = (float) Math.PI / 2f - 0.01f;
     public static Boolean INVERT_CAMERA_ROTATION = false;
-    public static float VDIST = 10f;
-    // Ratio of distance in pixels dragged and radial change of camera.
-    public static float DRAG_PIXEL_TO_RADIAN = 0.025f;
 
     // visual settings
     public static boolean V_SYNC = true;

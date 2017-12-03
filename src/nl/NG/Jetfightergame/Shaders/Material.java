@@ -22,7 +22,7 @@ public enum Material {
     GLOWING(
             new float[]{1f, 1f, 1f, 1f},
             new float[]{0f, 0f, 0f, 1f},
-            0
+            1f
     ),
 
     /**

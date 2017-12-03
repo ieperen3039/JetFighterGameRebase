@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.GameObjects.Structures.GeneralShapes;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -23,8 +24,8 @@ public class ShaderUniformGL implements GL2 {
 
     private Stack<Matrix4f> matrixStack;
 
-    private Matrix4f modelMatrix = new Matrix4f();
-    private Matrix4f viewProjectionMatrix = new Matrix4f();
+    private Matrix4f modelMatrix;
+    private Matrix4f viewProjectionMatrix;
 
     private ShaderProgram currentShader;
     private int nextLightIndex = 0;
@@ -32,12 +33,15 @@ public class ShaderUniformGL implements GL2 {
     public ShaderUniformGL(ShaderProgram shader, int windowWidth, int windowHeight, Camera camera) {
         currentShader = shader;
 
-        currentShader.bind();
         matrixStack = new Stack<>();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
         viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
+        modelMatrix = new Matrix4f();
+
+        viewProjectionMatrix.assumePerspective();
+        modelMatrix.assumeAffine();
     }
 
     private Matrix4f getProjection(float windowWidth, float windowHeight, Camera camera) {
@@ -61,8 +65,6 @@ public class ShaderUniformGL implements GL2 {
         currentShader.setProjectionMatrix(viewProjectionMatrix);
         currentShader.setModelMatrix(modelMatrix);
         object.render(new Painter());
-        viewProjectionMatrix.assumePerspective();
-        modelMatrix.assumeAffine();
     }
 
     @Override
@@ -72,15 +74,15 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void setLight(PosVector pos, Color4f lightColor){
-        Vector3f mvPosition = pos.toVector3f();
-        mvPosition.mulPosition(modelMatrix);
-        currentShader.setPointLight(nextLightIndex++, mvPosition, lightColor);
+        Vector3f mPosition = pos.toVector3f();
+        mPosition.mulPosition(modelMatrix);
+        currentShader.setPointLight(nextLightIndex++, mPosition, lightColor);
 
-//        setMaterial(Material.PLASTIC, lightColor);
-//        pushMatrix();
-//        scale(0.2f);
-//        draw(GeneralShapes.CUBE);
-//        popMatrix();
+        setMaterial(Material.PLASTIC, lightColor);
+        pushMatrix();
+        scale(0.2f);
+        draw(GeneralShapes.CUBE);
+        popMatrix();
     }
 
     @Override

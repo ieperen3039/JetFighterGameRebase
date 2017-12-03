@@ -1,4 +1,7 @@
-package nl.NG.Jetfightergame.Engine;
+package nl.NG.Jetfightergame.Engine.GameLoop;
+
+import nl.NG.Jetfightergame.Engine.JetFighterGame;
+import nl.NG.Jetfightergame.Engine.Settings;
 
 /**
  * @author Geert van Ieperen

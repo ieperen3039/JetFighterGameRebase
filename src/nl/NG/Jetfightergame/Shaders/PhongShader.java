@@ -67,8 +67,8 @@ public class PhongShader extends ShaderProgram {
     }
 
     @Override
-    public void setPointLight(int lightNumber, Vector3f mvPosition, Color4f color) {
-        setUniform("pointLights[" + lightNumber + "]", mvPosition, color);
+    public void setPointLight(int lightNumber, Vector3f mPosition, Color4f color) {
+        setPointLightUniform("pointLights[" + lightNumber + "]", mPosition, color);
     }
 
     @Override

@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Camera.FollowingCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.InputDelegate;
+import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -36,36 +37,33 @@ public abstract class GLFWGameEngine {
 
     /**
      * create a thread for everyone who wants one, open the main window and start the game
-     * Rendering must happen in the main thread, so we do
+     * Rendering must happen in the main thread.
      */
     public void startGame(){
+        Toolbox.print("Initialisation complete\n");
         window.open();
 
         gameLoop.start();
 
         try {
             renderLoop.run();
-        } catch (Exception ex){
-            renderLoop.cleanup();
-        }
-
-        try {
             gameLoop.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        } finally {
+            this.cleanup();
+            window.cleanup();
         }
-
-        this.cleanup();
-        window.cleanup();
 
         Toolbox.print("Game has stopped! Bye ~");
         // Finish execution
     }
 
-    // TODO analyze callsites of exit, centralize shutting down
+    /** tells the renderloop to stop, renderloop must call back to clean up others */
     public void exitGame(){
+        System.out.println();
         Toolbox.print("Stopping game...");
-        window.close();
+        renderLoop.stopLoop();
         gameLoop.stopLoop();
     }
 

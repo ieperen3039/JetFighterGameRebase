@@ -17,6 +17,11 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  */
 public class PointCenteredCamera implements Camera, TrackerMoveListener, TrackerScrollListener, TrackerDragListener {
 
+    private static float ZOOM_SPEED = -0.1f;
+    public static float PHI_MIN = -(float) Math.PI / 2f + 0.01f;
+    public static float PHI_MAX = (float) Math.PI / 2f - 0.01f;
+    // Ratio of distance in pixels dragged and radial change of camera.
+    public static float DRAG_PIXEL_TO_RADIAN = 0.025f;
     /**
      * The position of the camera.
      */
@@ -31,7 +36,8 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     public final DirVector up;
     private float theta;
     private float phi;
-    private float vDist = Settings.VDIST;
+    public static float VDIST = 10f;
+    private float vDist = VDIST;
 
     public PointCenteredCamera() {
         this(PosVector.O, DirVector.Z, 0, 0);
@@ -76,10 +82,10 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public void mouseMoved(int deltaX, int deltaY) {
-        theta += deltaX * Settings.DRAG_PIXEL_TO_RADIAN * -1;
-        phi = Math.max(Settings.PHI_MIN,
-                Math.min(Settings.PHI_MAX,
-                        phi + deltaY * Settings.DRAG_PIXEL_TO_RADIAN ));
+        theta += deltaX * DRAG_PIXEL_TO_RADIAN * -1;
+        phi = Math.max(PHI_MIN,
+                Math.min(PHI_MAX,
+                        phi + deltaY * DRAG_PIXEL_TO_RADIAN ));
     }
 
     @Override
@@ -89,7 +95,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public void mouseWheelMoved(float pixels) {
-        vDist -= pixels;
+        vDist *= (ZOOM_SPEED * pixels) + 1f;
     }
 
     @Override

@@ -1,7 +1,9 @@
 package nl.NG.Jetfightergame.Shaders;
 
 import nl.NG.Jetfightergame.Tools.Resource;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -169,18 +171,26 @@ public abstract class ShaderProgram {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
-    public abstract void setPointLight(int lightNumber, Vector3f mvPosition, Color4f color);
+    /**
+     * pass a pointlight to the shader
+     * @param lightNumber the number which to adapt
+     * @param mPosition the position in model-space (worldspace)
+     * @param color the color of the light, with alpha as intensity
+     */
+    public abstract void setPointLight(int lightNumber, Vector3f mPosition, Color4f color);
 
     /**
      * Set the value of a certain PointLight shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param mvPosition position in modelViewSpace
+     * @param mPosition position in modelSpace
      * @param color the light color with its intensity as alpha value
      */
-    protected void setUniform(String uniformName, Vector3f mvPosition, Color4f color) {
+    protected void setPointLightUniform(String uniformName, Vector3f mPosition, Color4f color) {
+        Toolbox.printSpamless("Set light: " + uniformName, new PosVector(mPosition));
+
         setUniform(uniformName + ".color", color.toVector3f());
-        setUniform(uniformName + ".mvPosition", mvPosition);
+        setUniform(uniformName + ".mPosition", mPosition);
         setUniform(uniformName + ".intensity", color.alpha);
     }
 

@@ -2,11 +2,16 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Controllers.*;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRenderer;
+import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
 import nl.NG.Jetfightergame.FighterJets.TestJet;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
 import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.GameObjects.Structures.GeneralShapes;
+import nl.NG.Jetfightergame.GameObjects.Structures.Mesh;
+import nl.NG.Jetfightergame.GameObjects.Structures.ShapeFromMesh;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -70,6 +75,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             throw e;
         }
 
+        ShapeFromMesh.initAll();
+        GeneralShapes.initAll();
+
         // remove splash frame
         splash.dispose();
         // reclaim all space used for initialisation
@@ -104,7 +112,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     protected void buildScene() {
-        objects.add(new TestJet(gameLoop, playerInput));
+//        objects.add(new TestJet(gameLoop, playerInput));
+        lights.add(new Pair<>(new PosVector(2, 2, 1), Color4f.WHITE));
     }
 
     /** TODO efficient implementation
@@ -131,9 +140,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         return result;
     }
 
-    public void drawObjects(GL2 gl) {
+    public void setLights(GL2 gl) {
         lights.forEach((pointLight) -> gl.setLight(pointLight.left, pointLight.right));
+    }
 
+    public void drawObjects(GL2 gl) {
+        Toolbox.drawAxisFrame(gl);
         staticObjects.forEach(d -> d.draw(gl));
         objects.forEach(d -> d.draw(gl));
     }
@@ -148,6 +160,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     @Override
     public void cleanup() {
+        Mesh.cleanAll();
     }
 
     /**
@@ -183,7 +196,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
      * a splash image that can be shown and disposed.
      */
     private class Splash extends Frame implements Runnable {
-        public Splash() {
+        Splash() {
             // TODO better splash image
             final String path = "res/Pictures/SplashImage.png";
 

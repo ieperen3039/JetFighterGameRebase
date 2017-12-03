@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.FighterJets;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.GameObjects.Structures.GeneralShapes;
 import nl.NG.Jetfightergame.GameObjects.Structures.Shape;

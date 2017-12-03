@@ -11,6 +11,8 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -29,6 +31,7 @@ public class Mesh implements Renderable {
     private int posVboID;
     private int idVboID;
     private int normVboID;
+    private static Collection<Mesh> registeredMeshes = new HashSet<>();
 
     /**
      * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.
@@ -127,6 +130,8 @@ public class Mesh implements Renderable {
                 MemoryUtil.memFree(indicesBuffer);
             }
         }
+
+        registeredMeshes.add(this);
     }
 
     public void cleanup() {
@@ -141,6 +146,8 @@ public class Mesh implements Renderable {
         // Delete the VAO
         glBindVertexArray(0);
         glDeleteVertexArrays(vaoId);
+
+        registeredMeshes.remove(this);
     }
 
     @Override
@@ -154,6 +161,15 @@ public class Mesh implements Renderable {
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(2);
         glBindVertexArray(0);
+    }
+
+    /**
+     * all meshes that have been written to the GPU will be removed
+     */
+    public static void cleanAll() {
+        while (!registeredMeshes.isEmpty()){
+            registeredMeshes.iterator().next().cleanup();
+        }
     }
 
     /**

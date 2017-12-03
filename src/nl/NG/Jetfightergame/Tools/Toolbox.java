@@ -22,11 +22,11 @@ import java.util.*;
  */
 public class Toolbox {
 
+    public static final Vector4f COLOR_WHITE = new Vector4f(1, 1, 1, 1);
+    public static final Vector4f COLOR_BLACK = new Vector4f(0, 0, 0, 1);
     public static final Vector4f COLOR_RED = new Vector4f(1, 0, 0, 1);
     public static final Vector4f COLOR_GREEN = new Vector4f(0, 1, 0, 1);
     public static final Vector4f COLOR_BLUE = new Vector4f(0, 0, 1, 1);
-    public static final Vector4f COLOR_WHITE = new Vector4f(1, 1, 1, 1);
-    public static final Vector4f COLOR_BLACK = new Vector4f(0, 0, 0, 1);
 
     /** prevents spamming the chat */
     private static Set<String> callerBlacklist = new HashSet<>();
@@ -96,15 +96,16 @@ public class Toolbox {
             callerBlacklist.add(source);
         }
 
+        Material mat = Material.GLOWING;
         gl.pushMatrix();
         {
-            gl.setMaterial(Material.PLASTIC, Color4f.BLUE);
+            gl.setMaterial(mat, Color4f.BLUE);
             gl.draw(ShapeFromMesh.ARROW);
             gl.rotate(Math.toRadians(90), 0, 1, 0);
-            gl.setMaterial(Material.PLASTIC, Color4f.RED);
+            gl.setMaterial(mat, Color4f.RED);
             gl.draw(ShapeFromMesh.ARROW);
             gl.rotate(Math.toRadians(-90), 1, 0, 0);
-            gl.setMaterial(Material.PLASTIC, Color4f.GREEN);
+            gl.setMaterial(mat, Color4f.GREEN);
             gl.draw(ShapeFromMesh.ARROW);
             gl.scale(0.3f);
             gl.setMaterial(Material.SILVER, Color4f.WHITE);

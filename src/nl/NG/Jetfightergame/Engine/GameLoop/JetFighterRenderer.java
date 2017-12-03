@@ -1,8 +1,11 @@
-package nl.NG.Jetfightergame.Engine;
+package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
+import nl.NG.Jetfightergame.Engine.JetFighterGame;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
 import nl.NG.Jetfightergame.Shaders.GouraudShader;
 import nl.NG.Jetfightergame.Shaders.PhongShader;
@@ -45,58 +48,60 @@ public class JetFighterRenderer extends AbstractGameLoop {
 //        // use built-in Gouraud shading
 //        glShadeModel( GL_FLAT );
 
-        ambientLight = new Color4f(0.5f, 0.5f, 0.5f);
+        ambientLight = Color4f.LIGHT_GREY;
         this.hud = new Hud(window);
     }
 
     @Override
-    public void cleanup() {
-        phongShader.cleanup();
-        gouraudShader.cleanup();
+    protected void update(float deltaTime) throws InterruptedException {
+        GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
+
+        initShader();
+
+        if (!engine.isPaused()) engine.updateParticles(deltaTime);
+
+        // activate lights in the scene
+        engine.setLights(gl);
+
+        // first draw the non-transparent objects
+        engine.drawObjects(gl);
+        engine.drawParticles(gl);
+
+        // overlay with transparent objects
+        // TODO transparent meshes?
+
+        currentShader.unbind();
+
+        hud.draw(window.getWidth(), window.getHeight());
+
+        // update window
+        window.update();
+
+        // update stop-condition
+        if (window.shouldClose()) {
+            engine.exitGame();
+        }
     }
 
-    @Override
-    protected void update(float deltaTime) throws InterruptedException {
-
-        int windowWidth = window.getWidth();
-        int windowHeight = window.getHeight();
-
+    private void initShader() {
+        currentShader.bind();
 
         if (currentShader instanceof PhongShader){
             PhongShader shader = (PhongShader) currentShader;
             shader.setSpecular(1f);
-            shader.setBlack(true);
+            shader.setBlack(false);
             shader.setShadowed(true);
             shader.setAmbientLight(ambientLight);
         } else if (currentShader instanceof GouraudShader){
             GouraudShader shader = (GouraudShader) currentShader;
             shader.setAmbientLight(ambientLight);
         }
-
-        GL2 gl = new ShaderUniformGL(currentShader, windowWidth, windowHeight, activeCamera);
-        currentShader.bind();
-
-
-        if (!engine.isPaused()) engine.updateParticles(deltaTime);
-
-
-        // first draw the non-transparent objects
-        engine.drawObjects(gl);
-        engine.drawParticles(gl);
-        // overlay with transparent objects
-
-        currentShader.unbind();
-
-        hud.draw(windowWidth, windowHeight);
-
-        // update window
-        window.update();
-        // update stop-condition
-        if (window.shouldClose()) {
-            stopLoop();
-            engine.exitGame();
-        }
-
     }
 
+
+    @Override
+    public void cleanup() {
+        phongShader.cleanup();
+        gouraudShader.cleanup();
+    }
 }

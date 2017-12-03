@@ -24,7 +24,6 @@ import java.util.stream.Stream;
  */
 public class ShapeFromMesh implements Shape {
 
-
     public static final ShapeFromMesh BASIC = new ShapeFromMesh("res/models/ConceptBlueprint.obj");
 
     /** an arrow along the Z-axis, 1 long */
@@ -40,6 +39,11 @@ public class ShapeFromMesh implements Shape {
     private final List<Triangle> triangles;
 
     private final Mesh mesh;
+
+    /**
+     * a void method that allows pre-initialisation
+     */
+    public static void initAll(){}
 
     /**
      * @param fileName path to the .obj file

@@ -12,6 +12,7 @@ import static java.lang.Math.min;
 public class Color4f {
     public static final Color4f BLACK = new Color4f(0, 0, 0);
     public static final Color4f GREY = new Color4f(0.5f, 0.5f, 0.5f);
+    public static final Color4f LIGHT_GREY = new Color4f(0.8f, 0.8f, 0.8f);
     public static final Color4f WHITE = new Color4f(1, 1, 1);
     public static final Color4f RED = new Color4f(1, 0, 0);
     public static final Color4f GREEN = new Color4f(0, 1, 0);

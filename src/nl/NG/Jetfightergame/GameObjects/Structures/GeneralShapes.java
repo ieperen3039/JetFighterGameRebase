@@ -13,6 +13,11 @@ public class GeneralShapes {
     /** a 2*2*2 cube with center on (0, 0, 0) */
     public static final Shape CUBE = makeCube();
 
+    /**
+     * a void method that allows pre-initialisation
+     */
+    public static void initAll(){}
+
     private static Shape makeTriangle() {
         CustomShape frame = new CustomShape();
 
