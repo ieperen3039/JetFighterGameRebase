@@ -2,7 +2,6 @@
 
 in vec3 mVertexNormal;
 in vec3 mVertexPosition;
-in vec3 cameraPosition;
 
 out vec4 fragColor;
 
@@ -30,6 +29,8 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform int shadowed;
 uniform int blackAsAlpha;
 uniform vec3 ambientLight;
+// in model space
+uniform vec3 cameraPosition;
 
 vec4 materialColor;
 vec4 diffuseC;

@@ -93,9 +93,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
             shader.setBlack(false);
             shader.setShadowed(true);
             shader.setAmbientLight(ambientLight);
+            shader.setCameraPosition(activeCamera.getEye().toVector3f());
         } else if (currentShader instanceof GouraudShader){
             GouraudShader shader = (GouraudShader) currentShader;
             shader.setAmbientLight(ambientLight);
+            shader.setCameraPosition(activeCamera.getEye().toVector3f());
         } else {
             Toolbox.print("loaded shader without advanced parameters: " + currentShader.getClass().getSimpleName());
         }

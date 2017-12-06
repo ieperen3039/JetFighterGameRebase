@@ -40,7 +40,7 @@ public class Settings {
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
     public static float Z_FAR = 500.0f;
-    public static Boolean INVERT_CAMERA_ROTATION = false;
+    public static Boolean INVERT_CAMERA_ROTATION = true;
 
     // visual settings
     public static boolean V_SYNC = true;

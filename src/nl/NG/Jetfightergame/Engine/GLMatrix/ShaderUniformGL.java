@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.AxisAngle4f;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -26,6 +27,7 @@ public class ShaderUniformGL implements GL2 {
 
     private Matrix4f modelMatrix;
     private Matrix4f viewProjectionMatrix;
+    private Matrix3f normalMatrix = new Matrix3f();
 
     private ShaderProgram currentShader;
     private int nextLightIndex = 0;
@@ -64,6 +66,8 @@ public class ShaderUniformGL implements GL2 {
     public void draw(Renderable object) {
         currentShader.setProjectionMatrix(viewProjectionMatrix);
         currentShader.setModelMatrix(modelMatrix);
+        modelMatrix.normal(normalMatrix);
+        currentShader.setNormalMatrix(normalMatrix);
         object.render(new Painter());
     }
 
@@ -82,7 +86,7 @@ public class ShaderUniformGL implements GL2 {
         pushMatrix();
         translate(pos);
         scale(0.1f);
-        draw(GeneralShapes.CUBE);
+        draw(GeneralShapes.INVERSE_CUBE);
         popMatrix();
     }
 

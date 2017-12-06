@@ -25,11 +25,16 @@ public class GouraudShader extends ShaderProgram {
 
         // Create the lighting uniforms
         createUniform("ambientLight");
+        createUniform("cameraPosition");
         createPointLightsUniform(MAX_POINT_LIGHTS);
     }
 
     public void setAmbientLight(Color4f ambientLight) {
         setUniform("ambientLight", ambientLight);
+    }
+
+    public void setCameraPosition(Vector3f mPosition){
+        setUniform("cameraPosition", mPosition);
     }
 
     /**

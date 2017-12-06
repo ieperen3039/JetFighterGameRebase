@@ -22,7 +22,7 @@ public class Timer {
     }
 
     /**
-     * @return the time of the openWindow of the frame
+     * @return the time at the call of updateLooptime
      */
     public long getTime(){
         return time.current();

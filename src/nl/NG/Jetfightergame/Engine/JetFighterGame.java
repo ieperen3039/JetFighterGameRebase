@@ -16,6 +16,7 @@ import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import javax.imageio.ImageIO;
@@ -42,6 +43,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     protected Collection<Touchable> staticObjects = new LinkedList<>();
     protected Collection<AbstractParticle> particles = new LinkedList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new LinkedList<>();
+    private int debugVariable = 0;
 
     /**
      * openWindow the game by creating a frame based on this engine
@@ -145,7 +147,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     public void drawObjects(GL2 gl) {
+        gl.pushMatrix();
+        gl.rotate(DirVector.Z, (debugVariable++) / 40f);
         Toolbox.drawAxisFrame(gl);
+        gl.popMatrix();
         staticObjects.forEach(d -> d.draw(gl));
         objects.forEach(d -> d.draw(gl));
     }

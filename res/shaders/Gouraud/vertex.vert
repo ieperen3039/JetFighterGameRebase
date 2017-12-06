@@ -14,7 +14,7 @@ struct Material
 struct PointLight
 {
     vec3 color;
-    // light position in modelview coordinates.
+    // light position in model coordinates.
     vec3 mPosition;
     float intensity;
 };
@@ -24,9 +24,12 @@ const int MAX_POINT_LIGHTS = 10;
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 ambientLight;
+// in model coordinates
+uniform vec3 cameraPosition;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewProjectionMatrix;
+uniform mat3 normalMatrix;
 
 smooth out vec4 fragColor;
 
@@ -44,7 +47,7 @@ vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 	vec3 virtualLightPosition = normalize(-reflection);
 
 	// specular component
-    float shine = pow( max(0.0, dot(virtualLightPosition, eye)), material.reflectance);
+    float shine = pow( max(0.0, dot(virtualLightPosition, normalize(eye))), material.reflectance);
     //float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
     result += shine * light.color;
 
@@ -59,8 +62,7 @@ void main()
     gl_Position = viewProjectionMatrix * modelPosition4;
 
     vec3 mPosition = modelPosition4.xyz;
-    vec3 mNormal = normalize(modelMatrix * vec4(vertexNormal, 0.0)).xyz;
-    vec3 cameraPosition = normalize(-gl_Position.xyz); //position of camera in Model space
+    vec3 mNormal = normalize(normalMatrix * vertexNormal);
 
     vec3 diffuseSpecularComponent = vec3(0.0, 0.0, 0.0);
     for (int i=0; i < MAX_POINT_LIGHTS; i++) {
@@ -70,6 +72,4 @@ void main()
     }
 
     fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
-
-//    fragColor = vec4(vec3(1, 1, 1) * length(vertexNormal), 1.0);
 }

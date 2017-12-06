@@ -48,14 +48,7 @@ public abstract class Plane {
      */
     public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, PosVector middle) {
         DirVector normalVector = B.to(A).cross(B.to(C));
-        // if orthogonal
-        if (Vector.almostZero(normalVector.y())) {
-            // if direction is inward
-            if (normalVector.dot(B.to(middle)) > 0) {
-                normalVector = normalVector.scale(-1);
-            }
-            // if toward xz-plane
-        } else if (B.y() * normalVector.y() < 0) {
+        if (normalVector.dot(B.to(middle)) > 0) {
             normalVector = normalVector.scale(-1);
         }
         return normalVector;

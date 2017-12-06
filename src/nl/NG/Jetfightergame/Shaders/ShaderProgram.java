@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -47,6 +48,7 @@ public abstract class ShaderProgram {
         // Create uniforms for world and projection matrices
         createUniform("viewProjectionMatrix");
         createUniform("modelMatrix");
+        createUniform("normalMatrix");
     }
 
     /**
@@ -113,7 +115,7 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * Set the value of a certain 4x4 matrix shader uniform.
+     * Set the value of a 4x4 matrix shader uniform.
      *
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
@@ -124,6 +126,21 @@ public abstract class ShaderProgram {
             FloatBuffer fb = stack.mallocFloat(16);
             value.get(fb);
             glUniformMatrix4fv(uniforms.get(uniformName), false, fb);
+        }
+    }
+
+    /**
+     * Set the value of a 3x3 matrix shader uniform.
+     *
+     * @param uniformName The name of the uniform.
+     * @param value The new value of the uniform.
+     */
+    protected void setUniform(String uniformName, Matrix3f value) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            // Dump the matrix into a float buffer
+            FloatBuffer fb = stack.mallocFloat(9);
+            value.get(fb);
+            glUniformMatrix3fv(uniforms.get(uniformName), false, fb);
         }
     }
 
@@ -235,6 +252,10 @@ public abstract class ShaderProgram {
 
     public void setModelMatrix(Matrix4f modelMatrix) {
         setUniform("modelMatrix", modelMatrix);
+    }
+
+    public void setNormalMatrix(Matrix3f normalMatrix){
+        setUniform("normalMatrix", normalMatrix);
     }
 
     public void setMaterial(Material mat){

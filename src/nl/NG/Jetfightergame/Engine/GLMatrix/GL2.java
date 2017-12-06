@@ -4,16 +4,12 @@ import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import org.lwjgl.opengl.GL11;
 
 /**
  * @author Geert van Ieperen
  *         created on 15-11-2017.
  */
 public interface GL2 extends MatrixStack {
-
-    public static int GL_PROJECTION = GL11.GL_PROJECTION;
-    public static int GL_MODELVIEW = GL11.GL_MODELVIEW;
 
     void draw(Renderable object);
 

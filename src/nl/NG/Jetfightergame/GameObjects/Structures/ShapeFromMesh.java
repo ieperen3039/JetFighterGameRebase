@@ -153,9 +153,9 @@ public class ShapeFromMesh implements Shape {
                     case "vn":
                         // Vertex normal
                         DirVector vec3fNorm = new DirVector(
-                                Float.parseFloat(tokens[1]),
-                                Float.parseFloat(tokens[2]),
-                                Float.parseFloat(tokens[3]));
+                                Float.parseFloat(tokens[XYZ[0]]),
+                                Float.parseFloat(tokens[XYZ[1]]),
+                                Float.parseFloat(tokens[XYZ[2]]));
                         normals.add(vec3fNorm);
                         break;
                     case "f":

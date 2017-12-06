@@ -9,18 +9,17 @@ layout (location = 1) in vec3 vertexNormal;
 out vec3 mVertexNormal;
 // position of the vertex
 out vec3 mVertexPosition;
-out vec3 cameraPosition;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewProjectionMatrix;
+uniform mat3 normalMatrix;
 
 
 void main() {
 
 	vec4 mPosition = modelMatrix * vec4(position, 1.0);
     gl_Position = viewProjectionMatrix * mPosition;
-    cameraPosition = normalize(-mPosition.xyz); //position of camera in View space
 
-	mVertexNormal = normalize(modelMatrix * vec4(vertexNormal, 0.0)).xyz;
+	mVertexNormal = normalize(normalMatrix * vertexNormal);
     mVertexPosition = mPosition.xyz;
 }

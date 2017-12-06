@@ -29,6 +29,7 @@ public class PhongShader extends ShaderProgram {
         // Create the lighting uniforms
         createUniform("specularPower");
         createUniform("ambientLight");
+        createUniform("cameraPosition");
         createPointLightsUniform(MAX_POINT_LIGHTS);
 
         // Create uniform for special lighting conditions for background elements
@@ -50,6 +51,10 @@ public class PhongShader extends ShaderProgram {
 
     public void setAmbientLight(Color4f ambientLight) {
         setUniform("ambientLight", ambientLight);
+    }
+
+    public void setCameraPosition(Vector3f mPosition){
+        setUniform("cameraPosition", mPosition);
     }
 
     /**
