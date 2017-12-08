@@ -110,12 +110,14 @@ public class MouseTracker {
     }
 
     public void mousePressed(MouseEvent e) {
+        // prepare calling the method
         final Consumer<TrackerClickListener> notify = l -> l.clickEvent(e.getX(), e.getY());
 
         switch (e.getButton()) {
             case BUTTON_LEFT:
                 leftMouse = true;
                 if (!inPlayMode.getAsBoolean()) {
+                    // call if button is left and in menu-mode
                     menuClickListeners.forEach(notify);
                 }
                 break;
@@ -127,6 +129,7 @@ public class MouseTracker {
                 break;
         }
         if (inPlayMode.getAsBoolean()) {
+            // call if in game-mode
             inGameClickListeners.forEach(notify);
         }
     }

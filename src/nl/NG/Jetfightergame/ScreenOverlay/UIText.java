@@ -9,7 +9,7 @@ public class UIText extends UIElement {
     private int align = 0;
 
     public UIText(int width, int height, Supplier<String> contentSupplier) {
-        super(0, 0, width, height);
+        super(width, height);
         this.supplier = contentSupplier;
     }
 

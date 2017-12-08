@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.GameObjects.Particles;
+package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;

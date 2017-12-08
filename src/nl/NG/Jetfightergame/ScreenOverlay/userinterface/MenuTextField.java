@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
-import org.joml.Vector2i;
 
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
@@ -13,22 +12,19 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
  */
 public class MenuTextField extends UIElement {
 
-    public static final double MARGIN = 20; //TODO adapt with textsize?
+    public static final int MARGIN = 20; //TODO adapt with textsize?
     public static final int TEXT_SIZE_SMALL = 30;
+    public static final int INTERTEXT_MARGIN = MenuPositioner.STD_MARGIN;
     private final String title;
     private final String[] content;
-
-    public MenuTextField(String title, String[] content, int width, int height) {
-        this (title, content, 0, 0, width, height);
-    }
 
     /**
      * Creates a textfield
      * @param title The title of the field
      * @param content the content this textbox has to display
      */
-    public MenuTextField(String title, String[] content, int x, int y, int width, int heigth) {
-        super(x, y, width, heigth);
+    public MenuTextField(String title, String[] content, int width) {
+        super(width, (TEXT_SIZE_SMALL + INTERTEXT_MARGIN) * content.length + TEXT_SIZE_LARGE + INTERTEXT_MARGIN + 2*MARGIN);
 
         this.title = title;
         this.content = content;
@@ -40,13 +36,14 @@ public class MenuTextField extends UIElement {
         hud.fill(MENU_FILL_COLOR);
         hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
 
-        hud.text(x + width /2, (int) (y + MARGIN), TEXT_SIZE_LARGE, Hud.Font.MEDIUM,
+        final int middle = this.x + width / 2;
+        hud.text(middle, y + MARGIN, TEXT_SIZE_LARGE, Hud.Font.MEDIUM,
                 NVG_ALIGN_CENTER | NVG_ALIGN_TOP, title, TEXT_COLOR);
 
-        MenuPositioner pos = new MenuPositioner(x + width/2, (int) (y + TEXT_SIZE_LARGE + 2* MARGIN), 6);
+        int textYPosition = y + MARGIN*2 + TEXT_SIZE_LARGE;
         for (String line : content) {
-            Vector2i p = pos.place(0, TEXT_SIZE_SMALL, true);
-            hud.text(p.x, p.y, TEXT_SIZE_SMALL, Hud.Font.MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, line, TEXT_COLOR);
+            hud.text(middle, textYPosition, TEXT_SIZE_SMALL, Hud.Font.MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, line, TEXT_COLOR);
+            textYPosition += TEXT_SIZE_SMALL + INTERTEXT_MARGIN;
         }
     }
 }

@@ -2,10 +2,10 @@ package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
-import nl.NG.Jetfightergame.GameObjects.Structures.Mesh;
-import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
-import nl.NG.Jetfightergame.GameObjects.Surfaces.Plane;
-import nl.NG.Jetfightergame.GameObjects.Surfaces.Triangle;
+import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.ShapeCreators.Mesh;
+import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

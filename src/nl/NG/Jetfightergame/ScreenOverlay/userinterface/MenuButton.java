@@ -1,10 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.Controllers.MouseTracker.MouseEvent;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
-import org.joml.Vector2i;
-
-import java.util.function.Consumer;
 
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 
@@ -16,24 +12,23 @@ public class MenuButton extends MenuClickable {
 
     private final String text;
 
-    private Consumer<MouseEvent> click;
+    private Runnable click;
 
-    public MenuButton(String text, Consumer<MouseEvent> click) {
-        this(text, 0, 0, click);
+    public MenuButton(String text, Runnable click) {
+        this(text, BUTTON_WIDTH, BUTTON_HEIGHT, click);
     }
 
-    public MenuButton(String text, int x, int y, Consumer<MouseEvent> click) {
-        this(text, x, y, BUTTON_WIDTH, BUTTON_HEIGHT, click);
-    }
-
-    public MenuButton(String text, int x, int y, int width, int height, Consumer<MouseEvent> click) {
-        super(x, y, width, height);
+    /**
+     * create a button that executes a click
+     * @param text the text displayed on the button, will also be used to name in case of error
+     * @param width
+     * @param height
+     * @param click
+     */
+    public MenuButton(String text, int width, int height, Runnable click) {
+        super(width, height);
         this.text = text;
         this.click = click;
-    }
-
-    public MenuButton(String text, Vector2i pos, Consumer<MouseEvent> click){
-        this(text, pos.x, pos.y, click);
     }
 
     @Override
@@ -47,7 +42,11 @@ public class MenuButton extends MenuClickable {
     }
 
     @Override
-    public void onClick(MouseEvent event) {
-        click.accept(event);
+    public void onClick(int x, int y) {
+        try {
+            click.run();
+        } catch (Exception ex){
+            throw new RuntimeException("Error occurred in button \"" + text + "\"", ex);
+        }
     }
 }

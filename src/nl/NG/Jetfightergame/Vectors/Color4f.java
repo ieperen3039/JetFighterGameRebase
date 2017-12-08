@@ -130,4 +130,8 @@ public class Color4f {
     public Vector3f toVector3f() {
         return new Vector3f(red, green, blue);
     }
+
+    public Vector4f toVector4f() {
+        return new Vector4f(red, green, blue, alpha);
+    }
 }

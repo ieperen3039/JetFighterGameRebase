@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.Controllers.MouseTracker;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
 import org.joml.Vector4f;
 
@@ -18,19 +17,15 @@ public class MenuSlider extends MenuClickable {
     private float value;
     private Consumer<Float> handler;
 
-    public MenuSlider(String text, int x, int y, int width, int height, Consumer<Float> handler) {
-        super(x, y, width, height);
+    public MenuSlider(String text, int width, int height, Consumer<Float> handler) {
+        super(width, height);
         this.text = text;
         this.value = 1f;
         this.handler = handler;
     }
 
-    public MenuSlider(String text, int x, int y, Consumer<Float> handler) {
-        this(text, x, y, BUTTON_WIDTH, BUTTON_HEIGHT, handler);
-    }
-
     public MenuSlider(String text, Consumer<Float> handler) {
-        this(text, 0, 0, handler);
+        this(text, BUTTON_WIDTH, BUTTON_HEIGHT, handler);
     }
 
     @Override
@@ -46,8 +41,12 @@ public class MenuSlider extends MenuClickable {
     }
 
     @Override
-    public void onClick(MouseTracker.MouseEvent event) {
-        value = Math.max((float) (event.getX() - this.x) / (float) this.width, 0f);
-        handler.accept(value);
+    public void onClick(int x, int y) {
+        value = Math.max((float) (x - this.x) / (float) this.width, 0f);
+        try {
+            handler.accept(value);
+        } catch (Exception ex){
+            throw new RuntimeException("Error occurred in slider \"" + text + "\", with value" + value, ex);
+        }
     }
 }

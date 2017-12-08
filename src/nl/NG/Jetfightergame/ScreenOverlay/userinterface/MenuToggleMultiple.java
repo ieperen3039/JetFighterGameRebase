@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.Controllers.MouseTracker;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
 import org.joml.Vector2i;
 
@@ -18,7 +17,7 @@ public class MenuToggleMultiple extends MenuClickable {
     private Consumer<Integer> handler;
 
     public MenuToggleMultiple(String text, int x, int y, int width, int height, String[] names, Consumer<Integer> handler) {
-        super(x, y, width, height);
+        super(width, height);
         this.text = text;
         this.names = names;
         this.value = 0;
@@ -52,7 +51,7 @@ public class MenuToggleMultiple extends MenuClickable {
     }
 
     @Override
-    public void onClick(MouseTracker.MouseEvent event) {
+    public void onClick(int x, int y) {
         value = (value += 1)%names.length;
 
         handler.accept(value);

@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 /**
  * @author Geert van Ieperen
  *         created on 9-11-2017.
+ * a collection of consumers that operate on an object given in the constructor
  */
 public abstract class AutomatedCollection<T> {
     protected final T executer;

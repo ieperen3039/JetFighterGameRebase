@@ -7,10 +7,13 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
+import nl.NG.Jetfightergame.ScreenOverlay.HudMenu;
+import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.Shaders.GouraudShader;
 import nl.NG.Jetfightergame.Shaders.PhongShader;
 import nl.NG.Jetfightergame.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
+import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
@@ -26,12 +29,13 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
+    private final HudMenu gameMenu;
 
     private ShaderProgram currentShader;
 
     private Color4f ambientLight;
 
-    public JetFighterRenderer(GLFWWindow window, Camera camera, JetFighterGame engine) throws IOException, ShaderException {
+    public JetFighterRenderer(GLFWWindow window, Camera camera, JetFighterGame engine, MusicProvider musicProvider, boolean inMenuMode) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false);
         this.window = window;
         this.activeCamera = camera;
@@ -44,6 +48,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         ambientLight = Color4f.LIGHT_GREY;
         this.hud = new Hud(window);
+
+        gameMenu = new JetFighterMenu(hud, musicProvider, engine::setPlayMode, engine::exitGame, inMenuMode);
     }
 
     @Override
@@ -55,7 +61,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         initShader();
         Toolbox.checkGLError();
 
-        if (!engine.isPaused()) engine.updateParticles(deltaTime);
+        engine.updateParticles(deltaTime);
 
         // activate lights in the scene
         engine.setLights(gl);

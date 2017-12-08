@@ -5,8 +5,8 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
-import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
@@ -117,7 +117,7 @@ public abstract class GameObject implements MovingObject {
                     .map(identity::getPosition)
                     .forEach(current::add)
             );
-            toLocalSpace(identity, (() -> create(identity, collectCurrent, false)), false);
+            toLocalSpace(identity, () -> create(identity, collectCurrent, false), false);
 
             // combine both lists into one list
             List<TrackedVector<PosVector>> points = new LinkedList<>();
@@ -160,7 +160,7 @@ public abstract class GameObject implements MovingObject {
 
         // collect the collisions
         final ShadowMatrix identity = new ShadowMatrix();
-        final Consumer<Shape> exec = (shape -> {
+        final Consumer<Shape> exec = shape -> {
             // map points to local space
             PosVector startPoint = identity.getReversePosition(point.previous());
             PosVector endPoint = identity.getReversePosition(point.current());
@@ -168,7 +168,7 @@ public abstract class GameObject implements MovingObject {
             // search hitpoint, add it when found
             Collision stopVec = shape.getMaximumMovement(startPoint, direction, endPoint);
             if (stopVec != null) multipliers.add(stopVec);
-        });
+        };
         other.toLocalSpace(identity, () -> create(identity , exec, false), false);
 
         // iterate over all collisions

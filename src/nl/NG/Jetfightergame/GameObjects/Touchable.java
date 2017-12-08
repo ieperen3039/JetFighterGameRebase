@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.GameObjects;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.GameObjects.Structures.Shape;
+import nl.NG.Jetfightergame.ShapeCreators.Shape;
 
 import java.util.function.Consumer;
 

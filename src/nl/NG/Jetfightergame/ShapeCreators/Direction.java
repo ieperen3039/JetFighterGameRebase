@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.GameObjects;
+package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 

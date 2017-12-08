@@ -1,15 +1,13 @@
-package nl.NG.Jetfightergame.ScreenOverlay.MenuElements;
+package nl.NG.Jetfightergame.ScreenOverlay;
 
-import nl.NG.Jetfightergame.Engine.MusicProvider;
 import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.ScreenOverlay.Hud;
-
-import java.util.function.BooleanSupplier;
+import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
+import nl.NG.Jetfightergame.Sound.MusicProvider;
 
 /**
  * @author Geert van Ieperen, Jorren Hendriks
  */
-public class JetFighterMenu extends HudMenu {
+public class JetFighterMenu extends HudMenu { // TODO generalize the return button
 
     private final static String[] creditTextfield =
             ("Main producer:\n" +
@@ -27,17 +25,16 @@ public class JetFighterMenu extends HudMenu {
             ).split("\n");
 
     private static final int TEXTFIELD_WIDTH = 750;
-    private static final int TEXTFIELD_HEIGHT = 450;
 
     private MenuClickable[] mainMenu;
     private MenuClickable[] optionMenu;
     private MenuClickable[] graphicsMenu;
     private MenuClickable[] audioMenu;
     private MenuClickable[] controlsMenu;
-    private MenuElement[] creditScreen;
+    private UIElement[] creditScreen;
 
-    public JetFighterMenu(MusicProvider musicProvider, Hud hud, BooleanSupplier shouldBeVisible, Runnable startGame, Runnable exitGame) {
-        super(hud, shouldBeVisible);
+    public JetFighterMenu(Hud hud, MusicProvider musicProvider, Runnable startGame, Runnable exitGame, boolean visible) {
+        super(hud, visible);
 
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
@@ -50,9 +47,9 @@ public class JetFighterMenu extends HudMenu {
         }
         MenuClickable credits = new MenuButton("Credits", () -> switchContentTo(creditScreen));
         {
-            MenuElement credit = new MenuTextField("Credits", creditTextfield, TEXTFIELD_WIDTH, TEXTFIELD_HEIGHT);
+            UIElement credit = new MenuTextField("Credits", creditTextfield, TEXTFIELD_WIDTH);
             MenuButton creditBackButton = new MenuButton("Back", () -> switchContentTo(mainMenu));
-            creditScreen = new MenuElement[]{credit, creditBackButton};
+            creditScreen = new UIElement[]{credit, creditBackButton};
         }
         MenuClickable exitGameButton = new MenuButton("Exit Game", exitGame);
         mainMenu = new MenuClickable[]{startGameButton, options, credits, exitGameButton};

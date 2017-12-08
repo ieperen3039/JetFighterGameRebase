@@ -1,4 +1,6 @@
-package nl.NG.Jetfightergame.ScreenOverlay.MenuElements;
+package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
+
+import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 
 /**
  * @author Geert van Ieperen
@@ -13,7 +15,7 @@ public class MenuPositionerCenter extends MenuPositioner {
     }
 
     @Override
-    public void place(MenuElement element) {
+    public void place(UIElement element) {
         element.setPosition(x - element.getWidth() / 2, y);
         y += (margin + element.getHeight());
     }

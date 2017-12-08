@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
+import org.joml.Vector2i;
+
 /**
  * Interface for objects that can be drawn on a Hud.
  * @author Jorren
@@ -13,4 +15,7 @@ public interface HudElement {
      */
     void draw(Hud hud);
 
+    void setPosition(Vector2i position);
+
+    void setPosition(int x, int y);
 }

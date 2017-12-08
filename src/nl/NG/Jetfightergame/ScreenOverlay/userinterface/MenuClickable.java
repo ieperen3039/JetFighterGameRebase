@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.Controllers.MouseTracker;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 
 /**
@@ -8,12 +7,17 @@ import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
  */
 public abstract class MenuClickable extends UIElement {
 
-    public static final int BUTTON_WIDTH = 500;
-    public static final int BUTTON_HEIGHT = 300;
+    public static final int BUTTON_WIDTH = 400;
+    public static final int BUTTON_HEIGHT = 80;
 
-    public MenuClickable(int x, int y, int width, int height) {
-        super(x, y, width, height);
+    public MenuClickable(int width, int height) {
+        super(width, height);
     }
 
-    public abstract void onClick(MouseTracker.MouseEvent event);
+    /**
+     * is called when this element is clicked on. coordinates are screen coordinates, NOT relative
+     * @param x screen x coordinate
+     * @param y screen y coordinate
+     */
+    public abstract void onClick(int x, int y);
 }

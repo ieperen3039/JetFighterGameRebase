@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.GameObjects.Surfaces;
+package nl.NG.Jetfightergame.Primitives.Surfaces;
 
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.Vectors.DirVector;

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.GameObjects.Structures;
+package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;

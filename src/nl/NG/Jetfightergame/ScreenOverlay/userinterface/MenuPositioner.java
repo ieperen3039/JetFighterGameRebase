@@ -1,36 +1,32 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
-import org.joml.Vector2i;
 
 /**
- * @author Jorren Hendriks.
+ * @author Geert van Ieperen
+ *         created on 9-11-2017.
  */
-public class MenuPositioner {
+public abstract class MenuPositioner {
+    public static final int STD_MARGIN = 30;
+    public static final int STD_BOUND_DIST = 80;
+    public final int margin;
+    public final int boundaryDistance;
+    protected int x;
+    protected int y;
 
-    private int x;
-    private int y;
-    private final int margin;
+    public MenuPositioner() {
+        margin = STD_MARGIN;
+        boundaryDistance = STD_BOUND_DIST;
+    }
 
-    private final Vector2i pos = new Vector2i();
-
-    public MenuPositioner(int x, int y, int margin) {
-        this.x = x;
-        this.y = y;
+    public MenuPositioner(int margin, int boundaryDistance) {
         this.margin = margin;
+        this.boundaryDistance = boundaryDistance;
     }
 
-    public Vector2i place(UIElement element, boolean newline) {
-        return place(element.getWidth(), element.getHeight(), newline);
-    }
-
-    public Vector2i place(int width, int height, boolean newline) {
-        pos.set(x, y);
-        if (newline) {
-            y += height + margin;
-        } else {
-            x += width + margin;
-        }
-        return pos;
-    }
+    /**
+     * sets the position of this element below the previous
+     * @param element
+     */
+    public abstract void place(UIElement element);
 }

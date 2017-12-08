@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.GameObjects.Structures;
+package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Vectors.PosVector;

@@ -9,9 +9,9 @@ import org.lwjgl.nanovg.NVGPaint;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 
 import static org.lwjgl.nanovg.NanoVG.*;
@@ -45,7 +45,7 @@ public class Hud {
     private ByteBuffer[] fontBuffer;
     private Map<String, Integer> imageBuffer;
 
-    private List<Runnable> drawBuffer;
+    private Collection<Runnable> drawBuffer;
 
     /**
      * Initialize the Hud.
@@ -74,7 +74,7 @@ public class Hud {
         color = NVGColor.create();
         paint = NVGPaint.create();
 
-        drawBuffer = new LinkedList<>();
+        drawBuffer = new HashSet<>();
     }
 
     /**

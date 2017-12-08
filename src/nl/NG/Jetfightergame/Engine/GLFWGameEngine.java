@@ -9,8 +9,6 @@ import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 
-import java.io.IOException;
-
 /**
  * @author Jorren Hendriks.
  * @author Geert van Ieperen
@@ -27,9 +25,8 @@ public abstract class GLFWGameEngine {
 
     /**
      * Classes that extend this engine should implement their own gameloop and rendering loop
-     * @throws IOException
      */
-    public GLFWGameEngine() throws IOException {
+    public GLFWGameEngine() {
         window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
         camera = new PointCenteredCamera();
@@ -60,7 +57,7 @@ public abstract class GLFWGameEngine {
     }
 
     /** tells the renderloop to stop, renderloop must call back to clean up others */
-    public void exitGame(){ // TODO add timer for forced shutdown
+    public void exitGame(){ // TODO add timer for forced shutdown // TODO add stopping boolean
         System.out.println();
         Toolbox.print("Stopping game...");
         renderLoop.stopLoop();
@@ -90,7 +87,6 @@ public abstract class GLFWGameEngine {
     }
 
     public void setMenuMode() {
-        // TODO set cursor visibility
         this.currentGameMode = GameMode.MENU_MODE;
         window.freePointer();
         camera = new PointCenteredCamera(getPlayer().getPosition(), DirVector.Z, 1, 1);
@@ -98,7 +94,6 @@ public abstract class GLFWGameEngine {
     }
 
     public void setPlayMode() {
-        // TODO set cursor visibility
         this.currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
         camera = new FollowingCamera(camera.getEye(), getPlayer());

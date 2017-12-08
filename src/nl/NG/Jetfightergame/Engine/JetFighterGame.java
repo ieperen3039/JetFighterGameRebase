@@ -8,12 +8,14 @@ import nl.NG.Jetfightergame.FighterJets.TestJet;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
-import nl.NG.Jetfightergame.GameObjects.Particles.AbstractParticle;
-import nl.NG.Jetfightergame.GameObjects.Structures.GeneralShapes;
-import nl.NG.Jetfightergame.GameObjects.Structures.Mesh;
-import nl.NG.Jetfightergame.GameObjects.Structures.ShapeFromMesh;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
+import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.ShapeCreators.GeneralShapes;
+import nl.NG.Jetfightergame.ShapeCreators.Mesh;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
+import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Pair;
+import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -64,7 +66,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             MouseTracker.getInstance().setMenuModeDecision(gameMode);
 
             gameLoop = new JetFighterRunner(this);
-            renderLoop = new JetFighterRenderer(window, camera, this);
+            MusicProvider musicProvider = new MusicProvider(new Timer());
+            renderLoop = new JetFighterRenderer(window, camera, this, musicProvider, true);
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
@@ -90,6 +93,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         new JetFighterGame().startGame();
     }
 
+    /**
+     * update the physics of all game objects and check for collisions
+     * @param deltaTime time since last renderloop
+     */
     public void updateGameLoop(float deltaTime) {
         // update positions with respect to collisions
         objects.forEach((gameObject) -> gameObject.preUpdate(deltaTime));
@@ -146,6 +153,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         lights.forEach((pointLight) -> gl.setLight(pointLight.left, pointLight.right));
     }
 
+    /**
+     * draw all objects of the game
+     * @param gl
+     */
     public void drawObjects(GL2 gl) {
         gl.pushMatrix();
         gl.rotate(DirVector.Z, (debugVariable++) / 40f);
@@ -159,8 +170,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         particles.forEach(gl::draw);
     }
 
+    /**
+     * if the game is not paused, update the position of the particles.
+     * should be called every renderloop
+     * @param elapsedSeconds time since last renderframe
+     */
     public void updateParticles(float elapsedSeconds) {
-        particles.forEach(p -> p.updateRender(elapsedSeconds));
+        if (!isPaused())
+            particles.forEach(p -> p.updateRender(elapsedSeconds));
     }
 
     @Override
@@ -183,7 +200,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 break;
             case GLFW_KEY_F11:
                 Toolbox.print("Switching fullscreen");
-                window.setFullScreen();
+                window.toggleFullScreen();
                 break;
             case GLFW_KEY_EQUAL:
                 gameLoop.resetTPSCounter();
