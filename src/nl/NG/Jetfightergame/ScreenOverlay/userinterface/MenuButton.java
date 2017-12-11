@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.ScreenOverlay.Hud;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 
@@ -32,12 +32,12 @@ public class MenuButton extends MenuClickable {
     }
 
     @Override
-    public void draw(Hud hud) {
+    public void draw(ScreenOverlay.Painter hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
         hud.fill(MENU_FILL_COLOR);
         hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
 
-        Hud.Font font = Hud.Font.MEDIUM;
+        ScreenOverlay.Font font = ScreenOverlay.Font.MEDIUM;
         hud.text(x + width /2, y + TEXT_SIZE_LARGE + 10, TEXT_SIZE_LARGE, font, NVG_ALIGN_CENTER, text, TEXT_COLOR);
     }
 

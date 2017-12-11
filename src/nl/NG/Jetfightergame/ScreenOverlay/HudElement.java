@@ -13,7 +13,7 @@ public interface HudElement {
      *
      * @param hud The hud on which to drawObjects this element.
      */
-    void draw(Hud hud);
+    void draw(ScreenOverlay.Painter hud);
 
     void setPosition(Vector2i position);
 

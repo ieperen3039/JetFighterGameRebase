@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.ScreenOverlay.Hud;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
@@ -31,18 +31,18 @@ public class MenuTextField extends UIElement {
     }
 
     @Override
-    public void draw(Hud hud) {
+    public void draw(ScreenOverlay.Painter hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
         hud.fill(MENU_FILL_COLOR);
         hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
 
         final int middle = this.x + width / 2;
-        hud.text(middle, y + MARGIN, TEXT_SIZE_LARGE, Hud.Font.MEDIUM,
+        hud.text(middle, y + MARGIN, TEXT_SIZE_LARGE, ScreenOverlay.Font.MEDIUM,
                 NVG_ALIGN_CENTER | NVG_ALIGN_TOP, title, TEXT_COLOR);
 
         int textYPosition = y + MARGIN*2 + TEXT_SIZE_LARGE;
         for (String line : content) {
-            hud.text(middle, textYPosition, TEXT_SIZE_SMALL, Hud.Font.MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, line, TEXT_COLOR);
+            hud.text(middle, textYPosition, TEXT_SIZE_SMALL, ScreenOverlay.Font.MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, line, TEXT_COLOR);
             textYPosition += TEXT_SIZE_SMALL + INTERTEXT_MARGIN;
         }
     }

@@ -51,7 +51,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             gameLoop = new JetFighterRunner(environment);
             MusicProvider musicProvider = new MusicProvider(new Timer());
-            renderLoop = new JetFighterRenderer(this, environment, window, camera, musicProvider, true);
+            renderLoop = new JetFighterRenderer(this, environment, window, camera, musicProvider,
+                    () -> getCurrentGameMode() == GameMode.MENU_MODE);
 
             // set currentGameMode and engine.isPaused
             setMenuMode();

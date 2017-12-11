@@ -164,7 +164,7 @@ public class GLFWWindow {
     }
 
     /**
-     * Close the window
+     * hints the window to close
      */
     public void close() {
         glfwSetWindowShouldClose(window, true);

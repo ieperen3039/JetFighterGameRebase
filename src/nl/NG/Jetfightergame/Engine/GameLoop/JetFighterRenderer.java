@@ -7,8 +7,8 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.ScreenOverlay.Hud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Shaders.GouraudShader;
 import nl.NG.Jetfightergame.Shaders.PhongShader;
 import nl.NG.Jetfightergame.Shaders.ShaderException;
@@ -18,6 +18,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
 import java.io.IOException;
+import java.util.function.BooleanSupplier;
 
 /**
  * @author Jorren Hendriks.
@@ -25,7 +26,7 @@ import java.io.IOException;
  */
 public class JetFighterRenderer extends AbstractGameLoop {
 
-    private final Hud hud;
+    private final ScreenOverlay screenOverlay;
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
@@ -36,7 +37,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GameState gameState;
 
     public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
-                              Camera camera, MusicProvider musicProvider, boolean inMenuMode) throws IOException, ShaderException {
+                              Camera camera, MusicProvider musicProvider, BooleanSupplier menuMode) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false);
 
         this.gameState = gameState;
@@ -50,47 +51,54 @@ public class JetFighterRenderer extends AbstractGameLoop {
         window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
         ambientLight = Color4f.LIGHT_GREY;
-        this.hud = new Hud(window);
+        this.screenOverlay = new ScreenOverlay(window, menuMode);
 
-        new JetFighterMenu(hud, musicProvider, engine::setPlayMode, engine::exitGame, inMenuMode);
+        new JetFighterMenu(screenOverlay, musicProvider, engine::setPlayMode, engine::exitGame);
     }
 
     @Override
     protected void update(float deltaTime) {
-        Toolbox.checkGLError();
-        GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
-        Toolbox.checkGLError();
+        try {
+            Toolbox.checkGLError();
+            GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
+            Toolbox.checkGLError();
 
-        initShader();
-        Toolbox.checkGLError();
+            initShader();
+            Toolbox.checkGLError();
 
-        if (!engine.isPaused()) gameState.updateParticles(deltaTime);
+            if (!engine.isPaused()) gameState.updateParticles(deltaTime);
 
-        // activate lights in the scene
-        gameState.setLights(gl);
-        Toolbox.checkGLError();
+            // activate lights in the scene
+            gameState.setLights(gl);
+            Toolbox.checkGLError();
 
-        // first draw the non-transparent objects
-        gameState.drawObjects(gl);
-        Toolbox.checkGLError();
-        gameState.drawParticles(gl);
-        Toolbox.checkGLError();
+            // first draw the non-transparent objects
+            gameState.drawObjects(gl);
+            Toolbox.checkGLError();
+            gameState.drawParticles(gl);
+            Toolbox.checkGLError();
 
-        // overlay with transparent objects
-        // TODO transparent meshes?
+            // overlay with transparent objects
+            // TODO transparent meshes?
 
-        currentShader.unbind();
+            currentShader.unbind();
 
-        hud.draw(window.getWidth(), window.getHeight());
+            screenOverlay.draw(window.getWidth(), window.getHeight());
 
-        // update window
-        window.update();
+            // update window
+            window.update();
 
-        // update stop-condition
-        if (window.shouldClose()) {
+            // update stop-condition
+            if (window.shouldClose()) {
+                engine.exitGame();
+            }
+            Toolbox.checkGLError();
+
+        } catch (Exception ex){
+            window.close();
             engine.exitGame();
+            throw ex;
         }
-        Toolbox.checkGLError();
     }
 
     private void initShader() {

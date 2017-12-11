@@ -83,8 +83,8 @@ public abstract class AbstractGameLoop extends Thread {
                 pauseBlock.await();
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
             System.err.println(loopName + " has Crashed! Blame Menno.");
+            ex.printStackTrace();
         } finally {
             cleanup();
         }

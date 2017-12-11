@@ -6,9 +6,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuClickable;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerLeft;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Jorren Hendriks
@@ -16,14 +14,11 @@ import java.util.List;
  */
 
 public abstract class HudMenu implements TrackerClickListener {
-    private final Hud hud;
+    private final ScreenOverlay screenOverlay;
     private UIElement[] activeElements;
-    private boolean visible;
-    private Runnable hudEntry;
 
-    public HudMenu(Hud hud, boolean visible) {
-        this.hud = hud;
-        this.visible = visible;
+    public HudMenu(ScreenOverlay hud) {
+        this.screenOverlay = hud;
         MouseTracker.getInstance().addClickListener(this, false);
     }
 
@@ -33,28 +28,22 @@ public abstract class HudMenu implements TrackerClickListener {
      */
     public void switchContentTo(UIElement[] newElements) {
         activeElements = newElements;
-        List<Runnable> entry = new ArrayList<>();
 
+        // destroy the current entries of the hud
+        screenOverlay.removeMenuItem();
 
         // correct positions of buttons
         MenuPositioner caret = new MenuPositionerLeft();
         for (UIElement element : activeElements) {
             caret.place(element);
-            entry.add(() -> element.draw(hud));
+            screenOverlay.addMenuItem(element::draw);
         }
 
-        // destroy the current entries of the hud
-        hud.destroy(hudEntry);
-        // add the new list of elements to the hud, and receive new pointer
-        hudEntry = () -> entry.forEach(Runnable::run);
-        // only display it if it is currently visible
-        if (visible) hud.create(hudEntry);
     }
 
+    // note that these can only fire when mouse is not in capture mode
     @Override
     public void clickEvent(int x, int y) {
-        if (!visible) return;
-
         Arrays.stream(activeElements)
                 // take all clickable elements
                 .filter(element -> element instanceof MenuClickable)
@@ -64,15 +53,6 @@ public abstract class HudMenu implements TrackerClickListener {
                 .filter(button -> button.contains(x, y))
                 // execute buttonpress
                 .forEach(button -> button.onClick(x, y));
-    }
-
-    public void setVisibillity(boolean toVisible){
-        visible = toVisible;
-        if (toVisible) {
-            hud.create(hudEntry);
-        } else {
-            hud.destroy(hudEntry);
-        }
     }
 
     public UIElement[] getActiveElements() {
