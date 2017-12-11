@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
-import nl.NG.Jetfightergame.Engine.JetFighterGame;
+import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.Settings;
 
 /**
@@ -9,9 +9,9 @@ import nl.NG.Jetfightergame.Engine.Settings;
  */
 public class JetFighterRunner extends AbstractGameLoop {
 
-    private final JetFighterGame game;
+    private final GameState game;
 
-    public JetFighterRunner(JetFighterGame game) {
+    public JetFighterRunner(GameState game) {
         super("GameEngine loop", Settings.TARGET_TPS, true);
         this.game = game;
     }

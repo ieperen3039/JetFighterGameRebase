@@ -15,32 +15,34 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class JetFighterTester {
 
-    private final JetFighterGameTest instance;
+    private JetFighterGame engine;
 
     /**
      * openWindow the game by creating a frame based on this engine
      */
     public JetFighterTester() throws Exception {
-        instance = new JetFighterGameTest();
+        engine = new JetFighterGame();
+        engine.setGameState(new TestEnvironment());
     }
 
     @Test
     public void runTest() throws Exception {
-        instance.startGame();
+
     }
 
-    private class JetFighterGameTest extends JetFighterGame {
+    private class TestEnvironment extends GameState {
 
         private float xOffSet = 0;//debug variable, may be deleted
         private float yOffSet = 0;
         private float zOffSet = 0;
 
+        public TestEnvironment() {
+            super();
+        }
+
         /**
          * openWindow the game by creating a frame based on this engine
          */
-        public JetFighterGameTest() throws Exception {
-            super();
-        }
 
         @Override
         public void drawObjects(GL2 gl) {

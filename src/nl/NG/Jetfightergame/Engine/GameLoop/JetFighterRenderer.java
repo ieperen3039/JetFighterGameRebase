@@ -4,10 +4,10 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
+import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ScreenOverlay.Hud;
-import nl.NG.Jetfightergame.ScreenOverlay.HudMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.Shaders.GouraudShader;
 import nl.NG.Jetfightergame.Shaders.PhongShader;
@@ -29,14 +29,17 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
-    private final HudMenu gameMenu;
 
     private ShaderProgram currentShader;
 
     private Color4f ambientLight;
+    private GameState gameState;
 
-    public JetFighterRenderer(GLFWWindow window, Camera camera, JetFighterGame engine, MusicProvider musicProvider, boolean inMenuMode) throws IOException, ShaderException {
+    public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
+                              Camera camera, MusicProvider musicProvider, boolean inMenuMode) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false);
+
+        this.gameState = gameState;
         this.window = window;
         this.activeCamera = camera;
         this.engine = engine;
@@ -49,7 +52,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         ambientLight = Color4f.LIGHT_GREY;
         this.hud = new Hud(window);
 
-        gameMenu = new JetFighterMenu(hud, musicProvider, engine::setPlayMode, engine::exitGame, inMenuMode);
+        new JetFighterMenu(hud, musicProvider, engine::setPlayMode, engine::exitGame, inMenuMode);
     }
 
     @Override
@@ -61,16 +64,16 @@ public class JetFighterRenderer extends AbstractGameLoop {
         initShader();
         Toolbox.checkGLError();
 
-        engine.updateParticles(deltaTime);
+        if (!engine.isPaused()) gameState.updateParticles(deltaTime);
 
         // activate lights in the scene
-        engine.setLights(gl);
+        gameState.setLights(gl);
         Toolbox.checkGLError();
 
         // first draw the non-transparent objects
-        engine.drawObjects(gl);
+        gameState.drawObjects(gl);
         Toolbox.checkGLError();
-        engine.drawParticles(gl);
+        gameState.drawParticles(gl);
         Toolbox.checkGLError();
 
         // overlay with transparent objects
