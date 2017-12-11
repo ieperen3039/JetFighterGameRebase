@@ -2,11 +2,15 @@ package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Tools.Pair;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -41,7 +45,7 @@ public class CustomShape {
      * @param u fraction of the curve to be requested
      * @return vector to the point on the curve on fraction u
      */
-    private static Vector beziérPoint(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
+    private static Vector bezierPoint(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
         //A*(1−u)^3 + B*3u(1−u)^2 + C*3u^2(1−u) + D*u^3
         return A.scale((1 - u) * (1 - u) * (1 - u))
                 .add(B.scale(3 * u * (1 - u) * (1 - u)))
@@ -52,9 +56,9 @@ public class CustomShape {
     /**
      * evaluates the derivative of a beziér curve on a point defined by u
      *
-     * @see CustomShape#beziérPoint(PosVector, PosVector, PosVector, PosVector, double)
+     * @see CustomShape#bezierPoint(PosVector, PosVector, PosVector, PosVector, double)
      */
-    private static DirVector beziérDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
+    private static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
         //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
         return (B.subtract(A))
                 .scale(3 * (1 - u) * (1 - u))
@@ -155,34 +159,34 @@ public class CustomShape {
      * @param slices number of fractions of the curve
      * @return either side of the strip, with left the row starting with A1
      */
-    public Pair<List<PosVector>, List<PosVector>> addBeziérStrip(PosVector A1, PosVector A2, PosVector B1, PosVector B2,
+    public Pair<List<PosVector>, List<PosVector>> addBezierStrip(PosVector A1, PosVector A2, PosVector B1, PosVector B2,
                                                                  PosVector C1, PosVector C2, PosVector D1, PosVector D2,
                                                                  double slices) {
 
-        DirVector rightNormal = beziérDerivative(A2, B2, C2, D2, 0);
-        if (rightNormal.dot(A2.to(middle)) > 0) rightNormal = rightNormal.scale(-1);
-
-        // the 'running' normal
-        DirVector normal;
+        DirVector startNormal = bezierDerivative(A2, B2, C2, D2, 0);
+        if (startNormal.dot(A2.to(middle)) > 0) startNormal = startNormal.scale(-1);
+        TrackedObject<DirVector> normal = new TrackedVector<>(startNormal);
 
         List<PosVector> leftVertices = new LinkedList<>();
         List<PosVector> rightVertices = new LinkedList<>();
 
-        TrackedObject<PosVector> left = new TrackedObject<>(PosVector.O);
-        TrackedObject<PosVector> right = new TrackedObject<>(PosVector.O);
+        // initialize the considered vertices by their starting point
+        TrackedObject<PosVector> left = new TrackedObject<>(bezierPoint(A1, B1, C1, D1, 0).toPosVector());
+        TrackedObject<PosVector> right = new TrackedObject<>(bezierPoint(A2, B2, C2, D2, 0).toPosVector());
 
-        for (int i = 0; i <= slices; i++) {
-            left.update(beziérPoint(A1, B1, C1, D1, i / slices).toPosVector());
+        // add vertices for every part of the slice, and combine these into a quad
+        for (int i = 1; i <= slices; i++) {
+            left.update(bezierPoint(A1, B1, C1, D1, i / slices).toPosVector());
             leftVertices.add(left.current());
 
-            right.update(beziérPoint(A2, B2, C2, D2, i / slices).toPosVector());
-            normal = beziérDerivative(A2, B2, C2, D2, i / slices);
-            rightNormal = (rightNormal.dot(normal) > 0 ? normal : normal.scale(-1));
+            right.update(bezierPoint(A2, B2, C2, D2, i / slices).toPosVector());
             rightVertices.add(right.current());
 
-            if (i > 1){
-                addQuad(left.previous(), right.previous(), right.current(), left.current(), normal);
-            }
+            DirVector newNormal = bezierDerivative(A2, B2, C2, D2, i / slices);
+            newNormal = newNormal.dot(normal.previous()) > 0 ? newNormal : newNormal.scale(-1);
+            normal.update(newNormal);
+
+            addQuad(left.previous(), right.previous(), right.current(), left.current(), normal.current());
         }
 
         return new Pair<>(leftVertices, rightVertices);
@@ -195,13 +199,13 @@ public class CustomShape {
      * @param M     a point indicating the direction of the curve
      *              (NOT the middle control point, but the direction coefficients DO point to M)
      * @param end   the endpoint of the curve
-     * @returns pointer to this strip
-     * @see CustomShape#addBeziérStrip
+     * @return this strip defined as two lists of points each defining one side of the strip
+     * @see CustomShape#addBezierStrip
      */
-    public Pair<List<PosVector>, List<PosVector>> addBeziérStrip(PosVector start, PosVector M, PosVector end, int slices) {
+    public Pair<List<PosVector>, List<PosVector>> addBezierStrip(PosVector start, PosVector M, PosVector end, int slices) {
         PosVector B = start.middleTo(M);
         PosVector C = end.middleTo(M);
-        return addBeziérStrip(start, start.mirrorY(), B, B.mirrorY(), C, C.mirrorY(), end, end.mirrorY(), slices);
+        return addBezierStrip(start, start.mirrorY(), B, B.mirrorY(), C, C.mirrorY(), end, end.mirrorY(), slices);
     }
 
     /**
@@ -212,16 +216,32 @@ public class CustomShape {
      * @param takeLeft   {@code true} if the first vectors should be accounted
      *                   {@code false} if the second vectors should be accounted
      */
-    public void addPlaneToBeziérStrip(PosVector point, Pair<List<PosVector>, List<PosVector>> strip, boolean takeLeft) {
+    public void addPlaneToBezierStrip(PosVector point, Pair<List<PosVector>, List<PosVector>> strip, boolean takeLeft) {
+        Iterator<PosVector> positions = (takeLeft ? strip.left : strip.right).iterator();
 
-        List<PosVector> curve = (takeLeft ? strip.left : strip.right);
+        TrackedObject<PosVector> targets = new TrackedVector<>(positions.next());
+        while (positions.hasNext()) {
+            targets.update(positions.next());
+            DirVector normal = Plane.getNormalVector(point, targets.previous(), targets.current(), middle);
+            addTriangle(targets.previous(), targets.current(), point, normal);
+        }
+    }
 
-        assert curve != null;
-        for (int i = 0; i < curve.size() - 1; i++) {
-            PosVector alpha = curve.get(i);
-            PosVector beta = curve.get(i);
-            DirVector normal = Plane.getNormalVector(point, alpha, beta, middle);
-            addTriangle(alpha, beta, point, normal);
+    /**
+     * adds a strip as separate quad objects
+     * @param quads an array of 2n+4 vertices defining quads as
+     * {@link #addQuad(PosVector, PosVector, PosVector, PosVector)} for every natural number n.
+     */
+    public void addStrip(PosVector ... quads) {
+        final int inputSize = quads.length;
+        if (inputSize % 2 != 0 || inputSize < 4){
+            throw new IllegalArgumentException(
+                    "input arguments can not be of odd length or less than 4 (length is "+ inputSize + ")");
+        }
+
+        for (int i = 4; i < inputSize; i += 2) {
+            // create quad as [1, 2, 4, 3], as rotational order is required
+            addQuad(quads[i - 4], quads[i - 3], quads[i - 1], quads[i - 2]);
         }
     }
 
@@ -237,10 +257,52 @@ public class CustomShape {
 
         // this is the most clear, structured way, maybe not the most efficient (yet this is initialization)
         List<PosVector> vertexList = new LinkedList<>();
-        List<DirVector> normalList = new LinkedList<>();
         Collections.addAll(vertexList, sortedVertices);
+        List<DirVector> normalList = new LinkedList<>();
         Collections.addAll(normalList, sortedNormals);
 
         return new ShapeFromMesh(vertexList, normalList, faces);
+    }
+
+    /**
+     * writes an object to the given filename
+     * @param filename a name of a (preferably non-existing) file without extension
+     * @throws IOException if any problem occurs while creating the file
+     */
+    public void writeOBJFile(String filename) throws IOException {
+        PrintWriter writer = new PrintWriter(filename + ".obj", "UTF-8");
+
+        writer.println("# created using a simple obj writer by Geert van Ieperen");
+        writer.println("# calling method: " + Toolbox.getCallingMethod(2));
+        writer.println("mtllib arrow.mtl");
+
+        PosVector[] sortedVertices = new PosVector[points.size()];
+        points.forEach((v, i) -> sortedVertices[i] = v);
+        DirVector[] sortedNormals = new DirVector[normals.size()];
+        normals.forEach((v, i) -> sortedNormals[i] = v);
+
+        for (PosVector vec : sortedVertices) {
+            writer.println(String.format(Locale.US,"v %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
+        }
+
+        for (DirVector vec : sortedNormals) {
+            writer.println(String.format(Locale.US,"vn %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
+        }
+
+        writer.println("usemtl None");
+        writer.println("s off");
+        writer.println("");
+
+        for (Mesh.Face face : faces) {
+            writer.println("f " + readVertex(face.A) + " " + readVertex(face.B) + " " + readVertex(face.C));
+        }
+
+        writer.close();
+
+        Toolbox.print("Successfully created obj file: " + writer.toString());
+    }
+
+    private static String readVertex(Pair<Integer, Integer> vertex) {
+        return String.format("%d//%d", vertex.left + 1, vertex.right + 1);
     }
 }

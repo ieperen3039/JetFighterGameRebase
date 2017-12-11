@@ -10,8 +10,9 @@ import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
 import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
-import nl.NG.Jetfightergame.ShapeCreators.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.NGRobotSecond;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Pair;
@@ -39,7 +40,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
 
     private final Controller playerInput = new PlayerController();
-    protected AbstractJet playerJet = new TestJet(gameLoop, playerInput);
+    protected AbstractJet playerJet = new TestJet(playerInput);
 
     protected Collection<GameObject> objects = new LinkedList<>();
     protected Collection<Touchable> staticObjects = new LinkedList<>();
@@ -122,7 +123,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     protected void buildScene() {
 //        objects.add(new TestJet(gameLoop, playerInput));
-        lights.add(new Pair<>(new PosVector(4, 3, 1), Color4f.WHITE));
+        lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
+        objects.add(new NGRobotSecond(PosVector.O));
     }
 
     /** TODO efficient implementation
@@ -160,7 +162,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     public void drawObjects(GL2 gl) {
         gl.pushMatrix();
         gl.rotate(DirVector.Z, (debugVariable++) / 40f);
-        Toolbox.drawAxisFrame(gl);
+//        Toolbox.drawAxisFrame(gl);
         gl.popMatrix();
         staticObjects.forEach(d -> d.draw(gl));
         objects.forEach(d -> d.draw(gl));

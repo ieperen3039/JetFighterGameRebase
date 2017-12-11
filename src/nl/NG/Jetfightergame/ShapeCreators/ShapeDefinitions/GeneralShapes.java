@@ -1,5 +1,7 @@
-package nl.NG.Jetfightergame.ShapeCreators;
+package nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions;
 
+import nl.NG.Jetfightergame.ShapeCreators.CustomShape;
+import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 

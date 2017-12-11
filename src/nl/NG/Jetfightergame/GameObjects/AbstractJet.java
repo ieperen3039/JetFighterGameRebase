@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.GameObjects;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.Updatable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -33,7 +32,6 @@ public abstract class AbstractJet extends GameObject implements Updatable {
 
     /**
      * oh boy. here we go
-     * @param engine reference to the game-engine. not the engine of the jet itself
      * @param input controller input, either player or AI.
      * @param initialPosition position of spawning (of the origin) in world coordinates
      * @param initialRotation the initial rotation around the Z-axis of this object in radians
@@ -50,11 +48,11 @@ public abstract class AbstractJet extends GameObject implements Updatable {
      * @param rollAcc acceleration over the X-axis when rolling at full power in deg/s
      * @param rotationReductionFactor the fraction that the rotation is reduced every second
      */
-    public AbstractJet(AbstractGameLoop engine, Controller input, PosVector initialPosition, float initialRotation, float scale,
+    public AbstractJet(Controller input, PosVector initialPosition, float initialRotation, float scale,
                        Material material, float mass, float liftFactor, float airResistanceCoefficient,
                        float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
                        float rotationReductionFactor) {
-        super(engine, initialPosition, material, scale, initialRotation);
+        super(initialPosition, material, scale, initialRotation);
 
         this.mass = mass;
         this.input = input;

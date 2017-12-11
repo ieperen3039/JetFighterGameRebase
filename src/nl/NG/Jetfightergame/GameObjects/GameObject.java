@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.GameObjects;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
@@ -22,8 +21,6 @@ import java.util.stream.Stream;
  *         created on 29-10-2017.
  */
 public abstract class GameObject implements MovingObject {
-
-    protected final AbstractGameLoop engine;
 
     /** worldspace position */
     protected TrackedVector<PosVector> position;
@@ -51,14 +48,12 @@ public abstract class GameObject implements MovingObject {
 
     /**
      * any object that may be moved and hit other objects, is a game object
-     * @param engine reference to the game engine
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param surfaceMaterial material properties
      * @param scale scalefactor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param initialRotation the initial rotation around the Z-axis of this object in radians
      */
-    public GameObject(AbstractGameLoop engine, PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation) {
-        this.engine = engine;
+    public GameObject(PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation) {
         this.position = new TrackedVector<>(initialPosition);
         this.surfaceMaterial = surfaceMaterial;
         movement = DirVector.O;

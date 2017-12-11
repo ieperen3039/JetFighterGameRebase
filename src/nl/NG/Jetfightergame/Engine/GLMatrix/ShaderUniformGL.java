@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
-import nl.NG.Jetfightergame.ShapeCreators.GeneralShapes;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

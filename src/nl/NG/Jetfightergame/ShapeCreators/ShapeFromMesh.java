@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ShapeCreators;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.NGRobotSecondShapes;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -43,7 +44,9 @@ public class ShapeFromMesh implements Shape {
     /**
      * a void method that allows pre-initialisation
      */
-    public static void initAll(){}
+    public static void initAll(){
+        NGRobotSecondShapes.initAll();
+    }
 
     /**
      * @param fileName path to the .obj file

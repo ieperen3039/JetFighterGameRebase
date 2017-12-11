@@ -10,10 +10,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -35,34 +32,61 @@ public class GridMesh implements Shape {
         alphaGrid = new Triangle[xSize][ySize];
         betaGrid = new Triangle[xSize][ySize];
 
-        List<Mesh.Face> faces = new LinkedList<>();
-        List<PosVector> vertices = new LinkedList<>();
-        List<DirVector> normals = new LinkedList<>();
+        List<Mesh.Face> faces = new ArrayList<>(2 * xSize * ySize);
+        List<PosVector> vertices = new ArrayList<>(xSize * ySize);
+        List<DirVector> normals = new ArrayList<>(2 * xSize * ySize);
 
         // iterate y-first
         for(int x = 0; x < xSize; x++){
             for(int y = 0; y < ySize; y++){
-                createAndSetTriangles(grid, x, y);
-
-                // only A due to redundancy of the loop. vertices are added y-first
+                // only one due to redundancy of the loop. vertices are added y-first
                 vertices.add(grid[x][y]);
 
-                int alphaNormal = normals.size();
-                normals.add(alphaGrid[x][y].getNormal());
-                int betaNormal = normals.size();
-                normals.add(betaGrid[x][y].getNormal());
-
-                setFaces(faces, x, y, alphaNormal, betaNormal);
+                createAndSetTriangles(x, y, grid, faces, normals);
             }
             // we have 1 more row of vertices than we have faces
             vertices.add(grid[x][ySize]);
         }
-        vertices.addAll(Arrays.asList(grid[xSize]).subList(0, ySize + 1));
+        // we have 1 more row of vertices than we have faces
+        vertices.addAll(Arrays.asList(grid[xSize]));
 
 
         mesh = new Mesh(vertices, normals, faces);
 
         Toolbox.print("created Grid [ "+ xSize +" x "+ ySize +" ]");
+    }
+
+    /**
+     * add triangles to {@code alphaGrid} and {@code betaGrid}
+     * @param x lowest x coordinate of these two triangles
+     * @param y lowest y coordinate of these two triangles
+     * @param grid a grid of positionVectors, defining a surface
+     */
+    private void createAndSetTriangles(int x, int y, PosVector[][] grid, List<Mesh.Face> faces, List<DirVector> normals) {
+        final PosVector A = grid[x][y];
+        final PosVector B = grid[x + 1][y];
+        final PosVector C = grid[x][y + 1];
+        final PosVector D = grid[x + 1][y + 1];
+
+        alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
+        int alphaNormal = normals.size();
+        normals.add(alphaGrid[x][y].getNormal());
+        faces.add(new Mesh.Face(
+                index(x, y), //A
+                index(x + 1, y), //B
+                index(x, y + 1), //C
+                alphaNormal) //normal 1
+        );
+
+        betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(D, B, C, DirVector.Z));
+        int betaNormal = normals.size();
+        normals.add(betaGrid[x][y].getNormal());
+        faces.add(new Mesh.Face(
+                index(x + 1, y + 1), //D
+                index(x + 1, y), //B
+                index(x, y + 1), //C
+                betaNormal) //normal 2
+        );
     }
 
     public GridMesh(float[][] heightMap, float xStep, float yStep) {
@@ -80,46 +104,6 @@ public class GridMesh implements Shape {
             }
         }
         return map;
-    }
-
-    /**
-     * add two faces with indices assuming vertices and normals are added y-first
-     * @param faces the list where the two new faces will be added
-     * @param x lowest x coordinate of these two faces
-     * @param y lowest y coordinate of these two faces
-     * @param alphaNormal index of normal of the face with least xy
-     * @param betaNormal index of the other face normal
-     */
-    private void setFaces(List<Mesh.Face> faces, int x, int y, int alphaNormal, int betaNormal) {
-        // normal: 2 per grid index, thus we double the indices and add one to the latter
-        faces.add(new Mesh.Face(
-                index(x, y), //A
-                index(x+1, y), //B
-                index(x, y+1), //C
-                alphaNormal) //normal 1
-        );
-        faces.add(new Mesh.Face(
-                index(x+1, y+1), //D
-                index(x+1, y), //B
-                index(x, y+1), //C
-                betaNormal) //normal 2
-        );
-    }
-
-    /**
-     * add triangles to {@code alphaGrid} and {@code betaGrid}
-     * @param grid a grid of positionVectors, defining a surface
-     * @param x lowest x coordinate of these two triangles
-     * @param y lowest y coordinate of these two triangles
-     */
-    private void createAndSetTriangles(PosVector[][] grid, int x, int y) {
-        final PosVector A = grid[x][y];
-        final PosVector B = grid[x + 1][y];
-        final PosVector C = grid[x][y + 1];
-        final PosVector D = grid[x + 1][y + 1];
-
-        alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
-        betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
     }
 
     /**

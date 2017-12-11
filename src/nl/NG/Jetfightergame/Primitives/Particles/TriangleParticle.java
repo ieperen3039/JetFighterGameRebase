@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.ShapeCreators.GeneralShapes;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Matrix4f;
