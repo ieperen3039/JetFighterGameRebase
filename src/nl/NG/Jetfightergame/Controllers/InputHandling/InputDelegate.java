@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Controllers;
+package nl.NG.Jetfightergame.Controllers.InputHandling;
 
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import org.joml.Vector2i;

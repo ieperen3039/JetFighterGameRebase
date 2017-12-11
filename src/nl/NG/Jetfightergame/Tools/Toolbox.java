@@ -110,13 +110,13 @@ public class Toolbox {
         gl.pushMatrix();
         {
             gl.setMaterial(mat, Color4f.BLUE);
-            gl.draw(ShapeFromMesh.ARROW);
+            gl.draw(ShapeFromMesh.Arrow);
             gl.rotate(Math.toRadians(90), 0, 1, 0);
             gl.setMaterial(mat, Color4f.RED);
-            gl.draw(ShapeFromMesh.ARROW);
+            gl.draw(ShapeFromMesh.Arrow);
             gl.rotate(Math.toRadians(-90), 1, 0, 0);
             gl.setMaterial(mat, Color4f.GREEN);
-            gl.draw(ShapeFromMesh.ARROW);
+            gl.draw(ShapeFromMesh.Arrow);
             gl.scale(0.3f);
             gl.setMaterial(Material.SILVER, Color4f.WHITE);
             gl.draw(GeneralShapes.CUBE);

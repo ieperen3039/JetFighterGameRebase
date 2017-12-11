@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
-import nl.NG.Jetfightergame.Controllers.MouseTracker;
-import nl.NG.Jetfightergame.Controllers.TrackerClickListener;
+import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuClickable;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerLeft;
@@ -57,5 +57,10 @@ public abstract class HudMenu implements TrackerClickListener {
 
     public UIElement[] getActiveElements() {
         return activeElements;
+    }
+
+    @Override
+    public void cleanUp() {
+        MouseTracker.getInstance().removeClickListener(this, false);
     }
 }

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Controllers;
+package nl.NG.Jetfightergame.Controllers.InputHandling;
 
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
@@ -54,10 +54,17 @@ public class MouseTracker {
         menuScrollListener = new ArrayList<>();
 
         menuClickListeners.add(
-                (x, y) -> {
-                    mouseX = new TrackedInteger(x);
-                    mouseY = new TrackedInteger(y);
-                });
+                new TrackerClickListener() {
+                    @Override
+                    public void clickEvent(int x, int y) {
+                        mouseX = new TrackedInteger(x);
+                        mouseY = new TrackedInteger(y);
+                    }
+
+                    @Override
+                    public void cleanUp() {}
+                }
+        );
     }
 
     public static MouseTracker getInstance() {

@@ -28,20 +28,21 @@ public abstract class AbstractJet extends GameObject {
     private DirVector forward;
 
     /**
-     * oh boy. here we go
+     * You are defining a complete Fighterjet here. good luck.
      * @param input controller input, either player or AI.
      * @param initialPosition position of spawning (of the origin) in world coordinates
      * @param initialRotation the initial rotation around the Z-axis of this object in radians
      * @param scale scale factor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param material the default material properties of the whole object.
      * @param mass the mass of the object in kilograms. this should refer to the weight of the base model in SpaceEngineers
+     *             multiplied by {@code scale}^3
      * @param liftFactor arbitrary factor of the lift-effect of the wings in gravitational situations.
 *                   This is applied only on the vector of external influences, thus not in zero-gravity.
      * @param airResistanceCoefficient 0.5 * A * Cw. this is a factor that should be experimentally found
      * @param throttlePower force of the engines at full power in Newton
-     * @param brakePower -
+     * @param brakePower (not yet determined)
      * @param yawAcc acceleration over the Z-axis when moving right at full power in deg/s
-     * @param pitchAcc acceleration over the Y-axis when moving up at full power in deg/s
+     * @param pitchAcc acceleration over the Y-axis when pitching up at full power in deg/s
      * @param rollAcc acceleration over the X-axis when rolling at full power in deg/s
      * @param rotationReductionFactor the fraction that the rotation is reduced every second
      */
@@ -60,7 +61,7 @@ public abstract class AbstractJet extends GameObject {
         this.rollAcc = rollAcc;
         this.liftFactor = liftFactor;
         this.rotationReductionFactor = rotationReductionFactor;
-        forward = getRelativeVector(DirVector.X, new ShadowMatrix()).toDirVector();
+        forward = relativeToWorldSpace(DirVector.X, new ShadowMatrix()).toDirVector();
     }
 
     @Override
@@ -97,7 +98,7 @@ public abstract class AbstractJet extends GameObject {
     public void update(float deltaTime) {
         super.update(deltaTime);
         // obtain current x-axis in worldspace
-        forward = getRelativeVector(DirVector.X, new ShadowMatrix()).toDirVector();
+        forward = relativeToWorldSpace(DirVector.X, new ShadowMatrix()).toDirVector();
         position.update(extraPosition);
         rotation.update(extraRotation);
     }

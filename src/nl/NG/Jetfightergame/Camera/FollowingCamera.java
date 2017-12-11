@@ -1,10 +1,11 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.GameObjects.AbstractJet;
+import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 
 /**
  * Implementation of a camera with a position and orientation.
@@ -12,28 +13,26 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 public class FollowingCamera implements Camera {
     private static final DirVector relativePosition = new DirVector(-5, 0, 3);
     private static final DirVector relativeLookAt = relativePosition.add(new DirVector(10, 0, -1));
-    public static final float CAMERA_CATCHUP = 0.5f;
+    public static final float CAMERA_CATCHUP = 0.4f;
     /**
      * The position of the camera.
      */
     private final ExponentialSmoothVector<PosVector> eye;
-    /**
-     * The up vector.
-     */
-    private final DirVector up;
-    private final AbstractJet target;
+    private final GameObject target;
 
-    public FollowingCamera(AbstractJet target) {
-        this(target.getPosition(), target);
+    public FollowingCamera(GameObject target) {
+        this(jetPosition(relativePosition, target).toPosVector(), target);
     }
 
-    public FollowingCamera(PosVector eye, AbstractJet playerJet) {
-        this(new ExponentialSmoothVector<>(eye, 1-CAMERA_CATCHUP), DirVector.Z, playerJet);
+    public FollowingCamera(PosVector eye, GameObject playerJet) {
+        this(
+                new ExponentialSmoothVector<>(eye, 1-CAMERA_CATCHUP),
+                playerJet
+        );
     }
 
-    public FollowingCamera(ExponentialSmoothVector<PosVector> eye, DirVector up, AbstractJet target) {
+    public FollowingCamera(ExponentialSmoothVector<PosVector> eye, GameObject target) {
         this.eye = eye;
-        this.up = up;
         this.target = target;
     }
 
@@ -42,9 +41,9 @@ public class FollowingCamera implements Camera {
      * @param target a target jet, where DirVector.X points forward
      * @return the position translated to world-space
      */
-    private static PosVector getRelative(DirVector relativePosition, AbstractJet target){
+    private static Vector jetPosition(DirVector relativePosition, GameObject target){
         ShadowMatrix ws = new ShadowMatrix();
-        return target.getPosition().add(target.getRelativeVector(relativePosition, ws));
+        return target.getPosition().add(target.relativeToWorldSpace(relativePosition, ws));
     }
 
     /**
@@ -52,7 +51,7 @@ public class FollowingCamera implements Camera {
      */
     @Override
     public void updatePosition(float deltaTime) {
-        eye.updateFluent(getRelative(relativePosition, target), deltaTime);
+        eye.updateFluent(jetPosition(relativePosition, target).toPosVector(), deltaTime);
     }
 
     @Override
@@ -67,11 +66,11 @@ public class FollowingCamera implements Camera {
 
     @Override
     public PosVector getFocus() {
-        return getRelative(relativeLookAt, target);
+        return jetPosition(relativeLookAt, target).toPosVector();
     }
 
     @Override
-    public DirVector getUpVector() {
-        return up;
+    public DirVector getUpVector() { // TODO smooooth
+        return jetPosition(DirVector.Z, target).toDirVector();
     }
 }

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Controllers;
+package nl.NG.Jetfightergame.Controllers.InputHandling;
 
 import java.util.ArrayList;
 import java.util.Collection;

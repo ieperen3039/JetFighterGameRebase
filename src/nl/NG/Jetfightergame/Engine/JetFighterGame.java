@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Controllers.KeyTracker;
-import nl.NG.Jetfightergame.Controllers.MouseTracker;
-import nl.NG.Jetfightergame.Controllers.TrackerKeyListener;
+import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRenderer;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
@@ -54,6 +54,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             renderLoop = new JetFighterRenderer(this, environment, window, camera, musicProvider,
                     () -> getCurrentGameMode() == GameMode.MENU_MODE);
 
+            camera.setTarget(getPlayer());
             // set currentGameMode and engine.isPaused
             setMenuMode();
 
@@ -78,8 +79,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     @Override
-    public void cleanup() {
+    public void cleanUp() {
         Mesh.cleanAll();
+        KeyTracker.getInstance().removeKeyListener(this);
     }
 
     /**

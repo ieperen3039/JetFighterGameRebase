@@ -7,7 +7,7 @@ import nl.NG.Jetfightergame.Vectors.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
+/** TODO: allow quads in meshes and optimize CustomShape accordingly
  * @author Geert van Ieperen
  *         created on 29-10-2017.
  */

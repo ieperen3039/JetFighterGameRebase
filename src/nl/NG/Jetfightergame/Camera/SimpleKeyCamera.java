@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.Controllers.KeyTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 

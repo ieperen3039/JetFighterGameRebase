@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Controllers.KeyTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Scenarios.TestLab;
 import nl.NG.Jetfightergame.Tools.Toolbox;

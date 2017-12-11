@@ -63,6 +63,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
             GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
             Toolbox.checkGLError();
 
+            activeCamera.updatePosition(deltaTime);
             initShader();
             Toolbox.checkGLError();
 

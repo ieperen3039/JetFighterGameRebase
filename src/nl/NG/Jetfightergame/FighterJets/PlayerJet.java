@@ -37,7 +37,7 @@ public class PlayerJet extends AbstractJet {
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
                 1f);
-        shape = ShapeFromMesh.BASIC;
+        shape = ShapeFromMesh.ConceptBlueprint;
     }
 
     @Override

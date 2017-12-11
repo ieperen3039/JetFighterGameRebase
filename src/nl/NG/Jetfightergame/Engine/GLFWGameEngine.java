@@ -1,13 +1,12 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.Camera.FollowingCamera;
-import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
-import nl.NG.Jetfightergame.Controllers.InputDelegate;
+import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Vectors.DirVector;
+
+import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_FOLLOWING;
+import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_POINT_CENTERED;
 
 /**
  * @author Jorren Hendriks.
@@ -20,7 +19,7 @@ public abstract class GLFWGameEngine {
     protected AbstractGameLoop gameLoop;
 
     protected GLFWWindow window;
-    protected Camera camera;
+    protected CameraManager camera;
     protected GameMode currentGameMode;
 
     /**
@@ -29,7 +28,7 @@ public abstract class GLFWGameEngine {
     public GLFWGameEngine() {
         window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
-        camera = new PointCenteredCamera();
+        camera = new CameraManager();
     }
 
     /**
@@ -48,7 +47,7 @@ public abstract class GLFWGameEngine {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            this.cleanup();
+            this.cleanUp();
             window.cleanup();
         }
 
@@ -67,7 +66,7 @@ public abstract class GLFWGameEngine {
     /**
      * Start closing and cleaning everything
      */
-    public abstract void cleanup();
+    public abstract void cleanUp();
 
     /**
      * Get the {@link GLFWWindow} of the currently running instance.
@@ -89,14 +88,14 @@ public abstract class GLFWGameEngine {
     public void setMenuMode() {
         this.currentGameMode = GameMode.MENU_MODE;
         window.freePointer();
-        camera = new PointCenteredCamera(getPlayer().getPosition(), DirVector.Z, 1, 1);
+        camera.switchTo(CAMERA_POINT_CENTERED);
         gameLoop.pause();
     }
 
     public void setPlayMode() {
         this.currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
-        camera = new FollowingCamera(camera.getEye(), getPlayer());
+        camera.switchTo(CAMERA_FOLLOWING);
         gameLoop.unPause();
     }
 

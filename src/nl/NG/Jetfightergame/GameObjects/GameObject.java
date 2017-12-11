@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Engine.Updatable;
 import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
@@ -74,9 +75,14 @@ public abstract class GameObject implements MovingObject, Updatable {
         applyPhysics(deltaTime, netForce);
     }
 
-    public DirVector getRelativeVector(DirVector xVec, MatrixStack sm) {
+    /**
+     * @param relative a vector relative to this object
+     * @param sm a frame of reference, the resulting vector will be in the space of the instantiation of this matrix
+     * @return a vector in {@code sm}'s frame of reference
+     */
+    public DirVector relativeToWorldSpace(DirVector relative, MatrixStack sm) {
         final DirVector[] axis = new DirVector[1];
-        toLocalSpace(sm, () -> axis[0] = sm.getDirection(xVec), false);
+        toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), false);
         return axis[0];
     }
 
@@ -211,4 +217,11 @@ public abstract class GameObject implements MovingObject, Updatable {
     public DirVector getMovement() {
         return position.difference(); //TODO possibly cache
     }
+
+    /** an object that represents {@code null}. Making this appear in-game is an achievement */
+    public static final GameObject EMPTY_OBJECT = new GameObject(PosVector.O, Material.GLOWING, 1f , 0f, 1f) {
+        public void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable) {action.accept(GeneralShapes.CUBE);}
+        public void applyCollision() {}
+        public void applyPhysics(float deltaTime, DirVector netForce) {}
+    };
 }

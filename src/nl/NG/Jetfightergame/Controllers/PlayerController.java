@@ -1,7 +1,12 @@
 package nl.NG.Jetfightergame.Controllers;
 
-import static nl.NG.Jetfightergame.Engine.Settings.*;
+import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
+import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
+
 import static java.awt.event.KeyEvent.*;
+import static nl.NG.Jetfightergame.Engine.Settings.*;
 
 /**
  * @author Geert van Ieperen
@@ -76,6 +81,12 @@ public class PlayerController implements Controller, TrackerMoveListener, Tracke
         currentPitch += deltaX * PITCH_MODIFIER;
         // up in y (screen coordinates) is down in plane
         currentRoll -= deltaY * ROLL_MODIFIER;
+    }
+
+    @Override
+    public void cleanUp() {
+        MouseTracker.getInstance().removeClickListener(this, true);
+        MouseTracker.getInstance().removeMotionListener(this);
     }
 
     /**

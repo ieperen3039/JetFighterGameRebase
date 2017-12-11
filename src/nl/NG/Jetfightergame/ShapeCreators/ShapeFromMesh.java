@@ -24,10 +24,10 @@ import java.util.stream.Stream;
  */
 public class ShapeFromMesh implements Shape {
 
-    public static final ShapeFromMesh BASIC = new ShapeFromMesh("res/models/ConceptBlueprint.obj");
+    public static final ShapeFromMesh ConceptBlueprint = new ShapeFromMesh("res/models/ConceptBlueprint.obj");
 
     /** an arrow along the Z-axis, 1 long */
-    public static final ShapeFromMesh ARROW = new ShapeFromMesh("res/models/arrow.obj");
+    public static final ShapeFromMesh Arrow = new ShapeFromMesh("res/models/arrow.obj");
 
     /**
      * every point of this mesh exactly once
