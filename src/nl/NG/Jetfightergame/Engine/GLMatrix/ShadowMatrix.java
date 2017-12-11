@@ -139,4 +139,10 @@ public class ShadowMatrix implements MatrixStack {
     public void multiplyAffine(Matrix4f preTransformation) { //TODO look for possibility to implement
         throw new UnsupportedOperationException("ShadowMatrix has not yet implemented multiplyAffine");
     }
+
+    @Override
+    public void popAll() {
+        // it is error-handling after all
+        setStateTo(new ShadowMatrix());
+    }
 }

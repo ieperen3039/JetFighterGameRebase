@@ -144,4 +144,10 @@ public class ShaderUniformGL implements GL2 {
         preTransformation.mul(modelMatrix, modelMatrix);
     }
 
+    @Override
+    public void popAll() {
+        modelMatrix = new Matrix4f();
+        matrixStack = new Stack<>();
+    }
+
 }

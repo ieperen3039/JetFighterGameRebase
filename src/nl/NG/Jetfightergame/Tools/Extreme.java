@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Tools;
 /**
  * @author Geert van Ieperen
  *         created on 8-11-2017.
+ * a synchornized class that tracks the maximum or minimum of a given item
  */
 public class Extreme<T extends Comparable<T>> {
     private final boolean max;
@@ -30,10 +31,11 @@ public class Extreme<T extends Comparable<T>> {
     /**
      * compares the current value with the next, updating the current iff
      * (the current is null or the comparator returns that the new item is strictly extremer than the current)
+     * This method is thread-safe: if multiple threads want to check in parallel, then the final result will be the extremest given value
      * @param newItem a new value, possibly null
      * @return true if the current value was updated, false otherwise
      */
-    public boolean check(T newItem) {
+    synchronized public boolean check(T newItem) {
         if (extremest != null) {
             int comparision = newItem.compareTo(extremest);
             if (comparision == 0 || (comparision < 0) == max) {

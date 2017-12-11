@@ -6,8 +6,8 @@ import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuClickable;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerLeft;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ public abstract class HudMenu implements TrackerClickListener {
      */
     public void switchContentTo(UIElement[] newElements) {
         activeElements = newElements;
-        List<Runnable> entry = new LinkedList<>();
+        List<Runnable> entry = new ArrayList<>();
 
 
         // correct positions of buttons

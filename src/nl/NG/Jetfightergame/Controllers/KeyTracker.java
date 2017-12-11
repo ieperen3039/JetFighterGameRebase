@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Controllers;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -19,7 +19,7 @@ public class KeyTracker {
 
     private KeyTracker() {
         registeredKeys = new Hashtable<>(8);
-        eventListeners = new LinkedList<>();
+        eventListeners = new ArrayList<>();
     }
 
     public static KeyTracker getInstance(){

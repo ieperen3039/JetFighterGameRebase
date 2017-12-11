@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Vectors.Vector;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.LinkedList;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
 
@@ -28,7 +28,7 @@ public class Mesh implements Renderable {
     private int vertexCount;
     private int posVboID;
     private int normVboID;
-    private static Queue<Mesh> registeredMeshes = new LinkedList<>();
+    private static Queue<Mesh> registeredMeshes = new ArrayDeque<>();
 
     /**
      * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.

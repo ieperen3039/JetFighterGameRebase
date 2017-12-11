@@ -35,14 +35,15 @@ public class Toolbox {
     private static Set<String> callerBlacklist = new HashSet<>();
 
     /**
-     * prints debug information with calling method (a debugging method)
+     * prints the toString method of the given objects to System.out, preceded with calling method
      */
     public static synchronized void print(Object... x) {
         printFrom(2, x);
     }
 
     /**
-     * prints debug information with calling method (a debugging method)
+     * prints the toString method of the given objects to System.out, preceded with the method
+     * caller specified by the given call depth
      * @param level 0 = this method, 1 = the calling method (yourself)
      */
     public static synchronized void printFrom(int level, Object... x) {
@@ -63,6 +64,12 @@ public class Toolbox {
         return s.toString();
     }
 
+    /**
+     * prints the toString method of the given objects to System.out, preceded with calling method.
+     * Every unique callside will only be allowed to print once.
+     * For recursive calls, every level will be regarded as a new level, thus print once for every unique depth
+     * @param x
+     */
     public static synchronized void printSpamless(Object ... x){
         String source = getCallingMethod(1);
         if (!callerBlacklist.contains(source)) {
@@ -132,7 +139,7 @@ public class Toolbox {
     public static Collection<AbstractParticle> splitIntoParticles(
             Plane targetPlane, PosVector worldPosition, int splits, DirVector launchDir, float jitter, int deprecationTime) {
 
-        Collection<PosVector[]> triangles = new LinkedList<>();
+        Collection<PosVector[]> triangles = new ArrayList<>();
         Iterator<PosVector> border = targetPlane.getVertices().iterator();
 
         if (targetPlane instanceof Triangle) {
@@ -160,13 +167,13 @@ public class Toolbox {
             }
         }
 
-        Collection<PosVector[]> splittedTriangles = new LinkedList<>();
+        Collection<PosVector[]> splittedTriangles = new ArrayList<>();
         for (int i = 0; i < splits; i++) {
             triangles.forEach((p) -> splittedTriangles.addAll((splitTriangle(p[0], p[1], p[2]))));
             triangles = splittedTriangles;
         }
 
-        Collection<AbstractParticle> particles = new LinkedList<>();
+        Collection<AbstractParticle> particles = new ArrayList<>();
 
         for (PosVector[] p : splittedTriangles){
             DirVector movement = launchDir.normalized().add(DirVector.random().scale(jitter));
@@ -183,7 +190,7 @@ public class Toolbox {
      * @return Collection of four Particles
      */
     private static Collection<PosVector[]> splitTriangle(PosVector A, PosVector B, PosVector C){
-        Collection<PosVector[]> particles = new LinkedList<>();
+        Collection<PosVector[]> particles = new ArrayList<>();
 
         final PosVector AtoB = A.middleTo(B);
         final PosVector AtoC = A.middleTo(C);

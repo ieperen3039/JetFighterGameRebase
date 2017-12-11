@@ -24,7 +24,6 @@ public abstract class AbstractGameLoop extends Thread {
     private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
     private boolean shouldStop;
     private final boolean notifyDelay;
-    private Thread runningThread;
 
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
         this.targetTps = targetTps;

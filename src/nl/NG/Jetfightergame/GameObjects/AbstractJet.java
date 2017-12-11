@@ -3,20 +3,17 @@ package nl.NG.Jetfightergame.GameObjects;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.Engine.Updatable;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-
-import static nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat.fractionOf;
 
 /**
  * @author Geert van Ieperen
  *         created on 30-10-2017.
  */
-public abstract class AbstractJet extends GameObject implements Updatable {
+public abstract class AbstractJet extends GameObject {
 
-    protected final float mass;
     protected final float liftFactor;
     protected final float airResistCoeff;
 
@@ -52,9 +49,8 @@ public abstract class AbstractJet extends GameObject implements Updatable {
                        Material material, float mass, float liftFactor, float airResistanceCoefficient,
                        float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
                        float rotationReductionFactor) {
-        super(initialPosition, material, scale, initialRotation);
+        super(initialPosition, material, scale, initialRotation, mass);
 
-        this.mass = mass;
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
         this.throttlePower = throttlePower;
@@ -64,19 +60,15 @@ public abstract class AbstractJet extends GameObject implements Updatable {
         this.rollAcc = rollAcc;
         this.liftFactor = liftFactor;
         this.rotationReductionFactor = rotationReductionFactor;
+        forward = getRelativeVector(DirVector.X, new ShadowMatrix()).toDirVector();
     }
 
     @Override
-    public void applyPhisics(float deltaTime) {
-        // obtain current x-axis in worldspace
-        forward = getRelativeVector(DirVector.X, new ShadowMatrix()).toDirVector();
-
-        netForce = DirVector.O;
-
+    public void applyPhysics(float deltaTime, DirVector netForce) {
         // thrust forces
         float throttle = input.throttle();
         float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower); // TODO use air-resistance to increase braking power
-        netForce = netForce.add(forward.reduceTo(thrust));
+        addForce(forward.reduceTo(thrust));
 
         // rotational forces
         float yawMoment = (input.yaw() * yawAcc * deltaTime);
@@ -86,15 +78,33 @@ public abstract class AbstractJet extends GameObject implements Updatable {
         float rollMoment = (input.roll() * rollAcc * deltaTime);
         rotationAxis = rotationAxis.rotateVector(DirVector.X, rollMoment).toDirVector();
 
+        // air-resistance
+        DirVector movement = getMovement();
+        addForce(movement.reduceTo(movement.length() * movement.length() * airResistCoeff * -1));
 
-        rotationSpeed = fractionOf(rotationSpeed, 0f, 1 - rotationReductionFactor, deltaTime);
+        // collect extrapolated variables
+        extraPosition = position.current().add(position.difference().add(netForce.scale(deltaTime)));
+        extraRotation += ExponentialSmoothFloat.fractionOf(rotation.difference(), 0f, 1 - rotationReductionFactor, deltaTime);
 
-        // air-resistance TODO this... make air resistance not overflow
-        netForce = netForce.add(movement.reduceTo(movement.length() * movement.length() * airResistCoeff * -1));
-        // apply phisics
-        movement = movement.add(netForce.scale(deltaTime).scale(1/mass)); //TODO get this right
+        updateShape(deltaTime);
+    }
 
-        update(deltaTime);
+    /**
+     * update the shape of the airplane, if applicable
+     */
+    protected abstract void updateShape(float deltaTime);
+
+    public void update(float deltaTime) {
+        super.update(deltaTime);
+        // obtain current x-axis in worldspace
+        forward = getRelativeVector(DirVector.X, new ShadowMatrix()).toDirVector();
+        position.update(extraPosition);
+        rotation.update(extraRotation);
+    }
+
+    @Override
+    public void applyCollision() {
+        //TODO elastic collision of rigid bodies
     }
 
     public DirVector getForward() {
@@ -102,17 +112,11 @@ public abstract class AbstractJet extends GameObject implements Updatable {
     }
 
     @Override
-    public void postUpdate() {
-        super.postUpdate();
-        position.update(extraPosition);
-        rotation.update(extraRotation);
-    }
-
-    @Override
     public String toString(){
         return "Jet '" + this.getClass().getSimpleName() + "' {" +
-                "pos: " + position.current() +
-                ", move: " + movement +
+                "pos: " + getPosition() +
+                ", move: " + getMovement() +
+                ", direction: " + getForward() +
                 "}";
     }
 }

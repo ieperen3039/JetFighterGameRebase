@@ -39,13 +39,12 @@ public class TestJet extends AbstractJet {
     }
 
     @Override
-    public void update(float deltaTime) {
-
-    }
-
-    @Override
     public void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable) {
         action.accept(GeneralShapes.CUBE);
     }
 
+    @Override
+    protected void updateShape(float deltaTime) {
+
+    }
 }

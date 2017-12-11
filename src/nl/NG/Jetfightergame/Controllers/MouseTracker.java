@@ -3,8 +3,8 @@ package nl.NG.Jetfightergame.Controllers;
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -46,12 +46,12 @@ public class MouseTracker {
     private BooleanSupplier inPlayMode = () -> false;
 
     private MouseTracker() {
-        inGameMotionListeners = new LinkedList<>();
-        inGameClickListeners = new LinkedList<>();
-        menuClickListeners = new LinkedList<>();
-        inGameScrollListener = new LinkedList<>();
-        menuDragListener = new LinkedList<>();
-        menuScrollListener = new LinkedList<>();
+        inGameMotionListeners = new ArrayList<>();
+        inGameClickListeners = new ArrayList<>();
+        menuClickListeners = new ArrayList<>();
+        inGameScrollListener = new ArrayList<>();
+        menuDragListener = new ArrayList<>();
+        menuScrollListener = new ArrayList<>();
 
         menuClickListeners.add(
                 (x, y) -> {

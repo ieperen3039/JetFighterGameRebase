@@ -28,7 +28,14 @@ public class ExponentialSmoothFloat extends TrackedFloat implements SmoothTracke
         this.preservedFraction = preservedFraction;
     }
 
-    public static float fractionOf(Float current, Float target, float preservedFraction, float deltaTime) {
+    /**
+     * @param current the current value
+     * @param target the target value
+     * @param preservedFraction the fraction of the difference that must be preserved per timeunit
+     * @param deltaTime number of timeunits
+     * @return a value that gives an exponential reduction towards target, when compared against deltatime
+     */
+    public static float fractionOf(float current, float target, float preservedFraction, float deltaTime) {
         float deceleration = (float) pow(preservedFraction, deltaTime);
 
         // non-absolute difference between current float and target float. negative if source moves down

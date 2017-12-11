@@ -30,7 +30,7 @@ public class CustomShape {
 
     public CustomShape(PosVector middle) {
         this.middle = middle;
-        faces = new LinkedList<>();
+        faces = new ArrayList<>();
         points = new Hashtable<>();
         normals = new Hashtable<>();
     }
@@ -167,8 +167,8 @@ public class CustomShape {
         if (startNormal.dot(A2.to(middle)) > 0) startNormal = startNormal.scale(-1);
         TrackedObject<DirVector> normal = new TrackedVector<>(startNormal);
 
-        List<PosVector> leftVertices = new LinkedList<>();
-        List<PosVector> rightVertices = new LinkedList<>();
+        List<PosVector> leftVertices = new ArrayList<>();
+        List<PosVector> rightVertices = new ArrayList<>();
 
         // initialize the considered vertices by their starting point
         TrackedObject<PosVector> left = new TrackedObject<>(bezierPoint(A1, B1, C1, D1, 0).toPosVector());
@@ -256,9 +256,9 @@ public class CustomShape {
         normals.forEach((v, i) -> sortedNormals[i] = v);
 
         // this is the most clear, structured way, maybe not the most efficient (yet this is initialization)
-        List<PosVector> vertexList = new LinkedList<>();
+        List<PosVector> vertexList = new ArrayList<>();
         Collections.addAll(vertexList, sortedVertices);
-        List<DirVector> normalList = new LinkedList<>();
+        List<DirVector> normalList = new ArrayList<>();
         Collections.addAll(normalList, sortedNormals);
 
         return new ShapeFromMesh(vertexList, normalList, faces);

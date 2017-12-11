@@ -10,7 +10,10 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -128,7 +131,7 @@ public class GridMesh implements Shape {
 
     @Override
     public Collection<PosVector> getPoints() {
-        Collection<PosVector> list = new LinkedList<>();
+        Collection<PosVector> list = new ArrayList<>();
         getPlanes()
                 .map(Plane::getVertices)
                 .flatMap(Collection::stream)

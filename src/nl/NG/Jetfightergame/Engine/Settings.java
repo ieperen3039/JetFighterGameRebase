@@ -17,6 +17,7 @@ public class Settings {
     public static final Random random = new Random();
     public static final boolean DEBUG = true;
     public static final boolean UNIT_COLLISION = true;
+    public static boolean RECURSIVE_COLLISION = true;
 
     // final music settings
     public static final float MAX_VOLUME = 6f;
@@ -24,7 +25,7 @@ public class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 20;
+    public static int TARGET_TPS = 25;
 
     // controller settings
     public static int THROTTLE_UP = KeyEvent.VK_W;

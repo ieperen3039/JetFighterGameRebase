@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,7 +82,7 @@ public class ShapeFromMesh implements Shape {
         this.vertices = vertices;
         triangles = faces.stream()
                 .map(f -> toTriangle(f, vertices, normals))
-                .collect(Collectors.toCollection(LinkedList::new));
+                .collect(Collectors.toCollection(ArrayList::new));
 
         mesh = new Mesh(vertices, normals, faces);
     }
@@ -136,7 +135,7 @@ public class ShapeFromMesh implements Shape {
         private MeshParameters(String fileName, PosVector offSet, int[] XYZ, float scale) {
             vertices = new ArrayList<>();
             normals = new ArrayList<>();
-            faces = new LinkedList<>();
+            faces = new ArrayList<>();
             List<String> lines = openMesh(fileName);
 
             for (String line : lines) {
@@ -177,7 +176,7 @@ public class ShapeFromMesh implements Shape {
             } catch (IOException e) {
                 e.printStackTrace();
                 System.err.println("Could not read mesh! Continuing game without model...");
-                return new LinkedList<>();
+                return new ArrayList<>();
             }
         }
 

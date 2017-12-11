@@ -81,4 +81,9 @@ public interface MatrixStack {
      * @param preTransformation some affine matrix
      */
     void multiplyAffine(Matrix4f preTransformation);
+
+    /**
+     * returns the matrix to the initialized form, as a kind of error-handling
+     */
+    void popAll();
 }

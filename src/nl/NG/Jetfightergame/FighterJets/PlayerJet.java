@@ -41,15 +41,15 @@ public class PlayerJet extends AbstractJet {
     }
 
     @Override
-    public void update(float deltaTime) {
-
-    }
-
-    @Override
     public void create(MatrixStack gl, Consumer<Shape> action, boolean takeStable) {
         gl.pushMatrix();
         gl.scale(-1, 1, 1);
         action.accept(shape);
         gl.popMatrix();
+    }
+
+    @Override
+    protected void updateShape(float deltaTime) {
+
     }
 }
