@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Controllers.InputHandling;
 
-import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
 
 import java.util.ArrayList;
@@ -40,7 +39,7 @@ public class MouseTracker {
     private boolean rightMouse = false;
     private boolean middleMouse = false;
 
-    private TrackedInteger mouseX, mouseY;
+    private TrackedInteger mouseDragX, mouseDragY;
 
     /** to decide between menu-mode and ingame-mode */
     private BooleanSupplier inPlayMode = () -> false;
@@ -57,8 +56,8 @@ public class MouseTracker {
                 new TrackerClickListener() {
                     @Override
                     public void clickEvent(int x, int y) {
-                        mouseX = new TrackedInteger(x);
-                        mouseY = new TrackedInteger(y);
+                        mouseDragX = new TrackedInteger(x);
+                        mouseDragY = new TrackedInteger(y);
                     }
 
                     @Override
@@ -74,7 +73,7 @@ public class MouseTracker {
 
     /**
      *
-     * @param isInGame should return true if the mouse must be captured. and listeners in gamemode should receive notifications
+     * @param isInGame should return true if the mouse is captured. and listeners in gamemode should receive notifications
      *                 if it returns false, mouse is not captured, and listeners of menumode will receive notifications
      */
     public void setMenuModeDecision(BooleanSupplier isInGame){
@@ -118,9 +117,9 @@ public class MouseTracker {
 
     public void mousePressed(MouseEvent e) {
         // prepare calling the method
-        final Consumer<TrackerClickListener> notify = l -> l.clickEvent(e.getX(), e.getY());
+        final Consumer<TrackerClickListener> notify = l -> l.clickEvent(e.x, e.y);
 
-        switch (e.getButton()) {
+        switch (e.button) {
             case BUTTON_LEFT:
                 leftMouse = true;
                 if (!inPlayMode.getAsBoolean()) {
@@ -142,7 +141,7 @@ public class MouseTracker {
     }
 
     public void mouseReleased(MouseEvent e) {
-        switch (e.getButton()){
+        switch (e.button){
             case BUTTON_LEFT:
                 leftMouse = false;
                 break;
@@ -191,18 +190,18 @@ public class MouseTracker {
         if (inPlayMode.getAsBoolean()){
             passToMoveListeners(e);
         } else {
-            mouseX.update(e.getX());
-            mouseY.update(e.getY());
-            menuDragListener.forEach(l -> l.mouseDragged(mouseX.difference(), mouseY.difference()));
+            mouseDragX.update(e.x);
+            mouseDragY.update(e.y);
+            menuDragListener.forEach(l -> l.mouseDragged(mouseDragX.difference(), mouseDragY.difference()));
         }
     }
 
     private void passToMoveListeners(MouseEvent mouse) {
-        int xMid = mouse.frame.getWidth() / 2;
-        int yMid = mouse.frame.getHeight() / 2;
+        int xMid = mouse.screenWidth / 2;
+        int yMid = mouse.screenHeight / 2;
 
-        int deltaX = xMid - mouse.getX();
-        int deltaY = yMid - mouse.getY();
+        int deltaX = xMid - mouse.x;
+        int deltaY = yMid - mouse.y;
 
         if (deltaX == 0 && deltaY == 0) return;
 
@@ -234,9 +233,9 @@ public class MouseTracker {
 
     public void mouseWheelMoved(MouseWheelEvent e) {
         if (inPlayMode.getAsBoolean()) {
-            inGameScrollListener.forEach(l -> l.mouseWheelMoved(e.getScroll()));
+            inGameScrollListener.forEach(l -> l.mouseWheelMoved(e.scroll));
         } else {
-            menuScrollListener.forEach(l -> l.mouseWheelMoved(e.getScroll()));
+            menuScrollListener.forEach(l -> l.mouseWheelMoved(e.scroll));
         }
     }
 
@@ -246,34 +245,24 @@ public class MouseTracker {
 
     public static class MouseEvent {
 
-        private final GLFWWindow frame;
-        private final int x;
-        private final int y;
-        private final MouseButton button;
+        /** position relative to the upper left corner of the active area */
+        public final int x, y;
+        public final int screenWidth;
+        public final int screenHeight;
+        public final MouseButton button;
 
-        public MouseEvent(GLFWWindow frame, int x, int y, MouseButton pressedButton) {
-            this.frame = frame;
+        public MouseEvent(int x, int y, int xMax, int yMax, MouseButton pressedButton) {
             this.x = x;
             this.y = y;
+            this.screenWidth = xMax;
+            this.screenHeight = yMax;
             this.button = pressedButton;
-        }
-
-        public int getX() {
-            return x;
-        }
-
-        public int getY() {
-            return y;
-        }
-
-        public MouseButton getButton() {
-            return button;
         }
     }
 
     public static class MouseWheelEvent {
 
-        private final float scroll;
+        public final float scroll;
 
         public MouseWheelEvent(float scroll) {
             this.scroll = scroll;
@@ -281,10 +270,6 @@ public class MouseTracker {
 
         public MouseWheelEvent(double yScroll) {
             scroll = (float) yScroll;
-        }
-
-        public float getScroll() {
-            return scroll;
         }
     }
 }

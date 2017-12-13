@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Engine;
 
-import java.awt.event.KeyEvent;
+import org.lwjgl.glfw.GLFW;
+
 import java.util.Random;
 
 /**
@@ -28,11 +29,11 @@ public class Settings {
     public static int TARGET_TPS = 25;
 
     // controller settings
-    public static int THROTTLE_UP = KeyEvent.VK_W;
-    public static int THROTTLE_DOWN = KeyEvent.VK_S;
-    public static int YAW_UP = KeyEvent.VK_D;
-    public static int YAW_DOWN = KeyEvent.VK_A;
-    // these modifiers are also use to inverse direction
+    public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
+    public static int THROTTLE_DOWN = GLFW.GLFW_KEY_S;
+    public static int YAW_UP = GLFW.GLFW_KEY_D;
+    public static int YAW_DOWN = GLFW.GLFW_KEY_A;
+    // these modifiers are also used to inverse direction
     public static float PITCH_MODIFIER = 1f;
     public static float ROLL_MODIFIER = 1f;
 

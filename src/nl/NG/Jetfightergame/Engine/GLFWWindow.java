@@ -38,6 +38,7 @@ public class GLFWWindow {
     private int width;
     private int height;
     private boolean fullScreen = false;
+    private boolean mouseIsCaptured;
 
     public GLFWWindow(String title) {
         this(title, 960, 720, true);
@@ -221,7 +222,7 @@ public class GLFWWindow {
     /**
      * Get the current position of the mouse.
      *
-     * @return The position of the mouse.
+     * @return the position of the cursor, in screen coordinates, relative to the upper-left corner of the client area of the specified window
      */
     public Vector2i getMousePosition() {
         glfwGetCursorPos(window, mousePosX, mousePosY);
@@ -338,6 +339,7 @@ public class GLFWWindow {
      */
     public void capturePointer(){
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        mouseIsCaptured = true;
     }
 
     /**
@@ -345,6 +347,11 @@ public class GLFWWindow {
      */
     public void freePointer(){
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        mouseIsCaptured = false;
+    }
+
+    public boolean isMouseCaptured(){
+        return mouseIsCaptured;
     }
 }
 

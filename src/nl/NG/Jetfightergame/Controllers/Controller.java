@@ -48,7 +48,7 @@ public interface Controller {
      *          if (return = 0) the controller wants to hold rotation
      *          if (return > 0) the controller wants to roll counterclockwise
      */
-    int roll();
+    float roll();
 
     /**
      * @return whether primary fire should be activated

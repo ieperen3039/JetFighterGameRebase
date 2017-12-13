@@ -23,7 +23,6 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     public static float PHI_MAX = (float) Math.PI / 2f - 0.01f;
     // Ratio of distance in pixels dragged and radial change of camera.
     public static float DRAG_PIXEL_TO_RADIAN = 0.025f;
-    public static float VDIST = 10f;
 
     /**
      * The position of the camera.
@@ -33,25 +32,22 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
      * The point to which the camera is looking.
      */
     public final PosVector focus;
-    /**
-     * The up vector.
-     */
-    public final DirVector up;
     private float theta;
     private float phi;
-    private float vDist = VDIST;
+    private float vDist = 10f;
 
     public PointCenteredCamera() {
-        this(PosVector.O, DirVector.Z, 0, 0);
+        this(PosVector.O, 0, 0);
     }
 
-    public PointCenteredCamera(PosVector eye, PosVector focus, DirVector up){
-        DirVector cameraDir = focus.to(eye).normalized();
+    public PointCenteredCamera(PosVector eye, PosVector focus){
+        DirVector focToEye = focus.to(eye);
+        DirVector cameraDir = focToEye.normalized();
         phi = getPhi(cameraDir);
         theta = getTheta(cameraDir, phi);
+        vDist = (float) focToEye.length();
 
         this.focus = focus;
-        this.up = up;
         this.eye = new TrackedVector<>(getEyePosition());
 
         registerListener();
@@ -66,9 +62,8 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         return (float) (Math.acos(eye.x()/Math.cos(phi)) * i);
     }
 
-    public PointCenteredCamera(PosVector focus, DirVector up, float theta, float phi) {
+    public PointCenteredCamera(PosVector focus, float theta, float phi) {
         this.focus = focus;
-        this.up = up;
         this.theta = theta;
         this.phi = phi;
 
@@ -103,17 +98,18 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         return new PosVector(eyeX, eyeY, eyeZ).add(focus);
     }
 
+    /** move is inverse of dragging */
     @Override
     public void mouseMoved(int deltaX, int deltaY) {
-        theta += deltaX * DRAG_PIXEL_TO_RADIAN * -1;
-        phi = Math.max(PHI_MIN,
-                Math.min(PHI_MAX,
-                        phi + deltaY * DRAG_PIXEL_TO_RADIAN ));
+        mouseDragged(-deltaX, -deltaY);
     }
 
     @Override
     public void mouseDragged(int deltaX, int deltaY) {
-        mouseMoved(deltaX, deltaY);
+        theta += deltaX * DRAG_PIXEL_TO_RADIAN * -1;
+        phi = Math.max(PHI_MIN,
+                Math.min(PHI_MAX,
+                        phi + deltaY * DRAG_PIXEL_TO_RADIAN ));
     }
 
     @Override
@@ -138,7 +134,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public DirVector getUpVector() {
-        return up;
+        return DirVector.Z;
     }
 
     public void cleanUp(){

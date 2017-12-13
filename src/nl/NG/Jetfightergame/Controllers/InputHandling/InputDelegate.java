@@ -1,12 +1,14 @@
 package nl.NG.Jetfightergame.Controllers.InputHandling;
 
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 
+import static nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -18,8 +20,11 @@ import static org.lwjgl.glfw.GLFW.*;
 public class InputDelegate {
 
     private GLFWWindow window;
-    private KeyTracker keyListener;
+    private KeyTracker keyboard;
     private MouseTracker mouseListener;
+
+    private TrackedInteger mouseXPosition, mouseYPosition;
+
 
     /**
      * connect the GLFWWindow with the Trackers, afterwards this object can be ignored.
@@ -28,13 +33,17 @@ public class InputDelegate {
      */
     public InputDelegate(GLFWWindow window) {
         this.window = window;
-        keyListener = KeyTracker.getInstance();
+        keyboard = KeyTracker.getInstance();
         mouseListener = MouseTracker.getInstance();
 
         window.registerListener(new KeyEventHandler());
         window.registerListener(new MouseButtonEventHandler());
         window.registerListener(new MouseMoveEventHandler());
         window.registerListener(new MouseScrollEventHandler());
+
+        Vector2i pos = window.getMousePosition();
+        mouseXPosition = new TrackedInteger(pos.x);
+        mouseYPosition = new TrackedInteger(pos.y);
     }
 
     private class KeyEventHandler extends GLFWKeyCallback {
@@ -44,9 +53,9 @@ public class InputDelegate {
 
             KeyTracker.KeyEvent event = new KeyTracker.KeyEvent(keyCode);
             if (action == GLFW_PRESS) {
-                keyListener.keyPressed(event);
+                keyboard.keyPressed(event);
             } else if (action == GLFW_RELEASE) {
-                keyListener.keyReleased(event);
+                keyboard.keyReleased(event);
             }
         }
     }
@@ -56,22 +65,22 @@ public class InputDelegate {
         public void invoke(long windowHandle, int button, int action, int mods) {
             Vector2i pos = window.getMousePosition();
 
-            MouseTracker.MouseButton eventButton;
+            MouseButton eventButton;
             switch (button){
                 case GLFW_MOUSE_BUTTON_1:
-                    eventButton = MouseTracker.MouseButton.BUTTON_LEFT;
+                    eventButton = MouseButton.BUTTON_LEFT;
                     break;
                 case GLFW_MOUSE_BUTTON_2:
-                    eventButton = MouseTracker.MouseButton.BUTTON_MIDDLE;
+                    eventButton = MouseButton.BUTTON_MIDDLE;
                     break;
                 case GLFW_MOUSE_BUTTON_3:
-                    eventButton = MouseTracker.MouseButton.BUTTON_RIGHT;
+                    eventButton = MouseButton.BUTTON_RIGHT;
                     break;
                 default:
-                    eventButton = MouseTracker.MouseButton.BUTTON_UNDEFINED;
+                    eventButton = MouseButton.BUTTON_UNDEFINED;
             }
-
-            MouseTracker.MouseEvent event = new MouseTracker.MouseEvent(window, pos.x(), pos.y(), eventButton);
+            // send absolute coordinates, as these are only relevant when mouse is not captured
+            MouseEvent event = new MouseEvent(pos.x(), pos.y(), window.getWidth(), window.getHeight(), eventButton);
             if (action == GLFW_PRESS) {
                 mouseListener.mousePressed(event);
             } else if (action == GLFW_RELEASE) {
@@ -83,11 +92,32 @@ public class InputDelegate {
     private class MouseMoveEventHandler extends GLFWCursorPosCallback {
         @Override
         public void invoke(long windowHandle, double xPos, double yPos) {
-            MouseTracker.MouseEvent event = new MouseTracker.MouseEvent(window, (int) xPos, (int) yPos, MouseTracker.MouseButton.BUTTON_UNDEFINED);
-            if (mouseListener.leftButton()){
-                mouseListener.mouseDragged(event);
+
+            // Trackers must always be updated, to prevent sudden catchup
+            mouseXPosition.update((int) xPos);
+            mouseYPosition.update((int) yPos);
+
+            if (window.isMouseCaptured()){
+
+                MouseEvent event = new MouseEvent(
+                        mouseXPosition.difference(), mouseYPosition.difference(),
+                        window.getWidth(), window.getHeight(),
+                        MouseButton.BUTTON_UNDEFINED
+                );
+
+                if (mouseListener.leftButton()) {
+                    mouseListener.mouseDragged(event);
+                } else {
+                    mouseListener.mouseMoved(event);
+                }
             } else {
-                mouseListener.mouseMoved(event);
+                // coordinates are absolute
+                MouseEvent event = new MouseEvent((int) xPos, (int) yPos, window.getWidth(), window.getHeight(), MouseButton.BUTTON_UNDEFINED);
+                if (mouseListener.leftButton()) {
+                    mouseListener.mouseDragged(event);
+                } else {
+                    mouseListener.mouseMoved(event);
+                }
             }
         }
     }
@@ -95,7 +125,7 @@ public class InputDelegate {
     private class MouseScrollEventHandler extends GLFWScrollCallback {
         @Override
         public void invoke(long windowHandle, double xScroll, double yScroll) {
-            MouseTracker.MouseWheelEvent event = new MouseTracker.MouseWheelEvent(yScroll);
+            MouseWheelEvent event = new MouseWheelEvent(yScroll);
             mouseListener.mouseWheelMoved(event);
         }
     }

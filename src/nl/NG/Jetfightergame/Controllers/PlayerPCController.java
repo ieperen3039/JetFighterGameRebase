@@ -5,31 +5,31 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 
-import static java.awt.event.KeyEvent.*;
 import static nl.NG.Jetfightergame.Engine.Settings.*;
 
 /**
  * @author Geert van Ieperen
  *         created on 31-10-2017.
  */
-public class PlayerController implements Controller, TrackerMoveListener, TrackerClickListener {
+public abstract class PlayerPCController implements TrackerMoveListener, TrackerClickListener, Controller {
 
     private KeyTracker keyboard;
     private MouseTracker mouse;
-    private int currentRoll;
-    private int currentPitch;
-    private boolean lazyButtonLeft;
-    private boolean lazyButtonRight;
+    protected int currentRoll;
+    protected int currentPitch;
+    private boolean stickyButtonLeft;
+    private boolean stickyButtonRight;
 
-    public PlayerController() {
+    protected PlayerPCController() {
         keyboard = KeyTracker.getInstance();
         mouse = MouseTracker.getInstance();
+
         mouse.addMotionListener(this);
         mouse.addClickListener(this, true);
-        keyboard.addKey(VK_W);
-        keyboard.addKey(VK_A);
-        keyboard.addKey(VK_S);
-        keyboard.addKey(VK_D);
+        keyboard.addKey(THROTTLE_UP);
+        keyboard.addKey(THROTTLE_DOWN);
+        keyboard.addKey(YAW_UP);
+        keyboard.addKey(YAW_DOWN);
     }
 
     @Override
@@ -41,11 +41,6 @@ public class PlayerController implements Controller, TrackerMoveListener, Tracke
     }
 
     @Override
-    public float pitch() {
-        return currentPitch;
-    }
-
-    @Override
     public float yaw() {
         int i = 0;
         if (keyboard.isPressed(YAW_UP)) i++;
@@ -54,14 +49,9 @@ public class PlayerController implements Controller, TrackerMoveListener, Tracke
     }
 
     @Override
-    public int roll() {
-        return currentRoll;
-    }
-
-    @Override
     public boolean primaryFire() {
-        if (lazyButtonRight) {
-            lazyButtonRight = false;
+        if (stickyButtonRight) {
+            stickyButtonRight = false;
             return true;
         }
         return mouse.rightButton();
@@ -69,8 +59,8 @@ public class PlayerController implements Controller, TrackerMoveListener, Tracke
 
     @Override
     public boolean secondaryFire() {
-        if (lazyButtonLeft) {
-            lazyButtonLeft = false;
+        if (stickyButtonLeft) {
+            stickyButtonLeft = false;
             return true;
         }
         return mouse.leftButton();
@@ -78,9 +68,9 @@ public class PlayerController implements Controller, TrackerMoveListener, Tracke
 
     @Override
     public void mouseMoved(int deltaX, int deltaY) {
-        currentPitch += deltaX * PITCH_MODIFIER;
-        // up in y (screen coordinates) is down in plane
-        currentRoll -= deltaY * ROLL_MODIFIER;
+        currentRoll += deltaX;
+        // up in y (screen coordinates) is down in 3d, and this is up again for a plane
+        currentPitch += deltaY;
     }
 
     @Override
@@ -90,12 +80,12 @@ public class PlayerController implements Controller, TrackerMoveListener, Tracke
     }
 
     /**
-     * catch quick-clicks by utilizing a 'lazy' button
+     * catch quick-clicks by utilizing a 'sticky' button
      */
     @Override
     public void clickEvent(int x, int y) {
-        if (mouse.leftButton()) lazyButtonLeft = true;
-        else if (mouse.rightButton()) lazyButtonRight = true;
+        if (mouse.leftButton()) stickyButtonLeft = true;
+        else if (mouse.rightButton()) stickyButtonRight = true;
     }
 }
 

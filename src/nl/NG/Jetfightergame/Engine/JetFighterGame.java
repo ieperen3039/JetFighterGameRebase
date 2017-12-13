@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.function.BooleanSupplier;
 
+import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_POINT_CENTERED;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -46,7 +48,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             keyTracker.addKey(GLFW_KEY_EQUAL);
             keyTracker.addKey(GLFW_KEY_F11);
 
-            final BooleanSupplier inGame = () -> !this.isPaused();
+            final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
             MouseTracker.getInstance().setMenuModeDecision(inGame);
 
             gameLoop = new JetFighterRunner(environment);
@@ -54,11 +56,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             renderLoop = new JetFighterRenderer(this, environment, window, camera, musicProvider,
                     () -> getCurrentGameMode() == GameMode.MENU_MODE);
 
-            camera.setTarget(getPlayer());
-            // set currentGameMode and engine.isPaused
-            setMenuMode();
+            camera.switchTo(CAMERA_POINT_CENTERED, new PosVector(3, -3, 2), getPlayer());
 
             environment.buildScene();
+
+            // set currentGameMode and engine.isPaused
+            setMenuMode();
 
             ShapeFromMesh.initAll();
             GeneralShapes.initAll();

@@ -41,9 +41,9 @@ public abstract class AbstractJet extends GameObject {
      * @param airResistanceCoefficient 0.5 * A * Cw. this is a factor that should be experimentally found
      * @param throttlePower force of the engines at full power in Newton
      * @param brakePower (not yet determined)
-     * @param yawAcc acceleration over the Z-axis when moving right at full power in deg/s
-     * @param pitchAcc acceleration over the Y-axis when pitching up at full power in deg/s
-     * @param rollAcc acceleration over the X-axis when rolling at full power in deg/s
+     * @param yawAcc acceleration over the Z-axis when moving right at full power in rad/s
+     * @param pitchAcc acceleration over the Y-axis when pitching up at full power in rad/s
+     * @param rollAcc acceleration over the X-axis when rolling at full power in rad/s
      * @param rotationReductionFactor the fraction that the rotation is reduced every second
      */
     public AbstractJet(Controller input, PosVector initialPosition, float initialRotation, float scale,

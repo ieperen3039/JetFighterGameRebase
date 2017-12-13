@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public class CameraManager implements Camera {
+public class CameraManager implements Camera { //TODO smooth switching between camera modes
     private GameObject target = null;
     private Camera instance;
 
@@ -30,16 +30,28 @@ public class CameraManager implements Camera {
     }
 
     public void switchTo(CameraImpl camera){
+        switchTo(camera, getEye(), target);
+    }
+
+    /**
+     * switches camera mode, and additionally sets the camera position at the given position, and updates the target.
+     * @param camera one of {@link CameraImpl}
+     * @param eye position of the camera
+     * @param target the game object that is the target (not necessarily the focus) of the new camera
+     */
+    public void switchTo(CameraImpl camera, PosVector eye, GameObject target){
         if (instance instanceof TrackerListener) {
             ((TrackerListener) instance).cleanUp();
         }
 
+        this.target = target;
+
         switch (camera){
             case CAMERA_POINT_CENTERED:
-                instance = new PointCenteredCamera(getEye(), target.getPosition(), getUpVector());
+                instance = new PointCenteredCamera(eye, target.getPosition());
                 break;
             case CAMERA_FOLLOWING:
-                instance = new FollowingCamera(getEye(), target);
+                instance = new FollowingCamera(eye, target);
                 break;
             default:
                 throw new UnsupportedOperationException("unknown enum: " + camera);

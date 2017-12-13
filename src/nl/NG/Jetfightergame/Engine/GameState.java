@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Controllers.PlayerController;
+import nl.NG.Jetfightergame.Controllers.PlayerPCControllerAbsolute;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.FighterJets.TestJet;
+import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.GameObjects.AbstractJet;
 import nl.NG.Jetfightergame.GameObjects.GameObject;
 import nl.NG.Jetfightergame.GameObjects.MovingObject;
@@ -12,7 +12,6 @@ import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
-import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.ArrayList;
@@ -26,8 +25,8 @@ import java.util.concurrent.Semaphore;
 public class GameState {
 
     private static final int MAX_COLLISION_ITERATIONS = 10;
-    private final Controller playerInput = new PlayerController();
-    private AbstractJet playerJet = new TestJet(playerInput);
+    private final Controller playerInput = new PlayerPCControllerAbsolute();
+    private AbstractJet playerJet = new PlayerJet(playerInput);
 
     protected Collection<GameObject> objects = new ArrayList<>();
     protected Collection<Touchable> staticObjects = new ArrayList<>();
@@ -37,10 +36,8 @@ public class GameState {
     /** a protector that should protecc the {@code objects} list (and possibly other   */
     private Semaphore gameChangeGuard = new Semaphore(1);
 
-    private int debugVariable = 0;
-
     protected void buildScene() {
-        objects.add(new TestJet(playerInput));
+        objects.add(playerJet);
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
     }
 
@@ -145,10 +142,7 @@ public class GameState {
      * @param gl
      */
     public void drawObjects(GL2 gl) {
-        gl.pushMatrix();
-        gl.rotate(DirVector.Z, (debugVariable++) / 40f);
         Toolbox.drawAxisFrame(gl);
-        gl.popMatrix();
 
         // static objects can not have interference
         staticObjects.forEach(d -> d.draw(gl));
@@ -160,7 +154,6 @@ public class GameState {
         } catch (InterruptedException e) {
             e.printStackTrace();
             gl.popAll();
-            //TODO how to handle GL object?
         }
     }
 
