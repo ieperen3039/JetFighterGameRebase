@@ -28,7 +28,7 @@ public class GameState {
     private final Controller playerInput = new PlayerPCControllerAbsolute();
     private AbstractJet playerJet = new PlayerJet(playerInput);
 
-    protected Collection<GameObject> objects = new ArrayList<>();
+    protected Collection<GameObject> dynamicObjects = new ArrayList<>();
     protected Collection<Touchable> staticObjects = new ArrayList<>();
     protected Collection<AbstractParticle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
@@ -37,7 +37,7 @@ public class GameState {
     private Semaphore gameChangeGuard = new Semaphore(1);
 
     protected void buildScene() {
-        objects.add(playerJet);
+        dynamicObjects.add(playerJet);
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
     }
 
@@ -46,9 +46,9 @@ public class GameState {
      * @param deltaTime time since last renderloop
      */
     @SuppressWarnings("ConstantConditions")
-    public void updateGameLoop(float deltaTime) throws InterruptedException {
+    public void updateGameLoop(float deltaTime, float totalTime) throws InterruptedException {
         // update positions with respect to collisions
-        objects.forEach((gameObject) -> gameObject.preUpdate(deltaTime));
+        dynamicObjects.forEach((gameObject) -> gameObject.preUpdate(deltaTime));
 
         if (Settings.UNIT_COLLISION) {
             int remainingLoops = MAX_COLLISION_ITERATIONS;
@@ -66,7 +66,7 @@ public class GameState {
         }
 
         gameChangeGuard.acquire();
-        objects.forEach(obj -> obj.update(deltaTime));
+        dynamicObjects.forEach(obj -> obj.update(totalTime));
         gameChangeGuard.release();
     }
 
@@ -120,8 +120,8 @@ public class GameState {
 
         // Naive solution: return all n^2 options
         // check all moving objects against (1: all other moving objects, 2: all static objects)
-        objects.parallelStream().forEach(obj -> {
-            objects.stream()
+        dynamicObjects.parallelStream().forEach(obj -> {
+            dynamicObjects.stream()
                     // only other objects
                     .filter(o -> obj != o)
                     .forEach(other -> result.add(new Pair<>(other, obj)));
@@ -149,7 +149,7 @@ public class GameState {
 
         try {
             gameChangeGuard.acquire();
-            objects.forEach(d -> d.draw(gl));
+            dynamicObjects.forEach(d -> d.draw(gl));
             gameChangeGuard.release();
         } catch (InterruptedException e) {
             e.printStackTrace();

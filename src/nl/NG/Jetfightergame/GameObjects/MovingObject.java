@@ -1,7 +1,11 @@
 package nl.NG.Jetfightergame.GameObjects;
 
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+
+import java.util.function.Consumer;
 
 /**
  * {@author Geert van Ieperen
@@ -11,6 +15,34 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  * {@link nl.NG.Jetfightergame.Engine.Updatable}
  */
 public interface MovingObject extends Touchable {
+
+    /**
+     * moves the reference frame from local space to each shape, executing {@code action} on every shape.
+     * every create call should preserve the matrix stack.
+     * @param ms reference frame to perform transformations on
+     * @param action actions to execute for every Shape
+     * @param extrapolate false if the actions are done on the (stable) current points,
+     *                   true if the actions are done on the (unstable) extrapolated points
+     */
+    void create(MatrixStack ms, Consumer<Shape> action, boolean extrapolate);
+
+    default void create(MatrixStack ms, Consumer<Shape> action){
+        create(ms, action, false);
+    }
+
+    /**
+     * moves the reference frame from global space to this object and executes action.
+     * every create call should preserve the matrix stack.
+     * @param ms reference frame to perform transformations on
+     * @param action action to perform one in local space
+     * @param extrapolate true if estimations may be used (e.g. the not-rendered part)
+     *                   false if the actions must be performed on parameters that no longer change
+     */
+    void toLocalSpace(MatrixStack ms, Runnable action, boolean extrapolate);
+
+    default void toLocalSpace(MatrixStack ms, Runnable action){
+        toLocalSpace(ms, action, false);
+    }
 
     /**
      * calculate expected position and rotation, but does not change the current state of the object.

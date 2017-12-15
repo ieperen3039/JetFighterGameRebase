@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public class CameraManager implements Camera { //TODO smooth switching between camera modes
+public class CameraManager implements Camera {
     private GameObject target = null;
     private Camera instance;
 

@@ -15,32 +15,34 @@ public interface Touchable extends Drawable {
     /**
      * moves the reference frame from local space to each shape, executing {@code action} on every shape.
      * every create call should preserve the matrix stack.
+     * If this object is moving, this applies to the current position
+     * @see MovingObject#create(MatrixStack, Consumer, boolean)
      * @param ms reference frame to perform transformations on
      * @param action actions to execute for every Shape
-     * @param takeStable false if the actions are done on the (stable) current points,
-     *                   true if the actions are done on the (unstable) extrapolated points
      */
-    void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable);
+    void create(MatrixStack ms, Consumer<Shape> action);
 
     /**
      * moves the reference frame from global space to this object and executes action
      * every create call should preserve the matrix stack.
+     * If this object is moving, this applies to the current position
+     * @see MovingObject#toLocalSpace(MatrixStack, Runnable, boolean)
      * @param ms reference frame to perform transformations on
      * @param action action to perform one in local space
-     * @param takeStable false if estimations may be used (e.g. the not rendered part)
-     *                   true if the actions must be performed on parameters taht no longer change
      */
-    void toLocalSpace(MatrixStack ms, Runnable action, boolean takeStable);
+    void toLocalSpace(MatrixStack ms, Runnable action);
 
     /**
-     * drawObjects the object using the native create function and the shape.drawObjects functions
+     * draw the object using the native create function and the shape.drawObjects functions
      */
     @Override
     default void draw(GL2 gl) {
         preDraw(gl);
         Consumer<Shape> painter = gl::draw;
-        toLocalSpace(gl, (() -> create(gl, painter, false)), false);
+        toLocalSpace(gl, (() -> create(gl, painter)));
     }
+
+
 
     /**
      * prepare gl object for drawing this object (material properties, shaders...)

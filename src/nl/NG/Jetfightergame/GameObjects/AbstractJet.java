@@ -8,6 +8,8 @@ import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Geert van Ieperen
  *         created on 30-10-2017.
@@ -65,7 +67,7 @@ public abstract class AbstractJet extends GameObject {
     }
 
     @Override
-    public void applyPhysics(float deltaTime, DirVector netForce) {
+    public void applyPhysics(float deltaTime, @Nonnull DirVector netForce) {
         // thrust forces
         float throttle = input.throttle();
         float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower); // TODO use air-resistance to increase braking power
@@ -80,12 +82,11 @@ public abstract class AbstractJet extends GameObject {
         rotationAxis = rotationAxis.rotateVector(DirVector.X, rollMoment).toDirVector();
 
         // air-resistance
-        DirVector movement = getMovement();
         addForce(movement.reduceTo(movement.length() * movement.length() * airResistCoeff * -1));
 
         // collect extrapolated variables
-        extraPosition = position.current().add(position.difference().add(netForce.scale(deltaTime)));
-        extraRotation += ExponentialSmoothFloat.fractionOf(rotation.difference(), 0f, 1 - rotationReductionFactor, deltaTime);
+        extraPosition = position.add(movement.add(netForce.scale(deltaTime)));
+        extraRotation += ExponentialSmoothFloat.fractionOf(rotationSpeed, 0f, 1 - rotationReductionFactor, deltaTime);
 
         updateShape(deltaTime);
     }
@@ -95,12 +96,10 @@ public abstract class AbstractJet extends GameObject {
      */
     protected abstract void updateShape(float deltaTime);
 
-    public void update(float deltaTime) {
-        super.update(deltaTime);
+    public void update(float currentTime) {
+        super.update(currentTime);
         // obtain current x-axis in worldspace
         forward = relativeToWorldSpace(DirVector.X, new ShadowMatrix()).toDirVector();
-        position.update(extraPosition);
-        rotation.update(extraRotation);
     }
 
     @Override

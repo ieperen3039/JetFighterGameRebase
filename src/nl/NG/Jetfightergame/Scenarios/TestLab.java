@@ -38,13 +38,13 @@ public class TestLab implements Touchable {
     }
 
     @Override
-    public void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable) {
+    public void create(MatrixStack ms, Consumer<Shape> action) {
         // just accept the world bruh
         action.accept(world);
     }
 
     @Override
-    public void toLocalSpace(MatrixStack ms, Runnable action, boolean takeStable) {
+    public void toLocalSpace(MatrixStack ms, Runnable action) {
         action.run();
     }
 

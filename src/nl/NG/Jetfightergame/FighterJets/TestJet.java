@@ -39,7 +39,7 @@ public class TestJet extends AbstractJet {
     }
 
     @Override
-    public void create(MatrixStack ms, Consumer<Shape> action, boolean takeStable) {
+    public void create(MatrixStack ms, Consumer<Shape> action, boolean extrapolate) {
         action.accept(GeneralShapes.CUBE);
     }
 

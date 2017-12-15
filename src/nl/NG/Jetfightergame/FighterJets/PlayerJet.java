@@ -43,7 +43,7 @@ public class PlayerJet extends AbstractJet {
     }
 
     @Override
-    public void create(MatrixStack gl, Consumer<Shape> action, boolean takeStable) {
+    public void create(MatrixStack gl, Consumer<Shape> action, boolean extrapolate) {
         gl.pushMatrix();
         gl.scale(-1, 1, 1);
         action.accept(shape);
