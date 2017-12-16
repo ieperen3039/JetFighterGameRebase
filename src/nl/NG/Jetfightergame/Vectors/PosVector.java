@@ -7,14 +7,18 @@ import org.joml.Vector3f;
  */
 public class PosVector extends Vector {
 
-    public static final PosVector O = new PosVector(0.0D, 0.0D, 0.0D, 0);
-    public static final PosVector Z = new PosVector(0.0D, 0.0D, 1.0D, 1);
+    public static final PosVector O = new PosVector(0.0f, 0.0f, 0.0f, 0.0f);
+    public static final PosVector Z = new PosVector(0.0f, 0.0f, 1.0f, 1.0f);
 
-    public PosVector(double x, double y, double z) {
+    public PosVector(float x, float y, float z) {
         super(x, y, z);
     }
 
-    public PosVector(double x, double y, double z, double length) {
+    public PosVector(double x, double y, double z){
+        super((float) x, (float) y, (float) z);
+    }
+
+    public PosVector(float x, float y, float z, float length) {
         super(x, y, z, length);
     }
 
@@ -24,8 +28,8 @@ public class PosVector extends Vector {
 
     @Override
     public DirVector normalized() {
-        double length = this.length();
-        return new DirVector(this.x / length, this.y / length, this.z / length, 1);
+        final float length = this.length();
+        return new DirVector(this.x / length, this.y / length, this.z / length, 1f);
     }
 
     @Override
@@ -59,13 +63,13 @@ public class PosVector extends Vector {
     }
 
     @Override
-    public Vector scale(double scalar) {
+    public Vector scale(float scalar) {
         return new PosVector(scalar * this.x, scalar * this.y, scalar * this.z);
     }
 
     @Override
     public PosVector middleTo(Vector that) {
-        return new PosVector(this.x + 0.5 * (that.x - this.x), this.y + 0.5 * (that.y - this.y), this.z + 0.5 * (that.z - this.z));
+        return new PosVector(this.x + 0.5f * (that.x - this.x), this.y + 0.5f * (that.y - this.y), this.z + 0.5f * (that.z - this.z));
     }
 
     @Override

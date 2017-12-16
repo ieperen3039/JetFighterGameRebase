@@ -15,7 +15,7 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
     /** prevents race-conditions upon adding and removing */
     private Semaphore changeGuard;
 
-    /** timestamps in milliseconds. Private, as semaphore must be handled */
+    /** timestamps in seconds. Private, as semaphore must be handled */
     private Queue<Double> timeStamps; //TODO possible copy on write
     private Queue<T> elements;
 

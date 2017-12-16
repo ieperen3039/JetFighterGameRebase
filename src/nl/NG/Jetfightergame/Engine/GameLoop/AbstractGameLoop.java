@@ -52,7 +52,7 @@ public abstract class AbstractGameLoop extends Thread {
      * wrap-up must end up in a finally bock
      */
     public void run() {
-        Toolbox.print(loopName + " is started");
+        Toolbox.print(loopName + " enabled");
         Timer loopTimer = new Timer();
         float deltaTime = 0;
         try {

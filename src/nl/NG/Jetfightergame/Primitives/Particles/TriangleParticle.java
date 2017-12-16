@@ -46,10 +46,10 @@ public class TriangleParticle implements AbstractParticle {
         y = (float) centroid.y();
         z = (float) centroid.z();
 
-        combinedTransformation = getMapping(a.toVector3f(), b.toVector3f(), c.toVector3f());
+        combinedTransformation = getMapping(a, b, c);
 
         this.movement = movement;
-        this.angVec = angleVector.toVector3f();
+        this.angVec = angleVector;
         this.rotationSpeed = rotationSpeed;
         this.timeToLive = timeToLive;
     }
@@ -65,7 +65,7 @@ public class TriangleParticle implements AbstractParticle {
      * @param timeToLive seconds before this particle should be destroyed
      */
     public static TriangleParticle worldspaceParticle(PosVector a, PosVector b, PosVector c, DirVector movement, DirVector angleVector, float rotationSpeed, float timeToLive){
-        PosVector centroid = a.add(b).add(c).scale(1.0/3).toPosVector(); // works when (A+B+C < Double.MAX_VALUE)
+        PosVector centroid = a.add(b).add(c).scale(1f/3).toPosVector(); // works when (A+B+C < Double.MAX_VALUE)
         DirVector A = centroid.to(a);
         DirVector B = centroid.to(b);
         DirVector C = centroid.to(c);
@@ -126,7 +126,7 @@ public class TriangleParticle implements AbstractParticle {
         gl.pushMatrix();
         {
             gl.translate(x, y, z);
-            gl.rotate((double) currentRotation, angVec.x(), angVec.y(), angVec.z());
+            gl.rotate(currentRotation, angVec.x(), angVec.y(), angVec.z());
             gl.multiplyAffine(combinedTransformation);
             gl.draw(GeneralShapes.TRIANGLE);
         }

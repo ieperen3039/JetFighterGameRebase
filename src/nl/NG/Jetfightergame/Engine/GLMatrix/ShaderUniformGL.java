@@ -55,9 +55,9 @@ public class ShaderUniformGL implements GL2 {
 
         // Update the view
         vpMatrix.lookAt(
-                camera.getEye().toVector3f(),
-                camera.getFocus().toVector3f(),
-                camera.getUpVector().toVector3f()
+                camera.getEye(),
+                camera.getFocus(),
+                camera.getUpVector()
         );
         return vpMatrix;
     }
@@ -78,7 +78,7 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void setLight(PosVector pos, Color4f lightColor){
-        Vector3f mPosition = pos.toVector3f();
+        Vector3f mPosition = pos;
         mPosition.mulPosition(modelMatrix);
         currentShader.setPointLight(nextLightIndex++, mPosition, lightColor);
 
@@ -96,7 +96,7 @@ public class ShaderUniformGL implements GL2 {
     }
 
     @Override
-    public void rotate(double angle, float x, float y, float z) {
+    public void rotate(float angle, float x, float y, float z) {
         rotate(new AxisAngle4f((float) angle, x, y, z));
     }
 
@@ -116,14 +116,14 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public PosVector getPosition(PosVector p) {
-        Vector3f result = p.toVector3f();
+        Vector3f result = p;
         result.mulPosition(modelMatrix);
         return new PosVector(result);
     }
 
     @Override
     public DirVector getDirection(DirVector v) {
-        Vector3f result = v.toVector3f();
+        Vector3f result = v;
         result.mulDirection(modelMatrix);
         return new DirVector(result);
     }

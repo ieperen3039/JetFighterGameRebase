@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.FloatInterpolator;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.VectorInterpolator;
@@ -28,21 +29,21 @@ public abstract class GameObject implements MovingObject {
     /** worldspace position in m */
     protected PosVector position;
     /** worldspace movement in m/s */
-    protected DirVector movement;
+    protected DirVector velocity;
     /** absolute rotation in radians */
     protected float rotation;
     /** rotation speed in radian/s */
     protected float rotationSpeed;
 
-    private VectorInterpolator interpolator;
+    private float drawTimer = 0;
+    private VectorInterpolator positionInterpolator;
+    private FloatInterpolator rotationInterpolator;
 
     /** extrapolated worldspace position */
     protected PosVector extraPosition;
     /** expected rotation in radians */
     protected float extraRotation;
 
-    /** netForce applied on this object in worldspace */
-    protected DirVector netForce;
     /** rotation axis in worldspace */
     protected DirVector rotationAxis;
 
@@ -71,10 +72,11 @@ public abstract class GameObject implements MovingObject {
         this.scale = scale;
         extraPosition = initialPosition;
         extraRotation = initialRotation;
-        netForce = DirVector.O;
+        velocity = DirVector.O;
         this.mass = mass;
 
-        interpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE);
+        positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
+        rotationInterpolator = new FloatInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
     }
 
     @Override
@@ -82,9 +84,17 @@ public abstract class GameObject implements MovingObject {
         nextCrash = new Extreme<>(false);
 
         // 1st law of Newton
-        netForce = DirVector.O;//TODO external influences
+        DirVector netForce = DirVector.O;//TODO external influences
         applyPhysics(deltaTime, netForce);
+
+        updateShape(deltaTime);
     }
+
+
+    /**
+     * update the shape of the airplane, if applicable
+     */
+    protected abstract void updateShape(float deltaTime);
 
     /**
      * @param relative a vector relative to this object
@@ -103,12 +113,18 @@ public abstract class GameObject implements MovingObject {
     /**
      * update the state of this object, may not be called by any method from another interface
      * @param currentTime seconds between some startTime t0 and the begin of the current gameloop
+     * @param deltaTime time since last update call
      */
-    public void update(float currentTime) {
+    public void update(float currentTime, float deltaTime) {
         hitPoints = null;
+
+        velocity = position.to(extraPosition).scale(deltaTime);
+        rotationSpeed = (extraRotation - rotation) * deltaTime;
         position = extraPosition;
         rotation = extraRotation;
-        interpolator.add(position, currentTime);
+
+        positionInterpolator.add(position, currentTime);
+        rotationInterpolator.add(rotation, currentTime);
     }
 
     @Override
@@ -209,10 +225,6 @@ public abstract class GameObject implements MovingObject {
         return previous;
     }
 
-    public void toLocalSpace(MatrixStack ms, Runnable action){
-        toLocalSpace(ms, action, false);
-    }
-
     public void toLocalSpace(MatrixStack ms, Runnable action, boolean extrapolate) {
         PosVector currPos = extrapolate ? extraPosition : position;
         float currRot = extrapolate ? extraRotation : rotation;
@@ -236,26 +248,43 @@ public abstract class GameObject implements MovingObject {
         gl.setMaterial(surfaceMaterial);
     }
 
-    public void addForce(DirVector force) {
-        netForce = netForce.add(force);
+    @Override
+    public void draw(GL2 gl, float currentTime) {
+        PosVector pos = getPosition(currentTime);
+        Float rot = rotationInterpolator.getInterpolated(currentTime);
+
+        preDraw(gl);
+        Consumer<Shape> painter = gl::draw;
+        toLocalSpace(gl, () -> create(gl, painter), pos, rot);
     }
 
-    @Override
+    /** returns the latest calculated position, but one should preferably use {@link #getPosition(float)}*/
     public PosVector getPosition() {
         return position;
     }
 
     @Override
-    public DirVector getMovement() {
-        return movement;
+    public PosVector getPosition(float currentTime) {
+        if (currentTime < drawTimer) throw new IllegalArgumentException(
+                "currentTime must be larger than any earlier call of currentTime\n" +
+                        "earlier call was " + drawTimer + ", this call was " + currentTime
+        );
+        drawTimer = currentTime;
+
+        return positionInterpolator.getInterpolated(currentTime).toPosVector();
+    }
+
+    @Override
+    public DirVector getVelocity() {
+        return velocity;
     }
 
     /** an object that represents {@code null}. Making this appear in-game is an achievement */
     public static final GameObject EMPTY_OBJECT = new GameObject(PosVector.O, Material.GLOWING, 1f , 0f, 1f) {
-        public void create(MatrixStack ms, Consumer<Shape> action) {}
         public void create(MatrixStack ms, Consumer<Shape> action, boolean b) {}
         public void draw(GL2 ms) {Toolbox.drawAxisFrame(ms);}
         public void applyCollision() {}
+        protected void updateShape(float deltaTime) {}
         public void applyPhysics(float deltaTime, DirVector netForce) {position.add(netForce.scale(deltaTime));}
     };
 }

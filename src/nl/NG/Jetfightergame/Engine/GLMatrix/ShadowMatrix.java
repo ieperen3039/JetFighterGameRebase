@@ -33,7 +33,7 @@ public class ShadowMatrix implements MatrixStack {
     }
 
     @Override
-    public void rotate(double angle, float x, float y, float z) {
+    public void rotate(float angle, float x, float y, float z) {
         if (angle != 0.0) {
             // transform rotation vector to local space
             DirVector rVec = xVec.scale(x)
@@ -41,7 +41,7 @@ public class ShadowMatrix implements MatrixStack {
                     .add(zVec.scale(z))
                     .normalized();
 
-            double[] rotationMatrix = getRotationMatrix(rVec.x(), rVec.y(), rVec.z(), angle);
+            float[] rotationMatrix = getRotationMatrix(rVec.x(), rVec.z(), rVec.y(), angle);
             zVec = zVec.multiplyMatrix(rotationMatrix).toDirVector();
             xVec = xVec.multiplyMatrix(rotationMatrix).toDirVector();
             yVec = yVec.multiplyMatrix(rotationMatrix).toDirVector();
@@ -70,9 +70,9 @@ public class ShadowMatrix implements MatrixStack {
      */
     @Override
     public PosVector getPosition(PosVector p){
-        double x = p.x();
-        double y = p.y();
-        double z = p.z();
+        float x = p.x();
+        float y = p.y();
+        float z = p.z();
         PosVector newPos = posVec;
         if (x != 0.0) newPos = newPos.add(xVec.scale(x));
         if (y != 0.0) newPos = newPos.add(yVec.scale(y));
@@ -97,9 +97,9 @@ public class ShadowMatrix implements MatrixStack {
      * @return coordinates relative to local-space
      */
     public PosVector getReversePosition(PosVector p){
-        double x = p.x();
-        double y = p.y();
-        double z = p.z();
+        float x = p.x();
+        float y = p.y();
+        float z = p.z();
         Vector newPos = DirVector.O;
         if (x != 0.0) newPos = newPos.subtract(xVec.scale(1/x));
         if (y != 0.0) newPos = newPos.subtract(yVec.scale(1/y));

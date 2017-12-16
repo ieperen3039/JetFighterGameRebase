@@ -12,7 +12,7 @@ public class FloatInterpolatorTest {
 
     @Before
     public void setUp() throws Exception {
-        instance = new FloatInterpolator(10);
+        instance = new FloatInterpolator(10, 0f);
         instance.add(1f, 0);
         instance.add(2f, 1);
         instance.add(4f, 3);
@@ -56,7 +56,7 @@ public class FloatInterpolatorTest {
     public void testTimedQueue() {
         TimedQueue<Float> queue = instance;
         float[] challenges =      {-1, 0,  1,  2,  3,  4};
-        Float[] expectedAnswers = {1f, 1f, 2f, 4f, 4f, 6f};
+        float[] expectedAnswers = {0f, 0f, 2f, 4f, 4f, 6f};
 
         for (int i = 0; i < challenges.length; i++) {
             Float answer = queue.getActive(challenges[i]);

@@ -57,17 +57,17 @@ public class JetFighterRenderer extends AbstractGameLoop {
     }
 
     @Override
-    protected void update(float deltaTime) {
+    protected void update(float realDeltaTime) {
         try {
             Toolbox.checkGLError();
             GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
             Toolbox.checkGLError();
 
-            activeCamera.updatePosition(deltaTime);
+            activeCamera.updatePosition(realDeltaTime);
             initShader();
             Toolbox.checkGLError();
 
-            if (!engine.isPaused()) gameState.updateParticles(deltaTime);
+            if (!engine.isPaused()) gameState.updateParticles();
 
             // activate lights in the scene
             gameState.setLights(gl);
@@ -111,11 +111,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
             shader.setBlack(false);
             shader.setShadowed(true);
             shader.setAmbientLight(ambientLight);
-            shader.setCameraPosition(activeCamera.getEye().toVector3f());
+            shader.setCameraPosition(activeCamera.getEye());
         } else if (currentShader instanceof GouraudShader){
             GouraudShader shader = (GouraudShader) currentShader;
             shader.setAmbientLight(ambientLight);
-            shader.setCameraPosition(activeCamera.getEye().toVector3f());
+            shader.setCameraPosition(activeCamera.getEye());
         } else {
             Toolbox.print("loaded shader without advanced parameters: " + currentShader.getClass().getSimpleName());
         }

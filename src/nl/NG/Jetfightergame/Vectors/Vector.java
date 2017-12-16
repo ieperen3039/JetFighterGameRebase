@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.Vectors;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.Locale;
 
-import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
 /**
@@ -14,26 +14,25 @@ import static java.lang.Math.sin;
  * openGL normally does not agree on this, but the effect is the same anyhow
  */
 
-public abstract class Vector {
+public abstract class Vector extends Vector3f{
 
-    protected static final double roundingError = 4.44E-16;
-    protected final double x;
-    protected final double y;
-    protected final double z;
+    private static final double roundingError = 4.44E-16;
 
     /**
      * the length of this vector which is 0 until queried
      */
-    private double length = -1;
+    private float length = -1;
 
-    public Vector(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public Vector(Vector3fc source){
+        super(source);
     }
 
-    public Vector(double x, double y, double z, double length) {
-        this(x, y, z);
+    public Vector(float x, float y, float z) {
+        super(x, y, z);
+    }
+
+    public Vector(float x, float y, float z, float length) {
+        super(x, y, z);
         this.length = length;
     }
 
@@ -43,31 +42,32 @@ public abstract class Vector {
 
     /**
      * returns a translation matrix resulting from rotating angle radians over vector (x, y, z)
-     * in much the same way as {@link GL2#rotate(double, float, float, float)}
+     * in much the same way as {@link MatrixStack#rotate(float, float, float, float)}
      *
+     * @param x
      * @param angle in RADIANS
      * @return a 3x3 matrix as 9-element array.
      */
-    public static double[] getRotationMatrix(double x, double y, double z, double angle) {
-        double Mcos = (1 - cos(angle));
-        return new double[]{
-                (x * x * Mcos + cos(angle)),
-                (x * y * Mcos - z * sin(angle)),
-                (x * z * Mcos + y * sin(angle)),
-                (y * x * Mcos + z * sin(angle)),
-                (y * y * Mcos + cos(angle)),
-                (y * z * Mcos - x * sin(angle)),
-                (z * x * Mcos - y * sin(angle)),
-                (z * y * Mcos + x * sin(angle)),
-                (z * z * Mcos + cos(angle))
+    public static float[] getRotationMatrix(float x, float z, float y, float angle) {
+        float Mcos = (1 - (float) Math.cos(angle));
+        return new float[]{
+                (x * x * Mcos + (float) Math.cos(angle)),
+                (x * y * Mcos - z * (float) sin(angle)),
+                (x * z * Mcos + y * (float) sin(angle)),
+                (y * x * Mcos + z * (float) sin(angle)),
+                (y * y * Mcos + (float) Math.cos(angle)),
+                (y * z * Mcos - x * (float) sin(angle)),
+                (z * x * Mcos - y * (float) sin(angle)),
+                (z * y * Mcos + x * (float) sin(angle)),
+                (z * z * Mcos + (float) Math.cos(angle))
         };
     }
 
-    public static double[] getRotationMatrix(Vector v, double angle){
-        return getRotationMatrix(v.x, v.y, v.z, angle);
+    public static float[] getRotationMatrix(Vector v, float angle){
+        return getRotationMatrix(v.x, v.z, v.y, angle);
     }
 
-    public Vector multiplyMatrix(double[] mat){
+    public Vector multiplyMatrix(float[] mat){
         return new DirVector(
                 x * mat[0] + y * mat[1] + z * mat[2],
                 x * mat[3] + y * mat[4] + z * mat[5],
@@ -80,17 +80,17 @@ public abstract class Vector {
      * If multiple vectors must be turned along the same axis, better reuse the matrix
      * @param turnVector the vector that is orthogonal to the turned plane
      * @param angle the angle in RADIANS that has to be turned
-     * @return {@link #getRotationMatrix(double, double, double, double)} on turnvector,
-     * then {@link #multiplyMatrix(double[])} on the resulting 3x3 matrix.
+     * @return {@link #getRotationMatrix(float, float, float, float)} on turnvector,
+     * then {@link #multiplyMatrix(float[])} on the resulting 3x3 matrix.
      */
     public Vector rotateVector(DirVector turnVector, float angle){
-        double[] mat = getRotationMatrix(turnVector, angle);
+        float[] mat = getRotationMatrix(turnVector, angle);
 
         return multiplyMatrix(mat);
     }
 
-    public double length() {
-        if (length < 0) length = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    public float length() {
+        if (length < 0) length = super.length();
         return length;
     }
 
@@ -118,11 +118,11 @@ public abstract class Vector {
     /**
      * @return whether all coordinates are not NaN, and this is not a zero-vector
      */
-    public boolean isScalable(){
-        return !Double.isNaN(x) && !Double.isNaN(y) && !Double.isNaN(z) && !(x == 0 && y == 0 && z == 0);
+    public boolean isNotScalable(){
+        return Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || (x == 0 && y == 0 && z == 0);
     }
 
-    public double dot(Vector that) {
+    public float dot(Vector that) {
         return (this.x * that.x) + (this.y * that.y) + (this.z * that.z);
     }
 
@@ -137,7 +137,7 @@ public abstract class Vector {
      * @param scalar multiplication factor.
      * @return new vector with length equal to {@code this.length() * scalar}
      */
-    public abstract Vector scale(double scalar);
+    public abstract Vector scale(float scalar);
 
     /**
      * @returns vector to the middle of this vector and given vector
@@ -154,50 +154,8 @@ public abstract class Vector {
         return String.format(Locale.US, "(%1.03f, %1.03f, %1.03f)", this.x, this.y, this.z);
     }
 
-    public String toExactString() {
-        return "(" + this.x + ", " + this.y + ", " + this.z + ")";
-    }
-
     public abstract PosVector toPosVector();
 
     public abstract DirVector toDirVector();
-
-    public double x() {
-        return x;
-    }
-
-    public double y() {
-        return y;
-    }
-
-    public double z() {
-        return z;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Vector that = (Vector) o;
-        return (this.x == that.x) && (this.y == that.y) && (this.z == that.z);
-    }
-
-    @Override
-    public int hashCode() {
-        int result;
-        long temp;
-        temp = Double.doubleToLongBits(x);
-        result = (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(y);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(z);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        return result;
-    }
-
-    public Vector3f toVector3f() {
-        return new Vector3f((float) x, (float) y, (float) z);
-    }
 }
 

@@ -48,5 +48,7 @@ public class Settings {
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 4;
     public final static int MAX_POINT_LIGHTS = 10;
+    /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
+    public static final float RENDER_DELAY = (float) (1 / (Math.ceil(TARGET_FPS/TARGET_TPS) + 1) / 1000);
 
 }

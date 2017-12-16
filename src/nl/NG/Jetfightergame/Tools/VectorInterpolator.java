@@ -9,15 +9,13 @@ import nl.NG.Jetfightergame.Vectors.Vector;
  */
 public class VectorInterpolator extends Interpolator<Vector> {
 
-    public VectorInterpolator(int capacity) {
-        super(capacity);
+    public VectorInterpolator(int capacity, Vector initialValue) {
+        super(capacity, initialValue);
     }
 
-    public Vector Interpolate(float timeStamp, double firstTime, Vector firstElt, double secondTime, Vector secondElt) {
-        double fraction = (timeStamp - firstTime) / (secondTime - firstTime);
+    protected Vector interpolate(float timeStamp, double firstTime, Vector firstElt, double secondTime, Vector secondElt) {
+        float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
         DirVector difference = firstElt.to(secondElt).toDirVector();
-
-        Toolbox.print(timeUntilNext(timeStamp), fraction);
 
         return firstElt.add(difference.scale(fraction));
     }

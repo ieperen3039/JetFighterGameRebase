@@ -133,7 +133,7 @@ public abstract class Plane {
     protected DirVector calculateMaxDirection(PosVector linePosition, DirVector direction) {
         // random point is taken
         PosVector offSquare = boundary.get(0).subtract(linePosition);
-        double scalar = (offSquare.dot(normal) / direction.dot(normal));
+        float scalar = (offSquare.dot(normal) / direction.dot(normal));
 
         if (Vector.almostZero(scalar)) {
             return DirVector.O;

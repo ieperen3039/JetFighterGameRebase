@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 
 import java.util.List;
 
@@ -123,9 +124,8 @@ public class NGRobotSecondShapes {
         frame.addQuad(G, A);
 
         PosVector headMiddle = B.middleTo(C).middleTo(A.middleTo(D));
-        PosVector noseMiddle = headMiddle
-                .to(B.middleTo(C))
-                .scale(1.2)
+        PosVector noseMiddle = ((Vector) headMiddle
+                .to(B.middleTo(C)).scale((float) 1.2))
                 .add(headMiddle)
                 .toPosVector();
 

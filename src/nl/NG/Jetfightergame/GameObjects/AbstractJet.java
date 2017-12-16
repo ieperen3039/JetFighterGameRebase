@@ -70,10 +70,10 @@ public abstract class AbstractJet extends GameObject {
     public void applyPhysics(float deltaTime, @Nonnull DirVector netForce) {
         // thrust forces
         float throttle = input.throttle();
-        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower); // TODO use air-resistance to increase braking power
-        addForce(forward.reduceTo(thrust));
+        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
+        netForce = netForce.add(forward.reduceTo(thrust));
 
-        // rotational forces
+        // rotational forces TODO rotation of airplane
         float yawMoment = (input.yaw() * yawAcc * deltaTime);
         rotationAxis = rotationAxis.rotateVector(DirVector.Z, yawMoment).toDirVector();
         float pitchMoment = (input.pitch() * pitchAcc * deltaTime);
@@ -82,22 +82,20 @@ public abstract class AbstractJet extends GameObject {
         rotationAxis = rotationAxis.rotateVector(DirVector.X, rollMoment).toDirVector();
 
         // air-resistance
-        addForce(movement.reduceTo(movement.length() * movement.length() * airResistCoeff * -1));
+        netForce = netForce.add(velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1));
+
 
         // collect extrapolated variables
-        extraPosition = position.add(movement.add(netForce.scale(deltaTime)));
+        // F = m * a ; a = dv/dt ; v = ds/dt
+        // a = F/m ; dv = a * dt = F * (dt/m)
+        velocity = netForce.scale(deltaTime/mass);
+        // ds = v * dt ;
+        extraPosition = position.add(velocity.scale(deltaTime));
         extraRotation += ExponentialSmoothFloat.fractionOf(rotationSpeed, 0f, 1 - rotationReductionFactor, deltaTime);
-
-        updateShape(deltaTime);
     }
 
-    /**
-     * update the shape of the airplane, if applicable
-     */
-    protected abstract void updateShape(float deltaTime);
-
-    public void update(float currentTime) {
-        super.update(currentTime);
+    public void update(float currentTime, float deltaTime) {
+        super.update(currentTime, deltaTime);
         // obtain current x-axis in worldspace
         forward = relativeToWorldSpace(DirVector.X, new ShadowMatrix()).toDirVector();
     }
@@ -114,8 +112,8 @@ public abstract class AbstractJet extends GameObject {
     @Override
     public String toString(){
         return "Jet '" + this.getClass().getSimpleName() + "' {" +
-                "pos: " + getPosition() +
-                ", move: " + getMovement() +
+                "pos: " + position +
+                ", velocity: " + getVelocity() +
                 ", direction: " + getForward() +
                 "}";
     }

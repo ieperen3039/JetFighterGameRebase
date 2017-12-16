@@ -6,12 +6,12 @@ package nl.NG.Jetfightergame.Tools;
  */
 public class FloatInterpolator extends Interpolator<Float> {
 
-    public FloatInterpolator(int capacity) {
-        super(capacity);
+    public FloatInterpolator(int capacity, Float initialValue) {
+        super(capacity, initialValue);
     }
 
     @Override
-    protected Float Interpolate(float timeStamp, double firstTime, Float firstElt, double secondTime, Float secondElt) {
+    protected Float interpolate(float timeStamp, double firstTime, Float firstElt, double secondTime, Float secondElt) {
         float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
         float difference = secondElt - firstElt;
 

@@ -42,10 +42,9 @@ public interface Touchable extends Drawable {
         toLocalSpace(gl, (() -> create(gl, painter)));
     }
 
-
-
     /**
-     * prepare gl object for drawing this object (material properties, shaders...)
+     * prepare gl object for drawing this object (material properties, shaders...).
+     * This method should called inside the draw method
      */
     void preDraw(GL2 gl);
 }

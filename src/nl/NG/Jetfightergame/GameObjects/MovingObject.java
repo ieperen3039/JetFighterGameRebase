@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameObjects;
 
+import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -69,13 +70,24 @@ public interface MovingObject extends Touchable {
     boolean checkCollisionWith(Touchable other);
 
     /**
-     * @return position of the center of mass of this object
+     * draws this object, interpolated for the given timestamp.
+     * Every call to currentTime must be larger than the one before (this should be checked)
+     * @param currentTime time since some t_0 in seconds
+     * @see #getPosition(float)
      */
-    PosVector getPosition();
+    void draw(GL2 gl, float currentTime);
+
+    /**
+     * Every call to currentTime must be larger than the one before (this should be checked)
+     * @return position of the center of mass of this object, interpolated for the given timestamp.
+     * @param currentTime time since some t_0 in seconds
+     * @throws IllegalArgumentException if the currentTime is less than the previous call to this method
+     */
+    PosVector getPosition(float currentTime);
 
     /**
      * @return movement of the center of mass of this object in world-space
      */
-    DirVector getMovement();
+    DirVector getVelocity();
 }
 

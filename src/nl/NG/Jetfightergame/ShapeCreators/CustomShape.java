@@ -47,10 +47,10 @@ public class CustomShape {
      */
     private static Vector bezierPoint(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
         //A*(1−u)^3 + B*3u(1−u)^2 + C*3u^2(1−u) + D*u^3
-        return A.scale((1 - u) * (1 - u) * (1 - u))
-                .add(B.scale(3 * u * (1 - u) * (1 - u)))
-                .add(C.scale(3 * u * u * (1 - u)))
-                .add(D.scale(u * u * u));
+        return A.scale((float) ((1 - u) * (1 - u) * (1 - u)))
+                .add(B.scale((float) (3 * u * (1 - u) * (1 - u))))
+                .add(C.scale((float) (3 * u * u * (1 - u))))
+                .add(D.scale((float) (u * u * u)));
     }
 
     /**
@@ -60,10 +60,9 @@ public class CustomShape {
      */
     private static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
         //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
-        return (B.subtract(A))
-                .scale(3 * (1 - u) * (1 - u))
-                .add(C.subtract(B).scale(6 * (1 - u) * u))
-                .add(D.subtract(C).scale(3 * u * u))
+        return (B.subtract(A)).scale((float) (3 * (1 - u) * (1 - u)))
+                .add(C.subtract(B).scale((float) (6 * (1 - u) * u)))
+                .add(D.subtract(C).scale((float) (3 * u * u)))
                 .toDirVector();
     }
 

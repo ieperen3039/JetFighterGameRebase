@@ -10,17 +10,21 @@ import java.util.Random;
  * created on 1-5-2017.
  */
 public class DirVector extends Vector {
-    public static final DirVector O = new DirVector(0.0D, 0.0D, 0.0D, 0);
-    public static final DirVector X = new DirVector(1.0D, 0.0D, 0.0D, 1);
-    public static final DirVector Y = new DirVector(0.0D, 1.0D, 0.0D, 1);
-    public static final DirVector Z = new DirVector(0.0D, 0.0D, 1.0D, 1);
+    public static final DirVector O = new DirVector(0.0f, 0.0f, 0.0f, 0);
+    public static final DirVector X = new DirVector(1.0f, 0.0f, 0.0f, 1);
+    public static final DirVector Y = new DirVector(0.0f, 1.0f, 0.0f, 1);
+    public static final DirVector Z = new DirVector(0.0f, 0.0f, 1.0f, 1);
 
-    public DirVector(double x, double y, double z) {
+    public DirVector(float x, float y, float z) {
         super(x, y, z);
     }
 
-    public DirVector(double x, double y, double z, double length) {
+    public DirVector(float x, float y, float z, float length) {
         super(x, y, z, length);
+    }
+
+    public DirVector(double x, double y, double z) {
+        super((float) x, (float) y, (float) z);
     }
 
     public DirVector(Vector3f v) {
@@ -33,13 +37,13 @@ public class DirVector extends Vector {
      */
     public static DirVector random() {
         Random r = Settings.random;
-        return new DirVector(2 * r.nextDouble() - 1, 2 * r.nextDouble() - 1, 2 * r.nextDouble() - 1);
+        return new DirVector(2 * r.nextFloat() - 1, 2 * r.nextFloat() - 1, 2 * r.nextFloat() - 1);
     }
 
     @Override
     public DirVector normalized() {
-        final double length = this.length();
-        return new DirVector(this.x / length, this.y / length, this.z / length, 1);
+        final float length = this.length();
+        return new DirVector(this.x / length, this.y / length, this.z / length, 1f);
     }
 
     @Override
@@ -73,13 +77,13 @@ public class DirVector extends Vector {
     }
 
     @Override
-    public DirVector scale(double scalar) {
+    public DirVector scale(float scalar) {
         return new DirVector(scalar * this.x, scalar * this.y, scalar * this.z);
     }
 
     @Override
     public DirVector middleTo(Vector that) {
-        return new DirVector(this.x + 0.5 * (that.x - this.x), this.y + 0.5 * (that.y - this.y), this.z + 0.5 * (that.z - this.z));
+        return new DirVector(this.x + 0.5f * (that.x - this.x), this.y + 0.5f * (that.y - this.y), this.z + 0.5f * (that.z - this.z));
     }
 
     @Override
@@ -104,9 +108,9 @@ public class DirVector extends Vector {
      * @return the result of {@code this.normalized().scale(newlength)}
      * or a zero vector (0, 0, 0) if this is a zero-vector
      */
-    public DirVector reduceTo(double newLength) {
-        final Double factor = newLength / length();
-        if (Double.isNaN(factor)) return this;
+    public DirVector reduceTo(float newLength) {
+        if (isNotScalable()) return this;
+        final float factor = newLength / length();
         return new DirVector(this.x * factor, this.y * factor, this.z * factor, Math.abs(newLength));
     }
 }

@@ -11,6 +11,7 @@ import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -24,7 +25,7 @@ import java.util.concurrent.Semaphore;
  */
 public class GameState {
 
-    private static final int MAX_COLLISION_ITERATIONS = 10;
+    private static final int MAX_COLLISION_ITERATIONS = 5;
     private final Controller playerInput = new PlayerPCControllerAbsolute();
     private AbstractJet playerJet = new PlayerJet(playerInput);
 
@@ -36,6 +37,8 @@ public class GameState {
     /** a protector that should protecc the {@code objects} list (and possibly other   */
     private Semaphore gameChangeGuard = new Semaphore(1);
 
+    private final GameTimer time = new GameTimer();
+
     protected void buildScene() {
         dynamicObjects.add(playerJet);
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
@@ -43,12 +46,13 @@ public class GameState {
 
     /**
      * update the physics of all game objects and check for collisions
-     * @param deltaTime time since last renderloop
      */
     @SuppressWarnings("ConstantConditions")
-    public void updateGameLoop(float deltaTime, float totalTime) throws InterruptedException {
+    public void updateGameLoop() throws InterruptedException {
+        float currentTime = time.getGameTime().current();
+
         // update positions with respect to collisions
-        dynamicObjects.forEach((gameObject) -> gameObject.preUpdate(deltaTime));
+        dynamicObjects.forEach((gameObject) -> gameObject.preUpdate(currentTime));
 
         if (Settings.UNIT_COLLISION) {
             int remainingLoops = MAX_COLLISION_ITERATIONS;
@@ -66,7 +70,7 @@ public class GameState {
         }
 
         gameChangeGuard.acquire();
-        dynamicObjects.forEach(obj -> obj.update(totalTime));
+        dynamicObjects.forEach(obj -> obj.update(currentTime, time.getGameTime().difference()));
         gameChangeGuard.release();
     }
 
@@ -139,7 +143,6 @@ public class GameState {
 
     /**
      * draw all objects of the game
-     * @param gl
      */
     public void drawObjects(GL2 gl) {
         Toolbox.drawAxisFrame(gl);
@@ -149,7 +152,7 @@ public class GameState {
 
         try {
             gameChangeGuard.acquire();
-            dynamicObjects.forEach(d -> d.draw(gl));
+            dynamicObjects.forEach(d -> d.draw(gl, time.getRenderTime().current()));
             gameChangeGuard.release();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -164,13 +167,68 @@ public class GameState {
     /**
      * update the position of the particles.
      * should be called every renderloop
-     * @param elapsedSeconds time since last renderframe
      */
-    public void updateParticles(float elapsedSeconds) {
-        particles.forEach(p -> p.updateRender(elapsedSeconds));
+    public void updateParticles() {
+        particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
     }
 
     public AbstractJet getPlayer() {
         return playerJet;
+    }
+
+    /**
+     * a class that harbors a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
+     * with a modifiable in-game time.
+     */
+    private class GameTimer {
+
+        /** allows the game to slow down or speed up. with timeMultiplier = 2, the game goes twice as fast */
+        private float timeMultiplier = 1f;
+        /** in-game seconds since creating this gametimer */
+        private float currentInGameTime;
+
+        private long lastMark;
+
+        private final TrackedFloat gameTime;
+        private final TrackedFloat renderTime;
+
+        public GameTimer() {
+            currentInGameTime = 0f;
+            gameTime = new TrackedFloat(0f);
+            renderTime = new TrackedFloat(0f);
+            lastMark = System.currentTimeMillis();
+        }
+
+        public TrackedFloat getGameTime(){
+            updateTimer();
+            gameTime.update(currentInGameTime);
+            return gameTime;
+        }
+
+        public TrackedFloat getRenderTime(){
+            updateTimer();
+            renderTime.update(currentInGameTime - Settings.RENDER_DELAY);
+            return renderTime;
+        }
+
+        public float time(){
+            updateTimer();
+            return currentInGameTime;
+        }
+
+        /** may be called anytime */
+        private void updateTimer(){
+            long currentTime = System.currentTimeMillis();
+            float deltaTime = (currentTime - lastMark) / 1000f;
+            lastMark = currentTime;
+            currentInGameTime += timeMultiplier * deltaTime;
+        }
+
+        /**
+         * @param multiplier time will move {@code multiplier} as fast
+         */
+        public void setGameTimeMultiplier(float multiplier) {
+            timeMultiplier = multiplier;
+        }
     }
 }

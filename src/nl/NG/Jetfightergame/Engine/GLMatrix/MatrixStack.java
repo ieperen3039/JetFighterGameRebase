@@ -24,7 +24,7 @@ public interface MatrixStack {
                 .normalized();
 
         DirVector M = DirVector.Z.cross(parallelVector);
-        double angle = Math.acos(DirVector.Z.dot(parallelVector));// in Radians
+        float angle = (float) Math.acos(DirVector.Z.dot(parallelVector));// in Radians
 
         translate(source);
         rotate(M, angle);
@@ -34,7 +34,7 @@ public interface MatrixStack {
      * rotates the coordinate system along the axis defined by (x, y, z)
      * @param angle in radians
      */
-    void rotate(double angle, float x, float y, float z);
+    void rotate(float angle, float x, float y, float z);
 
     /**
      * moves the system x to the x-axis, y to the y-asis and z toward the z-axis
@@ -64,12 +64,12 @@ public interface MatrixStack {
 
     void popMatrix();
 
-    default void rotate(DirVector axis, double angle) {
-        rotate(angle, (float) axis.x(), (float) axis.y(), (float) axis.z());
+    default void rotate(DirVector axis, float angle) {
+        rotate(angle, axis.x(), axis.y(), axis.z());
     }
 
     default void translate(Vector v) {
-        translate((float) v.x(), (float) v.y(), (float) v.z());
+        translate(v.x(), v.y(), v.z());
     }
 
     default void scale(float s) {

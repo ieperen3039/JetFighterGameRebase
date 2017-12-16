@@ -10,9 +10,6 @@ import nl.NG.Jetfightergame.Engine.Settings;
 public class JetFighterRunner extends AbstractGameLoop {
 
     private final GameState game;
-    private float totalTime = 0;
-    /** allows the game to slow down or speed up. with timeMultiplier = 2, the game goes twice as fast */
-    private float timeMultiplier = 1f;
 
     public JetFighterRunner(GameState game) {
         super("GameEngine loop", Settings.TARGET_TPS, true);
@@ -21,9 +18,8 @@ public class JetFighterRunner extends AbstractGameLoop {
 
     @Override
     protected void update(float deltaTime) {
-        totalTime += deltaTime * timeMultiplier;
         try {
-            game.updateGameLoop(deltaTime, totalTime);
+            game.updateGameLoop();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
