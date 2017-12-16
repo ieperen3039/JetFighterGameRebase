@@ -95,7 +95,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         double eyeY = vDist * Math.sin(theta * i) * Math.cos(phi);
         double eyeZ = vDist * Math.sin(phi);
 
-        return new PosVector(eyeX, eyeY, eyeZ).add(focus);
+        return new PosVector((float) eyeX, (float) eyeY, (float) eyeZ).add(focus);
     }
 
     /** move is inverse of dragging */

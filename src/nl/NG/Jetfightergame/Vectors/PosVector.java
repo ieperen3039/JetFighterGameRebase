@@ -14,10 +14,6 @@ public class PosVector extends Vector {
         super(x, y, z);
     }
 
-    public PosVector(double x, double y, double z){
-        super((float) x, (float) y, (float) z);
-    }
-
     public PosVector(float x, float y, float z, float length) {
         super(x, y, z, length);
     }

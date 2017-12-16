@@ -81,7 +81,7 @@ public enum Direction {
             }
         }
 
-        return new DirVector(x, y, z);
+        return new DirVector((float) x, (float) y, (float) z);
     }
 }
 

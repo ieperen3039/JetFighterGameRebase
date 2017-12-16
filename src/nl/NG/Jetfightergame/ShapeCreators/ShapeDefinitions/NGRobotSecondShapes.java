@@ -104,13 +104,13 @@ public class NGRobotSecondShapes {
     private static Shape makeHead() {
         CustomShape frame = new CustomShape(PosVector.O);
 
-        PosVector A = new PosVector(1.5, -2.0, 0.0);
-        PosVector B = new PosVector(5.5, -1.5, 0.5);
-        PosVector C = new PosVector(5.5, -1.5, 2.5);
-        PosVector D = new PosVector(0.5, -2.0, 4.0);
-        PosVector E = new PosVector(-2.5, -2.0, 3.0);
-        PosVector F = new PosVector(-2.5, -2.0, 1.0);
-        PosVector G = new PosVector(-1.5, -2.0, 0.0);
+        PosVector A = new PosVector(1.5f, 2.0f, 0.0f);
+        PosVector B = new PosVector(5.5f, 1.5f, 0.5f);
+        PosVector C = new PosVector(5.5f, 1.5f, 2.5f);
+        PosVector D = new PosVector(0.5f, 2.0f, 4.0f);
+        PosVector E = new PosVector(2.5f, 2.0f, 3.0f);
+        PosVector F = new PosVector(2.5f, 2.0f, 1.0f);
+        PosVector G = new PosVector(1.5f, 2.0f, 0.0f);
 
         frame.addMirrorQuad(A, B, C, D);
         frame.addMirrorQuad(A, D, E, F);
@@ -125,7 +125,7 @@ public class NGRobotSecondShapes {
 
         PosVector headMiddle = B.middleTo(C).middleTo(A.middleTo(D));
         PosVector noseMiddle = ((Vector) headMiddle
-                .to(B.middleTo(C)).scale((float) 1.2))
+                .to(B.middleTo(C)).scale(1.2f))
                 .add(headMiddle)
                 .toPosVector();
 
@@ -139,12 +139,12 @@ public class NGRobotSecondShapes {
     private static Shape makeLeg1() {
         CustomShape frame = new CustomShape(PosVector.O);
 
-        PosVector A = new PosVector(-1.0, leg1Width, 1.0);
-        PosVector B = new PosVector(-1.0, leg1Width, leg1Length);
-        PosVector C = new PosVector(0.5, leg1Width, leg1Length);
-        PosVector D = new PosVector(0.5 + leg1Bulb, leg1Width, 1.5);
-        PosVector E = new PosVector(0.5, leg1Width, -1.0);
-        PosVector F = new PosVector(-0.25, leg1Width, -0.5);
+        PosVector A = new PosVector(1.0f, leg1Width, 1.0f);
+        PosVector B = new PosVector(1.0f, (float) leg1Width, (float) leg1Length);
+        PosVector C = new PosVector(0.5f, (float) leg1Width, (float) leg1Length);
+        PosVector D = new PosVector((float) (0.5 + leg1Bulb), (float) leg1Width, 1.5f);
+        PosVector E = new PosVector(0.5f, (float) leg1Width, 1.0f);
+        PosVector F = new PosVector(0.25f, (float) leg1Width, 0.5f);
 
         frame.addMirrorQuad(A, B, C, D);
         frame.addMirrorQuad(D, E, F, A);
@@ -163,10 +163,10 @@ public class NGRobotSecondShapes {
         CustomShape frame = new CustomShape(PosVector.O);
 
         // outside
-        PosVector A = new PosVector(-1.0, leg2Width, 0.5);
-        PosVector B = new PosVector(-1.0, leg2Width, leg2Length);
-        PosVector C = new PosVector(1.5, leg2Width, leg2Length);
-        PosVector D = new PosVector(1.5, leg2Width, -2);
+        PosVector A = new PosVector(1.0f, (float) leg2Width, 0.5f);
+        PosVector B = new PosVector(1.0f, (float) leg2Width, (float) leg2Length);
+        PosVector C = new PosVector(1.5f, (float) leg2Width, (float) leg2Length);
+        PosVector D = new PosVector(1.5f, (float) leg2Width, (float) -2);
 
         frame.addMirrorQuad(A, B, C, D);
         frame.addQuad(A, B);
@@ -196,17 +196,17 @@ public class NGRobotSecondShapes {
     private static Shape makeFoot() {
         CustomShape foot = new CustomShape(new PosVector(0, 0, 1));
 
-        PosVector A = new PosVector(-2.0, 2.0, 3.0);
-        PosVector B = new PosVector(4.0, 2.0, 3.0);
-        PosVector C = new PosVector(4.75, 1.25, 3.0);
-        PosVector D = new PosVector(5.0, 0.0, 3.0);
-        PosVector E = new PosVector(5.0, 0.0, 1.5);
+        PosVector A = new PosVector(2.0f, 2.0f, 3.0f);
+        PosVector B = new PosVector(4.0f, 2.0f, 3.0f);
+        PosVector C = new PosVector(4.75f, 1.25f, 3.0f);
+        PosVector D = new PosVector(5.0f, 0.0f, 3.0f);
+        PosVector E = new PosVector(5.0f, 0.0f, 1.5f);
 
-        PosVector F = new PosVector(4.75, 1.25, 1.5);
-        PosVector G = new PosVector(4.0, 2.0, 1.5);
-        PosVector H = new PosVector(1.0, 1.5, 0.0);
-        PosVector I = new PosVector(-1.0, 1.5, 0.0);
-        PosVector J = new PosVector(-2.0, 2.0, 1.5);
+        PosVector F = new PosVector(4.75f, 1.25f, 1.5f);
+        PosVector G = new PosVector(4.0f, 2.0f, 1.5f);
+        PosVector H = new PosVector(1.0f, 1.5f, 0.0f);
+        PosVector I = new PosVector(1.0f, 1.5f, 0.0f);
+        PosVector J = new PosVector(2.0f, 2.0f, 1.5f);
 
         foot.addMirrorQuad(A, B, G, J);
         foot.addMirrorQuad(G, H, I, J);
@@ -231,7 +231,7 @@ public class NGRobotSecondShapes {
 
         PosVector Side = new PosVector(0, 1, 0);
         PosVector Up = new PosVector(0, 0, 2);
-        PosVector Back = new PosVector(-1.5, 0, 0);
+        PosVector Back = new PosVector(1.5f, (float) 0, (float) 0);
 
         ear.addMirrorTriangle(Side, Up, Back);
 
@@ -241,29 +241,29 @@ public class NGRobotSecondShapes {
     private static Shape makeTorso() {
         CustomShape torso = new CustomShape(PosVector.O);
 
-        PosVector D = new PosVector(1.0, 4.0, 5.0);
-        PosVector F = new PosVector(1.0, 4.0, 1.0);
-        PosVector G = new PosVector(1.0, 3.5, -2.0);
-        PosVector R = new PosVector(-2.0, 6.0, 5.0);
-        PosVector S = new PosVector(-3.0, 5.0, 3.0);
-        PosVector T = new PosVector(-3.0, 4.0, 1.0);
-        PosVector U = new PosVector(-2.0, 3.5, -2.0);
+        PosVector D = new PosVector(1.0f, 4.0f, 5.0f);
+        PosVector F = new PosVector(1.0f, 4.0f, 1.0f);
+        PosVector G = new PosVector(1.0f, 3.5f, 2.0f);
+        PosVector R = new PosVector(2.0f, 6.0f, 5.0f);
+        PosVector S = new PosVector(3.0f, 5.0f, 3.0f);
+        PosVector T = new PosVector(3.0f, 4.0f, 1.0f);
+        PosVector U = new PosVector(2.0f, 3.5f, 2.0f);
 
         // bottom
-        PosVector H = new PosVector(1.0, 3.5, -torsoBottomStretch);
-        PosVector I = new PosVector(3.0, 2.0, -torsoBottomStretch);
-        PosVector V = new PosVector(-2.0, 3.5, -torsoBottomStretch);
-        PosVector W = new PosVector(-3.0, 1.0, -1 - torsoBottomStretch);
+        PosVector H = new PosVector(1.0f, 3.5f, (float) -torsoBottomStretch);
+        PosVector I = new PosVector(3.0f, 2.0f, (float) -torsoBottomStretch);
+        PosVector V = new PosVector(2.0f, 3.5f, (float) -torsoBottomStretch);
+        PosVector W = new PosVector(3.0f, 1.0f, (float) (-1 - torsoBottomStretch));
 
-        PosVector A = new PosVector(3.0, 2.0, -3.0);
-        PosVector B = new PosVector(3.0, 2.5, -0.5);
-        PosVector J = new PosVector(1.0, 2.0, 5.0);
-        PosVector P = new PosVector(-3.0, 3.0, 3.0);
-        PosVector O = new PosVector(-2.0, 4.0, 5.0);
-        PosVector K = new PosVector(1 + (6.0 / 5.5), 1.25, 2.0);
-        PosVector Q = new PosVector(-3.0, 1.0, -1.0);
-        PosVector Y = new PosVector(-3.0, 1.0, 3.0);
-        PosVector Z = new PosVector(-2.0, 2.0, 5.0);
+        PosVector A = new PosVector(3.0f, 2.0f, 3.0f);
+        PosVector B = new PosVector(3.0f, 2.5f, 0.5f);
+        PosVector J = new PosVector(1.0f, 2.0f, 5.0f);
+        PosVector P = new PosVector(3.0f, 3.0f, 3.0f);
+        PosVector O = new PosVector(2.0f, 4.0f, 5.0f);
+        PosVector K = new PosVector((float) (1 + (6.0 / 5.5)), 1.25f, 2.0f);
+        PosVector Q = new PosVector(3.0f, 1.0f, 1.0f);
+        PosVector Y = new PosVector(3.0f, 1.0f, 3.0f);
+        PosVector Z = new PosVector(2.0f, 2.0f, 5.0f);
 
         // cover
         PosVector CA = A.add(Direction.FORWARD.vector(torsoCoverThick));
@@ -316,7 +316,7 @@ public class NGRobotSecondShapes {
         torso.addQuad(CP, CQ);
 
         // shoulder
-        PosVector SSD = new PosVector(1.0, 4.0, 5.0 - torsoShoulderWingThick);
+        PosVector SSD = new PosVector(1.0f, 4.0f, (float) (5.0 - torsoShoulderWingThick));
         PosVector SSR = R.add(Direction.DOWNFORWARD.vector(torsoShoulderWingThick));
         PosVector SSS = S.add(Direction.FORWARD.vector(torsoShoulderWingThick));
         PosVector SST = T.add(Direction.FORWARD.vector(torsoShoulderWingThick));

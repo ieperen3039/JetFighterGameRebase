@@ -25,7 +25,7 @@ public class VectorInterpolatorTest {
 
     @Test
     public void testVectorInterpolator() {
-        testValue(new PosVector(0.5, 0.5, 0.5), 1.25f);
+        testValue(new PosVector((float) 0.5, (float) 0.5, (float) 0.5), 1.25f);
     }
 
     @Test

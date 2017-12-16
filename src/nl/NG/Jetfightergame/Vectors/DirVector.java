@@ -23,17 +23,13 @@ public class DirVector extends Vector {
         super(x, y, z, length);
     }
 
-    public DirVector(double x, double y, double z) {
-        super((float) x, (float) y, (float) z);
-    }
-
     public DirVector(Vector3f v) {
         super(v.x, v.y, v.z);
     }
 
     /**
-     * create a vector that may point in any direction, might even be an O-vector (although chance is negligible)
-     * @return a random vector, with slightly more chance to point to the edges of a cube than to the axes
+     * create a vector that may point in any direction, might technically even be an O-vector (although chance is negligible)
+     * @return a random vector with length < 1, with slightly more chance to point to the edges of a cube than to the axes
      */
     public static DirVector random() {
         Random r = Settings.random;

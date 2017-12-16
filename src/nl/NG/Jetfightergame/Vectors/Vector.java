@@ -140,7 +140,7 @@ public abstract class Vector extends Vector3f{
     public abstract Vector scale(float scalar);
 
     /**
-     * @returns vector to the middle of this vector and given vector
+     * @return vector to the middle of this vector and given vector
      * equals (this + (1/2)*(that - this))
      */
     public abstract Vector middleTo(Vector that);

@@ -111,10 +111,10 @@ public class Toolbox {
         {
             gl.setMaterial(mat, Color4f.BLUE);
             gl.draw(ShapeFromMesh.Arrow);
-            gl.rotate((float) Math.toRadians(90), (float) 0, (float) 1, (float) 0);
+            gl.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
             gl.setMaterial(mat, Color4f.RED);
             gl.draw(ShapeFromMesh.Arrow);
-            gl.rotate((float) Math.toRadians(-90), (float) 1, (float) 0, (float) 0);
+            gl.rotate((float) Math.toRadians(-90), 1f, 0f, 0f);
             gl.setMaterial(mat, Color4f.GREEN);
             gl.draw(ShapeFromMesh.Arrow);
             gl.scale(0.3f);

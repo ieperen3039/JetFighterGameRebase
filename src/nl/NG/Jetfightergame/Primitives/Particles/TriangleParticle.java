@@ -82,7 +82,7 @@ public class TriangleParticle implements AbstractParticle {
      * @param timeToLive seconds before this particle should be destroyed
      */
     public static TriangleParticle worldspaceParticle(PosVector a, PosVector b, PosVector c, DirVector movement, float timeToLive){
-        DirVector angleVector = new DirVector(Settings.random.nextDouble() - 0.5, Settings.random.nextDouble() - 0.5, Settings.random.nextDouble() - 0.5);
+        DirVector angleVector = new DirVector((float) (Settings.random.nextDouble() - 0.5), (float) (Settings.random.nextDouble() - 0.5), (float) (Settings.random.nextDouble() - 0.5));
         float rotationSpeed = Settings.random.nextFloat();
         rotationSpeed *= rotationSpeed * RANDOM_ROTATION;
         return worldspaceParticle(a, b, c, movement, angleVector, rotationSpeed, timeToLive);
