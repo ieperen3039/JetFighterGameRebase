@@ -11,7 +11,7 @@ public class Collision implements Comparable<Collision> {
     public final DirVector normal;
 
     public Collision(){
-        this(1, DirVector.O);
+        this(1, DirVector.zeroVector());
     }
 
     /**

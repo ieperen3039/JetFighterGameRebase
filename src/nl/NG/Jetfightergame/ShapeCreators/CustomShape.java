@@ -25,7 +25,7 @@ public class CustomShape {
     private final List<Mesh.Face> faces;
 
     public CustomShape() {
-        this(PosVector.O);
+        this(PosVector.zeroVector());
     }
 
     public CustomShape(PosVector middle) {
@@ -46,11 +46,13 @@ public class CustomShape {
      * @return vector to the point on the curve on fraction u
      */
     private static Vector bezierPoint(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
+        PosVector point = new PosVector();
         //A*(1−u)^3 + B*3u(1−u)^2 + C*3u^2(1−u) + D*u^3
-        return A.scale((float) ((1 - u) * (1 - u) * (1 - u)))
-                .add(B.scale((float) (3 * u * (1 - u) * (1 - u))))
-                .add(C.scale((float) (3 * u * u * (1 - u))))
-                .add(D.scale((float) (u * u * u)));
+        A.scale((float) ((1 - u) * (1 - u) * (1 - u)), point)
+                .add(B.scale((float) (3 * u * (1 - u) * (1 - u)), new PosVector()), point)
+                .add(C.scale((float) (3 * u * u * (1 - u)), new PosVector()), point)
+                .add(D.scale((float) (u * u * u), new PosVector()), point);
+        return point;
     }
 
     /**
@@ -59,11 +61,14 @@ public class CustomShape {
      * @see CustomShape#bezierPoint(PosVector, PosVector, PosVector, PosVector, double)
      */
     private static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
+        DirVector direction = new DirVector();
+        final PosVector point = new PosVector();
         //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
-        return (B.subtract(A)).scale((float) (3 * (1 - u) * (1 - u)))
-                .add(C.subtract(B).scale((float) (6 * (1 - u) * u)))
-                .add(D.subtract(C).scale((float) (3 * u * u)))
-                .toDirVector();
+        (B.subtract(A, point))
+                .scale((float) (3 * (1 - u) * (1 - u)), point)
+                .add(C.subtract(B, new PosVector()).scale((float) (6 * (1 - u) * u), new PosVector()), direction)
+                .add(D.subtract(C, new PosVector()).scale((float) (3 * u * u), new PosVector()), direction);
+        return direction;
     }
 
     /**
@@ -87,7 +92,7 @@ public class CustomShape {
      * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addQuad(PosVector A, PosVector B) {
-        addQuad(A, B, B.mirrorY(), A.mirrorY());
+        addQuad(A, B, B.mirrorY(new PosVector()), A.mirrorY(new PosVector()));
     }
 
     /**
@@ -103,7 +108,7 @@ public class CustomShape {
     public void addMirrorQuad(PosVector A, PosVector B, PosVector C, PosVector D) {
         DirVector quadNormal = Plane.getNormalVector(A, B, C, middle);
         addQuad(A, B, C, D, quadNormal);
-        addQuad(A.mirrorY(), B.mirrorY(), C.mirrorY(), D.mirrorY(), quadNormal.scale(-1));
+        addQuad(A.mirrorY(new PosVector()), B.mirrorY(new PosVector()), C.mirrorY(new PosVector()), D.mirrorY(new PosVector()), quadNormal.scale(-1, new DirVector()));
     }
 
     /**
@@ -128,7 +133,7 @@ public class CustomShape {
 
     private int addNormal(DirVector normal) {
         if (normal == null) throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be null");
-        DirVector normalizedNormal = normal.normalized();
+        DirVector normalizedNormal = normal.normalized(new DirVector());
         normals.putIfAbsent(normalizedNormal, normals.size());
         return normals.get(normalizedNormal);
     }
@@ -148,7 +153,7 @@ public class CustomShape {
      */
     public void addMirrorTriangle(PosVector A, PosVector B, PosVector C) {
         addTriangle(A, B, C);
-        addTriangle(A.mirrorY(), B.mirrorY(), C.mirrorY());
+        addTriangle(A.mirrorY(new PosVector()), B.mirrorY(new PosVector()), C.mirrorY(new PosVector()));
     }
 
     /**
@@ -163,7 +168,7 @@ public class CustomShape {
                                                                  double slices) {
 
         DirVector startNormal = bezierDerivative(A2, B2, C2, D2, 0);
-        if (startNormal.dot(A2.to(middle)) > 0) startNormal = startNormal.scale(-1);
+        if (startNormal.dot(A2.to(middle, new DirVector())) > 0) startNormal = startNormal.scale(-1, new DirVector());
         TrackedObject<DirVector> normal = new TrackedVector<>(startNormal);
 
         List<PosVector> leftVertices = new ArrayList<>();
@@ -182,7 +187,7 @@ public class CustomShape {
             rightVertices.add(right.current());
 
             DirVector newNormal = bezierDerivative(A2, B2, C2, D2, i / slices);
-            newNormal = newNormal.dot(normal.previous()) > 0 ? newNormal : newNormal.scale(-1);
+            newNormal = newNormal.dot(normal.previous()) > 0 ? newNormal : newNormal.scale(-1, new DirVector());
             normal.update(newNormal);
 
             addQuad(left.previous(), right.previous(), right.current(), left.current(), normal.current());
@@ -202,9 +207,9 @@ public class CustomShape {
      * @see CustomShape#addBezierStrip
      */
     public Pair<List<PosVector>, List<PosVector>> addBezierStrip(PosVector start, PosVector M, PosVector end, int slices) {
-        PosVector B = start.middleTo(M);
-        PosVector C = end.middleTo(M);
-        return addBezierStrip(start, start.mirrorY(), B, B.mirrorY(), C, C.mirrorY(), end, end.mirrorY(), slices);
+        PosVector B = start.middleTo(M, new PosVector());
+        PosVector C = end.middleTo(M, new PosVector());
+        return addBezierStrip(start, start.mirrorY(new PosVector()), B, B.mirrorY(new PosVector()), C, C.mirrorY(new PosVector()), end, end.mirrorY(new PosVector()), slices);
     }
 
     /**

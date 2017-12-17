@@ -1,6 +1,8 @@
 package nl.NG.Jetfightergame.Vectors;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.Settings;
+import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -18,11 +20,6 @@ public abstract class Vector extends Vector3f{
 
     private static final double roundingError = 4.44E-16;
 
-    /**
-     * the length of this vector which is 0 until queried
-     */
-    private float length = -1;
-
     public Vector(Vector3fc source){
         super(source);
     }
@@ -31,9 +28,12 @@ public abstract class Vector extends Vector3f{
         super(x, y, z);
     }
 
-    public Vector(float x, float y, float z, float length) {
-        super(x, y, z);
-        this.length = length;
+    public Vector() {
+    }
+
+    @Override
+    public Vector3f set(float x, float y, float z) {
+        return super.set(x, y, z);
     }
 
     public static boolean almostZero(double number) {
@@ -44,13 +44,12 @@ public abstract class Vector extends Vector3f{
      * returns a translation matrix resulting from rotating angle radians over vector (x, y, z)
      * in much the same way as {@link MatrixStack#rotate(float, float, float, float)}
      *
-     * @param x
      * @param angle in RADIANS
      * @return a 3x3 matrix as 9-element array.
      */
-    public static float[] getRotationMatrix(float x, float z, float y, float angle) {
+    public static Matrix3f getRotationMatrix(float x, float z, float y, float angle) {
         float Mcos = (1 - (float) Math.cos(angle));
-        return new float[]{
+        return new Matrix3f(
                 (x * x * Mcos + (float) Math.cos(angle)),
                 (x * y * Mcos - z * (float) sin(angle)),
                 (x * z * Mcos + y * (float) sin(angle)),
@@ -60,60 +59,29 @@ public abstract class Vector extends Vector3f{
                 (z * x * Mcos - y * (float) sin(angle)),
                 (z * y * Mcos + x * (float) sin(angle)),
                 (z * z * Mcos + (float) Math.cos(angle))
-        };
-    }
-
-    public static float[] getRotationMatrix(Vector v, float angle){
-        return getRotationMatrix(v.x, v.z, v.y, angle);
-    }
-
-    public Vector multiplyMatrix(float[] mat){
-        return new DirVector(
-                x * mat[0] + y * mat[1] + z * mat[2],
-                x * mat[3] + y * mat[4] + z * mat[5],
-                x * mat[6] + y * mat[7] + z * mat[8]
         );
     }
 
-    /**
-     * turns a vector along an axis.
-     * If multiple vectors must be turned along the same axis, better reuse the matrix
-     * @param turnVector the vector that is orthogonal to the turned plane
-     * @param angle the angle in RADIANS that has to be turned
-     * @return {@link #getRotationMatrix(float, float, float, float)} on turnvector,
-     * then {@link #multiplyMatrix(float[])} on the resulting 3x3 matrix.
-     */
-    public Vector rotateVector(DirVector turnVector, float angle){
-        float[] mat = getRotationMatrix(turnVector, angle);
-
-        return multiplyMatrix(mat);
+    public static Matrix3f getRotationMatrix(Vector v, float angle){
+        return getRotationMatrix(v.x, v.z, v.y, angle);
     }
 
-    public float length() {
-        if (length < 0) length = super.length();
-        return length;
+    public DirVector normalized(DirVector dest) {
+        normalize(dest);
+        return dest;
     }
 
     /**
-     * @return length of this vector
-     * @throws ArithmeticException when applied to a zero-vector
+     * create a vector that may point in any direction, might technically even be an O-vector (although chance is negligible)
+     * @return a random vector with length < 1, with slightly more chance to point to the edges of a cube than to the axes
      */
-    public abstract Vector normalized();
-
-    /**
-     * mirrors this vector in the ZY-plane
-     */
-    public abstract Vector mirrorX();
-
-    /**
-     * mirrors this vector in the ZX-plane
-     */
-    public abstract Vector mirrorY();
-
-    /**
-     * mirrors this vector in the XY-plane
-     */
-    public abstract Vector mirrorZ();
+    public static DirVector random() {
+        return new DirVector(
+                2 * Settings.random.nextFloat() - 1,
+                2 * Settings.random.nextFloat() - 1,
+                2 * Settings.random.nextFloat() - 1
+        );
+    }
 
     /**
      * @return whether all coordinates are not NaN, and this is not a zero-vector
@@ -126,36 +94,25 @@ public abstract class Vector extends Vector3f{
         return (this.x * that.x) + (this.y * that.y) + (this.z * that.z);
     }
 
-    public abstract Vector cross(Vector that);
-
-    public abstract Vector add(Vector that);
-
-    public abstract Vector subtract(Vector that);
-
-    /**
-     * multiplies the length of this vector with scalar
-     * @param scalar multiplication factor.
-     * @return new vector with length equal to {@code this.length() * scalar}
-     */
-    public abstract Vector scale(float scalar);
-
-    /**
-     * @return vector to the middle of this vector and given vector
-     * equals (this + (1/2)*(that - this))
-     */
-    public abstract Vector middleTo(Vector that);
-
-    /**
-     * returns the vector from this Vector to Vector that
-     */
-    public abstract Vector to(Vector that);
+    public DirVector to(Vector that, DirVector dest) {
+        that.sub(this, dest);
+        return dest;
+    }
 
     public String toString() {
         return String.format(Locale.US, "(%1.03f, %1.03f, %1.03f)", this.x, this.y, this.z);
     }
 
-    public abstract PosVector toPosVector();
+    public PosVector toPosVector() {
+        return new PosVector(x, y, z);
+    }
 
-    public abstract DirVector toDirVector();
+    public DirVector toDirVector() {
+        return new DirVector(x, y, z);
+    }
+
+    public void rotateAxis(Vector v, float angle, DirVector dest) {
+        rotateAxis(angle, v.x, v.y, v.z, dest);
+    }
 }
 

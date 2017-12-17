@@ -67,12 +67,12 @@ public abstract class GameObject implements MovingObject {
     public GameObject(PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation, float mass) {
         this.position = initialPosition;
         this.surfaceMaterial = surfaceMaterial;
-        rotationAxis = DirVector.Z;
+        rotationAxis = DirVector.zVector();
         rotation = initialRotation;
         this.scale = scale;
         extraPosition = initialPosition;
         extraRotation = initialRotation;
-        velocity = DirVector.O;
+        velocity = DirVector.zeroVector();
         this.mass = mass;
 
         positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
@@ -84,7 +84,7 @@ public abstract class GameObject implements MovingObject {
         nextCrash = new Extreme<>(false);
 
         // 1st law of Newton
-        DirVector netForce = DirVector.O;//TODO external influences
+        DirVector netForce = DirVector.zeroVector();//TODO external influences
         applyPhysics(deltaTime, netForce);
 
         updateShape(deltaTime);
@@ -118,7 +118,7 @@ public abstract class GameObject implements MovingObject {
     public void update(float currentTime, float deltaTime) {
         hitPoints = null;
 
-        velocity = position.to(extraPosition).scale(deltaTime);
+        position.to(extraPosition, velocity).scale(deltaTime, velocity);
         rotationSpeed = (extraRotation - rotation) * deltaTime;
         position = extraPosition;
         rotation = extraRotation;
@@ -162,7 +162,7 @@ public abstract class GameObject implements MovingObject {
             // map points to local space
             PosVector startPoint = identity.getReversePosition(point.previous());
             PosVector endPoint = identity.getReversePosition(point.current());
-            DirVector direction = startPoint.to(endPoint);
+            DirVector direction = startPoint.to(endPoint, new DirVector());
             // search hitpoint, add it when found
             Collision stopVec = shape.getMaximumMovement(startPoint, direction, endPoint);
             if (stopVec != null) multipliers.add(stopVec);
@@ -280,11 +280,11 @@ public abstract class GameObject implements MovingObject {
     }
 
     /** an object that represents {@code null}. Making this appear in-game is an achievement */
-    public static final GameObject EMPTY_OBJECT = new GameObject(PosVector.O, Material.GLOWING, 1f , 0f, 1f) {
+    public static final GameObject EMPTY_OBJECT = new GameObject(PosVector.zeroVector(), Material.GLOWING, 1f , 0f, 1f) {
         public void create(MatrixStack ms, Consumer<Shape> action, boolean b) {}
         public void draw(GL2 ms) {Toolbox.drawAxisFrame(ms);}
         public void applyCollision() {}
         protected void updateShape(float deltaTime) {}
-        public void applyPhysics(float deltaTime, DirVector netForce) {position.add(netForce.scale(deltaTime));}
+        public void applyPhysics(float deltaTime, DirVector netForce) {position.add(netForce.scale(deltaTime, new DirVector()), new PosVector());}
     };
 }

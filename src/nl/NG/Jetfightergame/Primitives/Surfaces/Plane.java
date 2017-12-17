@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -18,40 +19,30 @@ public abstract class Plane {
      * a summation of references to define the bounding box of this plane.
      * often, these refer to the same vectors
      */
-    protected final double leastX;
-    protected final double mostX;
-    protected final double leastY;
-    protected final double mostY;
-    protected final double leastZ;
-    protected final double mostZ;
+    protected float leastX;
+    protected float mostX;
+    protected float leastY;
+    protected float mostY;
+    protected float leastZ;
+    protected float mostZ;
     /** not necessarily normalized */
     protected final DirVector normal;
 
-    protected final List<PosVector> boundary;
+    protected final PosVector[] boundary;
 
-    public Plane(DirVector normal, List<PosVector> vertices) {
+    public Plane(DirVector normal, PosVector[] vertices) {
         this.normal = normal;
         this.boundary = vertices;
 
         // initialize hitbox
-        leastX = boundary.stream().mapToDouble(Vector::x).min().orElse(0);
-        mostX = boundary.stream().mapToDouble(Vector::x).max().orElse(0);
-        leastY = boundary.stream().mapToDouble(Vector::y).min().orElse(0);
-        mostY = boundary.stream().mapToDouble(Vector::y).max().orElse(0);
-        leastZ = boundary.stream().mapToDouble(Vector::z).min().orElse(0);
-        mostZ = boundary.stream().mapToDouble(Vector::z).max().orElse(0);
-    }
-
-    /**
-     * @param middle a point that is assumed to be on the inside side of the plane
-     * @return normal vector that points outward the xz-plane, or when orthogonal away from 'middle'
-     */
-    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, PosVector middle) {
-        DirVector normalVector = B.to(A).cross(B.to(C));
-        if (normalVector.dot(B.to(middle)) > 0) {
-            normalVector = normalVector.scale(-1);
+        for (PosVector posVector : boundary) {
+            if (posVector.x() < leastX) leastX = posVector.x();
+            if (posVector.x() > mostX) leastX = posVector.x();
+            if (posVector.y() < leastY) leastX = posVector.y();
+            if (posVector.y() > mostY) leastX = posVector.y();
+            if (posVector.z() < leastZ) leastX = posVector.z();
+            if (posVector.z() > mostZ) leastX = posVector.z();
         }
-        return normalVector;
     }
 
     /**
@@ -59,9 +50,32 @@ public abstract class Plane {
      * @return normal vector that points outward the xz-plane, or when orthogonal away from 'middle'
      */
     public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, DirVector direction){
-        DirVector normalVector = B.to(A).cross(B.to(C));
-        if (normalVector.dot(direction) < 0) normalVector = normalVector.scale(-1);
-        return normalVector.normalized();
+
+        DirVector normalVector = new DirVector();
+        final DirVector BtoC = new DirVector();
+        final DirVector BtoA = new DirVector();
+
+        B.to(C, BtoC);
+        B.to(A, BtoA);
+        BtoA.cross(BtoC, normalVector);
+
+        if (normalVector.dot(direction) < 0) {
+            normalVector.negate();
+        }
+
+        normalVector.normalize();
+
+        return normalVector;
+    }
+
+    /**
+     * @param middle a point for which hold normal.dot(direction) < 0
+     * @return normal vector that points outward the xz-plane, or when orthogonal away from 'middle'
+     */
+    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, PosVector middle){
+        DirVector dir = new DirVector();
+        middle.negate(dir);
+        return getNormalVector(A, B, C, dir);
     }
 
     /**
@@ -83,7 +97,7 @@ public abstract class Plane {
 
         if (hitDir.length() > direction.length()) return null;
 
-        if (!isWithin(linePosition.add(hitDir))) return null;
+        if (!isWithin(linePosition.add(hitDir, new PosVector()))) return null;
 
         return new Collision(hitDir.length() / direction.length(), normal);
     }
@@ -132,18 +146,18 @@ public abstract class Plane {
      */
     protected DirVector calculateMaxDirection(PosVector linePosition, DirVector direction) {
         // random point is taken
-        PosVector offSquare = boundary.get(0).subtract(linePosition);
+        PosVector offSquare = boundary[0].subtract(linePosition, new PosVector());
         float scalar = (offSquare.dot(normal) / direction.dot(normal));
 
         if (Vector.almostZero(scalar)) {
-            return DirVector.O;
+            return DirVector.zeroVector();
         } else {
-            return direction.scale(scalar);
+            return direction.scale(scalar, new DirVector());
         }
     }
 
     public List<PosVector> getVertices() {
-        return boundary;
+        return Arrays.asList(boundary);
     }
 
     public DirVector getNormal() {
@@ -154,7 +168,9 @@ public abstract class Plane {
     public String toString() {
         StringBuilder s = new StringBuilder(this.getClass().getSimpleName());
         s.append("{");
-        boundary.forEach(s::append);
+        for (PosVector posVector : boundary) {
+            s.append(posVector);
+        }
         s.append("}");
         return s.toString();
     }

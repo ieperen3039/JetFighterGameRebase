@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Tracked;
 
+import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
 import static java.lang.StrictMath.pow;
@@ -24,6 +25,6 @@ public class ExponentialSmoothVector<V extends Vector> extends TrackedVector<V> 
     @Override
     public void updateFluent(V target, float deltaTime) {
         float deceleration = (float) pow(preservedFraction, deltaTime);
-        addUpdate(current().to(target).scale(1 - deceleration));
+        addUpdate(current().to(target, new DirVector()).scale(1 - deceleration, new DirVector()));
     }
 }

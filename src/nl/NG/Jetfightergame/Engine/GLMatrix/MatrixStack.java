@@ -20,11 +20,11 @@ public interface MatrixStack {
     default void pointFromTo(PosVector source, PosVector target) {
         if (target.equals(source)) return;
 
-        DirVector parallelVector = source.to(target)
-                .normalized();
+        DirVector parallelVector = source.to(target, new DirVector())
+                .normalized(new DirVector());
 
-        DirVector M = DirVector.Z.cross(parallelVector);
-        float angle = (float) Math.acos(DirVector.Z.dot(parallelVector));// in Radians
+        DirVector M = DirVector.zVector().cross(parallelVector, new DirVector());
+        float angle = (float) Math.acos(DirVector.zVector().dot(parallelVector));// in Radians
 
         translate(source);
         rotate(M, angle);

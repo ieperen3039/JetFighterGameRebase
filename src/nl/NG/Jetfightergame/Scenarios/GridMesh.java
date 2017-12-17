@@ -71,7 +71,7 @@ public class GridMesh implements Shape {
         final PosVector C = grid[x][y + 1];
         final PosVector D = grid[x + 1][y + 1];
 
-        alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.Z));
+        alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.zVector()));
         int alphaNormal = normals.size();
         normals.add(alphaGrid[x][y].getNormal());
         faces.add(new Mesh.Face(
@@ -81,7 +81,7 @@ public class GridMesh implements Shape {
                 alphaNormal) //normal 1
         );
 
-        betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(D, B, C, DirVector.Z));
+        betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(D, B, C, DirVector.zVector()));
         int betaNormal = normals.size();
         normals.add(betaGrid[x][y].getNormal());
         faces.add(new Mesh.Face(

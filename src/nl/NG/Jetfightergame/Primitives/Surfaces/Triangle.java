@@ -4,9 +4,6 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author Geert van Ieperen
  *         created on 29-10-2017.
@@ -15,25 +12,19 @@ public class Triangle extends Plane {
 
     /** ABRef, BCRef, CARef are three reference vectors for collision detection */
     private PosVector ABRef, BCRef, CARef;
+    private static PosVector tempAlpha = new PosVector();
+    private static PosVector tempBeta = new PosVector();
 
     public Triangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
-        super(normal, list3(A, B, C));
+        super(normal, new PosVector[]{A, B, C});
 
-        ABRef = B.subtract(A).cross(C.subtract(A));
-        BCRef = C.subtract(B).cross(A.subtract(B));
-        CARef = A.subtract(C).cross(B.subtract(C));
+        ABRef = B.subtract(A, tempAlpha).cross(C.subtract(A, tempBeta), new PosVector());
+        BCRef = C.subtract(B, tempAlpha).cross(A.subtract(B, tempBeta), new PosVector());
+        CARef = A.subtract(C, tempAlpha).cross(B.subtract(C, tempBeta), new PosVector());
     }
 
     public Triangle(PosVector A, PosVector B, PosVector C, PosVector middle) {
         this(A, B, C, getNormalVector(A, B, C, middle));
-    }
-
-    private static List<PosVector> list3(PosVector A, PosVector B, PosVector C){
-        List<PosVector> points = new ArrayList<>(3);
-        points.add(A);
-        points.add(B);
-        points.add(C);
-        return points;
     }
 
     /**
@@ -43,15 +34,18 @@ public class Triangle extends Plane {
      */
     @Override
     protected boolean isWithin(PosVector hitPos) {
-        PosVector A = boundary.get(0);
-        PosVector B = boundary.get(1);
-        PosVector C = boundary.get(2);
+        PosVector A = boundary[0];
+        PosVector B = boundary[1];
+        PosVector C = boundary[2];
 
-        Vector cross = B.subtract(A).cross(hitPos.subtract(A));
+        Vector cross = new PosVector();
+
+        B.subtract(A, tempAlpha).cross(hitPos.subtract(A, tempBeta), cross);
+
         if (ABRef.dot(cross) >= 0) {
-            cross = C.subtract(B).cross(hitPos.subtract(B));
+            C.subtract(B, tempAlpha).cross(hitPos.subtract(B, tempBeta), cross);
             if (BCRef.dot(cross) >= 0) {
-                cross = A.subtract(C).cross(hitPos.subtract(C));
+                A.subtract(C, tempAlpha).cross(hitPos.subtract(C, tempBeta), cross);
                 return CARef.dot(cross) >= 0;
             }
         }

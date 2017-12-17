@@ -31,7 +31,7 @@ public class PlayerJet extends AbstractJet {
     private Shape shape;
 
     public PlayerJet(Controller input) {
-        this(PosVector.O, input, 0f);
+        this(PosVector.zeroVector(), input, 0f);
     }
 
     public PlayerJet(PosVector initialPosition, Controller input, float initialRotation) {

@@ -150,9 +150,9 @@ public class Toolbox {
             PosVector A, B, C;
             // a plane without at least two edges can not be split
             try {
-                A = border.next().add(worldPosition);
-                B = border.next().add(worldPosition);
-                C = border.next().add(worldPosition);
+                A = border.next().add(worldPosition, new PosVector());
+                B = border.next().add(worldPosition, new PosVector());
+                C = border.next().add(worldPosition, new PosVector());
             } catch (NoSuchElementException ex) {
                 throw new IllegalArgumentException("Plane with less than three vertices can not be split", ex);
             }
@@ -162,7 +162,7 @@ public class Toolbox {
             while (border.hasNext()) {
                 A = B;
                 B = C;
-                C = border.next().add(worldPosition);
+                C = border.next().add(worldPosition, new PosVector());
                 triangles.add(new PosVector[]{A, B, C});
             }
         }
@@ -176,7 +176,7 @@ public class Toolbox {
         Collection<AbstractParticle> particles = new ArrayList<>();
 
         for (PosVector[] p : splittedTriangles){
-            DirVector movement = launchDir.normalized().add(DirVector.random().scale(jitter));
+            DirVector movement = launchDir.normalized(new DirVector()).add(DirVector.random().scale(jitter, new DirVector()), new DirVector());
             particles.add(TriangleParticle.worldspaceParticle(
                     p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime)
             );
@@ -192,9 +192,9 @@ public class Toolbox {
     private static Collection<PosVector[]> splitTriangle(PosVector A, PosVector B, PosVector C){
         Collection<PosVector[]> particles = new ArrayList<>();
 
-        final PosVector AtoB = A.middleTo(B);
-        final PosVector AtoC = A.middleTo(C);
-        final PosVector BtoC = B.middleTo(C);
+        final PosVector AtoB = A.middleTo(B, new PosVector());
+        final PosVector AtoC = A.middleTo(C, new PosVector());
+        final PosVector BtoC = B.middleTo(C, new PosVector());
 
         particles.add(new PosVector[]{A, AtoB, AtoC});
         particles.add(new PosVector[]{B, BtoC, AtoB});

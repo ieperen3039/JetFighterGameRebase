@@ -52,7 +52,7 @@ public class ShapeFromMesh implements Shape {
      *
      */
     private ShapeFromMesh(String fileName) {
-        this(fileName, PosVector.O, new int[]{3, 1, 2}, 1f);
+        this(fileName, PosVector.zeroVector(), new int[]{3, 1, 2}, 1f);
     }
 
     /**
@@ -115,16 +115,17 @@ public class ShapeFromMesh implements Shape {
         final PosVector gamma = posVectors.get(face.C.left);
 
         // take average normal as normal of plane, or use default method if none are registered
-        DirVector normal = fetchDir(normals, face.A.right)
-                .add(fetchDir(normals, face.B.right))
-                .add(fetchDir(normals, face.C.right));
-        if (normal.isNotScalable()) normal = Plane.getNormalVector(alpha, beta, gamma, PosVector.O);
+        DirVector normal = new DirVector();
+        fetchDir(normals, face.A.right)
+                .add(fetchDir(normals, face.B.right), normal)
+                .add(fetchDir(normals, face.C.right), normal);
+        if (normal.isNotScalable()) normal = Plane.getNormalVector(alpha, beta, gamma, PosVector.zeroVector());
 
         return new Triangle(alpha, beta, gamma, normal);
     }
 
     private static DirVector fetchDir(List<DirVector> normals, int index) {
-        return index < 0 ? DirVector.O : normals.get(index);
+        return index < 0 ? DirVector.zeroVector() : normals.get(index);
     }
 
     private static class MeshParameters {
@@ -143,13 +144,13 @@ public class ShapeFromMesh implements Shape {
                 switch (tokens[0]) {
                     case "v":
                         // Geometric vertex
-                        PosVector vec3f = new PosVector(
+                        PosVector vec3f = new PosVector();
+                        new PosVector(
                                 Float.parseFloat(tokens[XYZ[0]]),
                                 Float.parseFloat(tokens[XYZ[1]]),
                                 Float.parseFloat(tokens[XYZ[2]]))
-                                .scale(scale)
-                                .add(offSet)
-                                .toPosVector();
+                                .scale(scale, vec3f)
+                                .add(offSet, vec3f);
                         vertices.add(vec3f);
                         break;
                     case "vn":

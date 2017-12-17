@@ -27,7 +27,7 @@ public class TestJet extends AbstractJet {
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
 
     public TestJet(Controller input) {
-        this(PosVector.O, input, 1f, 0f);
+        this(PosVector.zeroVector(), input, 1f, 0f);
     }
 
     public TestJet(PosVector initialPosition, Controller input, float scale, float initialRotation) {

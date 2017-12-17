@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Vectors.Vector;
  */
 public class FollowingCamera implements Camera {
     private static final DirVector relativePosition = new DirVector(-5, 0, 3);
-    private static final DirVector relativeLookAt = relativePosition.add(new DirVector(10, 0, -1));
+    private static final DirVector relativeLookAt = relativePosition.add(new DirVector(10, 0, -1), new DirVector());
     public static final float CAMERA_CATCHUP = 0.4f;
     /**
      * The position of the camera.
@@ -43,7 +43,7 @@ public class FollowingCamera implements Camera {
      */
     private static Vector jetPosition(DirVector relativePosition, GameObject target){
         ShadowMatrix ws = new ShadowMatrix();
-        return target.getPosition().add(target.relativeToWorldSpace(relativePosition, ws));
+        return target.getPosition().add(target.relativeToWorldSpace(relativePosition, ws), new PosVector());
     }
 
     /**
@@ -56,7 +56,7 @@ public class FollowingCamera implements Camera {
 
     @Override
     public DirVector vectorToFocus(){
-        return eye.current().to(target.getPosition());
+        return eye.current().to(target.getPosition(), new DirVector());
     }
 
     @Override
@@ -71,6 +71,6 @@ public class FollowingCamera implements Camera {
 
     @Override
     public DirVector getUpVector() { // TODO smooooth
-        return jetPosition(DirVector.Z, target).toDirVector();
+        return jetPosition(DirVector.zVector(), target).toDirVector();
     }
 }

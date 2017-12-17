@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 import static nl.NG.Jetfightergame.Vectors.Vector.getRotationMatrix;
@@ -12,10 +12,10 @@ import static nl.NG.Jetfightergame.Vectors.Vector.getRotationMatrix;
  *         created on 16-11-2017.
  */
 public class ShadowMatrix implements MatrixStack {
-    protected DirVector zVec = DirVector.Z;
-    protected DirVector xVec = DirVector.X;
-    protected DirVector yVec = DirVector.Y;
-    protected PosVector posVec = PosVector.O;
+    protected DirVector zVec = DirVector.zVector();
+    protected DirVector xVec = DirVector.xVector();
+    protected DirVector yVec = DirVector.yVector();
+    protected PosVector posVec = PosVector.zeroVector();
     /**
      * the matrix pushed on the stack
      */
@@ -36,30 +36,30 @@ public class ShadowMatrix implements MatrixStack {
     public void rotate(float angle, float x, float y, float z) {
         if (angle != 0.0) {
             // transform rotation vector to local space
-            DirVector rVec = xVec.scale(x)
-                    .add(yVec.scale(y))
-                    .add(zVec.scale(z))
-                    .normalized();
+            DirVector rVec = xVec.scale(x, new DirVector())
+                    .add(yVec.scale(y, new DirVector()), new DirVector())
+                    .add(zVec.scale(z, new DirVector()), new DirVector())
+                    .normalized(new DirVector());
 
-            float[] rotationMatrix = getRotationMatrix(rVec.x(), rVec.z(), rVec.y(), angle);
-            zVec = zVec.multiplyMatrix(rotationMatrix).toDirVector();
-            xVec = xVec.multiplyMatrix(rotationMatrix).toDirVector();
-            yVec = yVec.multiplyMatrix(rotationMatrix).toDirVector();
+            Matrix3f rotationMatrix = getRotationMatrix(rVec.x(), rVec.z(), rVec.y(), angle);
+            zVec.mul(rotationMatrix, zVec);
+            zVec.mul(rotationMatrix, zVec);
+            zVec.mul(rotationMatrix, zVec);
         }
     }
 
     @Override
     public void translate(float x, float y, float z) {
-        if (x != 0.0) posVec = posVec.add(xVec.scale(x));
-        if (y != 0.0) posVec = posVec.add(yVec.scale(y));
-        if (z != 0.0) posVec = posVec.add(zVec.scale(z));
+        if (x != 0.0) posVec = posVec.add(xVec.scale(x, new DirVector()), new PosVector());
+        if (y != 0.0) posVec = posVec.add(yVec.scale(y, new DirVector()), new PosVector());
+        if (z != 0.0) posVec = posVec.add(zVec.scale(z, new DirVector()), new PosVector());
     }
 
     @Override
     public void scale(float x, float y, float z) {
-        xVec = xVec.scale(x);
-        yVec = yVec.scale(y);
-        zVec = zVec.scale(z);
+        xVec = xVec.scale(x, new DirVector());
+        yVec = yVec.scale(y, new DirVector());
+        zVec = zVec.scale(z, new DirVector());
     }
 
     /**
@@ -74,9 +74,9 @@ public class ShadowMatrix implements MatrixStack {
         float y = p.y();
         float z = p.z();
         PosVector newPos = posVec;
-        if (x != 0.0) newPos = newPos.add(xVec.scale(x));
-        if (y != 0.0) newPos = newPos.add(yVec.scale(y));
-        if (z != 0.0) newPos = newPos.add(zVec.scale(z));
+        if (x != 0.0) newPos = newPos.add(xVec.scale(x, new DirVector()), new PosVector());
+        if (y != 0.0) newPos = newPos.add(yVec.scale(y, new DirVector()), new PosVector());
+        if (z != 0.0) newPos = newPos.add(zVec.scale(z, new DirVector()), new PosVector());
         return newPos;
     }
 
@@ -86,9 +86,9 @@ public class ShadowMatrix implements MatrixStack {
      */
     @Override
     public DirVector getDirection(DirVector v){
-        DirVector newDir = xVec.scale(v.x());
-        newDir = newDir.add(yVec.scale(v.y()));
-        newDir = newDir.add(zVec.scale(v.z()));
+        DirVector newDir = xVec.scale(v.x(), new DirVector());
+        newDir = newDir.add(yVec.scale(v.y(), new DirVector()), new DirVector());
+        newDir = newDir.add(zVec.scale(v.z(), new DirVector()), new DirVector());
         return newDir;
     }
 
@@ -100,11 +100,11 @@ public class ShadowMatrix implements MatrixStack {
         float x = p.x();
         float y = p.y();
         float z = p.z();
-        Vector newPos = DirVector.O;
-        if (x != 0.0) newPos = newPos.subtract(xVec.scale(1/x));
-        if (y != 0.0) newPos = newPos.subtract(yVec.scale(1/y));
-        if (z != 0.0) newPos = newPos.subtract(zVec.scale(1/z));
-        return newPos.subtract(posVec).toPosVector();
+        PosVector newPos = PosVector.zeroVector();
+        if (x != 0.0) newPos = newPos.subtract(xVec.scale(1/x, new DirVector()), new PosVector());
+        if (y != 0.0) newPos = newPos.subtract(yVec.scale(1/y, new DirVector()), new PosVector());
+        if (z != 0.0) newPos = newPos.subtract(zVec.scale(1/z, new DirVector()), new PosVector());
+        return newPos.subtract(posVec, new PosVector()).toPosVector();
     }
 
     /**

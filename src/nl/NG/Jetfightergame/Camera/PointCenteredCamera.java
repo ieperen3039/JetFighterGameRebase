@@ -37,12 +37,12 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     private float vDist = 10f;
 
     public PointCenteredCamera() {
-        this(PosVector.O, 0, 0);
+        this(PosVector.zeroVector(), 0, 0);
     }
 
     public PointCenteredCamera(PosVector eye, PosVector focus){
-        DirVector focToEye = focus.to(eye);
-        DirVector cameraDir = focToEye.normalized();
+        DirVector focToEye = focus.to(eye, new DirVector());
+        DirVector cameraDir = focToEye.normalized(new DirVector());
         phi = getPhi(cameraDir);
         theta = getTheta(cameraDir, phi);
         vDist = (float) focToEye.length();
@@ -95,7 +95,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         double eyeY = vDist * Math.sin(theta * i) * Math.cos(phi);
         double eyeZ = vDist * Math.sin(phi);
 
-        return new PosVector((float) eyeX, (float) eyeY, (float) eyeZ).add(focus);
+        return new PosVector((float) eyeX, (float) eyeY, (float) eyeZ).add(focus, new PosVector());
     }
 
     /** move is inverse of dragging */
@@ -119,7 +119,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public DirVector vectorToFocus(){
-        return eye.current().to(focus);
+        return eye.current().to(focus, new DirVector());
     }
 
     @Override
@@ -134,7 +134,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public DirVector getUpVector() {
-        return DirVector.Z;
+        return DirVector.zVector();
     }
 
     public void cleanUp(){

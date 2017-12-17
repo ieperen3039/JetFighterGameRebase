@@ -7,79 +7,84 @@ import org.joml.Vector3f;
  */
 public class PosVector extends Vector {
 
-    public static final PosVector O = new PosVector(0.0f, 0.0f, 0.0f, 0.0f);
-    public static final PosVector Z = new PosVector(0.0f, 0.0f, 1.0f, 1.0f);
+    public PosVector() {
+
+    }
+
+    public static PosVector zeroVector() {
+        return new PosVector(0.0f, 0.0f, 0.0f);
+    }
+
+    public static PosVector zVector() {
+        return new PosVector(0.0f, 0.0f, 1.0f);
+    }
 
     public PosVector(float x, float y, float z) {
         super(x, y, z);
-    }
-
-    public PosVector(float x, float y, float z, float length) {
-        super(x, y, z, length);
     }
 
     public PosVector(Vector3f v) {
         super(v.x, v.y, v.z);
     }
 
-    @Override
-    public DirVector normalized() {
-        final float length = this.length();
-        return new DirVector(this.x / length, this.y / length, this.z / length, 1f);
+
+    public PosVector mirrorX(PosVector dest) {
+        dest.set(-this.x, this.y, this.z);
+        return dest;
     }
 
-    @Override
-    public PosVector mirrorX() {
-        return new PosVector(-this.x, this.y, this.z);
+
+    public PosVector mirrorY(PosVector dest) {
+        dest.set(this.x, -this.y, this.z);
+        return dest;
     }
 
-    @Override
-    public PosVector mirrorY() {
-        return new PosVector(this.x, -this.y, this.z);
+
+    public PosVector mirrorZ(PosVector dest) {
+        dest.set(this.x, this.y, -this.z);
+        return dest;
     }
 
-    @Override
-    public PosVector mirrorZ() {
-        return new PosVector(this.x, this.y, -this.z);
+
+    public PosVector cross(Vector that, PosVector dest) {
+        super.cross(that, dest);
+        return dest;
     }
 
-    @Override
-    public PosVector cross(Vector that) {
-        return new PosVector(this.y * that.z - this.z * that.y, this.z * that.x - this.x * that.z, this.x * that.y - this.y * that.x);
+
+    public PosVector add(Vector that, PosVector dest) {
+        super.add(that, dest);
+        return dest;
     }
 
-    @Override
-    public PosVector add(Vector that) {
-        return new PosVector(this.x + that.x, this.y + that.y, this.z + that.z);
+
+    public PosVector subtract(Vector that, PosVector dest) {
+        super.sub(that, dest);
+        return dest;
     }
 
-    @Override
-    public PosVector subtract(Vector that) {
-        return new PosVector(this.x - that.x, this.y - that.y, this.z - that.z);
+    /**
+     * multiplies the length of this vector with scalar
+     * @param scalar multiplication factor.
+     * @param dest
+     * @return new vector with length equal to {@code this.length() * scalar}
+     */
+    public Vector scale(float scalar, PosVector dest) {
+        super.mul(scalar, dest);
+        return dest;
     }
 
-    @Override
-    public Vector scale(float scalar) {
-        return new PosVector(scalar * this.x, scalar * this.y, scalar * this.z);
-    }
-
-    @Override
-    public PosVector middleTo(Vector that) {
-        return new PosVector(this.x + 0.5f * (that.x - this.x), this.y + 0.5f * (that.y - this.y), this.z + 0.5f * (that.z - this.z));
-    }
-
-    @Override
-    public DirVector to(Vector that) {
-        return new DirVector(that.x - this.x, that.y - this.y, that.z - this.z);
+    /**
+     * @return vector to the middle of this vector and given vector
+     * equals (this + (1/2)*(that - this))
+     */
+    public PosVector middleTo(Vector that, PosVector dest) {
+        dest.set(this.x + 0.5f * (that.x - this.x), this.y + 0.5f * (that.y - this.y), this.z + 0.5f * (that.z - this.z));
+        return dest;
     }
 
     @Override
     public PosVector toPosVector() {
         return this;
-    }
-
-    @Override
-    public DirVector toDirVector() {
-        return new DirVector(x, y, z);
     }
 }

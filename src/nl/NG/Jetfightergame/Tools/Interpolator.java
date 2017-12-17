@@ -1,5 +1,8 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
+
 /**
  * @author Geert van Ieperen
  * created on 15-12-2017.
@@ -30,14 +33,14 @@ public abstract class Interpolator<T> extends TimedArrayDeque<T> {
         double secondTime = nextTimeStamp();
         T secondElt = nextElement();
 
-        return interpolate(timeStamp, firstTime, firstElt, secondTime, secondElt);
+        return interpolate(timeStamp, firstTime, firstElt, secondTime, secondElt, new PosVector());
     }
 
     /**
      * interpolate using linear interpolation
      * @return firstElt + (secondElt - firstElt) * ((timeStamp - firstTime) / (secondTime - firstTime))
      */
-    protected abstract T interpolate(float timeStamp, double firstTime, T firstElt, double secondTime, T secondElt);
+    protected abstract T interpolate(float timeStamp, double firstTime, T firstElt, double secondTime, T secondElt, Vector dest);
 
     @Override
     protected void progress() {

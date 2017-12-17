@@ -35,7 +35,7 @@ public class SimpleKeyCamera implements Camera {
     public PosVector focus;
 
     public SimpleKeyCamera() {
-        this(new PosVector(0, 5, 2), PosVector.O, DirVector.Z);
+        this(new PosVector(0, 5, 2), PosVector.zeroVector(), DirVector.zVector());
     }
 
     public SimpleKeyCamera(PosVector eye, PosVector focus, DirVector up) {
@@ -46,26 +46,26 @@ public class SimpleKeyCamera implements Camera {
 
     @Override
     public void updatePosition(float deltaTime) {
-        DirVector movement = DirVector.O;
-        DirVector left = DirVector.Z.cross(eye);
+        DirVector movement = DirVector.zeroVector();
+        DirVector left = DirVector.zVector().cross(eye.toDirVector(), new DirVector());
         if (input.isPressed(VK_LEFT)) {
-            movement = movement.add(left);
+            movement = movement.add(left, new DirVector());
         }
         if (input.isPressed(VK_RIGHT)) {
-            movement = movement.add(left.scale(-1));
+            movement = movement.add(left.scale(-1, new DirVector()), new DirVector());
         }
         if (input.isPressed(VK_UP)) {
-            movement = movement.add(DirVector.Z);
+            movement = movement.add(DirVector.zVector(), new DirVector());
         }
         if (input.isPressed(VK_DOWN)){
-            movement = movement.add(DirVector.Z.scale(-1));
+            movement = movement.add(DirVector.zVector().scale(-1, new DirVector()), new DirVector());
         }
-        eye = eye.add(movement.scale(deltaTime * 1f));
+        eye = eye.add(movement.scale(deltaTime * 1f, new DirVector()), new PosVector());
     }
 
     @Override
     public DirVector vectorToFocus(){
-        return eye.to(focus);
+        return eye.to(focus, new DirVector());
     }
 
     @Override

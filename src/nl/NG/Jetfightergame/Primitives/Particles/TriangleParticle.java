@@ -65,10 +65,10 @@ public class TriangleParticle implements AbstractParticle {
      * @param timeToLive seconds before this particle should be destroyed
      */
     public static TriangleParticle worldspaceParticle(PosVector a, PosVector b, PosVector c, DirVector movement, DirVector angleVector, float rotationSpeed, float timeToLive){
-        PosVector centroid = a.add(b).add(c).scale(1f/3).toPosVector(); // works when (A+B+C < Double.MAX_VALUE)
-        DirVector A = centroid.to(a);
-        DirVector B = centroid.to(b);
-        DirVector C = centroid.to(c);
+        PosVector centroid = a.add(b, new PosVector()).add(c, new PosVector()).scale(1f/3, new PosVector()).toPosVector(); // works when (A+B+C < Double.MAX_VALUE)
+        DirVector A = centroid.to(a, new DirVector());
+        DirVector B = centroid.to(b, new DirVector());
+        DirVector C = centroid.to(c, new DirVector());
         return new TriangleParticle(A, B, C, centroid, movement, angleVector, rotationSpeed, timeToLive);
     }
 

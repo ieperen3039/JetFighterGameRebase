@@ -63,7 +63,7 @@ public abstract class AbstractJet extends GameObject {
         this.rollAcc = rollAcc;
         this.liftFactor = liftFactor;
         this.rotationReductionFactor = rotationReductionFactor;
-        forward = relativeToWorldSpace(DirVector.X, new ShadowMatrix()).toDirVector();
+        forward = relativeToWorldSpace(DirVector.xVector(), new ShadowMatrix()).toDirVector();
     }
 
     @Override
@@ -71,33 +71,34 @@ public abstract class AbstractJet extends GameObject {
         // thrust forces
         float throttle = input.throttle();
         float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
-        netForce = netForce.add(forward.reduceTo(thrust));
+        netForce = netForce.add(forward.reduceTo(thrust, new DirVector()), new DirVector());
 
         // rotational forces TODO rotation of airplane
         float yawMoment = (input.yaw() * yawAcc * deltaTime);
-        rotationAxis = rotationAxis.rotateVector(DirVector.Z, yawMoment).toDirVector();
+        rotationAxis.rotateAxis(DirVector.zVector(), yawMoment, rotationAxis);
         float pitchMoment = (input.pitch() * pitchAcc * deltaTime);
-        rotationAxis = rotationAxis.rotateVector(DirVector.Y, pitchMoment).toDirVector();
+        rotationAxis.rotateAxis(DirVector.yVector(), pitchMoment, rotationAxis);
         float rollMoment = (input.roll() * rollAcc * deltaTime);
-        rotationAxis = rotationAxis.rotateVector(DirVector.X, rollMoment).toDirVector();
+        rotationAxis.rotateAxis(DirVector.xVector(), rollMoment, rotationAxis);
 
         // air-resistance
-        netForce = netForce.add(velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1));
+        netForce = netForce.add(velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1, new DirVector()), new DirVector());
 
 
         // collect extrapolated variables
         // F = m * a ; a = dv/dt ; v = ds/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        velocity = netForce.scale(deltaTime/mass);
+        velocity = netForce.scale(deltaTime/mass, new DirVector());
+
         // ds = v * dt ;
-        extraPosition = position.add(velocity.scale(deltaTime));
+        extraPosition = position.add(velocity.scale(deltaTime, new DirVector()), new PosVector());
         extraRotation += ExponentialSmoothFloat.fractionOf(rotationSpeed, 0f, 1 - rotationReductionFactor, deltaTime);
     }
 
     public void update(float currentTime, float deltaTime) {
         super.update(currentTime, deltaTime);
         // obtain current x-axis in worldspace
-        forward = relativeToWorldSpace(DirVector.X, new ShadowMatrix()).toDirVector();
+        forward = relativeToWorldSpace(DirVector.xVector(), new ShadowMatrix()).toDirVector();
     }
 
     @Override

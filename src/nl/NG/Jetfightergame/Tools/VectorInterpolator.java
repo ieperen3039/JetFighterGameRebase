@@ -13,10 +13,11 @@ public class VectorInterpolator extends Interpolator<Vector> {
         super(capacity, initialValue);
     }
 
-    protected Vector interpolate(float timeStamp, double firstTime, Vector firstElt, double secondTime, Vector secondElt) {
+    protected Vector interpolate(float timeStamp, double firstTime, Vector firstElt, double secondTime, Vector secondElt, Vector dest) {
         float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
-        DirVector difference = firstElt.to(secondElt).toDirVector();
+        DirVector difference = firstElt.to(secondElt, new DirVector());
 
-        return firstElt.add(difference.scale(fraction));
+        firstElt.add(difference.scale(fraction, difference), dest);
+        return dest;
     }
 }
