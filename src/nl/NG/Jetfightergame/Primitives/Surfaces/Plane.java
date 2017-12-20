@@ -1,12 +1,13 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
-import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
+import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 /**
  * @author Geert van Ieperen
@@ -29,6 +30,9 @@ public abstract class Plane {
     protected final DirVector normal;
 
     protected final PosVector[] boundary;
+
+    /** reserved space for collision detection */
+    private PosVector relativePosition = new PosVector();
 
     public Plane(DirVector normal, PosVector[] vertices) {
         this.normal = normal;
@@ -97,7 +101,7 @@ public abstract class Plane {
 
         if (hitDir.length() > direction.length()) return null;
 
-        if (!isWithin(linePosition.add(hitDir, new PosVector()))) return null;
+        if (!isWithin(linePosition.add(hitDir, relativePosition))) return null;
 
         return new Collision(hitDir.length() / direction.length(), normal);
     }
@@ -145,9 +149,10 @@ public abstract class Plane {
      * Lies in the extend, but not necessarily on the plane
      */
     protected DirVector calculateMaxDirection(PosVector linePosition, DirVector direction) {
-        // random point is taken
-        PosVector offSquare = boundary[0].subtract(linePosition, new PosVector());
-        float scalar = (offSquare.dot(normal) / direction.dot(normal));
+        // random point is chosen
+        boundary[0].subtract(linePosition, relativePosition);
+
+        float scalar = (relativePosition.dot(normal) / direction.dot(normal));
 
         if (Vector.almostZero(scalar)) {
             return DirVector.zeroVector();
@@ -156,8 +161,12 @@ public abstract class Plane {
         }
     }
 
-    public List<PosVector> getVertices() {
+    public Collection<PosVector> getVertices() {
         return Arrays.asList(boundary);
+    }
+
+    public Stream<PosVector> getBorderAsStream() {
+        return Arrays.stream(boundary);
     }
 
     public DirVector getNormal() {

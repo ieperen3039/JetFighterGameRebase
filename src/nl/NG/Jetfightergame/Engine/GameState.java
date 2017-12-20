@@ -3,12 +3,13 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.PlayerPCControllerAbsolute;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
+import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
+import nl.NG.Jetfightergame.EntityDefinitions.MovingEntity;
+import nl.NG.Jetfightergame.EntityDefinitions.Touchable;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
-import nl.NG.Jetfightergame.GameObjects.AbstractJet;
-import nl.NG.Jetfightergame.GameObjects.GameObject;
-import nl.NG.Jetfightergame.GameObjects.MovingObject;
-import nl.NG.Jetfightergame.GameObjects.Touchable;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
@@ -29,18 +30,19 @@ public class GameState {
     private final Controller playerInput = new PlayerPCControllerAbsolute();
     private AbstractJet playerJet = new PlayerJet(playerInput);
 
-    protected Collection<GameObject> dynamicObjects = new ArrayList<>();
-    protected Collection<Touchable> staticObjects = new ArrayList<>();
+    protected Collection<Touchable> staticEntities = new ArrayList<>();
+    protected Collection<GameEntity> dynamicEntities = new ArrayList<>();
     protected Collection<AbstractParticle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
     /** a protector that should protecc the {@code objects} list (and possibly other   */
     private Semaphore gameChangeGuard = new Semaphore(1);
-
     private final GameTimer time = new GameTimer();
 
+    private Extreme<Integer> collisionMax = new Extreme<>(true);
+
     protected void buildScene() {
-        dynamicObjects.add(playerJet);
+        dynamicEntities.add(playerJet);
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
     }
 
@@ -52,15 +54,19 @@ public class GameState {
         float currentTime = time.getGameTime().current();
 
         // update positions with respect to collisions
-        dynamicObjects.forEach((gameObject) -> gameObject.preUpdate(currentTime));
+        dynamicEntities.forEach((gameObject) -> gameObject.preUpdate(currentTime));
 
         if (Settings.UNIT_COLLISION) {
             int remainingLoops = MAX_COLLISION_ITERATIONS;
             Integer[] collisions = {0};
+
             do {
                 remainingLoops--;
                 collisions[0] = 0;
-                checkUnitCollisions(collisions);
+                // as a single collision may result in a previously not-intersecting pair to collide,
+                // we cannot re-use the getIntersectingPairs method nor reduce non-collisions. We should add some form
+                // of caching for getIntersectingPairs, to make short-followed calls more efficient.
+                checkUnitCollisions(getIntersectingPairs(), collisions);
 
             // loop if
                 // (1) recursive collision is enabled,
@@ -70,70 +76,73 @@ public class GameState {
         }
 
         gameChangeGuard.acquire();
-        dynamicObjects.forEach(obj -> obj.update(currentTime, time.getGameTime().difference()));
+        dynamicEntities.forEach(obj -> obj.update(currentTime, time.getGameTime().difference()));
         gameChangeGuard.release();
     }
 
-    /** checks the collisions of all objects and ensures that collisions[0] > 0 iff there has been a collision */
-    private void checkUnitCollisions(Integer[] collisions) {
-        getIntersectingPairs().parallelStream()
+    /** checks the collisions of all objects and ensures that results[0] > 0 iff there has been a collision
+     * @param intersectingPairs
+     * @param results an array with length at least 1 to store the result
+     */
+    private void checkUnitCollisions(Collection<Pair<Touchable, MovingEntity>> intersectingPairs, Integer[] results) {
+        intersectingPairs.parallelStream()
                 .filter(GameState::checkPair)
                 .forEach(p -> {
-                    collisions[0]++; // race conditions don't matter, as long as collisions[0] > 0
+                    results[0]++; // race conditions don't matter, as long as collisions[0] > 0
                     applyCollisions(p);
                 });
     }
 
-    /** calls {@link MovingObject#applyCollision()} on each object of p for which it is valid */
-    private void applyCollisions(Pair<Touchable, MovingObject> p) {
+    /** calls {@link MovingEntity#applyCollision()} on each object of p for which it is valid */
+    private void applyCollisions(Pair<Touchable, MovingEntity> p) {
         p.right.applyCollision();
-        if (p.left instanceof MovingObject) {
-            ((MovingObject) p.left).applyCollision();
+        if (p.left instanceof MovingEntity) {
+            ((MovingEntity) p.left).applyCollision();
         }
     }
 
     /**
      * let each object of the pair check for collisions, but does not make any changes just yet.
-     * these only take effect after calling {@link MovingObject#applyCollision()}
+     * these only take effect after calling {@link MovingEntity#applyCollision()}
      * @param p a pair of objects that may have collided.
      * @return true if this pair collided:
      * if this method returns false, then these objects do not collide and are not changed as a result.
      * if this method returns true, then these objects do collide and have this collision stored.
-     * The collision can be calculated by {@link MovingObject#applyCollision()} and applied by {@link Updatable#update(float)}
+     * The collision can be calculated by {@link MovingEntity#applyCollision()} and applied by {@link Updatable#update(float)}
      */
-    private static boolean checkPair(Pair<Touchable, MovingObject> p) {
+    private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
         Touchable either = p.left;
-        MovingObject moving = p.right;
+        MovingEntity moving = p.right;
 
         boolean change = moving.checkCollisionWith(either);
-        if (either instanceof MovingObject) {
-            return change || ((MovingObject) either).checkCollisionWith(moving);
+        if (either instanceof MovingEntity) {
+            return change || ((MovingEntity) either).checkCollisionWith(moving);
         }
         return change;
     }
 
-    /** TODO efficient implementation
+    /** TODO efficient implementation, Possibly move to dedicated class
      * generate a list (possibly empty) of all objects that may have collided.
      * this may include (parts of) the ground, but not an object with itself.
      * one pair should not occur the other way around
      *
      * @return a collection of pairs of objects that are close to each other
      */
-    private Collection<Pair<Touchable, MovingObject>> getIntersectingPairs() {
-        final Collection<Pair<Touchable, MovingObject>> result = new ArrayList<>();
+    private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
+        final Collection<Pair<Touchable, MovingEntity>> result = new ArrayList<>();
 
         // Naive solution: return all n^2 options
         // check all moving objects against (1: all other moving objects, 2: all static objects)
-        dynamicObjects.parallelStream().forEach(obj -> {
-            dynamicObjects.stream()
+        dynamicEntities.parallelStream().forEach(obj -> {
+            dynamicEntities.stream()
                     // only other objects
                     .filter(o -> obj != o)
                     .forEach(other -> result.add(new Pair<>(other, obj)));
-            staticObjects
+            staticEntities
                     .forEach(other -> result.add(new Pair<>(other, obj)));
         });
 
-        Toolbox.printSpamless("created " + result.size() + " combinations");
+        collisionMax.updateAndPrint("Intersections", result.size(), "pairs");
         return result;
     }
 
@@ -148,11 +157,11 @@ public class GameState {
         Toolbox.drawAxisFrame(gl);
 
         // static objects can not have interference
-        staticObjects.forEach(d -> d.draw(gl));
+        staticEntities.forEach(d -> d.draw(gl));
 
         try {
             gameChangeGuard.acquire();
-            dynamicObjects.forEach(d -> d.draw(gl, time.getRenderTime().current()));
+            dynamicEntities.forEach(d -> d.draw(gl, time.getRenderTime().current()));
             gameChangeGuard.release();
         } catch (InterruptedException e) {
             e.printStackTrace();

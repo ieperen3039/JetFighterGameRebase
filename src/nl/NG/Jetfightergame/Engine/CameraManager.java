@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Camera.FollowingCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
-import nl.NG.Jetfightergame.GameObjects.GameObject;
+import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  * created on 11-12-2017.
  */
 public class CameraManager implements Camera {
-    private GameObject target = null;
+    private GameEntity target = null;
     private Camera instance;
 
     enum CameraImpl {
@@ -25,7 +25,7 @@ public class CameraManager implements Camera {
         instance = new PointCenteredCamera();
     }
 
-    public void setTarget(GameObject target) {
+    public void setTarget(GameEntity target) {
         this.target = target;
     }
 
@@ -39,7 +39,7 @@ public class CameraManager implements Camera {
      * @param eye position of the camera
      * @param target the game object that is the target (not necessarily the focus) of the new camera
      */
-    public void switchTo(CameraImpl camera, PosVector eye, GameObject target){
+    public void switchTo(CameraImpl camera, PosVector eye, GameEntity target){
         if (instance instanceof TrackerListener) {
             ((TrackerListener) instance).cleanUp();
         }

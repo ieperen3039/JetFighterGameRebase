@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.GameObjects.GameObject;
+import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -18,20 +18,20 @@ public class FollowingCamera implements Camera {
      * The position of the camera.
      */
     private final ExponentialSmoothVector<PosVector> eye;
-    private final GameObject target;
+    private final GameEntity target;
 
-    public FollowingCamera(GameObject target) {
+    public FollowingCamera(GameEntity target) {
         this(jetPosition(relativePosition, target).toPosVector(), target);
     }
 
-    public FollowingCamera(PosVector eye, GameObject playerJet) {
+    public FollowingCamera(PosVector eye, GameEntity playerJet) {
         this(
                 new ExponentialSmoothVector<>(eye, 1-CAMERA_CATCHUP),
                 playerJet
         );
     }
 
-    public FollowingCamera(ExponentialSmoothVector<PosVector> eye, GameObject target) {
+    public FollowingCamera(ExponentialSmoothVector<PosVector> eye, GameEntity target) {
         this.eye = eye;
         this.target = target;
     }
@@ -41,7 +41,7 @@ public class FollowingCamera implements Camera {
      * @param target a target jet, where DirVector.X points forward
      * @return the position translated to world-space
      */
-    private static Vector jetPosition(DirVector relativePosition, GameObject target){
+    private static Vector jetPosition(DirVector relativePosition, GameEntity target){
         ShadowMatrix ws = new ShadowMatrix();
         return target.getPosition().add(target.relativeToWorldSpace(relativePosition, ws), new PosVector());
     }

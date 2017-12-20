@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.GameObjects.AbstractJet;
+import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_FOLLOWING;

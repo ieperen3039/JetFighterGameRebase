@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.GameObjects.Hitbox.Collision;
+import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
@@ -133,8 +133,7 @@ public class GridMesh implements Shape {
     public Collection<PosVector> getPoints() {
         Collection<PosVector> list = new ArrayList<>();
         getPlanes()
-                .map(Plane::getVertices)
-                .flatMap(Collection::stream)
+                .flatMap(Plane::getBorderAsStream)
                 .forEach(list::add);
         return list;
     }

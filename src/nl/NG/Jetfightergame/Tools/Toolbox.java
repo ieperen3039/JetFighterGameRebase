@@ -140,7 +140,7 @@ public class Toolbox {
             Plane targetPlane, PosVector worldPosition, int splits, DirVector launchDir, float jitter, int deprecationTime) {
 
         Collection<PosVector[]> triangles = new ArrayList<>();
-        Iterator<PosVector> border = targetPlane.getVertices().iterator();
+        Iterator<PosVector> border = targetPlane.getBorderAsStream().iterator();
 
         if (targetPlane instanceof Triangle) {
             triangles.add(new PosVector[]{border.next(), border.next(), border.next()});

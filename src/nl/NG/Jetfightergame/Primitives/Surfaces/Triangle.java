@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.Primitives.Surfaces;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
 
 /**
  * @author Geert van Ieperen
@@ -12,8 +11,11 @@ public class Triangle extends Plane {
 
     /** ABRef, BCRef, CARef are three reference vectors for collision detection */
     private PosVector ABRef, BCRef, CARef;
-    private static PosVector tempAlpha = new PosVector();
-    private static PosVector tempBeta = new PosVector();
+
+    /** reserved space for collision detection */
+    private PosVector tempAlpha = new PosVector();
+    private PosVector tempBeta = new PosVector();
+    private PosVector cross = new PosVector();
 
     public Triangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
         super(normal, new PosVector[]{A, B, C});
@@ -37,8 +39,6 @@ public class Triangle extends Plane {
         PosVector A = boundary[0];
         PosVector B = boundary[1];
         PosVector C = boundary[2];
-
-        Vector cross = new PosVector();
 
         B.subtract(A, tempAlpha).cross(hitPos.subtract(A, tempBeta), cross);
 
