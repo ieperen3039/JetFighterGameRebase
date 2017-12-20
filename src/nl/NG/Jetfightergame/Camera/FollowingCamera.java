@@ -42,8 +42,8 @@ public class FollowingCamera implements Camera {
      * @return the position translated to world-space
      */
     private static Vector jetPosition(DirVector relativePosition, GameEntity target){
-        ShadowMatrix ws = new ShadowMatrix();
-        return target.getPosition().add(target.relativeToWorldSpace(relativePosition, ws), new PosVector());
+        ShadowMatrix sm = new ShadowMatrix();
+        return target.getPosition().add(target.relativeToWorldSpace(relativePosition, sm), new PosVector());
     }
 
     /**

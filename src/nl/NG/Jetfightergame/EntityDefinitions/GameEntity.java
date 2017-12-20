@@ -98,13 +98,13 @@ public abstract class GameEntity implements MovingEntity {
 
     /**
      * @param relative a vector relative to this object
-     * @param sm a frame of reference, the resulting vector will be in the space of the instantiation of this matrix
+     * @param ms a frame of reference, the resulting vector will be in the space of the instantiation of this matrix
      * @return a vector in {@code sm}'s frame of reference
      */
-    public DirVector relativeToWorldSpace(DirVector relative, MatrixStack sm) {
+    public DirVector relativeToWorldSpace(DirVector relative, MatrixStack ms) {
         final DirVector[] axis = new DirVector[1];
 
-        toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), extraPosition, extraRotation);
+        toLocalSpace(ms, () -> axis[0] = ms.getDirection(relative), position, rotation);
         return axis[0];
     }
 

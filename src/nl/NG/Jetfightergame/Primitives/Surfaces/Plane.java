@@ -20,12 +20,12 @@ public abstract class Plane {
      * a summation of references to define the bounding box of this plane.
      * often, these refer to the same vectors
      */
-    protected float leastX;
-    protected float mostX;
-    protected float leastY;
-    protected float mostY;
-    protected float leastZ;
-    protected float mostZ;
+    protected float leastX = Float.MAX_VALUE;
+    protected float mostX = -Float.MAX_VALUE;
+    protected float leastY = Float.MAX_VALUE;
+    protected float mostY = -Float.MAX_VALUE;
+    protected float leastZ = Float.MAX_VALUE;
+    protected float mostZ = -Float.MAX_VALUE;
     /** not necessarily normalized */
     protected final DirVector normal;
 
@@ -39,13 +39,13 @@ public abstract class Plane {
         this.boundary = vertices;
 
         // initialize hitbox
-        for (PosVector posVector : boundary) {
-            if (posVector.x() < leastX) leastX = posVector.x();
-            if (posVector.x() > mostX) leastX = posVector.x();
-            if (posVector.y() < leastY) leastX = posVector.y();
-            if (posVector.y() > mostY) leastX = posVector.y();
-            if (posVector.z() < leastZ) leastX = posVector.z();
-            if (posVector.z() > mostZ) leastX = posVector.z();
+        for (PosVector posVector : vertices) {
+            if (posVector.x < leastX) leastX = posVector.x;
+            if (posVector.x > mostX) mostX = posVector.x;
+            if (posVector.y < leastY) leastY = posVector.y;
+            if (posVector.y > mostY) mostY = posVector.y;
+            if (posVector.z < leastZ) leastZ = posVector.z;
+            if (posVector.z > mostZ) mostZ = posVector.z;
         }
     }
 

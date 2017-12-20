@@ -43,9 +43,10 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     public PointCenteredCamera(PosVector eye, PosVector focus){
         DirVector focToEye = focus.to(eye, new DirVector());
         DirVector cameraDir = focToEye.normalized(new DirVector());
+
+        vDist = focToEye.length();
         phi = getPhi(cameraDir);
         theta = getTheta(cameraDir, phi);
-        vDist = (float) focToEye.length();
 
         this.focus = focus;
         this.eye = new TrackedVector<>(getEyePosition());
@@ -53,10 +54,19 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         registerListener();
     }
 
+    /**
+     * @param eye normalized vector to eye
+     * @return phi
+     */
     private static float getPhi(Vector eye) {
         return (float) Math.asin(eye.z());
     }
 
+    /**
+     * @param eye normalized vector to eye
+     * @param phi
+     * @return
+     */
     private static float getTheta(Vector eye, float phi) {
         int i = Settings.INVERT_CAMERA_ROTATION ? 1 : -1;
         return (float) (Math.acos(eye.x()/Math.cos(phi)) * i);
@@ -95,7 +105,8 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         double eyeY = vDist * Math.sin(theta * i) * Math.cos(phi);
         double eyeZ = vDist * Math.sin(phi);
 
-        return new PosVector((float) eyeX, (float) eyeY, (float) eyeZ).add(focus, new PosVector());
+        final PosVector eye = new PosVector((float) eyeX, (float) eyeY, (float) eyeZ);
+        return eye.add(focus, eye);
     }
 
     /** move is inverse of dragging */

@@ -39,7 +39,7 @@ public class ShadowMatrix implements MatrixStack {
             // transform rotation vector to local space
             DirVector rVec = new DirVector();
             xVec
-                    .scale(x, rVec)
+                    .scale(x, temp)
                     .add(yVec.scale(y, temp), rVec)
                     .add(zVec.scale(z, temp), rVec)
                     .normalized(rVec);
@@ -60,9 +60,9 @@ public class ShadowMatrix implements MatrixStack {
 
     @Override
     public void scale(float x, float y, float z) {
-        xVec = xVec.scale(x, new DirVector());
-        yVec = yVec.scale(y, new DirVector());
-        zVec = zVec.scale(z, new DirVector());
+        xVec.scale(x, xVec);
+        yVec.scale(y, yVec);
+        zVec.scale(z, zVec);
     }
 
     /**
@@ -73,14 +73,11 @@ public class ShadowMatrix implements MatrixStack {
      */
     @Override
     public PosVector getPosition(PosVector p){
-        float x = p.x();
-        float y = p.y();
-        float z = p.z();
         PosVector newPos = new PosVector(posVec);
 
-        if (x != 0.0) newPos.add(xVec.scale(x, temp), newPos);
-        if (y != 0.0) newPos.add(yVec.scale(y, temp), newPos);
-        if (z != 0.0) newPos.add(zVec.scale(z, temp), newPos);
+        if (p.x != 0.0) newPos.add(xVec.scale(p.x, temp), newPos);
+        if (p.y != 0.0) newPos.add(yVec.scale(p.y, temp), newPos);
+        if (p.z != 0.0) newPos.add(zVec.scale(p.z, temp), newPos);
         return newPos;
     }
 
@@ -90,9 +87,10 @@ public class ShadowMatrix implements MatrixStack {
      */
     @Override
     public DirVector getDirection(DirVector v){
-        DirVector newDir = xVec.scale(v.x(), temp);
-        newDir.add(yVec.scale(v.y(), temp), newDir);
-        newDir.add(zVec.scale(v.z(), temp), newDir);
+        DirVector newDir = DirVector.zeroVector();
+        if (v.x != 0.0) newDir.add(xVec.scale(v.x, temp), newDir);
+        if (v.y != 0.0) newDir.add(yVec.scale(v.y, temp), newDir);
+        if (v.z != 0.0) newDir.add(zVec.scale(v.z, temp), newDir);
         return newDir;
     }
 
@@ -132,9 +130,8 @@ public class ShadowMatrix implements MatrixStack {
     /**
      * print current state of axis system
      */
-    public void printAll() {
-        System.out.printf("xVec: %s, yVec: %s, zVec: %s%n", xVec, yVec, zVec);
-        System.out.println("position Vec: " + posVec);
+    public String toString() {
+        return String.format("[O: %s X: %s, Y: %s, Z: %s]", posVec, xVec, yVec, zVec);
     }
 
     // unsupported operations
