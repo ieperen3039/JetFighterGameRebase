@@ -7,12 +7,13 @@ import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
-import nl.NG.Jetfightergame.Tools.FloatInterpolator;
+import nl.NG.Jetfightergame.Tools.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.VectorInterpolator;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -30,22 +31,19 @@ public abstract class GameEntity implements MovingEntity {
     protected PosVector position;
     /** worldspace movement in m/s */
     protected DirVector velocity;
-    /** absolute rotation in radians */
-    protected float rotation; // TODO rewrite to Quaternion
-    /** rotation speed in radian/s */
-    protected float rotationSpeed;
-
-    private float drawTimer = 0;
-    private VectorInterpolator positionInterpolator;
-    private FloatInterpolator rotationInterpolator;
+    /** absolute rotation */
+    protected Quaternionf rotation;
+    /** rotation speeds in rad/s */
+    protected float yawSpeed, pitchSpeed, rollSpeed;
 
     /** extrapolated worldspace position */
     protected PosVector extraPosition;
-    /** expected rotation in radians */
-    protected float extraRotation;
+    /** expected rotation */
+    protected Quaternionf extraRotation;
 
-    /** rotation axis in worldspace */
-    protected DirVector rotationAxis;
+    private float drawTimer = -Float.MAX_VALUE;
+    private VectorInterpolator positionInterpolator;
+    private QuaternionInterpolator rotationInterpolator;
 
     /** collision of this gametick, null if it doesn't hit */
     protected Extreme<Collision> nextCrash;
@@ -58,30 +56,37 @@ public abstract class GameEntity implements MovingEntity {
     protected final float mass;
 
     /**
-     * any object that may be moved and hit other objects, is a game object
-     * @param initialPosition position of spawining (of the origin) in world coordinates
+     * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
      * @param surfaceMaterial material properties
      * @param scale scalefactor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
-     * @param initialRotation the initial rotation around the Z-axis of this object in radians
+     * @param initialPosition position of spawining (of the origin) in world coordinates
+     * @param initialVelocity the initial speed of this object in world coordinates
+     * @param initialRotation the initial rotation of this object
      */
-    public GameEntity(PosVector initialPosition, Material surfaceMaterial, float scale, float initialRotation, float mass) {
-        this.position = initialPosition;
+    public GameEntity(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation) {
+        this.position = new PosVector(initialPosition);
+        this.extraPosition = new PosVector(initialPosition);
+        this.rotation = new Quaternionf(initialRotation);
+        this.extraRotation = new Quaternionf(initialRotation);
+
         this.surfaceMaterial = surfaceMaterial;
-        rotationAxis = DirVector.zVector();
-        rotation = initialRotation;
         this.scale = scale;
-        extraPosition = initialPosition;
-        extraRotation = initialRotation;
-        velocity = DirVector.zeroVector();
+        this.velocity = new DirVector(initialVelocity);
         this.mass = mass;
 
+        yawSpeed = 0f;
+        pitchSpeed = 0f;
+        rollSpeed = 0f;
+
         positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
-        rotationInterpolator = new FloatInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
+        rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
     }
 
     @Override
     public void preUpdate(float deltaTime, DirVector netForce) {
         nextCrash = new Extreme<>(false);
+        extraPosition = new PosVector();
+        extraRotation = new Quaternionf();
 
         applyPhysics(deltaTime, netForce);
 
@@ -117,8 +122,9 @@ public abstract class GameEntity implements MovingEntity {
     public void update(float currentTime, float deltaTime) {
         hitPoints = null;
 
+        // update velocity
         position.to(extraPosition, velocity).scale(deltaTime, velocity);
-        rotationSpeed = (extraRotation - rotation) * deltaTime;
+
         position = extraPosition;
         rotation = extraRotation;
 
@@ -230,16 +236,16 @@ public abstract class GameEntity implements MovingEntity {
 
     public void toLocalSpace(MatrixStack ms, Runnable action, boolean extrapolate) {
         PosVector currPos = extrapolate ? extraPosition : position;
-        float currRot = extrapolate ? extraRotation : rotation;
+        Quaternionf currRot = extrapolate ? extraRotation : rotation;
 
         toLocalSpace(ms, action, currPos, currRot);
     }
 
-    private void toLocalSpace(MatrixStack ms, Runnable action, PosVector currPos, float currRot) {
+    private void toLocalSpace(MatrixStack ms, Runnable action, PosVector currPos, Quaternionf currRot) {
         ms.pushMatrix();
         {
             ms.translate(currPos);
-            ms.rotate(rotationAxis, currRot);
+            ms.rotate(currRot);
             ms.scale(scale);
             action.run();
         }
@@ -253,21 +259,21 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public void draw(GL2 gl, float currentTime) {
-        PosVector pos = getPosition(currentTime);
-        Float rot = rotationInterpolator.getInterpolated(currentTime);
+        PosVector pos = interpolatePosition(currentTime);
+        Quaternionf rot = rotationInterpolator.getInterpolated(currentTime);
 
         preDraw(gl);
         Consumer<Shape> painter = gl::draw;
         toLocalSpace(gl, () -> create(gl, painter), pos, rot);
     }
 
-    /** returns the latest calculated position, but one should preferably use {@link #getPosition(float)}*/
+    /** returns the latest calculated position, but one should preferably use {@link #interpolatePosition(float)}*/
     public PosVector getPosition() {
         return position;
     }
 
     @Override
-    public PosVector getPosition(float currentTime) {
+    public PosVector interpolatePosition(float currentTime) {
         if (currentTime < drawTimer) throw new IllegalArgumentException(
                 "currentTime must be larger than any earlier call of currentTime\n" +
                         "earlier call was " + drawTimer + ", this call was " + currentTime
@@ -276,14 +282,14 @@ public abstract class GameEntity implements MovingEntity {
 
         return positionInterpolator.getInterpolated(currentTime).toPosVector();
     }
-
+    
     @Override
     public DirVector getVelocity() {
         return velocity;
     }
 
     /** an object that represents {@code null}. Making this appear in-game is an achievement */
-    public static final GameEntity EMPTY_OBJECT = new GameEntity(PosVector.zeroVector(), Material.GLOWING, 1f , 0f, 1f) {
+    public static final GameEntity EMPTY_OBJECT = new GameEntity(Material.GLOWING, 1f, 1f, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf()) {
         public void create(MatrixStack ms, Consumer<Shape> action, boolean b) {}
         public void draw(GL2 ms) {Toolbox.drawAxisFrame(ms);}
         public void applyCollision() {}

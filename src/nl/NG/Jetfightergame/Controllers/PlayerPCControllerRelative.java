@@ -14,15 +14,11 @@ public class PlayerPCControllerRelative extends PlayerPCController {
 
     @Override
     public float pitch() {
-        int pitch = currentPitch;
-        currentPitch = 0;
-        return pitch * PITCH_MODIFIER * SENSITIVITY;
+        return normalize(currentPitch * PITCH_MODIFIER * SENSITIVITY);
     }
 
     @Override
     public float roll() {
-        int roll = currentRoll;
-        currentRoll = 0;
-        return roll * ROLL_MODIFIER * SENSITIVITY;
+        return normalize(currentRoll * ROLL_MODIFIER * SENSITIVITY);
     }
 }

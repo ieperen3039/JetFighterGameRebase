@@ -1,13 +1,10 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
-
 /**
  * @author Geert van Ieperen
  * created on 15-12-2017.
  */
-public abstract class Interpolator<T> extends TimedArrayDeque<T> {
+public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
     private double activeTime;
     private T activeElement;
 
@@ -15,7 +12,7 @@ public abstract class Interpolator<T> extends TimedArrayDeque<T> {
      * @param capacity the initial expected maximum number of entries
      * @param initialItem
      */
-    public Interpolator(int capacity, T initialItem) {
+    public LinearInterpolator(int capacity, T initialItem) {
         super(capacity);
         add(initialItem, -1);
         add(initialItem, 0);
@@ -33,14 +30,16 @@ public abstract class Interpolator<T> extends TimedArrayDeque<T> {
         double secondTime = nextTimeStamp();
         T secondElt = nextElement();
 
-        return interpolate(timeStamp, firstTime, firstElt, secondTime, secondElt, new PosVector());
+        float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
+
+        return interpolate(firstElt, secondElt, fraction);
     }
 
     /**
      * interpolate using linear interpolation
-     * @return firstElt + (secondElt - firstElt) * ((timeStamp - firstTime) / (secondTime - firstTime))
+     * @return firstElt + (secondElt - firstElt) * fraction
      */
-    protected abstract T interpolate(float timeStamp, double firstTime, T firstElt, double secondTime, T secondElt, Vector dest);
+    protected abstract T interpolate(T firstElt, T secondElt, float fraction);
 
     @Override
     protected void progress() {

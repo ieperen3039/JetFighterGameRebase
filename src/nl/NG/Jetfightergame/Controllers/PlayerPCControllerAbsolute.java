@@ -12,22 +12,17 @@ import static nl.NG.Jetfightergame.Engine.Settings.ROLL_MODIFIER;
 public class PlayerPCControllerAbsolute extends PlayerPCController {
     private static final float SENSITIVITY = 1f;
 
-    public PlayerPCControllerAbsolute() {
-        super();
-    }
-
     @Override
     public float pitch() {
-        return normalize(currentPitch * PITCH_MODIFIER * SENSITIVITY);
+        int pitch = currentPitch;
+        currentPitch = 0;
+        return normalize(pitch * PITCH_MODIFIER * SENSITIVITY);
     }
 
     @Override
     public float roll() {
-        return normalize(currentRoll * ROLL_MODIFIER * SENSITIVITY);
-    }
-
-    /** returns some sigmoid function of the given float */
-    private float normalize(float val){
-        return (val / (1 + Math.abs(val)));
+        int roll = currentRoll;
+        currentRoll = 0;
+        return normalize(roll * ROLL_MODIFIER * SENSITIVITY);
     }
 }

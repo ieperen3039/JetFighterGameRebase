@@ -4,7 +4,8 @@ package nl.NG.Jetfightergame.Controllers;
  * @author Geert van Ieperen
  *         created on 31-10-2017.
  * may be called to check the current actions of this controller
- * at least one implementation will concern player input
+ * at least one implementation will concern player input.
+ * Each call should only be called once for evaluation
  */
 public interface Controller {
 

@@ -8,10 +8,7 @@ import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import org.joml.AxisAngle4f;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Vector3f;
+import org.joml.*;
 
 import java.util.Stack;
 
@@ -97,7 +94,7 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void rotate(float angle, float x, float y, float z) {
-        rotate(new AxisAngle4f((float) angle, x, y, z));
+        rotate(new AxisAngle4f(angle, x, y, z));
     }
 
     public void rotate(AxisAngle4f rotation){
@@ -116,16 +113,16 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public PosVector getPosition(PosVector p) {
-        Vector3f result = p;
-        result.mulPosition(modelMatrix);
-        return new PosVector(result);
+        PosVector result = new PosVector();
+        result.mulPosition(modelMatrix, result);
+        return result;
     }
 
     @Override
     public DirVector getDirection(DirVector v) {
-        Vector3f result = v;
-        result.mulDirection(modelMatrix);
-        return new DirVector(result);
+        DirVector result = new DirVector();
+        result.mulDirection(modelMatrix, result);
+        return result;
     }
 
     @Override
@@ -136,6 +133,11 @@ public class ShaderUniformGL implements GL2 {
     @Override
     public void popMatrix() {
         modelMatrix = matrixStack.pop();
+    }
+
+    @Override
+    public void rotate(Quaternionf rotation) {
+        modelMatrix.rotate(rotation);
     }
 
     @Override

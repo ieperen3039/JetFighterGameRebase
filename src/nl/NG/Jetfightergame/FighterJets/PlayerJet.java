@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
 
@@ -21,7 +22,7 @@ public class PlayerJet extends AbstractJet {
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 500f;
     public static final float BRAKE_POWER = 500f;
-    public static final float MASS = 100f;
+    public static final float MASS = 1000f;
     public static final Material MATERIAL = Material.GOLD;
     public static final float YAW_POWER = (float) toRadians(45);
     public static final float PITCH_POWER = (float) toRadians(45);
@@ -31,14 +32,14 @@ public class PlayerJet extends AbstractJet {
     private Shape shape;
 
     public PlayerJet(Controller input) {
-        this(PosVector.zeroVector(), input, 0f);
+        this(PosVector.zeroVector(), input, new Quaternionf());
     }
 
-    public PlayerJet(PosVector initialPosition, Controller input, float initialRotation) {
+    public PlayerJet(PosVector initialPosition, Controller input, Quaternionf initialRotation) {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                1f);
+                0.2f);
         shape = ShapeFromMesh.ConceptBlueprint;
     }
 

@@ -4,9 +4,9 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Shaders.Material;
-import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 /**
  * @author Geert van Ieperen
@@ -44,13 +44,13 @@ public abstract class AbstractJet extends GameEntity {
      * @param yawAcc acceleration over the Z-axis when moving right at full power in rad/s
      * @param pitchAcc acceleration over the Y-axis when pitching up at full power in rad/s
      * @param rollAcc acceleration over the X-axis when rolling at full power in rad/s
-     * @param rotationReductionFactor the fraction that the rotation is reduced every second
+     * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
      */
-    public AbstractJet(Controller input, PosVector initialPosition, float initialRotation, float scale,
+    public AbstractJet(Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
                        Material material, float mass, float liftFactor, float airResistanceCoefficient,
                        float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
                        float rotationReductionFactor) {
-        super(initialPosition, material, scale, initialRotation, mass);
+        super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation);
 
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
@@ -66,31 +66,44 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public void applyPhysics(float deltaTime, DirVector netForce) {
+
         // thrust forces
         float throttle = input.throttle();
         float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
         netForce.add(forward.reduceTo(thrust, new DirVector()), netForce);
 
-        // rotational forces TODO correct rotation of airplane
+        // exponential reduction of speed (before rotational forces, as this is the result of momentum)
+        float preserveFraction = (float) (1 - StrictMath.pow(rotationReductionFactor, deltaTime));
+        yawSpeed *= preserveFraction;
+        pitchSpeed *= preserveFraction;
+        rollSpeed *= preserveFraction;
+
+        // rotational forces
+        float instYawAcc = (float) StrictMath.pow(yawAcc, deltaTime);
+        float instPitchAcc = (float) StrictMath.pow(pitchAcc, deltaTime);
+        float instRollAcc = (float) StrictMath.pow(rollAcc, deltaTime);
+        yawSpeed += input.yaw() * instYawAcc;
+        pitchSpeed += input.pitch() * instPitchAcc;
+        rollSpeed += input.roll() * instRollAcc;
 
         // air-resistance
-        netForce.add(velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1, new DirVector()), netForce);
+        DirVector airResistance = new DirVector();
+        velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1, airResistance);
+        netForce.add(airResistance, netForce);
 
+        // F = m * a ; a = dv/dt
+        // a = F/m ; dv = a * dt = F * (dt/m)
+        DirVector extraVelocity = netForce.scale(deltaTime/mass, new DirVector());
 
         // collect extrapolated variables
-        // F = m * a ; a = dv/dt ; v = ds/dt
-        // a = F/m ; dv = a * dt = F * (dt/m)
-        velocity = netForce.scale(deltaTime/mass, new DirVector());
-
-        // ds = v * dt ;
-        extraPosition = position.add(velocity.scale(deltaTime, new DirVector()), new PosVector());
-        extraRotation += ExponentialSmoothFloat.fractionOf(rotationSpeed, 0f, 1 - rotationReductionFactor, deltaTime);
+        position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
+        rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }
 
     public void update(float currentTime, float deltaTime) {
         super.update(currentTime, deltaTime);
         // obtain current x-axis in worldspace
-        forward = relativeToWorldSpace(DirVector.xVector(), new ShadowMatrix()).toDirVector();
+        forward = relativeToWorldSpace(DirVector.xVector(), new ShadowMatrix());
     }
 
     @Override

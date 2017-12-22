@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
+import nl.NG.Jetfightergame.Controllers.PlayerPCControllerAbsolute;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRenderer;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
 import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
@@ -12,6 +13,7 @@ import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import javax.imageio.ImageIO;
@@ -40,7 +42,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            environment = new GameState();
+            PlayerPCControllerAbsolute playerInput = new PlayerPCControllerAbsolute();
+            environment = new GameState(playerInput);
 
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);
@@ -56,7 +59,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             renderLoop = new JetFighterRenderer(this, environment, window, camera, musicProvider,
                     () -> getCurrentGameMode() == GameMode.MENU_MODE);
 
-            camera.switchTo(CAMERA_POINT_CENTERED, new PosVector(3, -3, 2), getPlayer());
+            camera.switchTo(CAMERA_POINT_CENTERED, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
 
             environment.buildScene();
 

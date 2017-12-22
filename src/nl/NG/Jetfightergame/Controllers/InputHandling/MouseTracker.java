@@ -197,12 +197,8 @@ public class MouseTracker {
     }
 
     private void passToMoveListeners(MouseEvent mouse) {
-        int xMid = mouse.screenWidth / 2;
-        int yMid = mouse.screenHeight / 2;
-
-        int deltaX = xMid - mouse.x;
-        int deltaY = yMid - mouse.y;
-
+        int deltaX = mouse.x;
+        int deltaY = mouse.y;
         if (deltaX == 0 && deltaY == 0) return;
 
         inGameMotionListeners.forEach(l -> l.mouseMoved(deltaX, deltaY));
@@ -232,10 +228,11 @@ public class MouseTracker {
     }
 
     public void mouseWheelMoved(MouseWheelEvent e) {
+        final float scroll = e.scroll;
         if (inPlayMode.getAsBoolean()) {
-            inGameScrollListener.forEach(l -> l.mouseWheelMoved(e.scroll));
+            inGameScrollListener.forEach(l -> l.mouseWheelMoved(scroll));
         } else {
-            menuScrollListener.forEach(l -> l.mouseWheelMoved(e.scroll));
+            menuScrollListener.forEach(l -> l.mouseWheelMoved(scroll));
         }
     }
 
@@ -243,19 +240,23 @@ public class MouseTracker {
         BUTTON_RIGHT, BUTTON_MIDDLE, BUTTON_UNDEFINED, BUTTON_LEFT
     }
 
+    /**
+     * represents a mouse event.
+     */
     public static class MouseEvent {
 
         /** position relative to the upper left corner of the active area */
         public final int x, y;
-        public final int screenWidth;
-        public final int screenHeight;
         public final MouseButton button;
 
-        public MouseEvent(int x, int y, int xMax, int yMax, MouseButton pressedButton) {
+        /**
+         * an event of the mouse, either movement or click or both
+         * @param x pixels from left; if in capture mode, relative to previous, otherwise relative to upperleft corner
+         * @param y pixels from top; if in capture mode, relative to previous, otherwise relative to upperleft corner
+         */
+        public MouseEvent(int x, int y, MouseButton pressedButton) {
             this.x = x;
             this.y = y;
-            this.screenWidth = xMax;
-            this.screenHeight = yMax;
             this.button = pressedButton;
         }
     }

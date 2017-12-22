@@ -10,6 +10,7 @@ import static nl.NG.Jetfightergame.Engine.Settings.*;
 /**
  * @author Geert van Ieperen
  *         created on 31-10-2017.
+ *         TODO multiply output with how long the button was pressed in respect to deltaTime
  */
 public abstract class PlayerPCController implements TrackerMoveListener, TrackerClickListener, Controller {
 
@@ -86,6 +87,11 @@ public abstract class PlayerPCController implements TrackerMoveListener, Tracker
     public void clickEvent(int x, int y) {
         if (mouse.leftButton()) stickyButtonLeft = true;
         else if (mouse.rightButton()) stickyButtonRight = true;
+    }
+
+    /** returns some sigmoid function of the given float */
+    protected float normalize(float val){
+        return (val / (1 + Math.abs(val)));
     }
 }
 

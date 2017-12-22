@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.EntityDefinitions.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 
 import java.util.function.Consumer;
 
@@ -25,22 +26,19 @@ public class TestLab implements Touchable {
     }
 
     @Override
-    public void draw(GL2 gl) {
-        gl.setMaterial(material);
-        // skip a bunch of references
-        gl.scale(labSize);
-        gl.draw(world);
-    }
-
-    @Override
     public void preDraw(GL2 gl) {
-
+        gl.setMaterial(material, Color4f.ORANGE);
     }
 
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
-        // just accept the world bruh
-        action.accept(world);
+        ms.pushMatrix();
+        {
+            ms.scale(labSize);
+            // just accept the world bruh
+            action.accept(world);
+        }
+        ms.popMatrix();
     }
 
     @Override

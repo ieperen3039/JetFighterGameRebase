@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Vectors.Vector;
 public class FollowingCamera implements Camera {
     private static final DirVector relativePosition = new DirVector(-5, 0, 3);
     private static final DirVector relativeLookAt = relativePosition.add(new DirVector(10, 0, -1), new DirVector());
-    public static final float CAMERA_CATCHUP = 0.4f;
+    public static final float CAMERA_CATCHUP = 0.5f;
     /**
      * The position of the camera.
      */

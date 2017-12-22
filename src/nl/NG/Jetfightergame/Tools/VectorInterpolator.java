@@ -1,22 +1,23 @@
 package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
+import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
 /**
  * @author Geert van Ieperen
  * created on 15-12-2017.
  */
-public class VectorInterpolator extends Interpolator<Vector> {
+public class VectorInterpolator extends LinearInterpolator<Vector> {
 
     public VectorInterpolator(int capacity, Vector initialValue) {
         super(capacity, initialValue);
     }
 
-    protected Vector interpolate(float timeStamp, double firstTime, Vector firstElt, double secondTime, Vector secondElt, Vector dest) {
-        float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
+    protected Vector interpolate(Vector firstElt, Vector secondElt, float fraction) {
         DirVector difference = firstElt.to(secondElt, new DirVector());
 
+        Vector dest = new PosVector();
         firstElt.add(difference.scale(fraction, difference), dest);
         return dest;
     }

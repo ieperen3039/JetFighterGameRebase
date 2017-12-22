@@ -2,10 +2,10 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.AxisAngle4f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
-
-import static nl.NG.Jetfightergame.Vectors.Vector.getRotationMatrix;
+import org.joml.Quaternionf;
 
 /**
  * @author Geert van Ieperen
@@ -35,20 +35,8 @@ public class ShadowMatrix implements MatrixStack {
 
     @Override
     public void rotate(float angle, float x, float y, float z) {
-        if (angle != 0.0) {
-            // transform rotation vector to local space
-            DirVector rVec = new DirVector();
-            xVec
-                    .scale(x, temp)
-                    .add(yVec.scale(y, temp), rVec)
-                    .add(zVec.scale(z, temp), rVec)
-                    .normalized(rVec);
-
-            Matrix3f rotationMatrix = getRotationMatrix(rVec.x(), rVec.z(), rVec.y(), angle);
-            zVec.mul(rotationMatrix, zVec);
-            zVec.mul(rotationMatrix, zVec);
-            zVec.mul(rotationMatrix, zVec);
-        }
+        Quaternionf rotation = new Quaternionf(new AxisAngle4f(angle, x, y, z));
+        rotate(rotation);
     }
 
     @Override
@@ -125,6 +113,14 @@ public class ShadowMatrix implements MatrixStack {
     @Override
     public void popMatrix() {
         setStateTo(stackedMatrix);
+    }
+
+    @Override
+    public void rotate(Quaternionf rotation) {
+        Matrix3f matrix = rotation.get(new Matrix3f());
+        yVec.mul(matrix);
+        xVec.mul(matrix);
+        zVec.mul(matrix);
     }
 
     /**

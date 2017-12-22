@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Controllers.PlayerPCControllerAbsolute;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
 import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
@@ -9,7 +8,7 @@ import nl.NG.Jetfightergame.EntityDefinitions.MovingEntity;
 import nl.NG.Jetfightergame.EntityDefinitions.Touchable;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
-import nl.NG.Jetfightergame.Scenarios.SimplexCave;
+import nl.NG.Jetfightergame.Scenarios.TestLab;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -29,8 +28,7 @@ import java.util.concurrent.Semaphore;
 public class GameState {
 
     private static final int MAX_COLLISION_ITERATIONS = 5;
-    private final Controller playerInput = new PlayerPCControllerAbsolute();
-    private AbstractJet playerJet = new PlayerJet(playerInput);
+    private AbstractJet playerJet;
 
     protected Collection<Touchable> staticEntities = new ArrayList<>();
     protected Collection<GameEntity> dynamicEntities = new ArrayList<>();
@@ -41,11 +39,16 @@ public class GameState {
     private Semaphore gameChangeGuard = new Semaphore(1);
     private final GameTimer time = new GameTimer();
 
+    public GameState(Controller input) {
+        playerJet = new PlayerJet(input);
+    }
+
     private Extreme<Integer> collisionMax = new Extreme<>(true);
 
     protected void buildScene() {
         dynamicEntities.add(playerJet);
-        staticEntities.add(new SimplexCave());
+//        staticEntities.add(new SimplexCave());
+        staticEntities.add(new TestLab(100));
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
     }
 
@@ -54,10 +57,12 @@ public class GameState {
      */
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() throws InterruptedException {
+        time.updateGameTime();
+        float deltaTime = time.getGameTime().difference();
         float currentTime = time.getGameTime().current();
 
         // update positions and apply physics // TODO external influences
-        dynamicEntities.forEach((gameObject) -> gameObject.preUpdate(currentTime, DirVector.zeroVector()));
+        dynamicEntities.forEach((gameObject) -> gameObject.preUpdate(deltaTime, DirVector.zeroVector()));
 
         if (Settings.UNIT_COLLISION) {
             int remainingLoops = MAX_COLLISION_ITERATIONS;
@@ -79,12 +84,12 @@ public class GameState {
         }
 
         gameChangeGuard.acquire();
-        dynamicEntities.forEach(obj -> obj.update(currentTime, time.getGameTime().difference()));
+        dynamicEntities.forEach(obj -> obj.update(currentTime, deltaTime));
         gameChangeGuard.release();
     }
 
     /** checks the collisions of all objects and ensures that results[0] > 0 iff there has been a collision
-     * @param intersectingPairs
+     * @param intersectingPairs a collection of pairs of objects that may collide.
      * @param results an array with length at least 1 to store the result
      */
     private void checkUnitCollisions(Collection<Pair<Touchable, MovingEntity>> intersectingPairs, Integer[] results) {
@@ -157,6 +162,7 @@ public class GameState {
      * draw all objects of the game
      */
     public void drawObjects(GL2 gl) {
+        time.updateRenderTime();
         Toolbox.drawAxisFrame(gl);
 
         // static objects can not have interference
@@ -207,19 +213,25 @@ public class GameState {
         public GameTimer() {
             currentInGameTime = 0f;
             gameTime = new TrackedFloat(0f);
-            renderTime = new TrackedFloat(0f);
+            renderTime = new TrackedFloat(-Settings.RENDER_DELAY);
             lastMark = System.currentTimeMillis();
+        }
+
+        public void updateGameTime(){
+            gameTime.update(currentInGameTime);
+        }
+
+        public void updateRenderTime(){
+            renderTime.update(currentInGameTime - Settings.RENDER_DELAY);
         }
 
         public TrackedFloat getGameTime(){
             updateTimer();
-            gameTime.update(currentInGameTime);
             return gameTime;
         }
 
         public TrackedFloat getRenderTime(){
             updateTimer();
-            renderTime.update(currentInGameTime - Settings.RENDER_DELAY);
             return renderTime;
         }
 

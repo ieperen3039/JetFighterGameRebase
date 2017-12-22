@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
 
@@ -27,10 +28,10 @@ public class TestJet extends AbstractJet {
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
 
     public TestJet(Controller input) {
-        this(PosVector.zeroVector(), input, 1f, 0f);
+        this(PosVector.zeroVector(), input, 1f, new Quaternionf());
     }
 
-    public TestJet(PosVector initialPosition, Controller input, float scale, float initialRotation) {
+    public TestJet(PosVector initialPosition, Controller input, float scale, Quaternionf initialRotation) {
         super(input, initialPosition, initialRotation, scale,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT,
                 THROTTLE_POWER, BRAKE_POWER,

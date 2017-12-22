@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 /**
  * @author Geert van Ieperen
@@ -67,6 +68,8 @@ public interface MatrixStack {
     default void rotate(DirVector axis, float angle) {
         rotate(angle, axis.x(), axis.y(), axis.z());
     }
+
+    void rotate(Quaternionf rotation);
 
     default void translate(Vector v) {
         translate(v.x(), v.y(), v.z());

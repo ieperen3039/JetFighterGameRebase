@@ -20,6 +20,7 @@ public class Color4f {
     public static final Color4f YELLOW = new Color4f(1, 1, 0);
     public static final Color4f MAGENTA = new Color4f(1, 0, 1);
     public static final Color4f CYAN = new Color4f(0, 1, 1);
+    public static final Color4f ORANGE = new Color4f(1, 0.5f, 0);
 
     /** a color with alpha == 0, thus (technically) not visible */
     public static final Color4f INVISIBLE = new Color4f(0, 0, 0, 0);

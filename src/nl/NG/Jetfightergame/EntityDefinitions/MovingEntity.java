@@ -74,7 +74,7 @@ public interface MovingEntity extends Touchable {
      * draws this object, interpolated for the given timestamp.
      * Every call to currentTime must be larger than the one before (this should be checked)
      * @param currentTime time since some t_0 in seconds
-     * @see #getPosition(float)
+     * @see #interpolatePosition(float)
      */
     void draw(GL2 gl, float currentTime);
 
@@ -84,7 +84,7 @@ public interface MovingEntity extends Touchable {
      * @param currentTime time since some t_0 in seconds
      * @throws IllegalArgumentException if the currentTime is less than the previous call to this method
      */
-    PosVector getPosition(float currentTime);
+    PosVector interpolatePosition(float currentTime);
 
     /**
      * @return movement of the center of mass of this object in world-space

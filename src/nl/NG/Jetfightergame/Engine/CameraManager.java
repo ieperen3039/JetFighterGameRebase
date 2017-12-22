@@ -30,7 +30,7 @@ public class CameraManager implements Camera {
     }
 
     public void switchTo(CameraImpl camera){
-        switchTo(camera, getEye(), target);
+        switchTo(camera, getEye(), target, getUpVector());
     }
 
     /**
@@ -38,8 +38,9 @@ public class CameraManager implements Camera {
      * @param camera one of {@link CameraImpl}
      * @param eye position of the camera
      * @param target the game object that is the target (not necessarily the focus) of the new camera
+     * @param up
      */
-    public void switchTo(CameraImpl camera, PosVector eye, GameEntity target){
+    public void switchTo(CameraImpl camera, PosVector eye, GameEntity target, DirVector up){
         if (instance instanceof TrackerListener) {
             ((TrackerListener) instance).cleanUp();
         }

@@ -80,7 +80,7 @@ public class InputDelegate {
                     eventButton = MouseButton.BUTTON_UNDEFINED;
             }
             // send absolute coordinates, as these are only relevant when mouse is not captured
-            MouseEvent event = new MouseEvent(pos.x(), pos.y(), window.getWidth(), window.getHeight(), eventButton);
+            MouseEvent event = new MouseEvent(pos.x(), pos.y(), eventButton);
             if (action == GLFW_PRESS) {
                 mouseListener.mousePressed(event);
             } else if (action == GLFW_RELEASE) {
@@ -101,7 +101,6 @@ public class InputDelegate {
 
                 MouseEvent event = new MouseEvent(
                         mouseXPosition.difference(), mouseYPosition.difference(),
-                        window.getWidth(), window.getHeight(),
                         MouseButton.BUTTON_UNDEFINED
                 );
 
@@ -112,7 +111,7 @@ public class InputDelegate {
                 }
             } else {
                 // coordinates are absolute
-                MouseEvent event = new MouseEvent((int) xPos, (int) yPos, window.getWidth(), window.getHeight(), MouseButton.BUTTON_UNDEFINED);
+                MouseEvent event = new MouseEvent((int) xPos, (int) yPos, MouseButton.BUTTON_UNDEFINED);
                 if (mouseListener.leftButton()) {
                     mouseListener.mouseDragged(event);
                 } else {
