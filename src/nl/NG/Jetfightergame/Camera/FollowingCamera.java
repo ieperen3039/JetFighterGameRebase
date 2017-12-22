@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -11,13 +12,15 @@ import nl.NG.Jetfightergame.Vectors.Vector;
  * Implementation of a camera with a position and orientation.
  */
 public class FollowingCamera implements Camera {
-    private static final DirVector relativePosition = new DirVector(-5, 0, 3);
+    private static final DirVector relativePosition = new DirVector(-10, 0, 4);
     private static final DirVector relativeLookAt = relativePosition.add(new DirVector(10, 0, -1), new DirVector());
-    public static final float CAMERA_CATCHUP = 0.5f;
+    private static final float CAMERA_ORIENT = 0.9f; // speed of camera orientation
     /**
      * The position of the camera.
      */
     private final ExponentialSmoothVector<PosVector> eye;
+    private final ExponentialSmoothVector<PosVector> focus;
+    private final ExponentialSmoothVector<DirVector> up;
     private final GameEntity target;
 
     public FollowingCamera(GameEntity target) {
@@ -26,13 +29,17 @@ public class FollowingCamera implements Camera {
 
     public FollowingCamera(PosVector eye, GameEntity playerJet) {
         this(
-                new ExponentialSmoothVector<>(eye, 1-CAMERA_CATCHUP),
+                new ExponentialSmoothVector<>(eye, 1- Settings.CAMERA_CATCHUP),
+                new ExponentialSmoothVector<>(jetPosition(relativeLookAt, playerJet).toPosVector(), 1- CAMERA_ORIENT),
+                new ExponentialSmoothVector<>(jetPosition(DirVector.zVector(), playerJet).toDirVector(), 1- CAMERA_ORIENT),
                 playerJet
         );
     }
 
-    public FollowingCamera(ExponentialSmoothVector<PosVector> eye, GameEntity target) {
+    public FollowingCamera(ExponentialSmoothVector<PosVector> eye, ExponentialSmoothVector<PosVector> focus, ExponentialSmoothVector<DirVector> up, GameEntity target) {
         this.eye = eye;
+        this.focus = focus;
+        this.up = up;
         this.target = target;
     }
 
@@ -52,6 +59,8 @@ public class FollowingCamera implements Camera {
     @Override
     public void updatePosition(float deltaTime) {
         eye.updateFluent(jetPosition(relativePosition, target).toPosVector(), deltaTime);
+        focus.updateFluent(jetPosition(relativeLookAt, target).toPosVector(), deltaTime);
+        up.updateFluent(jetPosition(DirVector.zVector(), target).toDirVector(), deltaTime);
     }
 
     @Override
@@ -66,11 +75,11 @@ public class FollowingCamera implements Camera {
 
     @Override
     public PosVector getFocus() {
-        return jetPosition(relativeLookAt, target).toPosVector();
+        return focus.current();
     }
 
     @Override
-    public DirVector getUpVector() { // TODO smooooth
-        return jetPosition(DirVector.zVector(), target).toDirVector();
+    public DirVector getUpVector() {
+        return up.current();
     }
 }

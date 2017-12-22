@@ -122,8 +122,8 @@ public abstract class GameEntity implements MovingEntity {
     public void update(float currentTime, float deltaTime) {
         hitPoints = null;
 
-        // update velocity
-        position.to(extraPosition, velocity).scale(deltaTime, velocity);
+        // update velocity, note that it is not atomic
+        position.to(extraPosition, velocity).scale(1/deltaTime, velocity);
 
         position = extraPosition;
         rotation = extraRotation;
@@ -282,7 +282,7 @@ public abstract class GameEntity implements MovingEntity {
 
         return positionInterpolator.getInterpolated(currentTime).toPosVector();
     }
-    
+
     @Override
     public DirVector getVelocity() {
         return velocity;

@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
-import nl.NG.Jetfightergame.Controllers.PlayerPCControllerAbsolute;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRenderer;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
 import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
@@ -22,7 +21,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.function.BooleanSupplier;
 
-import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_POINT_CENTERED;
+import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.PointCenteredCamera;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -42,7 +41,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            PlayerPCControllerAbsolute playerInput = new PlayerPCControllerAbsolute();
             environment = new GameState(playerInput);
 
             KeyTracker keyTracker = KeyTracker.getInstance();
@@ -56,10 +54,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             gameLoop = new JetFighterRunner(environment);
             MusicProvider musicProvider = new MusicProvider(new Timer());
-            renderLoop = new JetFighterRenderer(this, environment, window, camera, musicProvider,
-                    () -> getCurrentGameMode() == GameMode.MENU_MODE);
 
-            camera.switchTo(CAMERA_POINT_CENTERED, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
+            renderLoop = new JetFighterRenderer(
+                    this, environment, window, camera, musicProvider,
+                    () -> getCurrentGameMode() == GameMode.MENU_MODE,
+                    playerInput
+            );
+
+            camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
 
             environment.buildScene();
 

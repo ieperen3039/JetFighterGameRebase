@@ -75,7 +75,7 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void setLight(PosVector pos, Color4f lightColor){
-        Vector3f mPosition = pos;
+        Vector3f mPosition = new Vector3f(pos);
         mPosition.mulPosition(modelMatrix);
         currentShader.setPointLight(nextLightIndex++, mPosition, lightColor);
 
@@ -114,14 +114,14 @@ public class ShaderUniformGL implements GL2 {
     @Override
     public PosVector getPosition(PosVector p) {
         PosVector result = new PosVector();
-        result.mulPosition(modelMatrix, result);
+        p.mulPosition(modelMatrix, result);
         return result;
     }
 
     @Override
     public DirVector getDirection(DirVector v) {
         DirVector result = new DirVector();
-        result.mulDirection(modelMatrix, result);
+        v.mulDirection(modelMatrix, result);
         return result;
     }
 
@@ -152,4 +152,14 @@ public class ShaderUniformGL implements GL2 {
         matrixStack = new Stack<>();
     }
 
+    @Override
+    public String toString() {
+        return "ShaderUniformGL{\n" +
+                "modelMatrix=" + modelMatrix +
+                ", viewProjectionMatrix=" + viewProjectionMatrix +
+                ", normalMatrix=" + normalMatrix +
+                ", currentShader=" + currentShader.getClass() +
+                ", stackSize=" + matrixStack.size() +
+                "\n}";
+    }
 }

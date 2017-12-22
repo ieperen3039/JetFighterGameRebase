@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Tracked;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 
 /**
@@ -19,16 +18,17 @@ public class TrackedVector<V extends Vector> extends TrackedObject<V> implements
 
     @Override
     public DirVector difference() {
-        return (DirVector) previous().to(current(), new DirVector());
+        return previous().to(current(), new DirVector());
     }
 
     /**
-         * updates the value by adding the parameter to the current value
-         * @param addition the value that is added to the current. actual results may vary
-         */
-    public void addUpdate(Vector addition) {
-        // unchecked cast, but once initialized on one type, it will always stay that type.
-        // this works as long as Vector.add(vector) produces the same type as it was before
-        update((V) current().add(addition, new PosVector()));
+     * updates the value by adding the parameter to the current value
+     *
+     * @param addition the value that is added to the current. actual results may vary
+     * @param result the new value of this vector will be stored in result. This is mainly for intermediate calculations
+     */
+    public void addUpdate(DirVector addition, V result) {
+        current().add(addition, result);
+        update(result);
     }
 }

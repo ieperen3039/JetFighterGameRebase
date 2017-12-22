@@ -7,30 +7,32 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
+import java.util.Stack;
+
 /**
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
 public class ShadowMatrix implements MatrixStack {
-    protected DirVector zVec = DirVector.zVector();
+    protected PosVector posVec = PosVector.zeroVector();
     protected DirVector xVec = DirVector.xVector();
     protected DirVector yVec = DirVector.yVector();
-    protected PosVector posVec = PosVector.zeroVector();
+    protected DirVector zVec = DirVector.zVector();
+
     /**
-     * the matrix pushed on the stack
+     * the matrix stack
      */
-    protected ShadowMatrix stackedMatrix;
+    private Stack<ShadowMatrix> stack = new Stack<>();
     private DirVector temp = new DirVector();
 
     /**
-     * set the state of this matrix to that of another matrix
+     * copies the state of another matrix to this matrix
      */
     protected void setStateTo(ShadowMatrix master) {
-        this.zVec = master.zVec;
-        this.xVec = master.xVec;
-        this.yVec = master.yVec;
-        this.posVec = master.posVec;
-        this.stackedMatrix = master.stackedMatrix;
+        this.posVec = new PosVector(master.posVec);
+        this.xVec = new DirVector(master.xVec);
+        this.zVec = new DirVector(master.zVec);
+        this.yVec = new DirVector(master.yVec);
     }
 
     @Override
@@ -102,9 +104,9 @@ public class ShadowMatrix implements MatrixStack {
      */
     @Override
     public void pushMatrix() {
-        //save current state of matrix
-        stackedMatrix = new ShadowMatrix();
-        stackedMatrix.setStateTo(this);
+        final ShadowMatrix head = new ShadowMatrix();
+        head.setStateTo(this);
+        stack.push(head);
     }
 
     /**
@@ -112,7 +114,7 @@ public class ShadowMatrix implements MatrixStack {
      */
     @Override
     public void popMatrix() {
-        setStateTo(stackedMatrix);
+        setStateTo(stack.pop());
     }
 
     @Override

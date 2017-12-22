@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
+import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
@@ -33,7 +34,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable[] controlsMenu;
     private UIElement[] creditScreen;
 
-    public JetFighterMenu(ScreenOverlay screenOverlay, MusicProvider musicProvider, Runnable startGame, Runnable exitGame) {
+    public JetFighterMenu(ScreenOverlay screenOverlay, MusicProvider musicProvider, Runnable startGame, Runnable exitGame, ControllerManager input) {
         super(screenOverlay);
 
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
@@ -41,7 +42,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         {
             MenuClickable graphics = graphicsMenu();
             MenuClickable audio = audioMenu(musicProvider);
-            MenuClickable controls = controlMenu();
+            MenuClickable controls = controlMenu(input);
             MenuClickable backOptions = new MenuButton("Back", () -> switchContentTo(mainMenu));
             optionMenu = new MenuClickable[]{graphics, audio, controls, backOptions};
         }
@@ -57,13 +58,14 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         switchContentTo(mainMenu);
     }
 
-    private MenuClickable controlMenu() {
+    private MenuClickable controlMenu(ControllerManager control) {
         MenuClickable controls = new MenuButton("Controls", () -> switchContentTo(controlsMenu));
         {
-            MenuClickable InvertedX = new MenuToggle("Invert x-axis", (b) ->
+            MenuClickable invertX = new MenuToggle("Invert camera-x", (b) ->
                     Settings.INVERT_CAMERA_ROTATION = !Settings.INVERT_CAMERA_ROTATION);
+            MenuClickable controllerType = new MenuToggleMultiple("Controller", control.names(), control::switchTo);
             MenuClickable backControls = new MenuButton("Back", () -> switchContentTo(optionMenu));
-            controlsMenu = new MenuClickable[]{InvertedX, backControls};
+            controlsMenu = new MenuClickable[]{invertX, controllerType, backControls};
         }
         return controls;
     }

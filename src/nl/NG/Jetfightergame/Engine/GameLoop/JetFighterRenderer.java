@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
+import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
@@ -37,7 +38,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GameState gameState;
 
     public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
-                              Camera camera, MusicProvider musicProvider, BooleanSupplier menuMode) throws IOException, ShaderException {
+                              Camera camera, MusicProvider musicProvider, BooleanSupplier menuMode, ControllerManager input) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false);
 
         this.gameState = gameState;
@@ -53,7 +54,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         ambientLight = Color4f.LIGHT_GREY;
         this.screenOverlay = new ScreenOverlay(window, menuMode);
 
-        new JetFighterMenu(screenOverlay, musicProvider, engine::setPlayMode, engine::exitGame);
+        new JetFighterMenu(screenOverlay, musicProvider, engine::setPlayMode, engine::exitGame, input);
     }
 
     @Override

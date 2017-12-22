@@ -2,11 +2,13 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
+import nl.NG.Jetfightergame.Engine.Managers.CameraManager;
+import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
-import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_FOLLOWING;
-import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_POINT_CENTERED;
+import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.FollowingCamera;
+import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.PointCenteredCamera;
 
 /**
  * @author Jorren Hendriks.
@@ -15,6 +17,7 @@ import static nl.NG.Jetfightergame.Engine.CameraManager.CameraImpl.CAMERA_POINT_
  */
 public abstract class GLFWGameEngine {
 
+    protected final ControllerManager playerInput;
     protected AbstractGameLoop renderLoop;
     protected AbstractGameLoop gameLoop;
 
@@ -28,6 +31,7 @@ public abstract class GLFWGameEngine {
     public GLFWGameEngine() {
         window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
+        playerInput = new ControllerManager();
         camera = new CameraManager();
     }
 
@@ -88,14 +92,14 @@ public abstract class GLFWGameEngine {
     public void setMenuMode() {
         this.currentGameMode = GameMode.MENU_MODE;
         window.freePointer();
-        camera.switchTo(CAMERA_POINT_CENTERED);
+        camera.switchTo(PointCenteredCamera);
         gameLoop.pause();
     }
 
     public void setPlayMode() {
         this.currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
-        camera.switchTo(CAMERA_FOLLOWING);
+        camera.switchTo(FollowingCamera);
         gameLoop.unPause();
     }
 

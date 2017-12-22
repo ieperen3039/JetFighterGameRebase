@@ -81,16 +81,16 @@ public class DirVector extends Vector {
      * sets the length of this vector to {@code newLength}
      * also accepts negative length (result will point to the other side)
      * @param newLength the new length of this vector
-     * @param dest
+     * @param dest the target where the result will be stored in
      * @return the result of {@code this.normalized().scale(newlength)}
      * or a zero vector (0, 0, 0) if this is a zero-vector
      */
-    public DirVector reduceTo(float newLength, DirVector dest) {
-        if (isNotScalable()) {
+    public DirVector reducedTo(float newLength, DirVector dest) {
+        if (this.isNotScalable()) {
             dest.zero();
             return dest;
         }
-        dest.mul(newLength / length());
+        this.mul(newLength / length(), dest);
         return dest;
     }
 

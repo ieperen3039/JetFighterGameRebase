@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine;
+package nl.NG.Jetfightergame.Engine.Managers;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Camera.FollowingCamera;
@@ -12,17 +12,18 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public class CameraManager implements Camera {
+public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> {
     private GameEntity target = null;
-    private Camera instance;
+    private Camera instance = new PointCenteredCamera();
 
-    enum CameraImpl {
-        CAMERA_POINT_CENTERED,
-        CAMERA_FOLLOWING
+    @Override
+    public CameraImpl[] implementations() {
+        return CameraImpl.values();
     }
 
-    public CameraManager() {
-        instance = new PointCenteredCamera();
+    public enum CameraImpl {
+        PointCenteredCamera,
+        FollowingCamera
     }
 
     public void setTarget(GameEntity target) {
@@ -38,7 +39,7 @@ public class CameraManager implements Camera {
      * @param camera one of {@link CameraImpl}
      * @param eye position of the camera
      * @param target the game object that is the target (not necessarily the focus) of the new camera
-     * @param up
+     * @param up current upvector
      */
     public void switchTo(CameraImpl camera, PosVector eye, GameEntity target, DirVector up){
         if (instance instanceof TrackerListener) {
@@ -48,10 +49,10 @@ public class CameraManager implements Camera {
         this.target = target;
 
         switch (camera){
-            case CAMERA_POINT_CENTERED:
+            case PointCenteredCamera:
                 instance = new PointCenteredCamera(eye, target.getPosition());
                 break;
-            case CAMERA_FOLLOWING:
+            case FollowingCamera:
                 instance = new FollowingCamera(eye, target);
                 break;
             default:

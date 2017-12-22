@@ -65,6 +65,9 @@ public interface MatrixStack {
 
     void popMatrix();
 
+    /**
+     * @see #rotate(float, float, float, float)
+     */
     default void rotate(DirVector axis, float angle) {
         rotate(angle, axis.x(), axis.y(), axis.z());
     }

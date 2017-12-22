@@ -22,9 +22,16 @@ public class ExponentialSmoothVector<V extends Vector> extends TrackedVector<V> 
         this.preservedFraction = preservedFraction;
     }
 
+    /**
+     * @param target the target vector where this vector will move to.
+     *               Note that this vector will be changed, supplying a new instance is advised
+     * @param deltaTime the time since the last updatePosition, to allow speed and acceleration
+     */
     @Override
     public void updateFluent(V target, float deltaTime) {
         float deceleration = (float) pow(preservedFraction, deltaTime);
-        addUpdate(current().to(target, new DirVector()).scale(1 - deceleration, new DirVector()));
+
+        final DirVector movement = new DirVector();
+        addUpdate(current().to(target, movement).scale(1 - deceleration, movement), target);
     }
 }

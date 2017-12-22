@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -37,7 +38,7 @@ public abstract class AbstractJet extends GameEntity {
      * @param mass the mass of the object in kilograms. this should refer to the weight of the base model in SpaceEngineers
      *             multiplied by {@code scale}^3
      * @param liftFactor arbitrary factor of the lift-effect of the wings in gravitational situations.
-*                   This is applied only on the vector of external influences, thus not in zero-gravity.
+     *                   This is applied only on the vector of external influences, thus not in zero-gravity.
      * @param airResistanceCoefficient 0.5 * A * Cw. this is a factor that should be experimentally found
      * @param throttlePower force of the engines at full power in Newton
      * @param brakePower (not yet determined)
@@ -66,11 +67,12 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public void applyPhysics(float deltaTime, DirVector netForce) {
+        final float speed = velocity.length();
 
         // thrust forces
         float throttle = input.throttle();
         float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
-        netForce.add(forward.reduceTo(thrust, new DirVector()), netForce);
+        netForce.add(forward.reducedTo(thrust, new DirVector()), netForce);
 
         // exponential reduction of speed (before rotational forces, as this is the result of momentum)
         float preserveFraction = (float) (1 - StrictMath.pow(rotationReductionFactor, deltaTime));
@@ -88,16 +90,18 @@ public abstract class AbstractJet extends GameEntity {
 
         // air-resistance
         DirVector airResistance = new DirVector();
-        velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1, airResistance);
-        netForce.add(airResistance, netForce);
+        velocity.reducedTo(speed * speed * airResistCoeff * -1, airResistance);
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        DirVector extraVelocity = netForce.scale(deltaTime/mass, new DirVector());
+        DirVector extraVelocity = new DirVector();
+        netForce.scale(deltaTime/mass, extraVelocity).add(velocity, extraVelocity);
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
+
+        Toolbox.print(forward, position);
     }
 
     public void update(float currentTime, float deltaTime) {

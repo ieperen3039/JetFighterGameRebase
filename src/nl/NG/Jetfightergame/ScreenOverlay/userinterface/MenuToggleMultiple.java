@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import org.joml.Vector2i;
 
 import java.util.function.Consumer;
 
@@ -16,26 +15,17 @@ public class MenuToggleMultiple extends MenuClickable {
     private String[] names;
     private Consumer<Integer> handler;
 
-    public MenuToggleMultiple(String text, int x, int y, int width, int height, String[] names, Consumer<Integer> handler) {
+    public MenuToggleMultiple(String text, int width, int height, String[] names, Consumer<Integer> handler, int initial) {
         super(width, height);
         this.text = text;
         this.names = names;
-        this.value = 0;
+        this.value = initial;
         this.handler = handler;
     }
 
     public MenuToggleMultiple(String text, String[] names, Consumer<Integer> handler) {
-        this(text, 0, 0, names, handler);
+        this(text, BUTTON_WIDTH, BUTTON_HEIGHT, names, handler, 0);
     }
-
-    public MenuToggleMultiple(String text, int x, int y, String[] names, Consumer<Integer> handler) {
-        this(text, x, y, BUTTON_WIDTH, BUTTON_HEIGHT, names, handler);
-    }
-
-    public MenuToggleMultiple(String text, Vector2i pos, String[] names, Consumer<Integer> handler) {
-        this(text, pos.x, pos.y, names, handler);
-    }
-
 
     public void setValue(int value) {
         this.value = value;

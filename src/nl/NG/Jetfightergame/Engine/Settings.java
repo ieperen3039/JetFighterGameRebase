@@ -34,10 +34,11 @@ public class Settings {
     public static int YAW_UP = GLFW.GLFW_KEY_D;
     public static int YAW_DOWN = GLFW.GLFW_KEY_A;
     // these modifiers are also used to inverse direction
-    public static float PITCH_MODIFIER = 1f;
-    public static float ROLL_MODIFIER = 1f;
+    public static float PITCH_MODIFIER = -0.05f;
+    public static float ROLL_MODIFIER = 0.05f;
 
     // camera settings
+    public static final float CAMERA_CATCHUP = 0.8f;
     public static int FOV = (int) Math.toRadians(60.0f);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
