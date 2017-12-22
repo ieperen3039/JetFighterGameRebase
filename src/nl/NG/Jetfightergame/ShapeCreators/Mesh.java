@@ -69,9 +69,9 @@ public class Mesh implements Renderable {
     private static void readVector(int vectorNumber, List<? extends Vector> sourceList, float[] targetArray, int index) {
         Vector vertex = sourceList.get(index);
         int arrayPosition = vectorNumber * 3;
-        targetArray[arrayPosition] = (float) vertex.x();
-        targetArray[arrayPosition + 1] = (float) vertex.y();
-        targetArray[arrayPosition + 2] = (float) vertex.z();
+        targetArray[arrayPosition] = vertex.x();
+        targetArray[arrayPosition + 1] = vertex.y();
+        targetArray[arrayPosition + 2] = vertex.z();
     }
 
 

@@ -8,8 +8,6 @@ import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
-import javax.annotation.Nonnull;
-
 /**
  * @author Geert van Ieperen
  *         created on 30-10-2017.
@@ -67,22 +65,16 @@ public abstract class AbstractJet extends GameEntity {
     }
 
     @Override
-    public void applyPhysics(float deltaTime, @Nonnull DirVector netForce) {
+    public void applyPhysics(float deltaTime, DirVector netForce) {
         // thrust forces
         float throttle = input.throttle();
         float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
-        netForce = netForce.add(forward.reduceTo(thrust, new DirVector()), new DirVector());
+        netForce.add(forward.reduceTo(thrust, new DirVector()), netForce);
 
-        // rotational forces TODO rotation of airplane
-        float yawMoment = (input.yaw() * yawAcc * deltaTime);
-        rotationAxis.rotateAxis(DirVector.zVector(), yawMoment, rotationAxis);
-        float pitchMoment = (input.pitch() * pitchAcc * deltaTime);
-        rotationAxis.rotateAxis(DirVector.yVector(), pitchMoment, rotationAxis);
-        float rollMoment = (input.roll() * rollAcc * deltaTime);
-        rotationAxis.rotateAxis(DirVector.xVector(), rollMoment, rotationAxis);
+        // rotational forces TODO correct rotation of airplane
 
         // air-resistance
-        netForce = netForce.add(velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1, new DirVector()), new DirVector());
+        netForce.add(velocity.reduceTo(velocity.length() * velocity.length() * airResistCoeff * -1, new DirVector()), netForce);
 
 
         // collect extrapolated variables

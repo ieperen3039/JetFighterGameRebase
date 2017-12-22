@@ -12,7 +12,7 @@ public enum Material {
      */
     ROUGH(
             new float[]{0.9f, 0.9f, 0.9f, 1},
-            new float[]{0.1f, 0.1f, 0.1f, 0.5f},
+            new float[]{0.1f, 0.1f, 0.1f, 0.1f},
             1f
     ),
 

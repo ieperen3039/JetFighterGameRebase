@@ -49,8 +49,9 @@ public interface MovingEntity extends Touchable {
      * calculate expected position and rotation, but does not change the current state of the object.
      * This means that {@code rotation} and {@code position} are not updated
      * @param deltaTime time since last frame
+     * @param netForce
      */
-    void preUpdate(float deltaTime);
+    void preUpdate(float deltaTime, DirVector netForce);
 
     /**
      * calculate effect of collision, but does not apply new position

@@ -31,7 +31,7 @@ public abstract class GameEntity implements MovingEntity {
     /** worldspace movement in m/s */
     protected DirVector velocity;
     /** absolute rotation in radians */
-    protected float rotation;
+    protected float rotation; // TODO rewrite to Quaternion
     /** rotation speed in radian/s */
     protected float rotationSpeed;
 
@@ -80,11 +80,9 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void preUpdate(float deltaTime) {
+    public void preUpdate(float deltaTime, DirVector netForce) {
         nextCrash = new Extreme<>(false);
 
-        // 1st law of Newton
-        DirVector netForce = DirVector.zeroVector();//TODO external influences
         applyPhysics(deltaTime, netForce);
 
         updateShape(deltaTime);
@@ -112,6 +110,7 @@ public abstract class GameEntity implements MovingEntity {
 
     /**
      * update the state of this object, may not be called by any method from another interface
+     * synchronization with other operations on position and rotation should be synchronized
      * @param currentTime seconds between some startTime t0 and the begin of the current gameloop
      * @param deltaTime time since last update call
      */
@@ -205,11 +204,13 @@ public abstract class GameEntity implements MovingEntity {
     private List<PosVector> getNextPosition() {
         ShadowMatrix identity = new ShadowMatrix();
         final List<PosVector> current = new ArrayList<>();
-        final Consumer<Shape> collectCurrent = (shape -> shape.getPoints().stream()
+        final Consumer<Shape> collect = (shape -> shape.getPoints().stream()
+                // map to world-coordinates
                 .map(identity::getPosition)
+                // collect them in an array list
                 .forEach(current::add)
         );
-        toLocalSpace(identity, () -> create(identity, collectCurrent, true), true);
+        toLocalSpace(identity, () -> create(identity, collect, true), true);
         return current;
     }
 
@@ -217,11 +218,13 @@ public abstract class GameEntity implements MovingEntity {
     private List<PosVector> getCurrentPosition() {
         ShadowMatrix identity = new ShadowMatrix();
         final List<PosVector> previous = new ArrayList<>();
-        final Consumer<Shape> collectPrevious = (shape -> shape.getPoints().stream()
+        final Consumer<Shape> collect = (shape -> shape.getPoints().stream()
+                // map to world-coordinates
                 .map(identity::getPosition)
+                // collect them in an array list
                 .forEach(previous::add)
         );
-        toLocalSpace(identity, (() -> create(identity, collectPrevious, false)), false);
+        toLocalSpace(identity, (() -> create(identity, collect, false)), false);
         return previous;
     }
 

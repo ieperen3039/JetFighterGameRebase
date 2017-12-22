@@ -49,7 +49,7 @@ public class SimplexCave implements Touchable {
      * @param rows number of rows of the grid, or -1 if infinite
      * @param pointDensity an arbitrary number linear to the number of points between two hilltops
      */
-    static Shape buildTerrain(OpenSimplexNoise noise, float scatter, int rows, float pointDensity){
+    private static Shape buildTerrain(OpenSimplexNoise noise, float scatter, int rows, float pointDensity){
         if (rows < 0) throw new UnsupportedOperationException("no support for inifinite worlds yet");
 
         final PosVector[][] grid = new PosVector[rows][rows];

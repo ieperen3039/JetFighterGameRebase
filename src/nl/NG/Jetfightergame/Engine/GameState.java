@@ -9,11 +9,13 @@ import nl.NG.Jetfightergame.EntityDefinitions.MovingEntity;
 import nl.NG.Jetfightergame.EntityDefinitions.Touchable;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.Scenarios.SimplexCave;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.ArrayList;
@@ -43,6 +45,7 @@ public class GameState {
 
     protected void buildScene() {
         dynamicEntities.add(playerJet);
+        staticEntities.add(new SimplexCave());
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
     }
 
@@ -53,8 +56,8 @@ public class GameState {
     public void updateGameLoop() throws InterruptedException {
         float currentTime = time.getGameTime().current();
 
-        // update positions with respect to collisions
-        dynamicEntities.forEach((gameObject) -> gameObject.preUpdate(currentTime));
+        // update positions and apply physics // TODO external influences
+        dynamicEntities.forEach((gameObject) -> gameObject.preUpdate(currentTime, DirVector.zeroVector()));
 
         if (Settings.UNIT_COLLISION) {
             int remainingLoops = MAX_COLLISION_ITERATIONS;

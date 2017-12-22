@@ -82,7 +82,7 @@ public class ShapeFromMesh implements Shape {
         this.vertices = vertices;
         triangles = faces.stream()
                 .map(f -> toTriangle(f, vertices, normals))
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toCollection(() -> new ArrayList<>(faces.size())));
 
         mesh = new Mesh(vertices, normals, faces);
     }

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -36,27 +37,28 @@ public class GridMesh implements Shape {
         betaGrid = new Triangle[xSize][ySize];
 
         List<Mesh.Face> faces = new ArrayList<>(2 * xSize * ySize);
-        List<PosVector> vertices = new ArrayList<>(xSize * ySize);
         List<DirVector> normals = new ArrayList<>(2 * xSize * ySize);
 
-        // iterate y-first
-        for(int x = 0; x < xSize; x++){
-            for(int y = 0; y < ySize; y++){
-                // only one due to redundancy of the loop. vertices are added y-first
-                vertices.add(grid[x][y]);
 
+        // transform grid to a list
+        List<PosVector> vertices = Arrays.stream(grid)
+                .flatMap(g -> Arrays.stream(g))
+                // collect into an array list of appropriate length
+                .collect(Collectors.toCollection(
+                        () -> new ArrayList<>(grid.length * grid[0].length)
+                ));
+
+        // iterate y-first
+        for (int x = 0; x < xSize; x++) {
+            for (int y = 0; y < ySize; y++) {
                 createAndSetTriangles(x, y, grid, faces, normals);
             }
-            // we have 1 more row of vertices than we have faces
-            vertices.add(grid[x][ySize]);
         }
-        // we have 1 more row of vertices than we have faces
-        vertices.addAll(Arrays.asList(grid[xSize]));
 
 
         mesh = new Mesh(vertices, normals, faces);
 
-        Toolbox.print("created Grid [ "+ xSize +" x "+ ySize +" ]");
+        Toolbox.print("created Grid [ " + xSize + " x " + ySize + " ]");
     }
 
     /**
@@ -71,25 +73,20 @@ public class GridMesh implements Shape {
         final PosVector C = grid[x][y + 1];
         final PosVector D = grid[x + 1][y + 1];
 
-        alphaGrid[x][y] = new Triangle(A, B, C, Plane.getNormalVector(A, B, C, DirVector.zVector()));
-        int alphaNormal = normals.size();
-        normals.add(alphaGrid[x][y].getNormal());
-        faces.add(new Mesh.Face(
-                index(x, y), //A
-                index(x + 1, y), //B
-                index(x, y + 1), //C
-                alphaNormal) //normal 1
-        );
+        final int Ai = index(x, y);
+        final int Bi = index(x + 1, y);
+        final int Ci = index(x, y + 1);
+        final int Di = index(x + 1, y + 1);
 
-        betaGrid[x][y] = new Triangle(D, B, C, Plane.getNormalVector(D, B, C, DirVector.zVector()));
-        int betaNormal = normals.size();
-        normals.add(betaGrid[x][y].getNormal());
-        faces.add(new Mesh.Face(
-                index(x + 1, y + 1), //D
-                index(x + 1, y), //B
-                index(x, y + 1), //C
-                betaNormal) //normal 2
-        );
+        final DirVector alphaNormal = Plane.getNormalVector(A, B, C, DirVector.zVector());
+        alphaGrid[x][y] = new Triangle(A, B, C, alphaNormal);
+        normals.add(alphaNormal);
+        faces.add(new Mesh.Face(Ai, Bi, Ci, normals.size() - 1));
+
+        final DirVector betaNormal = Plane.getNormalVector(D, B, C, DirVector.zVector());
+        betaGrid[x][y] = new Triangle(D, B, C, betaNormal);
+        normals.add(betaNormal);
+        faces.add(new Mesh.Face(Di, Bi, Ci, normals.size() - 1));
     }
 
     public GridMesh(float[][] heightMap, float xStep, float yStep) {
@@ -114,7 +111,7 @@ public class GridMesh implements Shape {
      * @return index of this coordinate
      */
     private int index(int x, int y){
-        return x * xSize + y;
+        return x * xSize + 1 + y;
     }
 
     @Override

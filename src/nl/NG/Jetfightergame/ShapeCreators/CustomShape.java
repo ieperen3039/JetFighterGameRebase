@@ -21,7 +21,7 @@ public class CustomShape {
 
     private final PosVector middle;
     private final Map<PosVector, Integer> points;
-    private final Map<DirVector, Integer> normals;
+    private final List<DirVector> normals;
     private final List<Mesh.Face> faces;
 
     public CustomShape() {
@@ -32,7 +32,7 @@ public class CustomShape {
         this.middle = middle;
         faces = new ArrayList<>();
         points = new Hashtable<>();
-        normals = new Hashtable<>();
+        normals = new ArrayList<>();
     }
 
     /**
@@ -134,8 +134,8 @@ public class CustomShape {
     private int addNormal(DirVector normal) {
         if (normal == null) throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be null");
         DirVector normalizedNormal = normal.normalized(new DirVector());
-        normals.putIfAbsent(normalizedNormal, normals.size());
-        return normals.get(normalizedNormal);
+        normals.add(normalizedNormal);
+        return normals.size() - 1;
     }
 
     /**
@@ -254,18 +254,14 @@ public class CustomShape {
      * @return a shape with hardware-accelerated graphics using the {@link ShapeFromMesh} object
      */
     public Shape wrapUp(){
+        // this is the most clear, structured way of the duplicate-vector problem. maybe not the most efficient.
         PosVector[] sortedVertices = new PosVector[points.size()];
         points.forEach((v, i) -> sortedVertices[i] = v);
-        DirVector[] sortedNormals = new DirVector[normals.size()];
-        normals.forEach((v, i) -> sortedNormals[i] = v);
 
-        // this is the most clear, structured way, maybe not the most efficient (yet this is initialization)
         List<PosVector> vertexList = new ArrayList<>();
         Collections.addAll(vertexList, sortedVertices);
-        List<DirVector> normalList = new ArrayList<>();
-        Collections.addAll(normalList, sortedNormals);
 
-        return new ShapeFromMesh(vertexList, normalList, faces);
+        return new ShapeFromMesh(vertexList, normals, faces);
     }
 
     /**
@@ -282,14 +278,12 @@ public class CustomShape {
 
         PosVector[] sortedVertices = new PosVector[points.size()];
         points.forEach((v, i) -> sortedVertices[i] = v);
-        DirVector[] sortedNormals = new DirVector[normals.size()];
-        normals.forEach((v, i) -> sortedNormals[i] = v);
 
         for (PosVector vec : sortedVertices) {
             writer.println(String.format(Locale.US,"v %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
         }
 
-        for (DirVector vec : sortedNormals) {
+        for (DirVector vec : normals) {
             writer.println(String.format(Locale.US,"vn %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
         }
 
@@ -303,7 +297,7 @@ public class CustomShape {
 
         writer.close();
 
-        Toolbox.print("Successfully created obj file: " + writer.toString());
+        Toolbox.print("Successfully created obj file: " + filename);
     }
 
     private static String readVertex(Pair<Integer, Integer> vertex) {

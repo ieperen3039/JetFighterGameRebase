@@ -101,7 +101,7 @@ public abstract class Plane {
 
         if (hitDir.length() > direction.length()) return null;
 
-        if (!isWithin(linePosition.add(hitDir, relativePosition))) return null;
+        if (!this.encapsules(linePosition.add(hitDir, relativePosition))) return null;
 
         return new Collision(hitDir.length() / direction.length(), normal);
     }
@@ -132,21 +132,21 @@ public abstract class Plane {
     }
 
     /**
-     * determines whether the given point lies on or within the boundary given a point that lies on
+     * determines whether the given point lies on or within the boundary, given that it lies on
      * the infinite extension of this plane
      *
      * @param hitPos a point on this plane
      * @return true if the point is not outside the boundary of this plane
-     * @pre hitPos lies on the plane between the points in {@code boundary}
+     * @precondition hitPos lies on the plane of the points of {@code boundary}
      */
-    protected abstract boolean isWithin(PosVector hitPos);
+    protected abstract boolean encapsules(PosVector hitPos);
 
     /**
      * calculates the new {@param direction}, relative to {@param linePosition}
      * where the given line will hit this plane if this plane was infinite
      *
      * @return Vector D such that (linePosition.add(D)) will give the position of the hitPoint.
-     * Lies in the extend, but not necessarily on the plane
+     * D lies in the extend, but not necessarily on the plane
      */
     protected DirVector calculateMaxDirection(PosVector linePosition, DirVector direction) {
         // random point is chosen
@@ -182,6 +182,20 @@ public abstract class Plane {
         }
         s.append("}");
         return s.toString();
+    }
+
+    /**
+     * given a ray, determines whether it intersects this plane.
+     * @param position the starting point of the line
+     * @param direction the direction vector of the line
+     * @return true if this plane intersects with the line extended toward infinity
+     */
+    public boolean intersectWithRay(PosVector position, DirVector direction){
+        DirVector hitDir = calculateMaxDirection(position, direction);
+        if (hitDir.dot(direction) < 0) return false;
+
+        PosVector hitPoint = position.add(hitDir, new PosVector());
+        return this.encapsules(hitPoint);
     }
 }
 
