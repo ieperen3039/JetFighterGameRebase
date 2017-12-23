@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
+import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import org.joml.Vector2i;
 
@@ -33,11 +34,11 @@ public class MenuToggle extends MenuClickable {
     }
 
     public MenuToggle(String text, int x, int y, Consumer<Boolean> handler) {
-        this(text, x, y, BUTTON_WIDTH, BUTTON_HEIGHT, new String[]{"enabled","disabled"}, handler);
+        this(text, x, y, MenuStyleSettings.BUTTON_WIDTH, MenuStyleSettings.BUTTON_HEIGHT, new String[]{"enabled","disabled"}, handler);
     }
 
     public MenuToggle(String text, int x, int y, String[] names, Consumer<Boolean> handler) {
-        this(text, x, y, BUTTON_WIDTH, BUTTON_HEIGHT, names, handler);
+        this(text, x, y, MenuStyleSettings.BUTTON_WIDTH, MenuStyleSettings.BUTTON_HEIGHT, names, handler);
     }
 
     public MenuToggle(String text, Vector2i pos, String[] names, Consumer<Boolean> handler) {
@@ -54,11 +55,11 @@ public class MenuToggle extends MenuClickable {
 
     @Override
     public void draw(ScreenOverlay.Painter hud) {
-        hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(MENU_FILL_COLOR);
-        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
-        hud.text(x + width /2, (int) (y + TEXT_SIZE_LARGE + 10), TEXT_SIZE_LARGE, ScreenOverlay.Font.MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$s", text, names[value ? 0 : 1]), TEXT_COLOR);
+        hud.roundedRectangle(x, y, width, height, MenuStyleSettings.INDENT);
+        hud.setFillColor(MenuStyleSettings.FILL_COLOR);
+        hud.setStrokeColor(MenuStyleSettings.STROKE_COLOR);
+        hud.text(x + width /2, (int) (y + MenuStyleSettings.TEXT_SIZE_LARGE + 10), MenuStyleSettings.TEXT_SIZE_LARGE, ScreenOverlay.Font.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
+                String.format("%1$s: %2$s", text, names[value ? 0 : 1]));
     }
 
     @Override

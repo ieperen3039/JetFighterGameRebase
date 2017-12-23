@@ -100,14 +100,15 @@ public abstract class GameEntity implements MovingEntity {
     protected abstract void updateShape(float deltaTime);
 
     /**
+     * translates the given relative vector of this object to the true direction in world-space.
+     * This method also considers the scaling of the vector
      * @param relative a vector relative to this object
-     * @param ms a frame of reference, the resulting vector will be in the space of the instantiation of this matrix
      * @return a vector in {@code sm}'s frame of reference
      */
-    public DirVector relativeToWorldSpace(DirVector relative, MatrixStack ms) {
+    public DirVector relativeDirection(DirVector relative) {
         final DirVector[] axis = new DirVector[1];
-
-        toLocalSpace(ms, () -> axis[0] = ms.getDirection(relative), position, rotation);
+        ShadowMatrix sm = new ShadowMatrix();
+        toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), position, rotation);
         return axis[0];
     }
 

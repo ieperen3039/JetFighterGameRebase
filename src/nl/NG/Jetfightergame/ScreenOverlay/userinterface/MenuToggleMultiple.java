@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
+import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 
 import java.util.function.Consumer;
@@ -24,7 +25,7 @@ public class MenuToggleMultiple extends MenuClickable {
     }
 
     public MenuToggleMultiple(String text, String[] names, Consumer<Integer> handler) {
-        this(text, BUTTON_WIDTH, BUTTON_HEIGHT, names, handler, 0);
+        this(text, MenuStyleSettings.BUTTON_WIDTH, MenuStyleSettings.BUTTON_HEIGHT, names, handler, 0);
     }
 
     public void setValue(int value) {
@@ -33,11 +34,11 @@ public class MenuToggleMultiple extends MenuClickable {
 
     @Override
     public void draw(ScreenOverlay.Painter hud) {
-        hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(MENU_FILL_COLOR);
-        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
-        hud.text(x + width /2, (int) (y + TEXT_SIZE_LARGE + 10), TEXT_SIZE_LARGE, ScreenOverlay.Font.MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$s", text, names[value]), TEXT_COLOR);
+        hud.roundedRectangle(x, y, width, height, MenuStyleSettings.INDENT);
+        hud.setFillColor(MenuStyleSettings.FILL_COLOR);
+        hud.setStrokeColor(MenuStyleSettings.STROKE_COLOR);
+        hud.text(x + width /2, (int) (y + MenuStyleSettings.TEXT_SIZE_LARGE + 10), MenuStyleSettings.TEXT_SIZE_LARGE, ScreenOverlay.Font.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
+                String.format("%1$s: %2$s", text, names[value]));
     }
 
     @Override

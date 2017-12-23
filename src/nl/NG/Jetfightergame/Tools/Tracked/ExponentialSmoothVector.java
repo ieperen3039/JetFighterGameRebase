@@ -32,6 +32,11 @@ public class ExponentialSmoothVector<V extends Vector> extends TrackedVector<V> 
         float deceleration = (float) pow(preservedFraction, deltaTime);
 
         final DirVector movement = new DirVector();
-        addUpdate(current().to(target, movement).scale(1 - deceleration, movement), target);
+
+        current()
+                .to(target, movement)
+                .scale(1 - deceleration, movement);
+
+        addUpdate(movement, target);
     }
 }

@@ -2,9 +2,8 @@ package nl.NG.Jetfightergame.EntityDefinitions;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Shaders.Material;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -62,12 +61,65 @@ public abstract class AbstractJet extends GameEntity {
         this.rollAcc = rollAcc;
         this.liftFactor = liftFactor;
         this.rotationReductionFactor = rotationReductionFactor;
-        forward = relativeToWorldSpace(DirVector.xVector(), new ShadowMatrix()).toDirVector();
+        forward = new DirVector();
+        relativeDirection(DirVector.xVector()).normalize(forward);
     }
 
     @Override
     public void applyPhysics(float deltaTime, DirVector netForce) {
-        final float speed = velocity.length();
+
+        if (Settings.GYRO_PHYSICS_MODEL){
+            gyroPhysics(deltaTime, netForce, velocity);
+        } else {
+            forwardVelocityPhysics(deltaTime, velocity.length(), netForce.dot(forward));
+        }
+    }
+
+    /**
+     * A simple model where the rotation of the plane determins the movement of it.
+     * @param deltaTime timestamp in seconds
+     * @param speed movement of this plane (m/s)
+     * @param forwardForce
+     */
+    private void forwardVelocityPhysics(float deltaTime, float speed, float forwardForce) {
+        // thrust forces
+        float throttle = input.throttle();
+        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
+        forwardForce += thrust;
+
+        // exponential reduction of speed (before rotational forces, as this is the result of momentum)
+        float preserveFraction = (float) (1 - StrictMath.pow(rotationReductionFactor, deltaTime));
+        yawSpeed *= preserveFraction;
+        pitchSpeed *= preserveFraction;
+        rollSpeed *= preserveFraction;
+
+        // rotational forces
+        float instYawAcc = (float) StrictMath.pow(yawAcc, deltaTime);
+        float instPitchAcc = (float) StrictMath.pow(pitchAcc, deltaTime);
+        float instRollAcc = (float) StrictMath.pow(rollAcc, deltaTime);
+        yawSpeed += input.yaw() * instYawAcc;
+        pitchSpeed += input.pitch() * instPitchAcc;
+        rollSpeed += input.roll() * instRollAcc;
+
+        // air-resistance
+        speed -= (speed * speed * airResistCoeff) * deltaTime;
+
+        // F = m * a ; a = dv/dt
+        // a = F/m ; dv = a * dt = F * (dt/m)
+        speed += forwardForce * (deltaTime/mass);
+
+        // collect extrapolated variables
+        position.add(forward.reducedTo(speed * deltaTime, new DirVector()), extraPosition);
+        rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
+    }
+
+    /**
+     * physics model where input absolutely determines the plane rotation, and force is applied directional
+     * @param deltaTime timestamp in seconds
+     * @param netForce vector of force in N
+     * @param velocity movement vector with length in (m/s)
+     */
+    private void gyroPhysics(float deltaTime, DirVector netForce, DirVector velocity) {
 
         // thrust forces
         float throttle = input.throttle();
@@ -90,7 +142,9 @@ public abstract class AbstractJet extends GameEntity {
 
         // air-resistance
         DirVector airResistance = new DirVector();
+        float speed = velocity.length();
         velocity.reducedTo(speed * speed * airResistCoeff * -1, airResistance);
+        velocity.add(airResistance.scale(deltaTime, airResistance));
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
@@ -100,14 +154,12 @@ public abstract class AbstractJet extends GameEntity {
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
-
-        Toolbox.print(forward, position);
     }
 
     public void update(float currentTime, float deltaTime) {
         super.update(currentTime, deltaTime);
         // obtain current x-axis in worldspace
-        forward = relativeToWorldSpace(DirVector.xVector(), new ShadowMatrix());
+        relativeDirection(DirVector.xVector()).normalize(forward);
     }
 
     @Override

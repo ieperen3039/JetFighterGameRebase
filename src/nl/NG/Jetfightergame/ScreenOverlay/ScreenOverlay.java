@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Resource;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector2i;
-import org.joml.Vector4f;
 import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
 
@@ -35,12 +35,14 @@ public class ScreenOverlay {
     private Collection<Consumer<Painter>> menuDrawBuffer;
     private Collection<Consumer<Painter>> hudDrawBuffer;
     private final BooleanSupplier menuMode;
+    private Consumer<Painter> menuInitialisation;
+    private Consumer<Painter> hudInitialisation;
 
     public enum Font {
-        REGULAR("res/fonts/Orbitron-Regular.ttf"),
-        MEDIUM("res/fonts/Orbitron-Medium.ttf"),
-        BOLD("res/fonts/Orbitron-Bold.ttf"),
-        BLACK("res/fonts/Orbitron-Black.ttf");
+        ORBITRON_REGULAR("res/fonts/Orbitron-Regular.ttf"),
+        ORBITRON_MEDIUM("res/fonts/Orbitron-Medium.ttf"),
+        ORBITRON_BOLD("res/fonts/Orbitron-Bold.ttf"),
+        ORBITRON_BLACK("res/fonts/Orbitron-Black.ttf");
 
         public final String name;
         public final String source;
@@ -54,11 +56,10 @@ public class ScreenOverlay {
     /**
      * Initialize the Hud.
      *
-     * @param window The window on which the hud is drawn.
      * @param menuMode
      * @throws IOException If an error occures during the setup of the Hud.
      */
-    public ScreenOverlay(GLFWWindow window, BooleanSupplier menuMode) throws IOException {
+    public ScreenOverlay(BooleanSupplier menuMode) throws IOException {
         this.menuMode = menuMode;
         vg = GLFWWindow.antialiasing() ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) :
                 nvgCreate(NVG_STENCIL_STROKES);
@@ -104,23 +105,13 @@ public class ScreenOverlay {
     }
 
     /** clear the menu drawBuffer */
-    public void removeMenuItem() {
+    public void removeMenuItems() {
         menuDrawBuffer.clear();
     }
-    /**
-     * Remove an existing drawObjects handler from the Hud.
-     *
-     * @param render The handler to remove.
-     */
-    public void removeHudItem(Consumer<Painter> render) {
-        hudDrawBuffer.remove(render);
-    }
 
-    /** clear the hud drawBuffer */
-    public void removeHudItem(){
-        hudDrawBuffer.clear();
+    public void setMenuInitialisation(Consumer<Painter> init){
+        menuInitialisation = init;
     }
-
 
     /**
      * Create something for the hud to be drawn. Package the NanoVG drawObjects commands inside a
@@ -132,7 +123,28 @@ public class ScreenOverlay {
         hudDrawBuffer.add(render);
     }
 
+    /**
+     * Remove an existing drawObjects handler from the Hud.
+     *
+     * @param render The handler to remove.
+     */
+    public void removeHudItem(Consumer<Painter> render) {
+        hudDrawBuffer.remove(render);
+    }
+
+    /** clear the hud drawBuffer */
+    public void removeHudItems(){
+        hudDrawBuffer.clear();
+    }
+
+    public void setHudInitialisation(Consumer<Painter> init){
+        hudInitialisation = init;
+    }
+
     public class Painter {
+
+        Color4f textColor = Color4f.BLACK;
+
         /**
          * Get an instance of NVGColor with the correct values. All color values are floating point numbers supposed to be
          * between 0f and 1f.
@@ -155,9 +167,10 @@ public class ScreenOverlay {
         /**
          * {@link #rgba(float, float, float, float)}
          */
-        public NVGColor rgba(Vector4f color) {
-            return rgba(color.x, color.y, color.z, color.w);
+        private NVGColor rgba(Color4f color) {
+            return rgba(color.red, color.green, color.blue, color.alpha);
         }
+
 
         public void rectangle(int x, int y, int width, int height) {
             nvgBeginPath(vg);
@@ -199,31 +212,34 @@ public class ScreenOverlay {
             }
         }
 
-        public void text(int x, int y, float size, Font font, int align, String text, Vector4f color) {
+        public void text(int x, int y, float size, Font font, int align, String text) {
             nvgFontSize(vg, size);
             nvgFontFace(vg, font.name);
             nvgTextAlign(vg, align);
-            nvgFillColor(vg, rgba(color));
+            nvgFillColor(vg, rgba(textColor));
             nvgText(vg, x, y, text);
         }
 
-        public void fill(float red, float green, float blue, float alpha) {
+        public void setFillColor(float red, float green, float blue, float alpha) {
             nvgFillColor(vg, rgba(red, green, blue, alpha));
             nvgFill(vg);
         }
 
-        public void fill(Vector4f color) {
-            fill(color.x, color.y, color.z, color.w);
+        public void setFillColor(Color4f color){
+            setFillColor(color.red, color.green, color.blue, color.alpha);
         }
 
-        public void stroke(int width, float red, float green, float blue, float alpha) {
-            nvgStrokeWidth(vg, width);
+        public void setStrokeColor(float red, float green, float blue, float alpha) {
             nvgStrokeColor(vg, rgba(red, green, blue, alpha));
             nvgStroke(vg);
         }
 
-        public void stroke(int width, Vector4f color) {
-            stroke(width, color.x, color.y, color.z, color.w);
+        public void setStrokeWidth(int width) {
+            nvgStrokeWidth(vg, width);
+        }
+
+        public void setStrokeColor(Color4f color) {
+            setStrokeColor(color.red, color.green, color.blue, color.alpha);
         }
 
         public void image(String filename, int x, int y, int width, int height, float alpha) throws IOException {
@@ -249,8 +265,18 @@ public class ScreenOverlay {
             imageBuffer.put(filename, img);
             return img;
         }
+
+        public void setTextColor(Color4f textColor) {
+            this.textColor = textColor;
+        }
     }
 
+    /**
+     * draws the buffered objects on the gl context.
+     * If menumode evaluates to true, draws the menu buttons, otherwise it draws the hud.
+     * @param windowWidth
+     * @param windowHeight
+     */
     public void draw(int windowWidth, int windowHeight) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
@@ -258,8 +284,10 @@ public class ScreenOverlay {
         Painter vanGogh = new Painter();
         // Draw the right drawhandlers
         if (menuMode.getAsBoolean()) {
+            menuInitialisation.accept(vanGogh);
             menuDrawBuffer.forEach(m -> m.accept(vanGogh));
         } else {
+            hudInitialisation.accept(vanGogh);
             hudDrawBuffer.forEach(m -> m.accept(vanGogh));
         }
 

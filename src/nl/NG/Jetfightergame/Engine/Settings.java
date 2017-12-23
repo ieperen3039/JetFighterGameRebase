@@ -19,6 +19,7 @@ public class Settings {
     public static final boolean DEBUG = true;
     public static final boolean UNIT_COLLISION = true;
     public static boolean RECURSIVE_COLLISION = true;
+    public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings
     public static final float MAX_VOLUME = 6f;
@@ -31,8 +32,8 @@ public class Settings {
     // controller settings
     public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
     public static int THROTTLE_DOWN = GLFW.GLFW_KEY_S;
-    public static int YAW_UP = GLFW.GLFW_KEY_D;
-    public static int YAW_DOWN = GLFW.GLFW_KEY_A;
+    public static int YAW_UP = GLFW.GLFW_KEY_A;
+    public static int YAW_DOWN = GLFW.GLFW_KEY_D;
     // these modifiers are also used to inverse direction
     public static float PITCH_MODIFIER = -0.05f;
     public static float ROLL_MODIFIER = 0.05f;

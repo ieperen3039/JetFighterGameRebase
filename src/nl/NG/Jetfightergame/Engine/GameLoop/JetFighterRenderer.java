@@ -52,7 +52,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
         ambientLight = Color4f.LIGHT_GREY;
-        this.screenOverlay = new ScreenOverlay(window, menuMode);
+        this.screenOverlay = new ScreenOverlay(menuMode);
 
         new JetFighterMenu(screenOverlay, musicProvider, engine::setPlayMode, engine::exitGame, input);
     }

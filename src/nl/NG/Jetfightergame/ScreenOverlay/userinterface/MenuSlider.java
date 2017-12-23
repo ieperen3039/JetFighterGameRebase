@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
+import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import org.joml.Vector4f;
 
 import java.util.function.Consumer;
 
@@ -12,7 +12,6 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
  */
 public class MenuSlider extends MenuClickable {
 
-    public static final Vector4f COLOR_DARK = MENU_FILL_COLOR.mul(0.6f);
     private String text;
     private float value;
     private Consumer<Float> handler;
@@ -25,19 +24,19 @@ public class MenuSlider extends MenuClickable {
     }
 
     public MenuSlider(String text, Consumer<Float> handler) {
-        this(text, BUTTON_WIDTH, BUTTON_HEIGHT, handler);
+        this(text, MenuStyleSettings.BUTTON_WIDTH, MenuStyleSettings.BUTTON_HEIGHT, handler);
     }
 
     @Override
     public void draw(ScreenOverlay.Painter hud) {
-        hud.roundedRectangle(x, y, width, height, INDENT);
-        hud.fill(MENU_FILL_COLOR);
-        hud.stroke(MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
-        hud.roundedRectangle(x + MENU_STROKE_WIDTH/2, y + MENU_STROKE_WIDTH/2,
-                (int) ((width - MENU_STROKE_WIDTH) * Math.max(value, 0.05f)),height - MENU_STROKE_WIDTH, INDENT);
-        hud.fill(COLOR_DARK);
-        hud.text(x + width /2, (int) (y + TEXT_SIZE_LARGE + 10), TEXT_SIZE_LARGE, ScreenOverlay.Font.MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)), TEXT_COLOR);
+        hud.roundedRectangle(x, y, width, height, MenuStyleSettings.INDENT);
+        hud.setFillColor(MenuStyleSettings.FILL_COLOR);
+        hud.setStrokeColor(MenuStyleSettings.STROKE_COLOR);
+        hud.roundedRectangle(x + MenuStyleSettings.STROKE_WIDTH /2, y + MenuStyleSettings.STROKE_WIDTH /2,
+                (int) ((width - MenuStyleSettings.STROKE_WIDTH) * Math.max(value, 0.05f)),height - MenuStyleSettings.STROKE_WIDTH, MenuStyleSettings.INDENT);
+        hud.setFillColor(MenuStyleSettings.COLOR_DARK);
+        hud.text(x + width /2, (int) (y + MenuStyleSettings.TEXT_SIZE_LARGE + 10), MenuStyleSettings.TEXT_SIZE_LARGE, ScreenOverlay.Font.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
+                String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)));
     }
 
     @Override

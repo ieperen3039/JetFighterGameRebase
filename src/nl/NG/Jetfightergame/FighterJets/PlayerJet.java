@@ -24,10 +24,10 @@ public class PlayerJet extends AbstractJet {
     public static final float BRAKE_POWER = 500f;
     public static final float MASS = 1000f;
     public static final Material MATERIAL = Material.GOLD;
-    public static final float YAW_POWER = (float) toRadians(30);
+    public static final float YAW_POWER = (float) toRadians(10);
     public static final float PITCH_POWER = (float) toRadians(90);
-    public static final float ROLL_POWER = (float) toRadians(90);
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
+    public static final float ROLL_POWER = (float) toRadians(140);
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.01f;
 
     private Shape shape;
 
