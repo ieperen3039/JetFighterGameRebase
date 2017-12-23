@@ -20,6 +20,6 @@ public class UIText extends UIElement {
 
     @Override
     public void draw(ScreenOverlay.Painter hud) {
-        hud.text(x, y, 30, ScreenOverlay.Font.ORBITRON_MEDIUM, align, supplier.get(), new Vector4f(1f));
+        hud.text(x, y, 30, ScreenOverlay.Font.ORBITRON_MEDIUM, align, new Vector4f(1f), supplier.get());
     }
 }

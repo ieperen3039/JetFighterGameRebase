@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Resource;
-import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector2i;
+import org.joml.Vector4f;
 import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
 
@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
+import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.*;
 import static org.lwjgl.nanovg.NanoVG.*;
 import static org.lwjgl.nanovg.NanoVGGL3.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -29,14 +30,14 @@ public class ScreenOverlay {
     private long vg;
     private NVGColor color;
     private NVGPaint paint;
-    private ByteBuffer[] fontBuffer;
+
+    /** fontbuffer MUST be a field */
+    private final ByteBuffer[] fontBuffer;
     private Map<String, Integer> imageBuffer;
 
     private Collection<Consumer<Painter>> menuDrawBuffer;
     private Collection<Consumer<Painter>> hudDrawBuffer;
     private final BooleanSupplier menuMode;
-    private Consumer<Painter> menuInitialisation;
-    private Consumer<Painter> hudInitialisation;
 
     public enum Font {
         ORBITRON_REGULAR("res/fonts/Orbitron-Regular.ttf"),
@@ -68,13 +69,13 @@ public class ScreenOverlay {
         }
 
         fontBuffer = new ByteBuffer[Font.values().length];
-        int i = 0;
-        for (Font font : Font.values()) {
-            fontBuffer[i] = Resource.toByteBuffer(font.source, 96 * 1024);
-            if (nvgCreateFontMem(vg, font.name, fontBuffer[i], 1) == -1) {
-                throw new IOException("Could not create font " + font.name);
+        Font[] fonts = Font.values();
+
+        for (int i = 0; i < fonts.length; i++) {
+            fontBuffer[i] = Resource.toByteBuffer(fonts[i].source, 96 * 1024);
+            if (nvgCreateFontMem(vg, fonts[i].name, fontBuffer[i], 1) == -1) {
+                throw new IOException("Could not create font " + fonts[i].name);
             }
-            i++;
         }
 
         imageBuffer = new HashMap<>();
@@ -105,13 +106,23 @@ public class ScreenOverlay {
     }
 
     /** clear the menu drawBuffer */
-    public void removeMenuItems() {
+    public void removeMenuItem() {
         menuDrawBuffer.clear();
     }
-
-    public void setMenuInitialisation(Consumer<Painter> init){
-        menuInitialisation = init;
+    /**
+     * Remove an existing drawObjects handler from the Hud.
+     *
+     * @param render The handler to remove.
+     */
+    public void removeHudItem(Consumer<Painter> render) {
+        hudDrawBuffer.remove(render);
     }
+
+    /** clear the hud drawBuffer */
+    public void removeHudItem(){
+        hudDrawBuffer.clear();
+    }
+
 
     /**
      * Create something for the hud to be drawn. Package the NanoVG drawObjects commands inside a
@@ -123,28 +134,7 @@ public class ScreenOverlay {
         hudDrawBuffer.add(render);
     }
 
-    /**
-     * Remove an existing drawObjects handler from the Hud.
-     *
-     * @param render The handler to remove.
-     */
-    public void removeHudItem(Consumer<Painter> render) {
-        hudDrawBuffer.remove(render);
-    }
-
-    /** clear the hud drawBuffer */
-    public void removeHudItems(){
-        hudDrawBuffer.clear();
-    }
-
-    public void setHudInitialisation(Consumer<Painter> init){
-        hudInitialisation = init;
-    }
-
     public class Painter {
-
-        Color4f textColor = Color4f.BLACK;
-
         /**
          * Get an instance of NVGColor with the correct values. All color values are floating point numbers supposed to be
          * between 0f and 1f.
@@ -167,22 +157,32 @@ public class ScreenOverlay {
         /**
          * {@link #rgba(float, float, float, float)}
          */
-        private NVGColor rgba(Color4f color) {
-            return rgba(color.red, color.green, color.blue, color.alpha);
+        private NVGColor rgba(Vector4f color) {
+            return rgba(color.x, color.y, color.z, color.w);
         }
 
-
         public void rectangle(int x, int y, int width, int height) {
+            rectangle(x, y, width, height, MENU_FILL_COLOR, MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
+        }
+
+        public void rectangle(int x, int y, int width, int height, Vector4f fillColor, int strokeWidth, Vector4f strokeColor) {
             nvgBeginPath(vg);
             nvgRect(vg, x, y, width, height);
+
+            fill(fillColor);
+            stroke(strokeWidth, strokeColor);
         }
 
         public void roundedRectangle(int x, int y, int width, int height, int indent) {
+            roundedRectangle(x, y, width, height, indent, MENU_FILL_COLOR, MENU_STROKE_COLOR, MENU_STROKE_WIDTH);
+        }
+
+        public void roundedRectangle(int x, int y, int width, int height, int indent, Vector4f fillColor, Vector4f strokeColor, int strokeWidth) {
             int xMax = x + width;
             int yMax = y + height;
 
-
             polygon(
+                    fillColor, strokeColor, strokeWidth,
                     new Vector2i(x + indent, y),
                     new Vector2i(xMax - indent, y),
                     new Vector2i(xMax, y + indent),
@@ -196,11 +196,22 @@ public class ScreenOverlay {
         }
 
         public void circle(int x, int y, int radius) {
+            circle(x, y, radius, MENU_FILL_COLOR, MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
+        }
+
+        public void circle(int x, int y, int radius, Vector4f fillColor, int strokeWidth, Vector4f strokeColor) {
             nvgBeginPath(vg);
             nvgCircle(vg, x, y, radius);
+
+            fill(fillColor);
+            stroke(strokeWidth, strokeColor);
         }
 
         public void polygon(Vector2i... points) {
+            polygon(MENU_FILL_COLOR, MENU_STROKE_COLOR, MENU_STROKE_WIDTH, points);
+        }
+
+        public void polygon(Vector4f fillColor, Vector4f strokeColor, int strokeWidth, Vector2i... points) {
             if (points.length == 0) {
                 throw new IllegalArgumentException("Must pass at least 2 points");
             }
@@ -210,36 +221,36 @@ public class ScreenOverlay {
             for (Vector2i point : points) {
                 nvgLineTo(vg, point.x, point.y);
             }
+
+            fill(fillColor);
+            stroke(strokeWidth, strokeColor);
         }
 
-        public void text(int x, int y, float size, Font font, int align, String text) {
+        public void text(int x, int y, float size, Font font, int align, Vector4f color, String text) {
             nvgFontSize(vg, size);
             nvgFontFace(vg, font.name);
             nvgTextAlign(vg, align);
-            nvgFillColor(vg, rgba(textColor));
+            nvgFillColor(vg, rgba(color));
             nvgText(vg, x, y, text);
         }
 
-        public void setFillColor(float red, float green, float blue, float alpha) {
+        private void fill(float red, float green, float blue, float alpha) {
             nvgFillColor(vg, rgba(red, green, blue, alpha));
             nvgFill(vg);
         }
 
-        public void setFillColor(Color4f color){
-            setFillColor(color.red, color.green, color.blue, color.alpha);
+        private void fill(Vector4f color) {
+            fill(color.x, color.y, color.z, color.w);
         }
 
-        public void setStrokeColor(float red, float green, float blue, float alpha) {
+        private void stroke(int width, float red, float green, float blue, float alpha) {
+            nvgStrokeWidth(vg, width);
             nvgStrokeColor(vg, rgba(red, green, blue, alpha));
             nvgStroke(vg);
         }
 
-        public void setStrokeWidth(int width) {
-            nvgStrokeWidth(vg, width);
-        }
-
-        public void setStrokeColor(Color4f color) {
-            setStrokeColor(color.red, color.green, color.blue, color.alpha);
+        private void stroke(int width, Vector4f color) {
+            stroke(width, color.x, color.y, color.z, color.w);
         }
 
         public void image(String filename, int x, int y, int width, int height, float alpha) throws IOException {
@@ -265,18 +276,8 @@ public class ScreenOverlay {
             imageBuffer.put(filename, img);
             return img;
         }
-
-        public void setTextColor(Color4f textColor) {
-            this.textColor = textColor;
-        }
     }
 
-    /**
-     * draws the buffered objects on the gl context.
-     * If menumode evaluates to true, draws the menu buttons, otherwise it draws the hud.
-     * @param windowWidth
-     * @param windowHeight
-     */
     public void draw(int windowWidth, int windowHeight) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
@@ -284,10 +285,8 @@ public class ScreenOverlay {
         Painter vanGogh = new Painter();
         // Draw the right drawhandlers
         if (menuMode.getAsBoolean()) {
-            menuInitialisation.accept(vanGogh);
             menuDrawBuffer.forEach(m -> m.accept(vanGogh));
         } else {
-            hudInitialisation.accept(vanGogh);
             hudDrawBuffer.forEach(m -> m.accept(vanGogh));
         }
 

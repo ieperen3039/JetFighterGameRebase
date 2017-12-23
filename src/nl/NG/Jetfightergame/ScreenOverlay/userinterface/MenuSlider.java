@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 
 import java.util.function.Consumer;
 
+import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.*;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 
 /**
@@ -29,14 +30,12 @@ public class MenuSlider extends MenuClickable {
 
     @Override
     public void draw(ScreenOverlay.Painter hud) {
-        hud.roundedRectangle(x, y, width, height, MenuStyleSettings.INDENT);
-        hud.setFillColor(MenuStyleSettings.FILL_COLOR);
-        hud.setStrokeColor(MenuStyleSettings.STROKE_COLOR);
-        hud.roundedRectangle(x + MenuStyleSettings.STROKE_WIDTH /2, y + MenuStyleSettings.STROKE_WIDTH /2,
-                (int) ((width - MenuStyleSettings.STROKE_WIDTH) * Math.max(value, 0.05f)),height - MenuStyleSettings.STROKE_WIDTH, MenuStyleSettings.INDENT);
-        hud.setFillColor(MenuStyleSettings.COLOR_DARK);
-        hud.text(x + width /2, (int) (y + MenuStyleSettings.TEXT_SIZE_LARGE + 10), MenuStyleSettings.TEXT_SIZE_LARGE, ScreenOverlay.Font.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)));
+        hud.roundedRectangle(x, y, width, height, INDENT);
+        hud.roundedRectangle(x + MENU_STROKE_WIDTH/2, y + MENU_STROKE_WIDTH/2,
+                (int) ((width - MENU_STROKE_WIDTH) * Math.max(value, 0.05f)),height - MENU_STROKE_WIDTH, INDENT,
+                COLOR_DARK, MENU_STROKE_COLOR, MENU_STROKE_WIDTH);
+        hud.text(x + width /2, y + MenuStyleSettings.TEXT_SIZE_LARGE + 10, MenuStyleSettings.TEXT_SIZE_LARGE, ScreenOverlay.Font.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
+                MenuStyleSettings.TEXT_COLOR, String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)));
     }
 
     @Override

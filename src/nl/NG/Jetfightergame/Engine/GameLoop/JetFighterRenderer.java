@@ -38,7 +38,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GameState gameState;
 
     public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
-                              Camera camera, MusicProvider musicProvider, BooleanSupplier menuMode, ControllerManager input) throws IOException, ShaderException {
+                              Camera camera, MusicProvider musicProvider, ControllerManager input, BooleanSupplier menuMode) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false);
 
         this.gameState = gameState;

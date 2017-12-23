@@ -6,6 +6,9 @@ import org.joml.Vector2i;
 
 import java.util.function.Consumer;
 
+import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.TEXT_COLOR;
+import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.TEXT_SIZE_LARGE;
+import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.ORBITRON_MEDIUM;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 
 /**
@@ -56,10 +59,9 @@ public class MenuToggle extends MenuClickable {
     @Override
     public void draw(ScreenOverlay.Painter hud) {
         hud.roundedRectangle(x, y, width, height, MenuStyleSettings.INDENT);
-        hud.setFillColor(MenuStyleSettings.FILL_COLOR);
-        hud.setStrokeColor(MenuStyleSettings.STROKE_COLOR);
-        hud.text(x + width /2, (int) (y + MenuStyleSettings.TEXT_SIZE_LARGE + 10), MenuStyleSettings.TEXT_SIZE_LARGE, ScreenOverlay.Font.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
-                String.format("%1$s: %2$s", text, names[value ? 0 : 1]));
+        hud.text(x + width /2, y + TEXT_SIZE_LARGE + 10,
+                TEXT_SIZE_LARGE, ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
+                TEXT_COLOR, String.format("%1$s: %2$s", text, names[value ? 0 : 1]));
     }
 
     @Override

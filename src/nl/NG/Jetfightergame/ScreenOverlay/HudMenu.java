@@ -7,7 +7,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerLeft;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 /**
  * @author Jorren Hendriks
@@ -17,16 +16,9 @@ import java.util.function.Consumer;
 public abstract class HudMenu implements TrackerClickListener {
     private final ScreenOverlay screenOverlay;
     private UIElement[] activeElements;
-    private Consumer<ScreenOverlay.Painter> init;
 
     public HudMenu(ScreenOverlay hud) {
         this.screenOverlay = hud;
-        init = (painter) -> {
-            painter.setStrokeWidth(MenuStyleSettings.STROKE_WIDTH);
-            painter.setStrokeColor(MenuStyleSettings.STROKE_COLOR);
-            painter.setFillColor(MenuStyleSettings.FILL_COLOR);
-            painter.setTextColor(MenuStyleSettings.TEXT_COLOR);
-        };
         MouseTracker.getInstance().addClickListener(this, false);
     }
 
@@ -38,8 +30,7 @@ public abstract class HudMenu implements TrackerClickListener {
         activeElements = newElements;
 
         // destroy the current entries of the hud
-        screenOverlay.removeMenuItems();
-        screenOverlay.setHudInitialisation(init);
+        screenOverlay.removeMenuItem();
 
         // correct positions of buttons
         MenuPositioner caret = new MenuPositionerLeft();
