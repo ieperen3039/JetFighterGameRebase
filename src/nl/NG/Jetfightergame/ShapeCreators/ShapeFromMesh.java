@@ -119,7 +119,7 @@ public class ShapeFromMesh implements Shape {
         fetchDir(normals, face.A.right)
                 .add(fetchDir(normals, face.B.right), normal)
                 .add(fetchDir(normals, face.C.right), normal);
-        if (normal.isNotScalable()) normal = Plane.getNormalVector(alpha, beta, gamma, PosVector.zeroVector());
+        if (!normal.isScalable()) normal = Plane.getNormalVector(alpha, beta, gamma, PosVector.zeroVector());
 
         return new Triangle(alpha, beta, gamma, normal);
     }

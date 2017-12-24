@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Camera.FollowingCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
 import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -31,7 +32,10 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
     }
 
     public void switchTo(CameraImpl camera){
-        switchTo(camera, getEye(), target, getUpVector());
+        final PosVector eye = getEye().isScalable() ? getEye() : new PosVector(5, 0, 0);
+        final DirVector up = getUpVector().isScalable() ? getUpVector() : DirVector.zVector();
+
+        switchTo(camera, eye, target, up);
     }
 
     /**
@@ -66,8 +70,8 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
     }
 
     @Override
-    public void updatePosition(float deltaTime) {
-        instance.updatePosition(deltaTime);
+    public void updatePosition(TrackedFloat timer) {
+        instance.updatePosition(timer);
     }
 
     @Override

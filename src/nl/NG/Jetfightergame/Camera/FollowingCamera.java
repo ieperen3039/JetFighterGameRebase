@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -12,7 +13,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 public class FollowingCamera implements Camera {
     private static final DirVector eyeRelative = new DirVector(-10, 0, 4);
     private static final DirVector focusRelative = eyeRelative.add(new DirVector(10, 0, 0), new DirVector());
-    private static final float CAMERA_ORIENT = 0.6f; // speed of camera orientation
+    private static final float CAMERA_ORIENT = 0.95f; // speed of camera orientation
 
     /**
      * The position of the camera.
@@ -45,7 +46,7 @@ public class FollowingCamera implements Camera {
     /**
      * @param relativePosition a position relative to target
      * @param target a target jet, where DirVector.X points forward
-     * @return the position translated to world-space
+     * @return a new vector with the position translated to world-space
      */
     private static PosVector jetPosition(DirVector relativePosition, GameEntity target){
         final DirVector relative = target.relativeDirection(relativePosition);
@@ -53,17 +54,21 @@ public class FollowingCamera implements Camera {
     }
 
     /**
-     * @param deltaTime the real time difference (not animation time difference)
+     * @param timer the animation time difference
      */
     @Override
-    public void updatePosition(float deltaTime) {
-        final DirVector targetUp = target.relativeDirection(DirVector.zVector());
-        final PosVector targetEye = jetPosition(eyeRelative, target);
-        final PosVector targetFocus = jetPosition(focusRelative, target);
+    public void updatePosition(TrackedFloat timer) {
+        final PosVector targetPosition = target.interpolatePosition(timer.current());
 
-        eye.updateFluent(targetEye, deltaTime);
-        focus.updateFluent(targetFocus, deltaTime);
-        up.updateFluent(targetUp, deltaTime);
+        final DirVector up = target.relativeDirection(DirVector.zVector());
+        final DirVector targetUp = up.normalized(up);
+
+        final PosVector targetEye = targetPosition.add(target.relativeDirection(eyeRelative), new PosVector());
+        final PosVector targetFocus = targetPosition.add(target.relativeDirection(focusRelative), new PosVector());
+
+        eye.updateFluent(targetEye, timer.difference());
+        focus.updateFluent(targetFocus, timer.difference());
+        this.up.updateFluent(targetUp, timer.difference());
     }
 
     @Override

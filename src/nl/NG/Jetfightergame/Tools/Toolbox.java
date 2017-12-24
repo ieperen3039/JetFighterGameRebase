@@ -59,7 +59,7 @@ public class Toolbox {
         }
         StringBuilder s = new StringBuilder(x[0].toString());
         for (int i = 1; i < x.length; i++) {
-            s.append(", ").append(x[i]);
+            s.append(" | ").append(x[i]);
         }
         return s.toString();
     }

@@ -67,6 +67,12 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public void applyPhysics(float deltaTime, DirVector netForce) {
+        // nothing to do when no time is passed
+        if (deltaTime == 0) {
+            extraRotation.set(rotation);
+            extraPosition.set(position);
+            return;
+        }
 
         if (Settings.GYRO_PHYSICS_MODEL){
             gyroPhysics(deltaTime, netForce, velocity);
@@ -100,9 +106,8 @@ public abstract class AbstractJet extends GameEntity {
         yawSpeed += input.yaw() * instYawAcc;
         pitchSpeed += input.pitch() * instPitchAcc;
         rollSpeed += input.roll() * instRollAcc;
-
         // air-resistance
-        speed -= (speed * speed * airResistCoeff) * deltaTime;
+        forwardForce -= (speed * speed * airResistCoeff) * deltaTime;
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)

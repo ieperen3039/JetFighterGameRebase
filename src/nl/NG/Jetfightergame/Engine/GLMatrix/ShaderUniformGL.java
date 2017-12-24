@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.*;
 
 import java.util.Stack;
@@ -138,6 +139,11 @@ public class ShaderUniformGL implements GL2 {
     @Override
     public void rotate(Quaternionf rotation) {
         modelMatrix.rotate(rotation);
+    }
+
+    @Override
+    public void translate(Vector v) {
+        modelMatrix.translate(v);
     }
 
     @Override

@@ -31,11 +31,6 @@ public abstract class Vector extends Vector3f{
     public Vector() {
     }
 
-    @Override
-    public Vector3f set(float x, float y, float z) {
-        return super.set(x, y, z);
-    }
-
     public static boolean almostZero(double number) {
         return (number + 2 * roundingError >= 0.0 && number - 2 * roundingError <= 0.0);
     }
@@ -83,11 +78,8 @@ public abstract class Vector extends Vector3f{
         );
     }
 
-    /**
-     * @return whether all coordinates are not NaN, and this is not a zero-vector
-     */
-    public boolean isNotScalable(){
-        return Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || (x == 0 && y == 0 && z == 0);
+    public boolean isScalable(){
+        return !(Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || (x == 0 && y == 0 && z == 0));
     }
 
     public float dot(Vector that) {

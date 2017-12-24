@@ -18,9 +18,9 @@ import java.util.concurrent.CountDownLatch;
 public abstract class AbstractGameLoop extends Thread {
 
     private final Extreme<Float> TPSMinimum = new Extreme<>(0f, false);
-    private final int targetTps;
     private final String loopName;
 
+    private int targetTps;
     private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
     private boolean shouldStop;
     private final boolean notifyDelay;
@@ -33,7 +33,7 @@ public abstract class AbstractGameLoop extends Thread {
 
     /**
      * invoked (targetTps) times per second
-     * @param deltaTime
+     * @param deltaTime real-time difference since last loop
      */
     protected abstract void update(float deltaTime) throws InterruptedException;
 
@@ -109,5 +109,9 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void resetTPSCounter(){
         TPSMinimum.reset();
+    }
+
+    public void setTPS(int TPS) {
+        this.targetTps = TPS;
     }
 }

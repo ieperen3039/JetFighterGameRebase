@@ -17,6 +17,7 @@ import nl.NG.Jetfightergame.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 
 import java.io.IOException;
 import java.util.function.BooleanSupplier;
@@ -64,7 +65,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
             GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
             Toolbox.checkGLError();
 
-            activeCamera.updatePosition(realDeltaTime);
+            // update camera based on
+            activeCamera.updatePosition(gameState.time.getRenderTime());
+
             initShader();
             Toolbox.checkGLError();
 
@@ -89,6 +92,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             // update window
             window.update();
+
+            final DirVector cameraDir = activeCamera.vectorToFocus();
+            Toolbox.print(cameraDir, cameraDir.normalized(new DirVector()), cameraDir.length());
 
             // update stop-condition
             if (window.shouldClose()) {

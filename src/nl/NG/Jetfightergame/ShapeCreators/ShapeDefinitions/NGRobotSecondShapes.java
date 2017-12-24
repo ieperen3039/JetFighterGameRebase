@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -132,11 +131,11 @@ public class NGRobotSecondShapes {
         frame.addPlaneToBezierStrip(B, noseStrip, true);
         frame.addPlaneToBezierStrip(B.mirrorY(new PosVector()), noseStrip, false);
 
-        try {
-            frame.writeOBJFile("head");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            frame.writeOBJFile("head");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         return frame.wrapUp();
     }
@@ -239,12 +238,6 @@ public class NGRobotSecondShapes {
         PosVector Back = new PosVector(1.5f, 0, 0);
 
         ear.addMirrorTriangle(Side, Up, Back);
-
-        try {
-            ear.writeOBJFile("ear");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         return ear.wrapUp();
     }

@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Camera;
 
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -11,7 +12,7 @@ public interface Camera {
 
     DirVector vectorToFocus();
 
-    void updatePosition(float deltaTime);
+    void updatePosition(TrackedFloat timer);
 
     PosVector getEye();
 

@@ -86,7 +86,7 @@ public class DirVector extends Vector {
      * or a zero vector (0, 0, 0) if this is a zero-vector
      */
     public DirVector reducedTo(float newLength, DirVector dest) {
-        if (this.isNotScalable()) {
+        if (!isScalable()) {
             dest.zero();
             return dest;
         }

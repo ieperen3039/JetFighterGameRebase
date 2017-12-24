@@ -48,7 +48,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         }
         MenuClickable credits = new MenuButton("Credits", () -> switchContentTo(creditScreen));
         {
-            UIElement credit = new MenuTextField("Credits", creditTextfield, TEXTFIELD_WIDTH);
+            UIElement credit = new MenuTitledText("Credits", creditTextfield, TEXTFIELD_WIDTH);
             MenuButton creditBackButton = new MenuButton("Back", () -> switchContentTo(mainMenu));
             creditScreen = new UIElement[]{credit, creditBackButton};
         }

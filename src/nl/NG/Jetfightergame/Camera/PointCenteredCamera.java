@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerDragListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerScrollListener;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -91,10 +92,10 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     /**
      * updates the eye position
-     * @param deltaTime not used
+     * @param timer not used
      */
     @Override
-    public void updatePosition(float deltaTime) {
+    public void updatePosition(TrackedFloat timer) {
         eye.update(getEyePosition());
     }
 

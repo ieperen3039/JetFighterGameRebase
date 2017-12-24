@@ -112,6 +112,12 @@ public abstract class GameEntity implements MovingEntity {
         return axis[0];
     }
 
+    /**
+     * apply net force on this object and possibly read input. Should not change the current state
+     * except for {@link #extraPosition} and {@link #extraRotation}
+     * @param deltaTime time-difference, may be 0
+     * @param netForce accumulated external forces on this object
+     */
     public abstract void applyPhysics(float deltaTime, DirVector netForce);
 
     /**
@@ -123,12 +129,17 @@ public abstract class GameEntity implements MovingEntity {
     public void update(float currentTime, float deltaTime) {
         hitPoints = null;
 
-        // update velocity, note that it is not atomic
-        position.to(extraPosition, velocity).scale(1/deltaTime, velocity);
+
+        // update velocity if there has been a change
+        if (deltaTime != 0) {
+            DirVector movement = position.to(extraPosition, new DirVector());
+            if (movement.isScalable()) {
+                movement.scale(1/deltaTime, velocity);
+            }
+        }
 
         position = extraPosition;
         rotation = extraRotation;
-
         positionInterpolator.add(position, currentTime);
         rotationInterpolator.add(rotation, currentTime);
     }
@@ -270,7 +281,7 @@ public abstract class GameEntity implements MovingEntity {
 
     /** returns the latest calculated position, but one should preferably use {@link #interpolatePosition(float)}*/
     public PosVector getPosition() {
-        return position;
+        return new PosVector(position);
     }
 
     @Override
@@ -295,6 +306,8 @@ public abstract class GameEntity implements MovingEntity {
         public void draw(GL2 ms) {Toolbox.drawAxisFrame(ms);}
         public void applyCollision() {}
         protected void updateShape(float deltaTime) {}
-        public void applyPhysics(float deltaTime, DirVector netForce) {position.add(netForce.scale(deltaTime, new DirVector()), new PosVector());}
+        public void applyPhysics(float deltaTime, DirVector netForce) {
+            position.add(netForce.scale(deltaTime, new DirVector()), new PosVector());
+        }
     };
 }

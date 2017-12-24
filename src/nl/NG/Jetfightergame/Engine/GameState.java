@@ -37,7 +37,7 @@ public class GameState {
 
     /** a protector that should protecc the {@code objects} list (and possibly other   */
     private Semaphore gameChangeGuard = new Semaphore(1);
-    private final GameTimer time = new GameTimer();
+    public final GameTimer time = new GameTimer();
 
     public GameState(Controller input) {
         playerJet = new PlayerJet(input);
@@ -198,10 +198,13 @@ public class GameState {
      * a class that harbors a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
      * with a modifiable in-game time.
      */
-    private class GameTimer {
+    public class GameTimer {
 
-        /** allows the game to slow down or speed up. with timeMultiplier = 2, the game goes twice as fast */
-        private float timeMultiplier = 1f;
+        /** multiplication of time as effect of in-game events. with playMultiplier = 2, the game goes twice as fast. */
+        private float playMultiplier = 1f;
+        /** multiplication of time by the engine. Main use is for pausing. with engineMultiplier = 2, the game goes twice as fast. */
+        private float engineMultiplier;
+
         /** in-game seconds since creating this gametimer */
         private float currentInGameTime;
 
@@ -210,18 +213,18 @@ public class GameState {
         private final TrackedFloat gameTime;
         private final TrackedFloat renderTime;
 
-        public GameTimer() {
+        private GameTimer() {
             currentInGameTime = 0f;
             gameTime = new TrackedFloat(0f);
             renderTime = new TrackedFloat(-Settings.RENDER_DELAY);
             lastMark = System.currentTimeMillis();
         }
 
-        public void updateGameTime(){
+        private void updateGameTime(){
             gameTime.update(currentInGameTime);
         }
 
-        public void updateRenderTime(){
+        private void updateRenderTime(){
             renderTime.update(currentInGameTime - Settings.RENDER_DELAY);
         }
 
@@ -245,14 +248,21 @@ public class GameState {
             long currentTime = System.currentTimeMillis();
             float deltaTime = (currentTime - lastMark) / 1000f;
             lastMark = currentTime;
-            currentInGameTime += timeMultiplier * deltaTime;
+            currentInGameTime += deltaTime * playMultiplier * engineMultiplier;
         }
 
         /**
-         * @param multiplier time will move {@code multiplier} as fast
+         * @param multiplier time will move {@code multiplier} times as fast
          */
         public void setGameTimeMultiplier(float multiplier) {
-            timeMultiplier = multiplier;
+            playMultiplier = multiplier;
+        }
+
+        /**
+         * @param multiplier time will move {@code multiplier} times as fast
+         */
+        public void setEngineMultiplier(float multiplier){
+            engineMultiplier = multiplier;
         }
     }
 }

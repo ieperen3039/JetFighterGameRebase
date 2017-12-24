@@ -39,11 +39,11 @@ public class Settings {
     public static float ROLL_MODIFIER = 0.05f;
 
     // camera settings
-    public static final float CAMERA_CATCHUP = 0.8f;
+    public static final float CAMERA_CATCHUP = 0.9f;
     public static int FOV = (int) Math.toRadians(60.0f);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
-    public static float Z_FAR = 500.0f;
+    public static float Z_FAR = 2000.0f;
     public static Boolean INVERT_CAMERA_ROTATION = true;
 
     // visual settings

@@ -313,7 +313,7 @@ public class GLFWWindow {
 
     public void setFullScreen(){
         GLFWVidMode vidmode = glfwGetVideoMode(primaryMonitor);
-        glfwSetWindowMonitor(window, primaryMonitor, 0, 0, vidmode.width(), vidmode.height(), Settings.TARGET_FPS);
+        glfwSetWindowMonitor(window, primaryMonitor, 0, 0, vidmode.width(), vidmode.height(), GLFW_DONT_CARE);
         fullScreen = true;
     }
 
