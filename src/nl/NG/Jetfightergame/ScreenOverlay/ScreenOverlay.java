@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Resource;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector2i;
-import org.joml.Vector4f;
 import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
 
@@ -154,18 +154,15 @@ public class ScreenOverlay {
             return color;
         }
 
-        /**
-         * {@link #rgba(float, float, float, float)}
-         */
-        private NVGColor rgba(Vector4f color) {
-            return rgba(color.x, color.y, color.z, color.w);
+        private NVGColor rgba(Color4f color) {
+            return rgba(color.red, color.green, color.blue, color.alpha);
         }
 
         public void rectangle(int x, int y, int width, int height) {
             rectangle(x, y, width, height, MENU_FILL_COLOR, MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
         }
 
-        public void rectangle(int x, int y, int width, int height, Vector4f fillColor, int strokeWidth, Vector4f strokeColor) {
+        public void rectangle(int x, int y, int width, int height, Color4f fillColor, int strokeWidth, Color4f strokeColor) {
             nvgBeginPath(vg);
             nvgRect(vg, x, y, width, height);
 
@@ -177,7 +174,7 @@ public class ScreenOverlay {
             roundedRectangle(x, y, width, height, indent, MENU_FILL_COLOR, MENU_STROKE_COLOR, MENU_STROKE_WIDTH);
         }
 
-        public void roundedRectangle(int x, int y, int width, int height, int indent, Vector4f fillColor, Vector4f strokeColor, int strokeWidth) {
+        public void roundedRectangle(int x, int y, int width, int height, int indent, Color4f fillColor, Color4f strokeColor, int strokeWidth) {
             int xMax = x + width;
             int yMax = y + height;
 
@@ -199,7 +196,7 @@ public class ScreenOverlay {
             circle(x, y, radius, MENU_FILL_COLOR, MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
         }
 
-        public void circle(int x, int y, int radius, Vector4f fillColor, int strokeWidth, Vector4f strokeColor) {
+        public void circle(int x, int y, int radius, Color4f fillColor, int strokeWidth, Color4f strokeColor) {
             nvgBeginPath(vg);
             nvgCircle(vg, x, y, radius);
 
@@ -211,7 +208,7 @@ public class ScreenOverlay {
             polygon(MENU_FILL_COLOR, MENU_STROKE_COLOR, MENU_STROKE_WIDTH, points);
         }
 
-        public void polygon(Vector4f fillColor, Vector4f strokeColor, int strokeWidth, Vector2i... points) {
+        public void polygon(Color4f fillColor, Color4f strokeColor, int strokeWidth, Vector2i... points) {
             if (points.length == 0) {
                 throw new IllegalArgumentException("Must pass at least 2 points");
             }
@@ -226,7 +223,7 @@ public class ScreenOverlay {
             stroke(strokeWidth, strokeColor);
         }
 
-        public void text(int x, int y, float size, Font font, int align, Vector4f color, String text) {
+        public void text(int x, int y, float size, Font font, int align, Color4f color, String text) {
             nvgFontSize(vg, size);
             nvgFontFace(vg, font.name);
             nvgTextAlign(vg, align);
@@ -239,8 +236,8 @@ public class ScreenOverlay {
             nvgFill(vg);
         }
 
-        private void fill(Vector4f color) {
-            fill(color.x, color.y, color.z, color.w);
+        private void fill(Color4f color) {
+            fill(color.red, color.green, color.blue, color.alpha);
         }
 
         private void stroke(int width, float red, float green, float blue, float alpha) {
@@ -249,8 +246,8 @@ public class ScreenOverlay {
             nvgStroke(vg);
         }
 
-        private void stroke(int width, Vector4f color) {
-            stroke(width, color.x, color.y, color.z, color.w);
+        private void stroke(int width, Color4f color) {
+            stroke(width, color.red, color.green, color.blue, color.alpha);
         }
 
         public void image(String filename, int x, int y, int width, int height, float alpha) throws IOException {

@@ -32,10 +32,7 @@ public class Color4f {
     public final float alpha;
 
     public Color4f(java.awt.Color target){
-        red = target.getRed()/255f;
-        green = target.getGreen()/255f;
-        blue = target.getBlue()/255f;
-        alpha = target.getAlpha()/255f;
+        this(target.getRed(), target.getGreen(), target.getBlue(), target.getAlpha());
     }
 
     public Color4f(float red, float green, float blue, float alpha) {
@@ -64,6 +61,16 @@ public class Color4f {
         this(red, green, blue, 1f);
     }
 
+    /**
+     * create a color using integer arguments [0 - 255]
+     * with 0 = none and 255 = max
+     */
+    public Color4f(int ired, int igreen, int iblue, int ialpha){
+        red = ired/255f;
+        green = igreen/255f;
+        blue = iblue/255f;
+        alpha = ialpha/255f;
+    }
 
     /**
      * flat add this color with the given other color

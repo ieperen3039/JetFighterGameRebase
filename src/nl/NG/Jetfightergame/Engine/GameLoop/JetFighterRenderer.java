@@ -94,7 +94,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
             window.update();
 
             final DirVector cameraDir = activeCamera.vectorToFocus();
-            Toolbox.print(cameraDir, cameraDir.normalized(new DirVector()), cameraDir.length());
 
             // update stop-condition
             if (window.shouldClose()) {
