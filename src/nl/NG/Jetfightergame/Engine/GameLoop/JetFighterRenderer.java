@@ -17,7 +17,6 @@ import nl.NG.Jetfightergame.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
-import nl.NG.Jetfightergame.Vectors.DirVector;
 
 import java.io.IOException;
 import java.util.function.BooleanSupplier;
@@ -92,8 +91,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             // update window
             window.update();
-
-            final DirVector cameraDir = activeCamera.vectorToFocus();
 
             // update stop-condition
             if (window.shouldClose()) {

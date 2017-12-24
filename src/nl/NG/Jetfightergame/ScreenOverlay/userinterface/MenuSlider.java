@@ -44,7 +44,7 @@ public class MenuSlider extends MenuClickable {
         try {
             handler.accept(value);
         } catch (Exception ex){
-            throw new RuntimeException("Error occurred in slider \"" + text + "\", with value" + value, ex);
+            throw new RuntimeException("Error occurred in slider \"" + text + "\", with value " + value, ex);
         }
     }
 }

@@ -80,9 +80,9 @@ public class Color4f {
      */
     public Color4f add(Color4f other){
         return new Color4f(
-                red + other.red,
-                green + other.green,
-                blue + other.blue,
+                cap(red + other.red),
+                cap(green + other.green),
+                cap(blue + other.blue),
                 inverseMul(alpha, other.alpha)
         );
     }
@@ -99,6 +99,11 @@ public class Color4f {
                 inverseMul(blue, other.blue),
                 inverseMul(alpha, other.alpha)
         );
+    }
+
+    /** culls parameter to [0, 1] */
+    private float cap(float input) {
+         return Math.min(Math.max(input, 0f), 1f);
     }
 
     /**
@@ -121,9 +126,9 @@ public class Color4f {
      */
     public Color4f darken(float scalar){
         return new Color4f(
-                red * scalar,
-                green * scalar,
-                blue * scalar,
+                red * (1-scalar),
+                green * (1-scalar),
+                blue * (1-scalar),
                 alpha
         );
     }
@@ -135,8 +140,11 @@ public class Color4f {
         return 1f - ((1f - alpha) * (1f - beta));
     }
 
+    /**
+     * @return the vector that would represent this color, when the color is multiplied with the alpha value
+     */
     public Vector3f toVector3f() {
-        return new Vector3f(red, green, blue);
+        return new Vector3f(red*alpha, green*alpha, blue*alpha);
     }
 
     public Vector4f toVector4f() {
