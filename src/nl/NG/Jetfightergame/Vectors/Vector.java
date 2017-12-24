@@ -18,8 +18,6 @@ import static java.lang.Math.sin;
 
 public abstract class Vector extends Vector3f{
 
-    private static final double roundingError = 4.44E-16;
-
     public Vector(Vector3fc source){
         super(source);
     }
@@ -31,8 +29,8 @@ public abstract class Vector extends Vector3f{
     public Vector() {
     }
 
-    public static boolean almostZero(double number) {
-        return (number + 2 * roundingError >= 0.0 && number - 2 * roundingError <= 0.0);
+    public static boolean almostZero(float number) {
+        return (((number + (10f * Float.MIN_VALUE)) >= 0.0f) && ((number - (10f * Float.MIN_VALUE)) <= 0.0f));
     }
 
     /**
@@ -93,6 +91,10 @@ public abstract class Vector extends Vector3f{
 
     public String toString() {
         return String.format(Locale.US, "(%1.03f, %1.03f, %1.03f)", this.x, this.y, this.z);
+    }
+
+    public String toExactString(){
+        return super.toString();
     }
 
     public PosVector toPosVector() {

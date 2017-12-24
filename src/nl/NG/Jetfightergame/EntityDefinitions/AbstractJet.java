@@ -88,9 +88,12 @@ public abstract class AbstractJet extends GameEntity {
      * @param forwardForce
      */
     private void forwardVelocityPhysics(float deltaTime, float speed, float forwardForce) {
+
+        float airResistance = speed * speed * airResistCoeff;
+
         // thrust forces
         float throttle = input.throttle();
-        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
+        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower * airResistance);
         forwardForce += thrust;
 
         // exponential reduction of speed (before rotational forces, as this is the result of momentum)
@@ -106,8 +109,9 @@ public abstract class AbstractJet extends GameEntity {
         yawSpeed += input.yaw() * instYawAcc;
         pitchSpeed += input.pitch() * instPitchAcc;
         rollSpeed += input.roll() * instRollAcc;
+
         // air-resistance
-        forwardForce -= (speed * speed * airResistCoeff) * deltaTime;
+        forwardForce -= airResistance * deltaTime;
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)

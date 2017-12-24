@@ -21,7 +21,7 @@ public class PlayerJet extends AbstractJet {
 
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 5000f;
-    public static final float BRAKE_POWER = 500f;
+    public static final float BRAKE_POWER = 1000f;
     public static final float MASS = 1000f;
     public static final Material MATERIAL = Material.GOLD;
     public static final float YAW_POWER = (float) toRadians(10);
