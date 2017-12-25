@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.VectorInterpolator;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -49,21 +50,30 @@ public abstract class GameEntity implements MovingEntity {
     protected Extreme<Collision> nextCrash;
     /** cached positions of the hitpoints*/
     private Collection<TrackedVector<PosVector>> hitPoints = null;
+    /***/
+    private TrackedFloat renderTime;
 
     /** worldspace / localspace */
     private float scale;
     private Material surfaceMaterial;
     protected final float mass;
+    private float cachedTime;
+    private PosVector cachedPosition;
+    private Quaternionf cachedRotation;
 
     /**
      * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
+     *
      * @param surfaceMaterial material properties
-     * @param scale scalefactor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param scale           scalefactor applied to this object. the scale is in global space and executed in
+     *                        {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
+     * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()} return the position
+     *                        interpolated on current render time
      */
-    public GameEntity(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation) {
+    public GameEntity(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation, TrackedFloat renderTimer) {
         this.position = new PosVector(initialPosition);
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
@@ -73,6 +83,11 @@ public abstract class GameEntity implements MovingEntity {
         this.scale = scale;
         this.velocity = new DirVector(initialVelocity);
         this.mass = mass;
+        renderTime = renderTimer;
+
+        cachedTime = renderTimer.current();
+        cachedPosition = initialPosition;
+        cachedRotation = initialRotation;
 
         yawSpeed = 0f;
         pitchSpeed = 0f;
@@ -100,15 +115,30 @@ public abstract class GameEntity implements MovingEntity {
     protected abstract void updateShape(float deltaTime);
 
     /**
-     * translates the given relative vector of this object to the true direction in world-space.
-     * This method also considers the scaling of the vector
+     * translates the given relative vector of this object to the object direction in world-space.
+     * This method also considers the scaling of the vector; it can be used for relative positions
+     * The returned direction is based on the gamestate, for rendering use {@link #relativeInterpolatedDirection(DirVector)}
      * @param relative a vector relative to this object
      * @return a vector in {@code sm}'s frame of reference
      */
-    public DirVector relativeDirection(DirVector relative) {
+    public DirVector relativeStateDirection(DirVector relative) {
         final DirVector[] axis = new DirVector[1];
         ShadowMatrix sm = new ShadowMatrix();
         toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), position, rotation);
+        return axis[0];
+    }
+
+    /**
+     * translates the given relative vector of this object to the true direction in world-space.
+     * This method also considers the scaling of the vector; it can be used for relative positions
+     * The returned direction is based on rendertime interpolated direction, for gamestate changes use {@link #relativeStateDirection(DirVector)}
+     * @param relative a vector relative to this object
+     * @return a vector in {@code sm}'s frame of reference
+     */
+    public DirVector relativeInterpolatedDirection(DirVector relative) {
+        final DirVector[] axis = new DirVector[1];
+        ShadowMatrix sm = new ShadowMatrix();
+        toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), interpolatedPosition(), interpolatedRotation());
         return axis[0];
     }
 
@@ -270,29 +300,39 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void draw(GL2 gl, float currentTime) {
-        PosVector pos = interpolatePosition(currentTime);
-        Quaternionf rot = rotationInterpolator.getInterpolated(currentTime);
+    public void draw(GL2 gl) {
+        PosVector pos = interpolatedPosition();
+        Quaternionf rot = interpolatedRotation();
 
         preDraw(gl);
         Consumer<Shape> painter = gl::draw;
         toLocalSpace(gl, () -> create(gl, painter), pos, rot);
     }
 
-    /** returns the latest calculated position, but one should preferably use {@link #interpolatePosition(float)}*/
+    private Quaternionf interpolatedRotation() {
+        updateInterpolationCache();
+        return cachedRotation;
+    }
+
+    /** returns the latest calculated position
+     * for rendering, one should preferably use {@link MovingEntity#interpolatedPosition()}
+     */
     public PosVector getPosition() {
         return new PosVector(position);
     }
 
     @Override
-    public PosVector interpolatePosition(float currentTime) {
-        if (currentTime < drawTimer) throw new IllegalArgumentException(
-                "currentTime must be larger than any earlier call of currentTime\n" +
-                        "earlier call was " + drawTimer + ", this call was " + currentTime
-        );
-        drawTimer = currentTime;
+    public PosVector interpolatedPosition() {
+        updateInterpolationCache();
+        return new PosVector(cachedPosition);
+    }
 
-        return positionInterpolator.getInterpolated(currentTime).toPosVector();
+    private void updateInterpolationCache() {
+        if (cachedTime != renderTime.current()) {
+            cachedPosition = positionInterpolator.getInterpolated(cachedTime).toPosVector();
+            cachedRotation = rotationInterpolator.getInterpolated(cachedTime);
+            cachedTime = renderTime.current();
+        }
     }
 
     @Override
@@ -301,7 +341,7 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     /** an object that represents {@code null}. Making this appear in-game is an achievement */
-    public static final GameEntity EMPTY_OBJECT = new GameEntity(Material.GLOWING, 1f, 1f, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf()) {
+    public static final GameEntity EMPTY_OBJECT = new GameEntity(Material.GLOWING, 1f, 1f, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), new TrackedFloat(0f)) {
         public void create(MatrixStack ms, Consumer<Shape> action, boolean b) {}
         public void draw(GL2 ms) {Toolbox.drawAxisFrame(ms);}
         public void applyCollision() {}

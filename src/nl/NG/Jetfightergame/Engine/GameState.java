@@ -40,7 +40,7 @@ public class GameState {
     public final GameTimer time = new GameTimer();
 
     public GameState(Controller input) {
-        playerJet = new PlayerJet(input);
+        playerJet = new PlayerJet(input, time.getRenderTime());
     }
 
     private Extreme<Integer> collisionMax = new Extreme<>(true);
@@ -162,7 +162,6 @@ public class GameState {
      * draw all objects of the game
      */
     public void drawObjects(GL2 gl) {
-        time.updateRenderTime();
         Toolbox.drawAxisFrame(gl);
 
         // static objects can not have interference
@@ -170,7 +169,7 @@ public class GameState {
 
         try {
             gameChangeGuard.acquire();
-            dynamicEntities.forEach(d -> d.draw(gl, time.getRenderTime().current()));
+            dynamicEntities.forEach(d -> d.draw(gl));
             gameChangeGuard.release();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -194,6 +193,10 @@ public class GameState {
         return playerJet;
     }
 
+    public void updateRenderTime() {
+        time.updateRenderTime();
+    }
+
     /**
      * a class that harbors a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
      * with a modifiable in-game time.
@@ -205,10 +208,12 @@ public class GameState {
         /** multiplication of time by the engine. Main use is for pausing. with engineMultiplier = 2, the game goes twice as fast. */
         private float engineMultiplier;
 
-        /** in-game seconds since creating this gametimer */
+        /** game-seconds since creating this gametimer */
         private float currentInGameTime;
-
+        /** last record of system time */
         private long lastMark;
+        /** multiplication factor to multiply system time units to game-seconds */
+        private static final float MUL_TO_SECONDS = 1E-9f;
 
         private final TrackedFloat gameTime;
         private final TrackedFloat renderTime;
@@ -217,27 +222,28 @@ public class GameState {
             currentInGameTime = 0f;
             gameTime = new TrackedFloat(0f);
             renderTime = new TrackedFloat(-Settings.RENDER_DELAY);
-            lastMark = System.currentTimeMillis();
+            lastMark = System.nanoTime();
         }
 
         private void updateGameTime(){
+            updateTimer();
             gameTime.update(currentInGameTime);
         }
 
         private void updateRenderTime(){
+            updateTimer();
             renderTime.update(currentInGameTime - Settings.RENDER_DELAY);
         }
 
         public TrackedFloat getGameTime(){
-            updateTimer();
             return gameTime;
         }
 
         public TrackedFloat getRenderTime(){
-            updateTimer();
             return renderTime;
         }
 
+        /** returns the current in-game time of this moment */
         public float time(){
             updateTimer();
             return currentInGameTime;
@@ -245,8 +251,8 @@ public class GameState {
 
         /** may be called anytime */
         private void updateTimer(){
-            long currentTime = System.currentTimeMillis();
-            float deltaTime = (currentTime - lastMark) / 1000f;
+            long currentTime = System.nanoTime();
+            float deltaTime = (currentTime - lastMark) * MUL_TO_SECONDS;
             lastMark = currentTime;
             currentInGameTime += deltaTime * playMultiplier * engineMultiplier;
         }

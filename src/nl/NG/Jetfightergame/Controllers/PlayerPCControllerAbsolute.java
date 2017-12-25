@@ -10,7 +10,7 @@ import static nl.NG.Jetfightergame.Engine.Settings.ROLL_MODIFIER;
  * Not moving the mouse will result in not rolling/pitching the plane
  */
 public class PlayerPCControllerAbsolute extends PlayerPCController {
-    private static final float SENSITIVITY = 0.5f;
+    private static final float SENSITIVITY = 1.0f;
 
     @Override
     public float pitch() {

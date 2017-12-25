@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Random;
@@ -18,6 +19,8 @@ public class Settings {
     public static final Random random = new Random();
     public static final boolean DEBUG = true;
     public static final boolean UNIT_COLLISION = true;
+    public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
+    public static final int HUD_STROKE_WIDTH = 3;
     public static boolean RECURSIVE_COLLISION = true;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
@@ -40,7 +43,7 @@ public class Settings {
 
     // camera settings
     public static final float CAMERA_CATCHUP = 0.9f;
-    public static int FOV = (int) Math.toRadians(60.0f);
+    public static float FOV = (float) Math.toRadians(60);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
     public static float Z_FAR = 2000.0f;

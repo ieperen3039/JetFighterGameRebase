@@ -2,10 +2,11 @@ package nl.NG.Jetfightergame.Engine.Managers;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Camera.FollowingCamera;
+import nl.NG.Jetfightergame.Camera.MountedCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
+import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
 import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -24,7 +25,8 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
 
     public enum CameraImpl {
         PointCenteredCamera,
-        FollowingCamera
+        FollowingCamera,
+        MountedCamera
     }
 
     public void setTarget(GameEntity target) {
@@ -59,6 +61,12 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
             case FollowingCamera:
                 instance = new FollowingCamera(eye, target);
                 break;
+            case MountedCamera:
+                if (target instanceof AbstractJet)
+                    instance = new MountedCamera((AbstractJet) target);
+                else
+                    instance = new FollowingCamera(eye, target);
+                break;
             default:
                 throw new UnsupportedOperationException("unknown enum: " + camera);
         }
@@ -70,8 +78,8 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
     }
 
     @Override
-    public void updatePosition(TrackedFloat timer) {
-        instance.updatePosition(timer);
+    public void updatePosition(float deltaTime) {
+        instance.updatePosition(deltaTime);
     }
 
     @Override

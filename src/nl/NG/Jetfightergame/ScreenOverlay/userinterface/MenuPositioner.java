@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
+import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 
 /**
@@ -7,7 +8,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
  *         created on 9-11-2017.
  */
 public abstract class MenuPositioner {
-    public static final int STD_MARGIN = 30;
     public static final int STD_BOUND_DIST = 80;
     public final int margin;
     public final int boundaryDistance;
@@ -15,7 +15,7 @@ public abstract class MenuPositioner {
     protected int y;
 
     public MenuPositioner() {
-        margin = STD_MARGIN;
+        margin = MenuStyleSettings.EXTERNAL_MARGIN;
         boundaryDistance = STD_BOUND_DIST;
     }
 

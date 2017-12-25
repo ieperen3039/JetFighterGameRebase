@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.joml.Vector2i;
+import org.joml.Vector2ic;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
@@ -35,10 +36,9 @@ public class GLFWWindow {
     private double frametime;
 
     private long window;
-    private int width;
-    private int height;
     private boolean fullScreen = false;
     private boolean mouseIsCaptured;
+    private Vector2i dimensions = new Vector2i();
 
     public GLFWWindow(String title) {
         this(title, 960, 720, true);
@@ -46,9 +46,8 @@ public class GLFWWindow {
 
     public GLFWWindow(String title, int width, int height, boolean resizable) {
         this.title = title;
-        this.width = width;
-        this.height = height;
         this.resizable = resizable;
+        this.dimensions.set(width, height);
 
         this.mousePosX = BufferUtils.createDoubleBuffer(1);
         this.mousePosY = BufferUtils.createDoubleBuffer(1);
@@ -75,7 +74,7 @@ public class GLFWWindow {
             glfwWindowHint(GLFW_SAMPLES, Settings.ANTIALIAS);
         }
 
-        window = getWindow(this.width, this.height);
+        window = getWindow(dimensions.x(), dimensions.y());
         primaryMonitor = glfwGetPrimaryMonitor();
         lastTime = glfwGetTime();
 
@@ -130,10 +129,9 @@ public class GLFWWindow {
         }
         if (this.resizable) {
             // Setup resize callback
-            glfwSetFramebufferSizeCallback(newWindow, (window, newWidth, newHeight) -> {
-                this.width = newWidth;
-                this.height = newHeight;
-            });
+            glfwSetFramebufferSizeCallback(newWindow,
+                    (window, newWidth, newHeight) -> dimensions.set(newWidth, newHeight)
+            );
         }
 
         // Make GL context current
@@ -253,7 +251,7 @@ public class GLFWWindow {
      * @return The width of the window.
      */
     public int getWidth() {
-        return width;
+        return dimensions.x();
     }
 
     /**
@@ -262,7 +260,7 @@ public class GLFWWindow {
      * @return The height of the window.
      */
     public int getHeight() {
-        return height;
+        return dimensions.y();
     }
 
     /**
@@ -323,8 +321,8 @@ public class GLFWWindow {
         // Center window on display
         glfwSetWindowPos(
                 window,
-                (vidmode.width() - this.width) / 2,
-                (vidmode.height() - this.height) / 2
+                (vidmode.width() - dimensions.x()) / 2,
+                (vidmode.height() - dimensions.y()) / 2
         );
         fullScreen = false;
     }
@@ -352,6 +350,13 @@ public class GLFWWindow {
 
     public boolean isMouseCaptured(){
         return mouseIsCaptured;
+    }
+
+    /**
+     * @return a pointer to the dimensions of this window.
+     */
+    public Vector2ic getDimensions() {
+        return dimensions.toImmutable();
     }
 }
 

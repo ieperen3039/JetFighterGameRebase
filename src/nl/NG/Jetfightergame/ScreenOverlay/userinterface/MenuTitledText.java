@@ -1,9 +1,11 @@
-package nl.NG.Jetfightergame.ScreenOverlay;
+package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuTextField;
+import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.TEXT_SIZE_LARGE;
-import static nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuTextField.*;
+import static nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuTextField.TEXT_DIFF;
 
 /**
  * @author Geert van Ieperen
@@ -15,11 +17,9 @@ public class MenuTitledText extends UIElement {
     private MenuTextField content;
 
     public MenuTitledText(String title, String[] content, int width) {
-        super(width, (TEXT_SIZE_SMALL + INTERTEXT_MARGIN) * content.length + 2*MARGIN + TEXT_SIZE_LARGE + 2*INTERTEXT_MARGIN);
+        super(width, (MenuStyleSettings.TEXT_SIZE_SMALL + TEXT_DIFF) * content.length + 2* MenuStyleSettings.EXTERNAL_MARGIN + TEXT_SIZE_LARGE + 2* TEXT_DIFF);
         this.title = new MenuTextField(new String[]{title}, width, TEXT_SIZE_LARGE);
-        this.content = new MenuTextField(content, width, TEXT_SIZE_SMALL);
-
-
+        this.content = new MenuTextField(content, width, MenuStyleSettings.TEXT_SIZE_SMALL);
     }
 
     @Override
@@ -36,6 +36,6 @@ public class MenuTitledText extends UIElement {
     }
 
     private int contentY() {
-        return getY() + TEXT_SIZE_LARGE + MARGIN + 2*INTERTEXT_MARGIN;
+        return getY() + TEXT_SIZE_LARGE + MenuStyleSettings.EXTERNAL_MARGIN + 2* TEXT_DIFF;
     }
 }

@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -45,12 +46,13 @@ public abstract class AbstractJet extends GameEntity {
      * @param pitchAcc acceleration over the Y-axis when pitching up at full power in rad/s
      * @param rollAcc acceleration over the X-axis when rolling at full power in rad/s
      * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
+     * @param renderTimer the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
      */
     public AbstractJet(Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
                        Material material, float mass, float liftFactor, float airResistanceCoefficient,
                        float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
-                       float rotationReductionFactor) {
-        super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation);
+                       float rotationReductionFactor, TrackedFloat renderTimer) {
+        super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
 
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
@@ -62,7 +64,7 @@ public abstract class AbstractJet extends GameEntity {
         this.liftFactor = liftFactor;
         this.rotationReductionFactor = rotationReductionFactor;
         forward = new DirVector();
-        relativeDirection(DirVector.xVector()).normalize(forward);
+        relativeStateDirection(DirVector.xVector()).normalize(forward);
     }
 
     @Override
@@ -168,7 +170,7 @@ public abstract class AbstractJet extends GameEntity {
     public void update(float currentTime, float deltaTime) {
         super.update(currentTime, deltaTime);
         // obtain current x-axis in worldspace
-        relativeDirection(DirVector.xVector()).normalize(forward);
+        relativeStateDirection(DirVector.xVector()).normalize(forward);
     }
 
     @Override
@@ -176,6 +178,9 @@ public abstract class AbstractJet extends GameEntity {
         //TODO elastic collision of rigid bodies
     }
 
+    /**
+     * @return forward in world-space
+     */
     public DirVector getForward() {
         return forward;
     }
@@ -188,4 +193,9 @@ public abstract class AbstractJet extends GameEntity {
                 ", direction: " + getForward() +
                 "}";
     }
+
+    /**
+     * @return current position of the pilot's eyes in world-space
+     */
+    public abstract DirVector getPilotEyePosition();
 }

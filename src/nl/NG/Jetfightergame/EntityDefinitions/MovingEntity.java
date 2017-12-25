@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.EntityDefinitions;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -71,20 +70,10 @@ public interface MovingEntity extends Touchable {
     boolean checkCollisionWith(Touchable other);
 
     /**
-     * draws this object, interpolated for the given timestamp.
-     * Every call to currentTime must be larger than the one before (this should be checked)
-     * @param currentTime time since some t_0 in seconds
-     * @see #interpolatePosition(float)
+     * The entity should take care of defining a valid timestamp method to ensure correct interpolation
+     * @return a copy of the position of the center of mass of this object, interpolated for a predefined timeStamp
      */
-    void draw(GL2 gl, float currentTime);
-
-    /**
-     * Every call to currentTime must be larger than the one before (this should be checked)
-     * @return position of the center of mass of this object, interpolated for the given timestamp.
-     * @param currentTime time since some t_0 in seconds
-     * @throws IllegalArgumentException if the currentTime is less than the previous call to this method
-     */
-    PosVector interpolatePosition(float currentTime);
+    PosVector interpolatedPosition();
 
     /**
      * @return movement of the center of mass of this object in world-space

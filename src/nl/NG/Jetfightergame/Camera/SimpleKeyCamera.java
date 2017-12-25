@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -46,7 +45,7 @@ public class SimpleKeyCamera implements Camera {
     }
 
     @Override
-    public void updatePosition(TrackedFloat timer) {
+    public void updatePosition(float deltaTime) {
         DirVector movement = DirVector.zeroVector();
         DirVector left = DirVector.zVector().cross(eye.toDirVector(), new DirVector());
         if (input.isPressed(VK_LEFT)) {
@@ -61,7 +60,7 @@ public class SimpleKeyCamera implements Camera {
         if (input.isPressed(VK_DOWN)){
             movement = movement.add(DirVector.zVector().scale(-1, new DirVector()), new DirVector());
         }
-        eye = eye.add(movement.scale(timer.difference() * 1f, new DirVector()), new PosVector());
+        eye = eye.add(movement.scale(deltaTime * 1f, new DirVector()), new PosVector());
     }
 
     @Override

@@ -35,15 +35,16 @@ public class ScreenOverlay {
     private final ByteBuffer[] fontBuffer;
     private Map<String, Integer> imageBuffer;
 
-    private Collection<Consumer<Painter>> menuDrawBuffer;
-    private Collection<Consumer<Painter>> hudDrawBuffer;
+    private final Collection<Consumer<Painter>> menuDrawBuffer;
+    private final Collection<Consumer<Painter>> hudDrawBuffer;
     private final BooleanSupplier menuMode;
 
     public enum Font {
-        ORBITRON_REGULAR("res/fonts/Orbitron-Regular.ttf"),
-        ORBITRON_MEDIUM("res/fonts/Orbitron-Medium.ttf"),
-        ORBITRON_BOLD("res/fonts/Orbitron-Bold.ttf"),
-        ORBITRON_BLACK("res/fonts/Orbitron-Black.ttf");
+        ORBITRON_REGULAR("res/fonts/Orbitron/Orbitron-Regular.ttf"),
+        ORBITRON_MEDIUM("res/fonts/Orbitron/Orbitron-Medium.ttf"),
+        ORBITRON_BOLD("res/fonts/Orbitron/Orbitron-Bold.ttf"),
+        ORBITRON_BLACK("res/fonts/Orbitron/Orbitron-Black.ttf"),
+        LUCIDA_CONSOLE("res/fonts/LucidaConsole/lucon.ttf");
 
         public final String name;
         public final String source;
@@ -62,8 +63,8 @@ public class ScreenOverlay {
      */
     public ScreenOverlay(BooleanSupplier menuMode) throws IOException {
         this.menuMode = menuMode;
-        vg = GLFWWindow.antialiasing() ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) :
-                nvgCreate(NVG_STENCIL_STROKES);
+
+        vg = GLFWWindow.antialiasing() ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
         if (this.vg == NULL) {
             throw new IOException("Could not initialize NanoVG");
         }
@@ -189,13 +190,18 @@ public class ScreenOverlay {
                     new Vector2i(x, yMax - indent),
                     new Vector2i(x, y + indent)
             );
-
         }
 
+        /** @see #circle(int, int, int, Color4f, int, Color4f)  */
         public void circle(int x, int y, int radius) {
             circle(x, y, radius, MENU_FILL_COLOR, MENU_STROKE_WIDTH, MENU_STROKE_COLOR);
         }
 
+        /**
+         * draws a circle.
+         * x and y are the circle middle.
+         * x, y and radius are in screen coordinates.
+         */
         public void circle(int x, int y, int radius, Color4f fillColor, int strokeWidth, Color4f strokeColor) {
             nvgBeginPath(vg);
             nvgCircle(vg, x, y, radius);
@@ -209,9 +215,6 @@ public class ScreenOverlay {
         }
 
         public void polygon(Color4f fillColor, Color4f strokeColor, int strokeWidth, Vector2i... points) {
-            if (points.length == 0) {
-                throw new IllegalArgumentException("Must pass at least 2 points");
-            }
             nvgBeginPath(vg);
 
             nvgMoveTo(vg, points[points.length - 1].x, points[points.length - 1].y);
@@ -222,6 +225,24 @@ public class ScreenOverlay {
             fill(fillColor);
             stroke(strokeWidth, strokeColor);
         }
+
+        /**
+         * draw a line along the coordinates, when supplied in (x, y) pairs
+         * @param points (x, y) pairs of screen coordinates
+         */
+        public void line(int strokeWidth, Color4f strokeColor, int... points) {
+            nvgBeginPath(vg);
+
+            int i = 0;
+            nvgMoveTo(vg, points[i++], points[i++]);
+            while (i < points.length) {
+                nvgLineTo(vg, points[i++], points[i++]);
+            }
+
+            stroke(strokeWidth, strokeColor);
+        }
+
+        // non-shape defining functions
 
         public void text(int x, int y, float size, Font font, int align, Color4f color, String text) {
             nvgFontSize(vg, size);
@@ -289,6 +310,7 @@ public class ScreenOverlay {
 
         // End NanoVG frame
         nvgEndFrame(vg);
+
 
         // restore window state
         glEnable(GL_DEPTH_TEST);

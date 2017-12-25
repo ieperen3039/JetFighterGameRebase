@@ -4,10 +4,9 @@ import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.TEXT_COLOR;
+import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.*;
 import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.ORBITRON_MEDIUM;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
-import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
 
 /**
  * @author Geert van Ieperen
@@ -15,9 +14,7 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
  */
 public class MenuTextField extends UIElement {
 
-    public static final int MARGIN = 20; //TODO adapt with textsize?
-    public static final int TEXT_SIZE_SMALL = 30;
-    public static final int INTERTEXT_MARGIN = MenuPositioner.STD_MARGIN/2;
+    public static final int TEXT_DIFF = EXTERNAL_MARGIN /2;
     private final String[] content;
     private int textSize;
 
@@ -27,7 +24,7 @@ public class MenuTextField extends UIElement {
      * @param textSize in pt
      */
     public MenuTextField(String[] content, int width, int textSize) {
-        super(width, (textSize + INTERTEXT_MARGIN) * content.length + MARGIN);
+        super(width, (textSize + TEXT_DIFF) * content.length + 2*INTERNAL_MARGIN);
 
         this.content = content;
         this.textSize = textSize;
@@ -39,10 +36,10 @@ public class MenuTextField extends UIElement {
 
         final int middle = this.x + width / 2;
 
-        int textYPosition = y + INTERTEXT_MARGIN;
+        int textYPosition = y + textSize + INTERNAL_MARGIN;
         for (String line : content) {
-            hud.text(middle, textYPosition, textSize, ORBITRON_MEDIUM, NVG_ALIGN_CENTER | NVG_ALIGN_TOP, TEXT_COLOR, line);
-            textYPosition += textSize + INTERTEXT_MARGIN;
+            hud.text(middle, textYPosition, textSize, ORBITRON_MEDIUM, NVG_ALIGN_CENTER, TEXT_COLOR, line);
+            textYPosition += textSize + TEXT_DIFF;
         }
     }
 }

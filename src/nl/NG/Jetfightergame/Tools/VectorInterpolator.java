@@ -19,6 +19,8 @@ public class VectorInterpolator extends LinearInterpolator<Vector> {
 
         Vector dest = new PosVector();
         firstElt.add(difference.scale(fraction, difference), dest);
+        
+        if (!dest.isScalable()) dest.set(firstElt);
         return dest;
     }
 }

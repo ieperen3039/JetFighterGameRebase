@@ -6,6 +6,8 @@ import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
 
@@ -27,16 +29,16 @@ public class TestJet extends AbstractJet {
     public static final float ROLL_POWER = 45f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
 
-    public TestJet(Controller input) {
-        this(PosVector.zeroVector(), input, 1f, new Quaternionf());
+    public TestJet(Controller input, TrackedFloat renderTimer) {
+        this(PosVector.zeroVector(), input, 1f, new Quaternionf(), renderTimer);
     }
 
-    public TestJet(PosVector initialPosition, Controller input, float scale, Quaternionf initialRotation) {
+    public TestJet(PosVector initialPosition, Controller input, float scale, Quaternionf initialRotation, TrackedFloat renderTimer) {
         super(input, initialPosition, initialRotation, scale,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT,
                 THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                1f);
+                1f, renderTimer);
     }
 
     @Override
@@ -47,5 +49,10 @@ public class TestJet extends AbstractJet {
     @Override
     protected void updateShape(float deltaTime) {
 
+    }
+
+    @Override
+    public DirVector getPilotEyePosition() {
+        return relativeInterpolatedDirection(new DirVector(1, 0, 0));
     }
 }

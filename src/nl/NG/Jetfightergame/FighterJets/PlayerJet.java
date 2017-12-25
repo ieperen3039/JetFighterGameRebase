@@ -6,6 +6,8 @@ import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
+import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
 
@@ -20,10 +22,10 @@ import static java.lang.Math.toRadians;
 public class PlayerJet extends AbstractJet {
 
     public static final float LIFT_FACTOR = 1f;
-    public static final float THROTTLE_POWER = 5000f;
-    public static final float BRAKE_POWER = 1000f;
-    public static final float MASS = 1000f;
-    public static final Material MATERIAL = Material.GOLD;
+    public static final float THROTTLE_POWER = 1000f;
+    public static final float BRAKE_POWER = 200f;
+    public static final float MASS = 100f;
+    public static final Material MATERIAL = Material.SILVER;
     public static final float YAW_POWER = (float) toRadians(10);
     public static final float PITCH_POWER = (float) toRadians(90);
     public static final float ROLL_POWER = (float) toRadians(140);
@@ -31,15 +33,15 @@ public class PlayerJet extends AbstractJet {
 
     private Shape shape;
 
-    public PlayerJet(Controller input) {
-        this(PosVector.zeroVector(), input, new Quaternionf());
+    public PlayerJet(Controller input, TrackedFloat renderTimer) {
+        this(PosVector.zeroVector(), input, new Quaternionf(), renderTimer);
     }
 
-    public PlayerJet(PosVector initialPosition, Controller input, Quaternionf initialRotation) {
+    public PlayerJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, TrackedFloat renderTimer) {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.2f);
+                0.2f, renderTimer);
         shape = ShapeFromMesh.ConceptBlueprint;
     }
 
@@ -54,5 +56,10 @@ public class PlayerJet extends AbstractJet {
     @Override
     protected void updateShape(float deltaTime) {
 
+    }
+
+    @Override
+    public DirVector getPilotEyePosition() {
+        return relativeInterpolatedDirection(new DirVector(3, 0, 1));
     }
 }

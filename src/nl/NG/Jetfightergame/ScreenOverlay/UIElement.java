@@ -55,13 +55,11 @@ public abstract class UIElement implements HudElement {
         return height;
     }
 
-    @Override
     public void setPosition(Vector2i position) {
         this.x = position.x;
         this.y = position.y;
     }
 
-    @Override
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;

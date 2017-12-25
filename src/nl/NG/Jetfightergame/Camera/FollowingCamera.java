@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -49,26 +48,26 @@ public class FollowingCamera implements Camera {
      * @return a new vector with the position translated to world-space
      */
     private static PosVector jetPosition(DirVector relativePosition, GameEntity target){
-        final DirVector relative = target.relativeDirection(relativePosition);
-        return target.getPosition().add(relative, new PosVector());
+        final DirVector relative = target.relativeInterpolatedDirection(relativePosition);
+        return target.interpolatedPosition().add(relative, new PosVector());
     }
 
     /**
-     * @param timer the animation time difference
+     * @param deltaTime the animation time difference
      */
     @Override
-    public void updatePosition(TrackedFloat timer) {
-        final PosVector targetPosition = target.interpolatePosition(timer.current());
+    public void updatePosition(float deltaTime) {
+        final PosVector targetPosition = target.interpolatedPosition();
 
-        final DirVector up = target.relativeDirection(DirVector.zVector());
+        final DirVector up = target.relativeInterpolatedDirection(DirVector.zVector());
         final DirVector targetUp = up.normalized(up);
 
-        final PosVector targetEye = targetPosition.add(target.relativeDirection(eyeRelative), new PosVector());
-        final PosVector targetFocus = targetPosition.add(target.relativeDirection(focusRelative), new PosVector());
+        final PosVector targetEye = targetPosition.add(target.relativeInterpolatedDirection(eyeRelative), new PosVector());
+        final PosVector targetFocus = targetPosition.add(target.relativeInterpolatedDirection(focusRelative), new PosVector());
 
-        eye.updateFluent(targetEye, timer.difference());
-        focus.updateFluent(targetFocus, timer.difference());
-        this.up.updateFluent(targetUp, timer.difference());
+        eye.updateFluent(targetEye, deltaTime);
+        focus.updateFluent(targetFocus, deltaTime);
+        this.up.updateFluent(targetUp, deltaTime);
     }
 
     @Override

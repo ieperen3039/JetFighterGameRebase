@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Shaders.GouraudShader;
@@ -55,6 +56,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.screenOverlay = new ScreenOverlay(menuMode);
 
         new JetFighterMenu(screenOverlay, musicProvider, engine::setPlayMode, engine::exitGame, input);
+        new GravityHud(screenOverlay, window.getDimensions(), engine.getPlayer(), camera);
     }
 
     @Override
@@ -64,8 +66,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
             GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
             Toolbox.checkGLError();
 
+            gameState.updateRenderTime();
+
             // update camera based on
-            activeCamera.updatePosition(gameState.time.getRenderTime());
+            activeCamera.updatePosition(gameState.time.getRenderTime().difference());
 
             initShader();
             Toolbox.checkGLError();

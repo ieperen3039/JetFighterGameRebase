@@ -30,7 +30,8 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
         double secondTime = nextTimeStamp();
         T secondElt = nextElement();
 
-        float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
+        Float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
+        if (fraction.isNaN()) return firstElt;
 
         return interpolate(firstElt, secondElt, fraction);
     }
