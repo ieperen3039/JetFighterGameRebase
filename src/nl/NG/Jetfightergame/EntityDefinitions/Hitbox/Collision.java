@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.EntityDefinitions.Hitbox;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
+import nl.NG.Jetfightergame.Vectors.PosVector;
 
 /**
  * @author Geert van Ieperen
@@ -9,18 +10,21 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
 public class Collision implements Comparable<Collision> {
     public final double timeToImpact;
     public final DirVector normal;
+    public final PosVector hitPos;
 
     public Collision(){
-        this(1, DirVector.zeroVector());
+        this(1, DirVector.zeroVector(), PosVector.zeroVector());
     }
 
     /**
-     *  @param timeToImpact corrected scalar of the direction vector
+     * @param timeToImpact corrected scalar of the direction vector
      * @param normal the normal of the hit plane
+     * @param hitPos
      */
-    public Collision(double timeToImpact, DirVector normal) {
+    public Collision(double timeToImpact, DirVector normal, PosVector hitPos) {
         this.timeToImpact = timeToImpact;
         this.normal = normal;
+        this.hitPos = hitPos;
     }
 
     @Override

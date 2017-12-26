@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * @author Geert van Ieperen
@@ -175,7 +176,15 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public void applyCollision() {
-        //TODO elastic collision of rigid bodies
+        // relative position of contact
+        PosVector relativeHit = nextCrash.get().hitPos;
+        // normal of the plane of contact
+        DirVector contactNormal = nextCrash.get().normal;
+        // current rotation speed of airplane
+        Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
+
+
+
     }
 
     /**

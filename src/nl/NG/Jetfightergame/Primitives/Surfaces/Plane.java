@@ -101,9 +101,10 @@ public abstract class Plane {
 
         if (hitDir.length() > direction.length()) return null;
 
-        if (!this.encapsules(linePosition.add(hitDir, relativePosition))) return null;
+        final PosVector hitPos = linePosition.add(hitDir, relativePosition);
+        if (!this.encapsules(hitPos)) return null;
 
-        return new Collision(hitDir.length() / direction.length(), normal);
+        return new Collision(hitDir.length() / direction.length(), normal, hitPos);
     }
 
     /**
