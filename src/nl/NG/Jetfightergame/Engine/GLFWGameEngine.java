@@ -90,26 +90,33 @@ public abstract class GLFWGameEngine {
     }
 
     public void setMenuMode() {
-        this.currentGameMode = GameMode.MENU_MODE;
+        currentGameMode = GameMode.MENU_MODE;
         window.freePointer();
         camera.switchTo(PointCenteredCamera);
         gameLoop.pause();
     }
 
     public void setPlayMode() {
-        this.currentGameMode = GameMode.PLAY_MODE;
+        currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
         camera.switchTo(FollowingCamera);
         gameLoop.unPause();
     }
 
+    public void setSpectatorMode(){
+        currentGameMode = GameMode.SPECTATOR_MODE;
+        window.freePointer();
+        camera.switchTo(PointCenteredCamera);
+        gameLoop.unPause();
+    }
+
     public boolean isPaused() {
-        return getCurrentGameMode() == GameMode.MENU_MODE;
+        return getCurrentGameMode() != GameMode.PLAY_MODE;
     }
 
     public abstract AbstractJet getPlayer();
 
     public enum GameMode {
-        PLAY_MODE, MENU_MODE
+        PLAY_MODE, SPECTATOR_MODE, MENU_MODE
     }
 }

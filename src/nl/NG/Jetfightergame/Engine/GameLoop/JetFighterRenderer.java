@@ -55,7 +55,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         ambientLight = Color4f.LIGHT_GREY;
         this.screenOverlay = new ScreenOverlay(menuMode);
 
-        new JetFighterMenu(screenOverlay, musicProvider, engine::setPlayMode, engine::exitGame, input);
+        new JetFighterMenu(screenOverlay, musicProvider, engine::setSpectatorMode, engine::exitGame, input);
         new GravityHud(screenOverlay, window.getDimensions(), engine.getPlayer(), camera);
     }
 

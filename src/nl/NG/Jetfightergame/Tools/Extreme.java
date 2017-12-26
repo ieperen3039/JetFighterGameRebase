@@ -37,6 +37,7 @@ public class Extreme<T extends Comparable<T>> {
      */
     synchronized public boolean check(T newItem) {
         if (extremest != null) {
+            if (newItem == null) return false;
             int comparision = newItem.compareTo(extremest);
             if (comparision == 0 || (comparision < 0) == max) {
                 return false;

@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.QuaternionInterpolator;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.VectorInterpolator;
@@ -192,6 +191,9 @@ public abstract class GameEntity implements MovingEntity {
         return newCollision != null;
     }
 
+    @Override
+    public abstract String toString();
+
     /**
      * returns the collisions caused by {@code point} in the given reference frame.
      * the returned collision is caused by the first plane hit by point
@@ -339,15 +341,4 @@ public abstract class GameEntity implements MovingEntity {
     public DirVector getVelocity() {
         return velocity;
     }
-
-    /** an object that represents {@code null}. Making this appear in-game is an achievement */
-    public static final GameEntity EMPTY_OBJECT = new GameEntity(Material.GLOWING, 1f, 1f, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), new TrackedFloat(0f)) {
-        public void create(MatrixStack ms, Consumer<Shape> action, boolean b) {}
-        public void draw(GL2 ms) {Toolbox.drawAxisFrame(ms);}
-        public void applyCollision() {}
-        protected void updateShape(float deltaTime) {}
-        public void applyPhysics(float deltaTime, DirVector netForce) {
-            position.add(netForce.scale(deltaTime, new DirVector()), new PosVector());
-        }
-    };
 }

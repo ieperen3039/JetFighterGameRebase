@@ -19,6 +19,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -61,8 +62,9 @@ public class GameState {
         float deltaTime = time.getGameTime().difference();
         float currentTime = time.getGameTime().current();
 
+
         // update positions and apply physics // TODO external influences
-        dynamicEntities.forEach((gameObject) -> gameObject.preUpdate(deltaTime, DirVector.zeroVector()));
+        dynamicEntities.forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
 
         if (Settings.UNIT_COLLISION) {
             int remainingLoops = MAX_COLLISION_ITERATIONS;
@@ -86,6 +88,10 @@ public class GameState {
         gameChangeGuard.acquire();
         dynamicEntities.forEach(obj -> obj.update(currentTime, deltaTime));
         gameChangeGuard.release();
+    }
+
+    protected DirVector entityNetforce(GameEntity entity) {
+        return DirVector.zeroVector();
     }
 
     /** checks the collisions of all objects and ensures that results[0] > 0 iff there has been a collision
@@ -141,14 +147,20 @@ public class GameState {
 
         // Naive solution: return all n^2 options
         // check all moving objects against (1: all other moving objects, 2: all static objects)
-        dynamicEntities.parallelStream().forEach(obj -> {
+        dynamicEntities.forEach(obj -> {
             dynamicEntities.stream()
                     // only other objects
-                    .filter(o -> obj != o)
-                    .forEach(other -> result.add(new Pair<>(other, obj)));
+                    .filter(other -> other != obj)
+                    .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
+                    .filter(pair -> !result.contains(pair))
+                    .forEach(result::add);
             staticEntities
                     .forEach(other -> result.add(new Pair<>(other, obj)));
         });
+
+
+        final long nulls = result.stream().filter(Objects::isNull).count();
+        if (nulls > 0) Toolbox.print("nulls: "+ nulls);
 
         collisionMax.updateAndPrint("Intersections", result.size(), "pairs");
         return result;

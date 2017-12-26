@@ -1,11 +1,9 @@
-package nl.NG.Jetfightergame.Scenarios;
+package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
-import nl.NG.Jetfightergame.ShapeCreators.Mesh;
-import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -42,7 +40,7 @@ public class GridMesh implements Shape {
 
         // transform grid to a list
         List<PosVector> vertices = Arrays.stream(grid)
-                .flatMap(g -> Arrays.stream(g))
+                .flatMap(Arrays::stream)
                 // collect into an array list of appropriate length
                 .collect(Collectors.toCollection(
                         () -> new ArrayList<>(grid.length * grid[0].length)
