@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
-import nl.NG.Jetfightergame.EntityDefinitions.FallingCube;
-import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.FallingCube;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;

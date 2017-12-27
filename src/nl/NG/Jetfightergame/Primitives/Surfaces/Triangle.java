@@ -18,15 +18,22 @@ public class Triangle extends Plane {
     private PosVector cross = new PosVector();
 
     public Triangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
-        super(normal, new PosVector[]{A, B, C});
+        super(new PosVector[]{A, B, C}, normal);
 
         ABRef = B.subtract(A, tempAlpha).cross(C.subtract(A, tempBeta), new PosVector());
         BCRef = C.subtract(B, tempAlpha).cross(A.subtract(B, tempBeta), new PosVector());
         CARef = A.subtract(C, tempAlpha).cross(B.subtract(C, tempBeta), new PosVector());
     }
 
-    public Triangle(PosVector A, PosVector B, PosVector C, PosVector middle) {
-        this(A, B, C, getNormalVector(A, B, C, middle));
+    public Triangle createTriangle(PosVector A, PosVector B, PosVector C, DirVector direction) {
+        final DirVector normal = getNormalVector(A, B, C);
+
+        if (normal.dot(direction) > 0) {
+            return new Triangle(A, B, C, normal);
+        } else {
+            normal.negate();
+            return new Triangle(C, B, A, normal);
+        }
     }
 
     /**

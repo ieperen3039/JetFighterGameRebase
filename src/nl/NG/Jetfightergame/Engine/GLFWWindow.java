@@ -22,7 +22,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  */
 public class GLFWWindow {
 
-    private static final boolean CULL_FACES = false; // TODO cockwise drawing
+    private static final boolean CULL_FACES = true; // TODO cockwise drawing
     private static final boolean GL_DEBUG_MESSAGES = false;
     private final long primaryMonitor;
 

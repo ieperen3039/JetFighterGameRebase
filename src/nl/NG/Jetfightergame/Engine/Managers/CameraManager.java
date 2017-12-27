@@ -5,8 +5,8 @@ import nl.NG.Jetfightergame.Camera.FollowingCamera;
 import nl.NG.Jetfightergame.Camera.MountedCamera;
 import nl.NG.Jetfightergame.Camera.PointCenteredCamera;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
-import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
-import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 

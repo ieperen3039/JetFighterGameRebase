@@ -94,6 +94,11 @@ public class DirVector extends Vector {
         return dest;
     }
 
+    public DirVector negate(DirVector dest){
+        super.negate(dest);
+        return dest;
+    }
+
     /**
      * @return vector to the middle of this vector and given vector
      * equals (this + (1/2)*(that - this))

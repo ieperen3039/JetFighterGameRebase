@@ -2,10 +2,10 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
-import nl.NG.Jetfightergame.EntityDefinitions.GameEntity;
-import nl.NG.Jetfightergame.EntityDefinitions.MovingEntity;
-import nl.NG.Jetfightergame.EntityDefinitions.Touchable;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.Scenarios.TestLab;

@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.Managers.CameraManager;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
-import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.FollowingCamera;

@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
-import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +18,7 @@ public class QuadTest extends PlaneTest {
         PosVector b = new PosVector(10, -10, 0);
         PosVector c = new PosVector(10, 10, 0);
         PosVector d = new PosVector(-10, 10, 0);
-        instance = new Quad(a, b, c, d, Plane.getNormalVector(a, b, c, DirVector.zVector()));
+        instance = new Quad(a, b, c, d, Plane.getNormalVector(a, b, c));
     }
 
     @Test

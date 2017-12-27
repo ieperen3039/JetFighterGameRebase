@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 

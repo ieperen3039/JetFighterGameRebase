@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
-import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -26,6 +26,7 @@ public abstract class Plane {
     protected float mostY = -Float.MAX_VALUE;
     protected float leastZ = Float.MAX_VALUE;
     protected float mostZ = -Float.MAX_VALUE;
+
     /** not necessarily normalized */
     protected final DirVector normal;
 
@@ -34,7 +35,7 @@ public abstract class Plane {
     /** reserved space for collision detection */
     private PosVector relativePosition = new PosVector();
 
-    public Plane(DirVector normal, PosVector[] vertices) {
+    public Plane(PosVector[] vertices, DirVector normal) {
         this.normal = normal;
         this.boundary = vertices;
 
@@ -49,38 +50,20 @@ public abstract class Plane {
         }
     }
 
-    /**
-     * @param direction a point for which hold normal.dot(direction) > 0
-     * @return normal vector that points outward the xz-plane, or when orthogonal away from 'middle'
-     */
-    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, DirVector direction){
-
+    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C) {
         DirVector normalVector = new DirVector();
-        final DirVector BtoC = new DirVector();
-        final DirVector BtoA = new DirVector();
+        final DirVector BC = new DirVector();
+        final DirVector BA = new DirVector();
 
-        B.to(C, BtoC);
-        B.to(A, BtoA);
-        BtoA.cross(BtoC, normalVector);
-
-        if (normalVector.dot(direction) < 0) {
-            normalVector.negate();
-        }
+        B.to(C, BC);
+        B.to(A, BA);
+        BA.cross(BC, normalVector);
 
         normalVector.normalize();
 
         return normalVector;
     }
 
-    /**
-     * @param middle a point for which hold normal.dot(direction) < 0
-     * @return normal vector that points outward the xz-plane, or when orthogonal away from 'middle'
-     */
-    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C, PosVector middle){
-        DirVector dir = new DirVector();
-        middle.negate(dir);
-        return getNormalVector(A, B, C, dir);
-    }
 
     /**
      * given a point on position {@code linePosition} moving in the direction of {@code direction},

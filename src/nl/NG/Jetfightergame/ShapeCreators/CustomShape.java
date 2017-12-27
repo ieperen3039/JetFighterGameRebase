@@ -99,23 +99,37 @@ public class CustomShape {
      * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D) {
-        addQuad(A, B, C, D, Plane.getNormalVector(A, B, C, middle));
+        DirVector normalVector = Plane.getNormalVector(A, B, C);
+        if (normalVector.dot(middle.to(B, new DirVector())) < 0){
+            addQuad(D, C, B, A, normalVector.negate(normalVector));
+        } else {
+            addQuad(A, B, C, D, normalVector);
+        }
     }
 
     /**
      * Adds a quad which is mirrored in the XZ-plane
      */
     public void addMirrorQuad(PosVector A, PosVector B, PosVector C, PosVector D) {
-        DirVector quadNormal = Plane.getNormalVector(A, B, C, middle);
-        addQuad(A, B, C, D, quadNormal);
-        addQuad(A.mirrorY(new PosVector()), B.mirrorY(new PosVector()), C.mirrorY(new PosVector()), D.mirrorY(new PosVector()), quadNormal.scale(-1, new DirVector()));
+        addQuad(A, B, C, D);
+        addQuad(
+                A.mirrorY(new PosVector()),
+                B.mirrorY(new PosVector()),
+                C.mirrorY(new PosVector()),
+                D.mirrorY(new PosVector())
+        );
     }
 
     /**
      * @see CustomShape#addTriangle(PosVector, PosVector, PosVector, DirVector)
      */
     public void addTriangle(PosVector A, PosVector B, PosVector C) {
-        addTriangle(A, B, C, Plane.getNormalVector(A, B, C, middle));
+        DirVector normalVector = Plane.getNormalVector(A, B, C);
+        if (normalVector.dot(middle.to(B, new DirVector())) < 0){
+            addTriangle(C, B, A, normalVector.negate(normalVector));
+        } else {
+            addTriangle(A, B, C, normalVector);
+        }
     }
 
     /**
@@ -132,7 +146,9 @@ public class CustomShape {
     }
 
     private int addNormal(DirVector normal) {
-        if (normal == null) throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be null");
+        if (normal == null || normal.equals(DirVector.zeroVector()))
+            throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be zero");
+
         DirVector normalizedNormal = normal.normalized(new DirVector());
         normals.add(normalizedNormal);
         return normals.size() - 1;
@@ -226,7 +242,7 @@ public class CustomShape {
         TrackedObject<PosVector> targets = new TrackedVector<>(positions.next());
         while (positions.hasNext()) {
             targets.update(positions.next());
-            DirVector normal = Plane.getNormalVector(point, targets.previous(), targets.current(), middle);
+            DirVector normal = Plane.getNormalVector(point, targets.previous(), targets.current());
             addTriangle(targets.previous(), targets.current(), point, normal);
         }
     }

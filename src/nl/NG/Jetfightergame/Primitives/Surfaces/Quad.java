@@ -17,7 +17,7 @@ public class Quad extends Plane {
     private static PosVector tempBeta = new PosVector();
 
     public Quad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
-        super(normal, new PosVector[]{A, B, C, D});
+        super(new PosVector[]{A, B, C, D}, normal);
 
         ABRef = B.subtract(A, tempAlpha).cross(D.subtract(A, tempBeta), new PosVector());
         BCRef = C.subtract(B, tempAlpha).cross(A.subtract(B, tempBeta), new PosVector());

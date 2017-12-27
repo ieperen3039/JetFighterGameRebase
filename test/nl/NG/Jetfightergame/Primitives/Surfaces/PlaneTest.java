@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
-import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;

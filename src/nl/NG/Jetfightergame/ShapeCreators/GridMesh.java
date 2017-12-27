@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.EntityDefinitions.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -76,13 +76,13 @@ public class GridMesh implements Shape {
         final int Ci = index(x, y + 1);
         final int Di = index(x + 1, y + 1);
 
-        final DirVector alphaNormal = Plane.getNormalVector(A, B, C, DirVector.zVector());
+        final DirVector alphaNormal = Plane.getNormalVector(A, B, C);
         alphaGrid[x][y] = new Triangle(A, B, C, alphaNormal);
         normals.add(alphaNormal);
         faces.add(new Mesh.Face(Ai, Bi, Ci, normals.size() - 1));
 
-        final DirVector betaNormal = Plane.getNormalVector(D, B, C, DirVector.zVector());
-        betaGrid[x][y] = new Triangle(D, B, C, betaNormal);
+        final DirVector betaNormal = Plane.getNormalVector(C, B, D);
+        betaGrid[x][y] = new Triangle(C, B, D, betaNormal);
         normals.add(betaNormal);
         faces.add(new Mesh.Face(Di, Bi, Ci, normals.size() - 1));
     }

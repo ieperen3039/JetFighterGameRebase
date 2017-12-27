@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.EntityDefinitions.Hitbox;
+package nl.NG.Jetfightergame.AbstractEntities.Hitbox;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

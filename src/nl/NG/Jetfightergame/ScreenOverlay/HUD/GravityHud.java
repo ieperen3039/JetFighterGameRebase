@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.EntityDefinitions.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;

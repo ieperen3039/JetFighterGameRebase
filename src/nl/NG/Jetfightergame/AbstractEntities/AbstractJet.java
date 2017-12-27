@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.EntityDefinitions;
+package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
