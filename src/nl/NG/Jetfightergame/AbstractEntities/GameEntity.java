@@ -183,7 +183,6 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public boolean checkCollisionWith(Touchable other){
-        other.create(new ShadowMatrix(), s -> s.getPlanes().forEach(e -> Toolbox.printSpamless(e.toString(), e)));
         Collision newCollision = getHitpointMovement().stream()
                 // see which points collide with the other
                 .map(point -> getPointCollision(point, other))
@@ -201,7 +200,7 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void applyCollision(float deltaTime) {
+    public void applyCollision(float deltaTime, float previousTimeStamp) {
 
         if (extraVelocity.length() > 100)
             Toolbox.printSpamless(Integer.toHexString(hashCode()), toString() + "\nmoving " + extraVelocity.length() + " m/s",
@@ -213,25 +212,24 @@ public abstract class GameEntity implements MovingEntity {
             return;
         }
 
-
         // relative position of contact
-        final PosVector relativeHit = nextCrash.get().globalHitPos;
+        final PosVector globalHitPos = nextCrash.get().hitPos;
         // normal of the plane of contact
         final DirVector contactNormal = nextCrash.get().normal;
         // fraction of deltaTime until collision
         final float timeScalar = nextCrash.get().timeScalar;
         // seconds until this object hits the other
-        final float secondsUntilCollision = timeScalar * deltaTime;
+        final float hitDeltaTime = timeScalar * deltaTime;
         // current rotation speed of airplane
         final Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
         // movement until collision
         final DirVector interMovement = movement.scale(timeScalar, new DirVector());
         // object position when hitting
         final PosVector interPosition = position.add(interMovement, new PosVector());
+        // object rotation when hitting
+        Quaternionf interRotation = rotation.rotate(rollSpeed * hitDeltaTime, pitchSpeed * hitDeltaTime, yawSpeed * hitDeltaTime, new Quaternionf());
 
-        Toolbox.printSpamless(Integer.toHexString(hashCode()), position, relativeHit, timeScalar);
-
-        simpleBounceCollision(relativeHit, contactNormal, rotationSpeedVector, interPosition, extraPosition);
+        simpleBounceCollision(globalHitPos, contactNormal, rotationSpeedVector, interPosition, extraPosition);
 
         rollSpeed = rotationSpeedVector.x();
         pitchSpeed = rotationSpeedVector.y();
@@ -239,12 +237,19 @@ public abstract class GameEntity implements MovingEntity {
 
         interPosition.to(extraPosition, interMovement).reducedTo(extraVelocity.length(), extraVelocity);
         hitPoints = null;
+
+        Toolbox.print(extraPosition, extraVelocity);
+
+        // add intermediate position/rotation to interpolation
+        final float collisionTimeStamp = previousTimeStamp + hitDeltaTime;
+//        positionInterpolator.add(interPosition, collisionTimeStamp);
+//        rotationInterpolator.add(interRotation, collisionTimeStamp);
     }
 
     /**
      * bounce without rotation
      *
-     * @param relativeHit         relative position of the point on this object that caused the collision
+     * @param hitPosition         global position of the point on this object that caused the collision
      * @param contactNormal       the normal of the plane that the point has hit
      * @param rotationSpeedVector vector of rotation, defined as (rollSpeed, pitchSpeed, yawSpeed).
      *                            This should contain the new rotations upon returning
@@ -252,7 +257,7 @@ public abstract class GameEntity implements MovingEntity {
      * @param newPosition         the current extrapolated position of this object.
      *                            The new extrapolated position should be stored here upon returning
      */
-    private void simpleBounceCollision(PosVector relativeHit, DirVector contactNormal, Vector3f rotationSpeedVector,
+    private void simpleBounceCollision(PosVector hitPosition, DirVector contactNormal, Vector3f rotationSpeedVector,
                                        PosVector interPosition, PosVector newPosition
     ) {
         final DirVector remainingMovement = interPosition.to(newPosition, new DirVector());
@@ -281,14 +286,14 @@ public abstract class GameEntity implements MovingEntity {
             // search hitpoint, add it when found
             Collision newCrash = shape.getCollision(startPoint, direction, endPoint);
             if (newCrash != null) {
-                newCrash.convertToGlobal(identity::getPosition);
+                newCrash.convertToGlobal(identity);
                 collisions.add(newCrash);
             }
         };
 
-        if (other instanceof  MovingEntity){
-            final MovingEntity otherMoving = (MovingEntity) other;
-            otherMoving.toLocalSpace(identity, () -> otherMoving.create(identity, exec, true), true);
+        if (other instanceof MovingEntity){
+            final MovingEntity moving = (MovingEntity) other;
+            moving.toLocalSpace(identity, () -> moving.create(identity, exec, true), true);
         } else {
             other.toLocalSpace(identity, () -> other.create(identity, exec));
         }

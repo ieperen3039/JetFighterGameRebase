@@ -25,7 +25,7 @@ public class CollisionLaboratory extends GameState {
     private final int speeds;
 
     public CollisionLaboratory(Controller input) {
-        this(30, 8, input);
+        this(20, 1, input);
     }
 
     public CollisionLaboratory(int labSize, int nrOfCubes, Controller controller) {

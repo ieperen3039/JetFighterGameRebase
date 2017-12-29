@@ -1,10 +1,8 @@
 package nl.NG.Jetfightergame.AbstractEntities.Hitbox;
 
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-
-import java.util.function.Function;
 
 /**
  * @author Geert van Ieperen
@@ -12,9 +10,10 @@ import java.util.function.Function;
  */
 public class Collision implements Comparable<Collision> {
     public final float timeScalar;
-    public final DirVector normal;
+    private final DirVector shapeLocalNormal;
     private final PosVector shapeLocalHitPos;
-    public PosVector globalHitPos = null;
+    public PosVector hitPos = null;
+    public DirVector normal = null;
 
     public Collision(){
         this(1, DirVector.zeroVector(), PosVector.zeroVector());
@@ -27,13 +26,18 @@ public class Collision implements Comparable<Collision> {
      */
     public Collision(float timeScalar, DirVector normal, PosVector hitPos) {
         this.timeScalar = timeScalar;
-        this.normal = normal;
+        this.shapeLocalNormal = normal;
         this.shapeLocalHitPos = hitPos;
     }
 
-    public void convertToGlobal(Function<PosVector, PosVector> converter){
-        globalHitPos = converter.apply(shapeLocalHitPos);
-        Toolbox.print(shapeLocalHitPos, globalHitPos);
+    /**
+     * convert the values of the collision to global values, by providing the used matrix conversion.
+     * @param ms the matrix state as how this collision was created.
+     */
+    public void convertToGlobal(MatrixStack ms){
+        hitPos = ms.getPosition(shapeLocalHitPos);
+        normal = ms.getDirection(shapeLocalNormal);
+        normal.normalize();
     }
 
     @Override

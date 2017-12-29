@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -60,7 +60,7 @@ public class FollowingCamera implements Camera {
         final PosVector targetPosition = target.interpolatedPosition();
 
         final DirVector up = target.relativeInterpolatedDirection(DirVector.zVector());
-        final DirVector targetUp = up.normalized(up);
+        final DirVector targetUp = up.normalize(up);
 
         final PosVector targetEye = targetPosition.add(target.relativeInterpolatedDirection(eyeRelative), new PosVector());
         final PosVector targetFocus = targetPosition.add(target.relativeInterpolatedDirection(focusRelative), new PosVector());

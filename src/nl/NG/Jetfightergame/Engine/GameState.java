@@ -37,6 +37,7 @@ public class GameState {
     /** a protector that should protecc the {@code objects} list (and possibly other   */
     private Lock gameChangeGuard = new ReentrantLock();
     public final GameTimer time = new GameTimer();
+    private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
     public GameState(Controller input) {
         playerJet = new PlayerJet(input, time.getRenderTime());
@@ -57,30 +58,41 @@ public class GameState {
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() {
         time.updateGameTime();
-        float deltaTime = time.getGameTime().difference();
+        float previousTime = time.getGameTime().previous();
         float currentTime = time.getGameTime().current();
-
+        float deltaTime = currentTime - previousTime;
 
         // update positions and apply physics
         dynamicEntities.forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
 
+        // check and handle collisions
         if (Settings.UNIT_COLLISION && deltaTime > 0f) {
             int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
             Integer[] collisions = {0};
 
             do {
-                remainingLoops--;
                 collisions[0] = 0;
-                // as a single collision may result in a previously not-intersecting pair to collide,
-                // we cannot re-use the getIntersectingPairs method nor reduce non-collisions. We should add some form
-                // of caching for getIntersectingPairs, to make short-followed calls more efficient.
-                checkUnitCollisions(getIntersectingPairs(), collisions, deltaTime);
 
-            // loop if
-                // (1) recursive collision is enabled,
-                // (2) we did not reach the maximum number of loops and
-                // (3) there have been changes in the last loop
-            } while (Settings.RECURSIVE_COLLISION && remainingLoops > 0 && collisions[0] > 0);
+                /* as a single collision may result in a previously not-intersecting pair to collide,
+                 * we cannot re-use the getIntersectingPairs method nor reduce non-collisions. We should add some form
+                 * of caching for getIntersectingPairs, to make short-followed calls more efficient.
+                 */
+
+                getIntersectingPairs().parallelStream()
+                        .filter(GameState::checkPair)
+                        .forEach(p -> {
+                            collisions[0]++; // race conditions don't matter, as long as collisions[0] > 0
+                            applyCollisions(p, deltaTime, previousTime);
+                        });
+
+            } while (
+                    // (1) recursive collision is enabled
+                    Settings.RECURSIVE_COLLISION
+                    // (2) we did not reach the maximum number of loops
+                    && --remainingLoops > 0
+                    // (3) there have been changes in the last loop
+                    && collisions[0] > 0
+                    );
         }
 
         gameChangeGuard.lock();
@@ -92,36 +104,22 @@ public class GameState {
         return DirVector.zeroVector();
     }
 
-    /** checks the collisions of all objects and ensures that results[0] > 0 iff there has been a collision
-     * @param intersectingPairs a collection of pairs of objects that may collide.
-     * @param results an array with length at least 1 to store the result
-     * @param deltaTime
-     */
-    private void checkUnitCollisions(Collection<Pair<Touchable, MovingEntity>> intersectingPairs, Integer[] results, float deltaTime) {
-        intersectingPairs.parallelStream()
-                .filter(GameState::checkPair)
-                .forEach(p -> {
-                    results[0]++; // race conditions don't matter, as long as collisions[0] > 0
-                    applyCollisions(p, deltaTime);
-                });
-    }
-
-    /** calls {@link MovingEntity#applyCollision(float)} on each object of p for which it is valid */
-    private void applyCollisions(Pair<Touchable, MovingEntity> p, float deltaTime) {
-        p.right.applyCollision(deltaTime);
+    /** calls {@link MovingEntity#applyCollision(float, float)} on each object of p for which it is valid */
+    private void applyCollisions(Pair<Touchable, MovingEntity> p, float deltaTime, float previousTime) {
+        p.right.applyCollision(deltaTime, previousTime);
         if (p.left instanceof MovingEntity) {
-            ((MovingEntity) p.left).applyCollision(deltaTime);
+            ((MovingEntity) p.left).applyCollision(deltaTime, previousTime);
         }
     }
 
     /**
      * let each object of the pair check for collisions, but does not make any changes just yet.
-     * these only take effect after calling {@link MovingEntity#applyCollision(float)}
+     * these only take effect after calling {@link MovingEntity#applyCollision(float, float)}
      * @param p a pair of objects that may have collided.
      * @return true if this pair collided:
      * if this method returns false, then these objects do not collide and are not changed as a result.
      * if this method returns true, then these objects do collide and have this collision stored.
-     * The collision can be calculated by {@link MovingEntity#applyCollision(float)} and applied by {@link Updatable#update(float)}
+     * The collision can be calculated by {@link MovingEntity#applyCollision(float, float)} and applied by {@link Updatable#update(float)}
      */
     private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
         Touchable either = p.left;
@@ -142,27 +140,28 @@ public class GameState {
      * @return a collection of pairs of objects that are close to each other
      */
     private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
-        final Collection<Pair<Touchable, MovingEntity>> result = new ArrayList<>();
+        if (allEntityPairs == null) {
+            allEntityPairs = new ArrayList<>();
 
-        // Naive solution: return all n^2 options
-        // check all moving objects against (1: all other moving objects, 2: all static objects)
-        dynamicEntities.forEach(obj -> {
-            dynamicEntities.stream()
-                    // only other objects
-                    .filter(other -> other != obj)
-                    .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
-                    .filter(pair -> !result.contains(pair))
-                    .forEach(result::add);
-            staticEntities
-                    .forEach(other -> result.add(new Pair<>(other, obj)));
-        });
-
+            // Naive solution: return all n^2 options
+            // check all moving objects against (1: all other moving objects, 2: all static objects)
+            dynamicEntities.forEach(obj -> {
+                dynamicEntities.stream()
+                        // only other objects
+                        .filter(other -> other != obj)
+                        .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
+                        .filter(pair -> !allEntityPairs.contains(pair))
+                        .forEach(allEntityPairs::add);
+                staticEntities
+                        .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
+            });
+        }
 
 //        final long nulls = result.stream().filter(Objects::isNull).count();
 //        if (nulls > 0) Toolbox.print("nulls: "+ nulls);
 
-        collisionMax.updateAndPrint("Intersections", result.size(), "pairs");
-        return result;
+        collisionMax.updateAndPrint("Intersections", allEntityPairs.size(), "pairs");
+        return allEntityPairs;
     }
 
     public void setLights(GL2 gl) {

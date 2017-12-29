@@ -149,7 +149,7 @@ public class CustomShape {
         if (normal == null || normal.equals(DirVector.zeroVector()))
             throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be zero");
 
-        DirVector normalizedNormal = normal.normalized(new DirVector());
+        DirVector normalizedNormal = normal.normalize(new DirVector());
         normals.add(normalizedNormal);
         return normals.size() - 1;
     }

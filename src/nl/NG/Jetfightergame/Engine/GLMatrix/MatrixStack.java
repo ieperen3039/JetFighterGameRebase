@@ -22,7 +22,7 @@ public interface MatrixStack {
         if (target.equals(source)) return;
 
         DirVector parallelVector = source.to(target, new DirVector())
-                .normalized(new DirVector());
+                .normalize(new DirVector());
 
         DirVector M = DirVector.zVector().cross(parallelVector, new DirVector());
         float angle = (float) Math.acos(DirVector.zVector().dot(parallelVector));// in Radians

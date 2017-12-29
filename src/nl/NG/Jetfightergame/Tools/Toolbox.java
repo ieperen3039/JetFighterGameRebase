@@ -176,7 +176,7 @@ public class Toolbox {
         Collection<AbstractParticle> particles = new ArrayList<>();
 
         for (PosVector[] p : splittedTriangles){
-            DirVector movement = launchDir.normalized(new DirVector()).add(DirVector.random().scale(jitter, new DirVector()), new DirVector());
+            DirVector movement = launchDir.normalize(new DirVector()).add(DirVector.random().scale(jitter, new DirVector()), new DirVector());
             particles.add(TriangleParticle.worldspaceParticle(
                     p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime)
             );

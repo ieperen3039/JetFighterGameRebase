@@ -42,7 +42,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     public PointCenteredCamera(PosVector eye, PosVector focus){
         DirVector focToEye = focus.to(eye, new DirVector());
-        DirVector cameraDir = focToEye.normalized(new DirVector());
+        DirVector cameraDir = focToEye.normalize(new DirVector());
 
         vDist = focToEye.length();
         phi = getPhi(cameraDir);

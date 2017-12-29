@@ -61,8 +61,8 @@ public abstract class Vector extends Vector3f{
         return getRotationMatrix(v.x, v.z, v.y, angle);
     }
 
-    public DirVector normalized(DirVector dest) {
-        normalize(dest);
+    public DirVector normalize(DirVector dest) {
+        super.normalize(dest);
         return dest;
     }
 
