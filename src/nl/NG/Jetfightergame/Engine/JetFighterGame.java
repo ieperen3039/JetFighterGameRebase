@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRenderer;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Scenarios.CollisionLaboratory;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
@@ -42,7 +42,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            environment = new CollisionLaboratory(100, 3*3*3, playerInput);
+            environment = new CollisionLaboratory(playerInput);
 
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);
@@ -99,7 +99,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         // quit when Esc is pressed
         switch (key) {
             case GLFW_KEY_ESCAPE:
-                if (isPaused()) exitGame();
+                if (currentGameMode == GameMode.MENU_MODE) exitGame();
                 else setMenuMode();
                 break;
             case GLFW_KEY_F11:

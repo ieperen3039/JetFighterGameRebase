@@ -23,8 +23,8 @@ public interface Touchable extends Drawable {
     void create(MatrixStack ms, Consumer<Shape> action);
 
     /**
-     * moves the reference frame from global space to this object and executes action
-     * every create call should preserve the matrix stack.
+     * moves the reference frame from global space to this object and executes action.
+     * Every create call should preserve the matrix stack.
      * If this object is moving, this applies to the current position
      * @see MovingEntity#toLocalSpace(MatrixStack, Runnable, boolean)
      * @param ms reference frame to perform transformations on

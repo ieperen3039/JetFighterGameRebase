@@ -35,14 +35,13 @@ public class FallingCube extends GameEntity {
 
     @Override
     protected void updateShape(float deltaTime) {
-
     }
 
     @Override
     public void applyPhysics(float deltaTime, DirVector netForce) {
-        DirVector extraVelocity = new DirVector();
         netForce.scale(deltaTime/mass, extraVelocity).add(velocity, extraVelocity);
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
+
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }
 
@@ -54,10 +53,5 @@ public class FallingCube extends GameEntity {
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action, boolean extrapolate) {
         action.accept(GeneralShapes.CUBE);
-    }
-
-    @Override
-    public void applyCollision() {
-
     }
 }

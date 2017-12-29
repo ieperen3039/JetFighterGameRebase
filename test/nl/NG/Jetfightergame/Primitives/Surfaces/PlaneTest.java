@@ -33,7 +33,7 @@ public class PlaneTest {
 
         if (box != null) {
             // get position of the new vector
-            first.add(dir.scale((float) box.timeToImpact, new DirVector()), result);
+            first.add(dir.scale((float) box.timeScalar, new DirVector()), result);
             System.out.println("Hitpoint: " + result);
         }
 

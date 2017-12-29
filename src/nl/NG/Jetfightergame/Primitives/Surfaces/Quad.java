@@ -19,10 +19,10 @@ public class Quad extends Plane {
     public Quad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
         super(new PosVector[]{A, B, C, D}, normal);
 
-        ABRef = B.subtract(A, tempAlpha).cross(D.subtract(A, tempBeta), new PosVector());
-        BCRef = C.subtract(B, tempAlpha).cross(A.subtract(B, tempBeta), new PosVector());
-        CDRef = D.subtract(C, tempAlpha).cross(B.subtract(C, tempBeta), new PosVector());
-        DARef = A.subtract(D, tempAlpha).cross(C.subtract(D, tempBeta), new PosVector());
+        ABRef = B.sub(A, tempAlpha).cross(D.sub(A, tempBeta), new PosVector());
+        BCRef = C.sub(B, tempAlpha).cross(A.sub(B, tempBeta), new PosVector());
+        CDRef = D.sub(C, tempAlpha).cross(B.sub(C, tempBeta), new PosVector());
+        DARef = A.sub(D, tempAlpha).cross(C.sub(D, tempBeta), new PosVector());
     }
 
     @Override
@@ -33,14 +33,14 @@ public class Quad extends Plane {
         PosVector D = boundary[3];
 
         Vector cross = new PosVector();
-        B.subtract(A, tempAlpha).cross(hitPos.subtract(A, tempBeta), cross);
+        B.sub(A, tempAlpha).cross(hitPos.sub(A, tempBeta), cross);
 
         if (ABRef.dot(cross) >= 0) {
-            C.subtract(B, tempAlpha).cross(hitPos.subtract(B, tempBeta), cross);
+            C.sub(B, tempAlpha).cross(hitPos.sub(B, tempBeta), cross);
             if (BCRef.dot(cross) >= 0) {
-                D.subtract(C, tempAlpha).cross(hitPos.subtract(C, tempBeta), cross);
+                D.sub(C, tempAlpha).cross(hitPos.sub(C, tempBeta), cross);
                 if (CDRef.dot(cross) >= 0) {
-                    A.subtract(D, tempAlpha).cross(hitPos.subtract(D, tempBeta), cross);
+                    A.sub(D, tempAlpha).cross(hitPos.sub(D, tempBeta), cross);
                     return DARef.dot(cross) >= 0;
                 }
             }

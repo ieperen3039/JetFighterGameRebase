@@ -18,12 +18,8 @@ public class JetFighterRunner extends AbstractGameLoop {
 
     @Override
     protected void update(float deltaTime) {
-        try {
-            game.updateGameLoop();
+        game.updateGameLoop();
 //            Toolbox.print("\n" + game.getPlayer());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

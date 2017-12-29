@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.AxisAngle4f;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -11,137 +11,108 @@ import java.util.Stack;
 
 /**
  * @author Geert van Ieperen
- *         created on 16-11-2017.
+ * created on 27-12-2017.
  */
 public class ShadowMatrix implements MatrixStack {
-    protected PosVector posVec = PosVector.zeroVector();
-    protected DirVector xVec = DirVector.xVector();
-    protected DirVector yVec = DirVector.yVector();
-    protected DirVector zVec = DirVector.zVector();
 
-    /**
-     * the matrix stack
-     */
-    private Stack<ShadowMatrix> stack = new Stack<>();
-    private DirVector temp = new DirVector();
+    private Stack<Matrix4f> matrixStack;
+    private Matrix4f matrix;
+    private Matrix4f inverseMatrix;
 
-    /**
-     * copies the state of another matrix to this matrix
-     */
-    protected void setStateTo(ShadowMatrix master) {
-        this.posVec = new PosVector(master.posVec);
-        this.xVec = new DirVector(master.xVec);
-        this.zVec = new DirVector(master.zVec);
-        this.yVec = new DirVector(master.yVec);
+    public ShadowMatrix() {
+        matrixStack = new Stack<>();
+        matrix = new Matrix4f();
+        matrix.assumeAffine();
+        inverseMatrix = new Matrix4f();
     }
 
     @Override
     public void rotate(float angle, float x, float y, float z) {
-        Quaternionf rotation = new Quaternionf(new AxisAngle4f(angle, x, y, z));
-        rotate(rotation);
+        rotate(new AxisAngle4f(angle, x, y, z));
+    }
+
+    public void rotate(AxisAngle4f rotation){
+        matrix.rotate(rotation);
+        inverseMatrix = null;
     }
 
     @Override
     public void translate(float x, float y, float z) {
-        if (x != 0.0) posVec.add(xVec.scale(x, temp), posVec);
-        if (y != 0.0) posVec.add(yVec.scale(y, temp), posVec);
-        if (z != 0.0) posVec.add(zVec.scale(z, temp), posVec);
+        matrix.translate(x, y, z);
+        inverseMatrix = null;
     }
 
     @Override
     public void scale(float x, float y, float z) {
-        xVec.scale(x, xVec);
-        yVec.scale(y, yVec);
-        zVec.scale(z, zVec);
+        matrix.scale(x, y, z);
+        inverseMatrix = null;
     }
 
-    /**
-     * do not use this method for directions!
-     * @see #getDirection(DirVector)
-     * @param p coordinate in local space
-     * @return p relative to reference frame of instantiation
-     */
     @Override
-    public PosVector getPosition(PosVector p){
-        PosVector newPos = new PosVector(posVec);
-
-        if (p.x != 0.0) newPos.add(xVec.scale(p.x, temp), newPos);
-        if (p.y != 0.0) newPos.add(yVec.scale(p.y, temp), newPos);
-        if (p.z != 0.0) newPos.add(zVec.scale(p.z, temp), newPos);
-        return newPos;
+    public PosVector getPosition(PosVector p) {
+        PosVector result = new PosVector();
+        p.mulPosition(matrix, result);
+        return result;
     }
 
-    /**
-     * @param v vector in local space
-     * @return direction in global space
-     */
     @Override
-    public DirVector getDirection(DirVector v){
-        DirVector newDir = DirVector.zeroVector();
-        if (v.x != 0.0) newDir.add(xVec.scale(v.x, temp), newDir);
-        if (v.y != 0.0) newDir.add(yVec.scale(v.y, temp), newDir);
-        if (v.z != 0.0) newDir.add(zVec.scale(v.z, temp), newDir);
-        return newDir;
+    public DirVector getDirection(DirVector v) {
+        DirVector result = new DirVector();
+        v.mulDirection(matrix, result);
+        return result;
     }
 
-    /**
-     * @param p vector relative to reference frame if instantiation
-     * @return coordinates relative to local-space
-     */
-    public PosVector getReversePosition(PosVector p){
-        float x = p.x();
-        float y = p.y();
-        float z = p.z();
-        PosVector newPos = PosVector.zeroVector();
-        if (x != 0.0) newPos.subtract(xVec.scale(1/x, temp), newPos);
-        if (y != 0.0) newPos.subtract(yVec.scale(1/y, temp), newPos);
-        if (z != 0.0) newPos.subtract(zVec.scale(1/z, temp), newPos);
-        return newPos.subtract(posVec, newPos);
-    }
-
-    /**
-     * the already stacked matrix will be passed to the new stacked matrix
-     */
     @Override
     public void pushMatrix() {
-        final ShadowMatrix head = new ShadowMatrix();
-        head.setStateTo(this);
-        stack.push(head);
+        matrixStack.push(new Matrix4f(matrix));
+        inverseMatrix = null;
     }
 
-    /**
-     * the stacked matrix of this stacked matrix will become the new stacked matrix
-     */
     @Override
     public void popMatrix() {
-        setStateTo(stack.pop());
+        matrix = matrixStack.pop();
+        inverseMatrix = null;
     }
 
     @Override
     public void rotate(Quaternionf rotation) {
-        Matrix3f matrix = rotation.get(new Matrix3f());
-        yVec.mul(matrix);
-        xVec.mul(matrix);
-        zVec.mul(matrix);
+        matrix.rotate(rotation);
+        inverseMatrix = null;
     }
-
-    /**
-     * print current state of axis system
-     */
-    public String toString() {
-        return String.format("[O: %s X: %s, Y: %s, Z: %s]", posVec, xVec, yVec, zVec);
-    }
-
-    // unsupported operations
 
     @Override
-    public void multiplyAffine(Matrix4f preTransformation) { //TODO look for possibility to implement
-        throw new UnsupportedOperationException("ShadowMatrix has not yet implemented multiplyAffine");
+    public void translate(Vector v) {
+        matrix.translate(v);
+        inverseMatrix = null;
+    }
+
+    @Override
+    public void multiplyAffine(Matrix4f preTransformation) {
+        // first apply combinedTransformation, then the viewTransformation
+        preTransformation.mul(matrix, matrix);
+        inverseMatrix = null;
     }
 
     @Override
     public void popAll() {
-        // it is error-handling after all
-        setStateTo(new ShadowMatrix());
+        matrix = new Matrix4f();
+        matrixStack = new Stack<>();
+        inverseMatrix = null;
+    }
+
+    @Override
+    public String toString() {
+        return "ShadowMatrix{\n" +
+                "matrix=" + matrix +
+                ", stackSize=" + matrixStack.size() +
+                "\n}";
+    }
+
+    public PosVector mapToLocal(PosVector p) {
+        if (inverseMatrix == null) inverseMatrix = matrix.invertAffine(new Matrix4f());
+
+        PosVector result = new PosVector();
+        p.mulPosition(inverseMatrix, result);
+        return result;
     }
 }

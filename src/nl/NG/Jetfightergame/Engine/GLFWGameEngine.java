@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.Managers.CameraManager;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.FollowingCamera;
@@ -48,9 +48,12 @@ public abstract class GLFWGameEngine {
         try {
             renderLoop.run();
             gameLoop.join();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            renderLoop.interrupt();
+            gameLoop.interrupt();
         } finally {
+            Toolbox.checkGLError();
             this.cleanUp();
             window.cleanup();
         }

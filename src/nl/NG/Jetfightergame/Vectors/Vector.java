@@ -18,6 +18,8 @@ import static java.lang.Math.sin;
 
 public abstract class Vector extends Vector3f{
 
+    private static final float ROUNDINGERROR = 1E-6F;
+
     public Vector(Vector3fc source){
         super(source);
     }
@@ -30,7 +32,7 @@ public abstract class Vector extends Vector3f{
     }
 
     public static boolean almostZero(float number) {
-        return (((number + (10f * Float.MIN_VALUE)) >= 0.0f) && ((number - (10f * Float.MIN_VALUE)) <= 0.0f));
+        return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
     }
 
     /**

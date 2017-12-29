@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ShapeCreators;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -31,7 +31,7 @@ public interface Shape extends Renderable {
      * @return {@code null} if it does not hit with direction scalar < 1
      * otherwise, it provides a collision object about the first collision with this shape
      */
-    default Collision getMaximumMovement(PosVector linePosition, DirVector direction, PosVector endPoint){
+    default Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint){
         return getPlanes()
                 // find the vector that hits the planes
                 .map((plane) -> plane.getHitvector(linePosition, direction, endPoint))

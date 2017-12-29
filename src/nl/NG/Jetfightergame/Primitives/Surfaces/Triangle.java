@@ -20,9 +20,9 @@ public class Triangle extends Plane {
     public Triangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
         super(new PosVector[]{A, B, C}, normal);
 
-        ABRef = B.subtract(A, tempAlpha).cross(C.subtract(A, tempBeta), new PosVector());
-        BCRef = C.subtract(B, tempAlpha).cross(A.subtract(B, tempBeta), new PosVector());
-        CARef = A.subtract(C, tempAlpha).cross(B.subtract(C, tempBeta), new PosVector());
+        ABRef = B.sub(A, tempAlpha).cross(C.sub(A, tempBeta), new PosVector());
+        BCRef = C.sub(B, tempAlpha).cross(A.sub(B, tempBeta), new PosVector());
+        CARef = A.sub(C, tempAlpha).cross(B.sub(C, tempBeta), new PosVector());
     }
 
     public Triangle createTriangle(PosVector A, PosVector B, PosVector C, DirVector direction) {
@@ -47,12 +47,12 @@ public class Triangle extends Plane {
         PosVector B = boundary[1];
         PosVector C = boundary[2];
 
-        B.subtract(A, tempAlpha).cross(hitPos.subtract(A, tempBeta), cross);
+        B.sub(A, tempAlpha).cross(hitPos.sub(A, tempBeta), cross);
 
         if (ABRef.dot(cross) >= 0) {
-            C.subtract(B, tempAlpha).cross(hitPos.subtract(B, tempBeta), cross);
+            C.sub(B, tempAlpha).cross(hitPos.sub(B, tempBeta), cross);
             if (BCRef.dot(cross) >= 0) {
-                A.subtract(C, tempAlpha).cross(hitPos.subtract(C, tempBeta), cross);
+                A.sub(C, tempAlpha).cross(hitPos.sub(C, tempBeta), cross);
                 return CARef.dot(cross) >= 0;
             }
         }

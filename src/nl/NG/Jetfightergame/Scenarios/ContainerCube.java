@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
@@ -14,14 +14,14 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen
  *         created on 8-11-2017.
  */
-public class TestLab implements Touchable {
+public class ContainerCube implements Touchable {
     public final int labSize;
     private final Shape world;
     private final Material material = Material.PLASTIC;
 
-    public TestLab(int labSize) {
+    public ContainerCube(int cubeSize) {
         super();
-        this.labSize = labSize;
+        this.labSize = cubeSize;
         world = GeneralShapes.INVERSE_CUBE;
     }
 

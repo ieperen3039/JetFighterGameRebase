@@ -65,10 +65,10 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     /**
      * @param eye normalized vector to eye
      * @param phi
-     * @return
+     * @return theta
      */
     private static float getTheta(Vector eye, float phi) {
-        int i = Settings.INVERT_CAMERA_ROTATION ? 1 : -1;
+        int i = Settings.INVERT_CAMERA_ROTATION ? -1 : 1;
         return (float) (Math.acos(eye.x()/Math.cos(phi)) * i);
     }
 

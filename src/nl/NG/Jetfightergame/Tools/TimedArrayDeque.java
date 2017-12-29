@@ -2,7 +2,8 @@ package nl.NG.Jetfightergame.Tools;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Geert van Ieperen
@@ -13,7 +14,7 @@ import java.util.concurrent.Semaphore;
 public class TimedArrayDeque<T> implements TimedQueue<T> {
 
     /** prevents race-conditions upon adding and removing */
-    private Semaphore changeGuard;
+    private Lock changeGuard;
 
     /** timestamps in seconds. Private, as semaphore must be handled */
     private Queue<Double> timeStamps; //TODO possible copy on write
@@ -25,19 +26,15 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
     public TimedArrayDeque(int capacity){
         timeStamps = new ArrayDeque<>(capacity);
         elements = new ArrayDeque<>(capacity);
-        changeGuard = new Semaphore(1);
+        changeGuard = new ReentrantLock();
     }
 
     @Override
     public void add(T element, double timeStamp) {
-        try {
-            changeGuard.acquire();
-            timeStamps.add(timeStamp);
-            elements.add(element);
-            changeGuard.release();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        changeGuard.lock();
+        timeStamps.add(timeStamp);
+        elements.add(element);
+        changeGuard.unlock();
     }
 
     @Override
@@ -67,14 +64,10 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
      * executes upon removing the head of the queues
      */
     protected void progress() {
-        try {
-            changeGuard.acquire();
-            timeStamps.remove();
-            elements.remove();
-            changeGuard.release();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        changeGuard.lock();
+        timeStamps.remove();
+        elements.remove();
+        changeGuard.unlock();
     }
 
     /** returns the next queued timestamp in seconds or null if there is none */

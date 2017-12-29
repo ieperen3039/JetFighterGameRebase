@@ -1,19 +1,21 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.QuaternionInterpolator;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.VectorInterpolator;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -40,8 +42,9 @@ public abstract class GameEntity implements MovingEntity {
     protected PosVector extraPosition;
     /** expected rotation */
     protected Quaternionf extraRotation;
+    /** expected velocity */
+    protected DirVector extraVelocity;
 
-    private float drawTimer = -Float.MAX_VALUE;
     private VectorInterpolator positionInterpolator;
     private QuaternionInterpolator rotationInterpolator;
 
@@ -98,11 +101,19 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public void preUpdate(float deltaTime, DirVector netForce) {
+
         nextCrash = new Extreme<>(false);
         extraPosition = new PosVector();
         extraRotation = new Quaternionf();
+        extraVelocity = new DirVector();
 
-        applyPhysics(deltaTime, netForce);
+        // nothing to do when no time is passed
+        if (deltaTime > 0) {
+            applyPhysics(deltaTime, netForce);
+        } else {
+            extraRotation.set(rotation);
+            extraPosition.set(position);
+        }
 
         updateShape(deltaTime);
     }
@@ -143,8 +154,8 @@ public abstract class GameEntity implements MovingEntity {
 
     /**
      * apply net force on this object and possibly read input. Should not change the current state
-     * except for {@link #extraPosition} and {@link #extraRotation}
-     * @param deltaTime time-difference, may be 0
+     * except for {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}
+     * @param deltaTime time-difference, cannot be 0
      * @param netForce accumulated external forces on this object
      */
     public abstract void applyPhysics(float deltaTime, DirVector netForce);
@@ -156,43 +167,98 @@ public abstract class GameEntity implements MovingEntity {
      * @param deltaTime time since last update call
      */
     public void update(float currentTime, float deltaTime) {
+        if (position.x() == Float.NaN || position.y() == Float.NaN || position.z() == Float.NaN)
+            throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
+        if (rotation.x() == Float.NaN || rotation.y() == Float.NaN || rotation.z() == Float.NaN)
+            throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
+
         hitPoints = null;
-
-
-        // update velocity if there has been a change
-        if (deltaTime != 0) {
-            DirVector movement = position.to(extraPosition, new DirVector());
-            if (movement.isScalable()) {
-                movement.scale(1/deltaTime, velocity);
-            }
-        }
 
         position = extraPosition;
         rotation = extraRotation;
+        velocity = extraVelocity;
         positionInterpolator.add(position, currentTime);
         rotationInterpolator.add(rotation, currentTime);
     }
 
     @Override
     public boolean checkCollisionWith(Touchable other){
+        other.create(new ShadowMatrix(), s -> s.getPlanes().forEach(e -> Toolbox.printSpamless(e.toString(), e)));
         Collision newCollision = getHitpointMovement().stream()
-                // see which points collide with the world
+                // see which points collide with the other
                 .map(point -> getPointCollision(point, other))
                 // exclude points that didn't hit
                 .filter(Objects::nonNull)
                 // select first point hit
                 .min(Collision::compareTo)
-                // return the final rotation
+                // if there has been no collision, return null
                 .orElse(null);
 
-        // if there is a collision earlier than the currently registered collision
+        // update if there is a collision earlier than the currently registered collision
         nextCrash.check(newCollision);
 
         return newCollision != null;
     }
 
     @Override
-    public abstract String toString();
+    public void applyCollision(float deltaTime) {
+
+        if (extraVelocity.length() > 100)
+            Toolbox.printSpamless(Integer.toHexString(hashCode()), toString() + "\nmoving " + extraVelocity.length() + " m/s",
+                    extraPosition, velocity, deltaTime);
+
+        final DirVector movement = position.to(extraPosition, new DirVector());
+
+        if (nextCrash.get() == null || !movement.isScalable()) {
+            return;
+        }
+
+
+        // relative position of contact
+        final PosVector relativeHit = nextCrash.get().globalHitPos;
+        // normal of the plane of contact
+        final DirVector contactNormal = nextCrash.get().normal;
+        // fraction of deltaTime until collision
+        final float timeScalar = nextCrash.get().timeScalar;
+        // seconds until this object hits the other
+        final float secondsUntilCollision = timeScalar * deltaTime;
+        // current rotation speed of airplane
+        final Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
+        // movement until collision
+        final DirVector interMovement = movement.scale(timeScalar, new DirVector());
+        // object position when hitting
+        final PosVector interPosition = position.add(interMovement, new PosVector());
+
+        Toolbox.printSpamless(Integer.toHexString(hashCode()), position, relativeHit, timeScalar);
+
+        simpleBounceCollision(relativeHit, contactNormal, rotationSpeedVector, interPosition, extraPosition);
+
+        rollSpeed = rotationSpeedVector.x();
+        pitchSpeed = rotationSpeedVector.y();
+        yawSpeed = rotationSpeedVector.z();
+
+        interPosition.to(extraPosition, interMovement).reducedTo(extraVelocity.length(), extraVelocity);
+        hitPoints = null;
+    }
+
+    /**
+     * bounce without rotation
+     *
+     * @param relativeHit         relative position of the point on this object that caused the collision
+     * @param contactNormal       the normal of the plane that the point has hit
+     * @param rotationSpeedVector vector of rotation, defined as (rollSpeed, pitchSpeed, yawSpeed).
+     *                            This should contain the new rotations upon returning
+     * @param interPosition       the position where the object is at the moment of collision
+     * @param newPosition         the current extrapolated position of this object.
+     *                            The new extrapolated position should be stored here upon returning
+     */
+    private void simpleBounceCollision(PosVector relativeHit, DirVector contactNormal, Vector3f rotationSpeedVector,
+                                       PosVector interPosition, PosVector newPosition
+    ) {
+        final DirVector remainingMovement = interPosition.to(newPosition, new DirVector());
+        remainingMovement.reflect(contactNormal);
+        interPosition.add(remainingMovement, newPosition);
+    }
 
     /**
      * returns the collisions caused by {@code point} in the given reference frame.
@@ -203,24 +269,32 @@ public abstract class GameEntity implements MovingEntity {
      */
     private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other) {
 
-        Stream.Builder<Collision> multipliers = Stream.builder();
+        Stream.Builder<Collision> collisions = Stream.builder();
 
         // collect the collisions
         final ShadowMatrix identity = new ShadowMatrix();
         final Consumer<Shape> exec = shape -> {
-            // map points to local space
-            PosVector startPoint = identity.getReversePosition(point.previous());
-            PosVector endPoint = identity.getReversePosition(point.current());
+            // map point to local space
+            PosVector startPoint = identity.mapToLocal(point.previous());
+            PosVector endPoint = identity.mapToLocal(point.current());
             DirVector direction = startPoint.to(endPoint, new DirVector());
             // search hitpoint, add it when found
-            Collision stopVec = shape.getMaximumMovement(startPoint, direction, endPoint);
-            if (stopVec != null) multipliers.add(stopVec);
+            Collision newCrash = shape.getCollision(startPoint, direction, endPoint);
+            if (newCrash != null) {
+                newCrash.convertToGlobal(identity::getPosition);
+                collisions.add(newCrash);
+            }
         };
 
-        other.toLocalSpace(identity, () -> create(identity , exec, true));
+        if (other instanceof  MovingEntity){
+            final MovingEntity otherMoving = (MovingEntity) other;
+            otherMoving.toLocalSpace(identity, () -> otherMoving.create(identity, exec, true), true);
+        } else {
+            other.toLocalSpace(identity, () -> other.create(identity, exec));
+        }
 
         // iterate over all collisions
-        return multipliers.build()
+        return collisions.build()
                 // select the smallest
                 .min(Collision::compareTo)
                 .orElse(null);
@@ -229,11 +303,10 @@ public abstract class GameEntity implements MovingEntity {
     /**
      * collects the movement of the hitpoints of this object for the current state, and caches it
      * @return a collection of the positions of the hitpoints in world space
-     * TODO optimization
      */
     private Collection<TrackedVector<PosVector>> getHitpointMovement() {
         if (hitPoints == null) {
-
+            // we consider from extrapolated perspective
             final List<PosVector> previous = getCurrentPosition();
             final List<PosVector> current = getNextPosition();
 
@@ -242,7 +315,7 @@ public abstract class GameEntity implements MovingEntity {
             Iterator<PosVector> previousPoints = previous.iterator();
             Iterator<PosVector> currentPoints = current.iterator();
             while (previousPoints.hasNext()) {
-                points.add(new TrackedVector<>(previousPoints.next(), currentPoints.next()));
+                points.add(new TrackedVector<>(currentPoints.next(), previousPoints.next()));
             }
             hitPoints = points;
         }
@@ -253,29 +326,29 @@ public abstract class GameEntity implements MovingEntity {
     // collect the extrapolated position of the points of this object in worldspace
     private List<PosVector> getNextPosition() {
         ShadowMatrix identity = new ShadowMatrix();
-        final List<PosVector> current = new ArrayList<>();
+        final List<PosVector> list = new ArrayList<>();
         final Consumer<Shape> collect = (shape -> shape.getPoints().stream()
                 // map to world-coordinates
                 .map(identity::getPosition)
                 // collect them in an array list
-                .forEach(current::add)
+                .forEach(list::add)
         );
         toLocalSpace(identity, () -> create(identity, collect, true), true);
-        return current;
+        return list;
     }
 
     // collect the current position of the points of this object in worldspace
     private List<PosVector> getCurrentPosition() {
         ShadowMatrix identity = new ShadowMatrix();
-        final List<PosVector> previous = new ArrayList<>();
+        final List<PosVector> list = new ArrayList<>();
         final Consumer<Shape> collect = (shape -> shape.getPoints().stream()
                 // map to world-coordinates
                 .map(identity::getPosition)
                 // collect them in an array list
-                .forEach(previous::add)
+                .forEach(list::add)
         );
-        toLocalSpace(identity, (() -> create(identity, collect, false)), false);
-        return previous;
+        toLocalSpace(identity, () -> create(identity, collect, false), false);
+        return list;
     }
 
     public void toLocalSpace(MatrixStack ms, Runnable action, boolean extrapolate) {
@@ -296,6 +369,13 @@ public abstract class GameEntity implements MovingEntity {
         ms.popMatrix();
     }
 
+    /** returns the latest calculated position
+     * for rendering, one should preferably use {@link MovingEntity#interpolatedPosition()}
+     */
+    public PosVector getPosition() {
+        return new PosVector(position);
+    }
+
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
@@ -311,22 +391,15 @@ public abstract class GameEntity implements MovingEntity {
         toLocalSpace(gl, () -> create(gl, painter), pos, rot);
     }
 
-    private Quaternionf interpolatedRotation() {
-        updateInterpolationCache();
-        return cachedRotation;
-    }
-
-    /** returns the latest calculated position
-     * for rendering, one should preferably use {@link MovingEntity#interpolatedPosition()}
-     */
-    public PosVector getPosition() {
-        return new PosVector(position);
-    }
-
     @Override
     public PosVector interpolatedPosition() {
         updateInterpolationCache();
         return new PosVector(cachedPosition);
+    }
+
+    private Quaternionf interpolatedRotation() {
+        updateInterpolationCache();
+        return cachedRotation;
     }
 
     private void updateInterpolationCache() {
@@ -341,4 +414,7 @@ public abstract class GameEntity implements MovingEntity {
     public DirVector getVelocity() {
         return velocity;
     }
+
+    @Override
+    public abstract String toString();
 }

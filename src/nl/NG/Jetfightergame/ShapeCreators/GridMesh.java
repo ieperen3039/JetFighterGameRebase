@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ShapeCreators;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -141,7 +141,7 @@ public class GridMesh implements Shape {
      * @return {@code null} if it does not hit with direction scalar < 1
      * otherwise, it provides a collision object about the first collision with this shape
      */
-    public Collision getMaximumMovement(PosVector linePosition, DirVector direction, PosVector endPoint) {
+    public Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint) {
         int leastX = (int) Math.floor(Math.min(linePosition.x(), endPoint.x()));
         int mostX = (int) Math.ceil(Math.max(linePosition.x(), endPoint.x()));
         int leastY = (int) Math.floor(Math.min(linePosition.y(), endPoint.y()));

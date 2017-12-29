@@ -134,7 +134,7 @@ public abstract class Plane {
      */
     protected DirVector calculateMaxDirection(PosVector linePosition, DirVector direction) {
         // random point is chosen
-        boundary[0].subtract(linePosition, relativePosition);
+        boundary[0].sub(linePosition, relativePosition);
 
         float scalar = (relativePosition.dot(normal) / direction.dot(normal));
 

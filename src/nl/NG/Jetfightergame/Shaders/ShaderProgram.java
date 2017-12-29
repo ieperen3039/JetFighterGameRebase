@@ -204,7 +204,7 @@ public abstract class ShaderProgram {
      * @param color the light color with its intensity as alpha value
      */
     protected void setPointLightUniform(String uniformName, Vector3f mPosition, Color4f color) {
-        Toolbox.printSpamless("Set light: " + uniformName, new PosVector(mPosition));
+        Toolbox.printSpamless(uniformName, "Set light: " + uniformName, new PosVector(mPosition));
 
         setUniform(uniformName + ".color", color.toVector3f());
         setUniform(uniformName + ".mPosition", mPosition);

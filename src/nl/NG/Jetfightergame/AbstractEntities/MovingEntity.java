@@ -59,8 +59,9 @@ public interface MovingEntity extends Touchable {
      * (2) Compute the reaction impulse vector {@code J_r} in terms of its magnitude {@code j_r} and contact normal {@code |n|}  using {@code  J_r = j_r * |n|}.
      * (3) Compute new linear velocities {@code  v'_i} in terms of old velocities {@code v_i}, masses {@code m_i} and reaction impulse vector {@code j_r}
      * (4) Compute new angular velocities {@code  w'_i} in terms of old angular velocities {@code  w_i}, inertia tensors {@code I_i} and reaction impulse {@code j_r}
+     * @param deltaTime always > 0
      */
-    void applyCollision();
+    void applyCollision(float deltaTime);
 
     /**
      * checks the movement of the hitpoints of this object against the planes of 'other'.

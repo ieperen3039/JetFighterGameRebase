@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 /**
  * @author Geert van Ieperen
@@ -70,13 +69,6 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public void applyPhysics(float deltaTime, DirVector netForce) {
-        // nothing to do when no time is passed
-        if (deltaTime == 0) {
-            extraRotation.set(rotation);
-            extraPosition.set(position);
-            return;
-        }
-
         if (Settings.GYRO_PHYSICS_MODEL){
             gyroPhysics(deltaTime, netForce, velocity);
         } else {
@@ -160,8 +152,7 @@ public abstract class AbstractJet extends GameEntity {
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        DirVector extraVelocity = new DirVector();
-        netForce.scale(deltaTime/mass, extraVelocity).add(velocity, extraVelocity);
+        velocity.add(netForce.scale(deltaTime/mass, extraVelocity), extraVelocity);
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
@@ -172,19 +163,6 @@ public abstract class AbstractJet extends GameEntity {
         super.update(currentTime, deltaTime);
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-    }
-
-    @Override
-    public void applyCollision() {
-        // relative position of contact
-        PosVector relativeHit = nextCrash.get().hitPos;
-        // normal of the plane of contact
-        DirVector contactNormal = nextCrash.get().normal;
-        // current rotation speed of airplane
-        Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
-
-
-
     }
 
     /**

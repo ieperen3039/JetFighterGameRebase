@@ -43,6 +43,35 @@ public class MatrixStackTest {
     }
 
     @Test
+    public void SM_InversePositionTest() {
+        ShadowMatrix sm = new ShadowMatrix();
+
+        sm.translate(2, 2, 2);
+        sm.rotate(new DirVector(1, 0, 0), (float) Math.toRadians(90));
+        sm.scale(2);
+
+        final PosVector target = new PosVector(3, 3, 3);
+        PosVector answer = sm.mapToLocal(target);
+        PosVector expected = new PosVector(0.5f, 0.5f, -0.5f);
+
+        assert answer.toString().equals(expected.toString()) : "querying " + target + " resulted in " + answer + " while it should be " + expected;
+    }
+
+    @Test
+    public void SM_InverseGivesIdentityTest() {
+        ShadowMatrix sm = new ShadowMatrix();
+
+        sm.translate(2, 2, 2);
+        sm.rotate(new DirVector(1, 0, 0), (float) Math.toRadians(90));
+        sm.scale(2);
+
+        final PosVector target = new PosVector(4.75f, 3.5f, 2.25f);
+        PosVector answer = sm.getPosition(sm.mapToLocal(target));
+
+        assert answer.toString().equals(target.toString()) : "mapping " + target + " forth and back gives " + answer;
+    }
+
+    @Test
     public void MatrixGetPositionTest() throws IOException {
         new GLFWWindow("test");
         ms = new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera());

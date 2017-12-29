@@ -61,7 +61,7 @@ public class DirVector extends Vector {
         return dest;
     }
 
-    public DirVector subtract(Vector that, DirVector dest) {
+    public DirVector sub(Vector that, DirVector dest) {
         super.sub(that, dest);
         return dest;
     }

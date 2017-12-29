@@ -68,13 +68,13 @@ public class Toolbox {
      * prints the toString method of the given objects to System.out, preceded with calling method.
      * Every unique callside will only be allowed to print once.
      * For recursive calls, every level will be regarded as a new level, thus print once for every unique depth
+     * @param identifier
      * @param x
      */
-    public static synchronized void printSpamless(Object ... x){
-        String source = getCallingMethod(1);
-        if (!callerBlacklist.contains(source)) {
-            System.out.println(source + ": " + getValues(x));
-            callerBlacklist.add(source);
+    public static synchronized void printSpamless(String identifier, Object... x){
+        if (!callerBlacklist.contains(identifier)) {
+            System.out.println(Toolbox.getCallingMethod(1) + ": " + getValues(x));
+            callerBlacklist.add(identifier);
         }
     }
 
@@ -117,8 +117,8 @@ public class Toolbox {
             gl.rotate((float) Math.toRadians(-90), 1f, 0f, 0f);
             gl.setMaterial(mat, Color4f.GREEN);
             gl.draw(ShapeFromMesh.Arrow);
-            gl.scale(0.3f);
-            gl.setMaterial(Material.SILVER, Color4f.WHITE);
+            gl.scale(0.2f);
+            gl.setMaterial(Material.ROUGH, Color4f.WHITE);
             gl.draw(GeneralShapes.CUBE);
         }
         gl.popMatrix();

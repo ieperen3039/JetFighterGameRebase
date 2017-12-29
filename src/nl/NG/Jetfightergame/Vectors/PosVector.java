@@ -58,7 +58,7 @@ public class PosVector extends Vector {
     }
 
 
-    public PosVector subtract(Vector that, PosVector dest) {
+    public PosVector sub(Vector that, PosVector dest) {
         super.sub(that, dest);
         return dest;
     }

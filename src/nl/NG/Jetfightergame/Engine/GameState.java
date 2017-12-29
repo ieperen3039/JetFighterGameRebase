@@ -1,17 +1,16 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
-import nl.NG.Jetfightergame.Scenarios.TestLab;
+import nl.NG.Jetfightergame.Scenarios.ContainerCube;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -19,8 +18,8 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Geert van Ieperen
@@ -28,7 +27,6 @@ import java.util.concurrent.Semaphore;
  */
 public class GameState {
 
-    private static final int MAX_COLLISION_ITERATIONS = 5;
     private AbstractJet playerJet;
 
     protected Collection<Touchable> staticEntities = new ArrayList<>();
@@ -37,7 +35,7 @@ public class GameState {
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
     /** a protector that should protecc the {@code objects} list (and possibly other   */
-    private Semaphore gameChangeGuard = new Semaphore(1);
+    private Lock gameChangeGuard = new ReentrantLock();
     public final GameTimer time = new GameTimer();
 
     public GameState(Controller input) {
@@ -49,7 +47,7 @@ public class GameState {
     protected void buildScene() {
         dynamicEntities.add(playerJet);
 //        staticEntities.add(new SimplexCave());
-        staticEntities.add(new TestLab(100));
+        staticEntities.add(new ContainerCube(100));
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
     }
 
@@ -57,17 +55,17 @@ public class GameState {
      * update the physics of all game objects and check for collisions
      */
     @SuppressWarnings("ConstantConditions")
-    public void updateGameLoop() throws InterruptedException {
+    public void updateGameLoop() {
         time.updateGameTime();
         float deltaTime = time.getGameTime().difference();
         float currentTime = time.getGameTime().current();
 
 
-        // update positions and apply physics // TODO external influences
+        // update positions and apply physics
         dynamicEntities.forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
 
-        if (Settings.UNIT_COLLISION) {
-            int remainingLoops = MAX_COLLISION_ITERATIONS;
+        if (Settings.UNIT_COLLISION && deltaTime > 0f) {
+            int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
             Integer[] collisions = {0};
 
             do {
@@ -76,7 +74,7 @@ public class GameState {
                 // as a single collision may result in a previously not-intersecting pair to collide,
                 // we cannot re-use the getIntersectingPairs method nor reduce non-collisions. We should add some form
                 // of caching for getIntersectingPairs, to make short-followed calls more efficient.
-                checkUnitCollisions(getIntersectingPairs(), collisions);
+                checkUnitCollisions(getIntersectingPairs(), collisions, deltaTime);
 
             // loop if
                 // (1) recursive collision is enabled,
@@ -85,9 +83,9 @@ public class GameState {
             } while (Settings.RECURSIVE_COLLISION && remainingLoops > 0 && collisions[0] > 0);
         }
 
-        gameChangeGuard.acquire();
+        gameChangeGuard.lock();
         dynamicEntities.forEach(obj -> obj.update(currentTime, deltaTime));
-        gameChangeGuard.release();
+        gameChangeGuard.unlock();
     }
 
     protected DirVector entityNetforce(GameEntity entity) {
@@ -97,32 +95,33 @@ public class GameState {
     /** checks the collisions of all objects and ensures that results[0] > 0 iff there has been a collision
      * @param intersectingPairs a collection of pairs of objects that may collide.
      * @param results an array with length at least 1 to store the result
+     * @param deltaTime
      */
-    private void checkUnitCollisions(Collection<Pair<Touchable, MovingEntity>> intersectingPairs, Integer[] results) {
+    private void checkUnitCollisions(Collection<Pair<Touchable, MovingEntity>> intersectingPairs, Integer[] results, float deltaTime) {
         intersectingPairs.parallelStream()
                 .filter(GameState::checkPair)
                 .forEach(p -> {
                     results[0]++; // race conditions don't matter, as long as collisions[0] > 0
-                    applyCollisions(p);
+                    applyCollisions(p, deltaTime);
                 });
     }
 
-    /** calls {@link MovingEntity#applyCollision()} on each object of p for which it is valid */
-    private void applyCollisions(Pair<Touchable, MovingEntity> p) {
-        p.right.applyCollision();
+    /** calls {@link MovingEntity#applyCollision(float)} on each object of p for which it is valid */
+    private void applyCollisions(Pair<Touchable, MovingEntity> p, float deltaTime) {
+        p.right.applyCollision(deltaTime);
         if (p.left instanceof MovingEntity) {
-            ((MovingEntity) p.left).applyCollision();
+            ((MovingEntity) p.left).applyCollision(deltaTime);
         }
     }
 
     /**
      * let each object of the pair check for collisions, but does not make any changes just yet.
-     * these only take effect after calling {@link MovingEntity#applyCollision()}
+     * these only take effect after calling {@link MovingEntity#applyCollision(float)}
      * @param p a pair of objects that may have collided.
      * @return true if this pair collided:
      * if this method returns false, then these objects do not collide and are not changed as a result.
      * if this method returns true, then these objects do collide and have this collision stored.
-     * The collision can be calculated by {@link MovingEntity#applyCollision()} and applied by {@link Updatable#update(float)}
+     * The collision can be calculated by {@link MovingEntity#applyCollision(float)} and applied by {@link Updatable#update(float)}
      */
     private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
         Touchable either = p.left;
@@ -159,8 +158,8 @@ public class GameState {
         });
 
 
-        final long nulls = result.stream().filter(Objects::isNull).count();
-        if (nulls > 0) Toolbox.print("nulls: "+ nulls);
+//        final long nulls = result.stream().filter(Objects::isNull).count();
+//        if (nulls > 0) Toolbox.print("nulls: "+ nulls);
 
         collisionMax.updateAndPrint("Intersections", result.size(), "pairs");
         return result;
@@ -174,19 +173,14 @@ public class GameState {
      * draw all objects of the game
      */
     public void drawObjects(GL2 gl) {
-        Toolbox.drawAxisFrame(gl);
+//        Toolbox.drawAxisFrame(gl);
 
-        // static objects can not have interference
+        // static objects cannot have interference
         staticEntities.forEach(d -> d.draw(gl));
 
-        try {
-            gameChangeGuard.acquire();
-            dynamicEntities.forEach(d -> d.draw(gl));
-            gameChangeGuard.release();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            gl.popAll();
-        }
+        gameChangeGuard.lock();
+        dynamicEntities.forEach(d -> d.draw(gl));
+        gameChangeGuard.unlock();
     }
 
     public void drawParticles(GL2 gl){

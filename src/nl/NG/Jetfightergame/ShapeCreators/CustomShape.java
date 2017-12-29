@@ -64,10 +64,10 @@ public class CustomShape {
         DirVector direction = new DirVector();
         final PosVector point = new PosVector();
         //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
-        (B.subtract(A, point))
+        (B.sub(A, point))
                 .scale((float) (3 * (1 - u) * (1 - u)), point)
-                .add(C.subtract(B, new PosVector()).scale((float) (6 * (1 - u) * u), new PosVector()), direction)
-                .add(D.subtract(C, new PosVector()).scale((float) (3 * u * u), new PosVector()), direction);
+                .add(C.sub(B, new PosVector()).scale((float) (6 * (1 - u) * u), new PosVector()), direction)
+                .add(D.sub(C, new PosVector()).scale((float) (3 * u * u), new PosVector()), direction);
         return direction;
     }
 

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
-import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -141,7 +141,7 @@ public class GravityHud {
     public static Vector2i project(DirVector vector, DirVector lookDirection){
         DirVector proj = new DirVector();
         vector.reducedTo(1, proj);
-        proj.subtract(lookDirection.reducedTo(proj.dot(lookDirection), new DirVector()), proj);
+        proj.sub(lookDirection.reducedTo(proj.dot(lookDirection), new DirVector()), proj);
         return new Vector2i((int) proj.y(), (int) proj.z());
     }
 }
