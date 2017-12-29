@@ -63,12 +63,12 @@ public class GeneralShapes {
         PosVector NNP = new PosVector(-1, -1, 1);
         PosVector NNN = new PosVector(-1, -1, -1);
 
+        frame.addQuad(NPN, NPP, NNP, NNN, new DirVector(1, 0, 0));
+        frame.addQuad(PNP, PNN, NNN, NNP, new DirVector(0, 1, 0));
         frame.addQuad(PPP, PPN, PNN, PNP, new DirVector(-1, 0, 0));
         frame.addQuad(PPN, NPN, NNN, PNN, new DirVector(0, 0, 1));
-        frame.addQuad(NPN, NPP, NNP, NNN, new DirVector(1, 0, 0));
-        frame.addQuad(NPP, PPP, PNP, NNP, new DirVector(0, 0, -1));
         frame.addQuad(PPP, PPN, NPN, NPP, new DirVector(0, -1, 0));
-        frame.addQuad(PNP, PNN, NNN, NNP, new DirVector(0, 1, 0));
+        frame.addQuad(NPP, PPP, PNP, NNP, new DirVector(0, 0, -1));
 
         return frame.wrapUp();
     }

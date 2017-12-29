@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.FallingCube;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -25,7 +26,7 @@ public class CollisionLaboratory extends GameState {
     private final int speeds;
 
     public CollisionLaboratory(Controller input) {
-        this(20, 1, input);
+        this(15, 2, input);
     }
 
     public CollisionLaboratory(int labSize, int nrOfCubes, Controller controller) {
@@ -33,8 +34,6 @@ public class CollisionLaboratory extends GameState {
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
         this.speeds = labSize/3;
-
-//        time.setGameTimeMultiplier(0.1f);
     }
 
     @Override
@@ -67,6 +66,6 @@ public class CollisionLaboratory extends GameState {
 
     @Override
     protected DirVector entityNetforce(GameEntity entity) {
-        return DirVector.zVector().negate(new DirVector());
+        return DirVector.zeroVector();
     }
 }

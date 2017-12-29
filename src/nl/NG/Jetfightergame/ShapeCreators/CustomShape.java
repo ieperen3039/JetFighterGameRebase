@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.ShapeCreators;
 
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;
@@ -73,6 +74,7 @@ public class CustomShape {
 
     /**
      * defines a quad in rotational order
+     * the vectors do not have to be clockwise
      *
      * @param A      (0, 0)
      * @param B      (0, 1)
@@ -81,29 +83,43 @@ public class CustomShape {
      * @param normal the normal of this plane
      * @throws NullPointerException if any of the vectors is null
      */
-    public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
-        addTriangle(A, B, C, normal);
-        addTriangle(A, D, C, normal);
+    public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal){
+        DirVector currentNormal = Triangle.getNormalVector(A, B, C);
+
+        if (currentNormal.dot(normal) >= 0){
+            addFinalQuad(A, B, C, D, normal);
+        } else {
+            addFinalQuad(D, C, B, A, normal);
+        }
+    }
+
+    /** a quad in rotational, counterclockwise order */
+    private void addFinalQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
+        addFinalTriangle(A, C, B, normal);
+        addFinalTriangle(A, D, C, normal);
     }
 
     /**
      * defines a quad that is mirrored over the xz-plane
      *
-     * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
+     * @see CustomShape#addFinalQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addQuad(PosVector A, PosVector B) {
         addQuad(A, B, B.mirrorY(new PosVector()), A.mirrorY(new PosVector()));
     }
 
     /**
-     * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
+     * @see CustomShape#addFinalQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D) {
-        DirVector normalVector = Plane.getNormalVector(A, B, C);
-        if (normalVector.dot(middle.to(B, new DirVector())) < 0){
-            addQuad(D, C, B, A, normalVector.negate(normalVector));
+        DirVector normal = Plane.getNormalVector(A, B, C);
+
+        final DirVector direction = middle.to(B, new DirVector());
+        if (normal.dot(direction) >= 0) {
+            addFinalQuad(A, B, C, D, normal);
         } else {
-            addQuad(A, B, C, D, normalVector);
+            normal.negate();
+            addFinalQuad(D, C, B, A, normal);
         }
     }
 
@@ -121,23 +137,26 @@ public class CustomShape {
     }
 
     /**
-     * @see CustomShape#addTriangle(PosVector, PosVector, PosVector, DirVector)
+     * @see CustomShape#addFinalTriangle(PosVector, PosVector, PosVector, DirVector)
      */
     public void addTriangle(PosVector A, PosVector B, PosVector C) {
-        DirVector normalVector = Plane.getNormalVector(A, B, C);
-        if (normalVector.dot(middle.to(B, new DirVector())) < 0){
-            addTriangle(C, B, A, normalVector.negate(normalVector));
+        DirVector normal = Plane.getNormalVector(A, B, C);
+        final DirVector direction = middle.to(B, new DirVector());
+
+        if (normal.dot(direction) >= 0) {
+            addFinalTriangle(A, B, C, normal);
         } else {
-            addTriangle(A, B, C, normalVector);
+            normal.negate();
+            addFinalTriangle(C, B, A, normal);
         }
     }
 
     /**
-     * defines a triangle in the three given points
+     * defines a triangle with the given points in counterclockwise ordering
      *
      * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector)
      */
-    public void addTriangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
+    private void addFinalTriangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
         int aInd = addHitpoint(A);
         int bInd = addHitpoint(B);
         int cInd = addHitpoint(C);
@@ -147,10 +166,9 @@ public class CustomShape {
 
     private int addNormal(DirVector normal) {
         if (normal == null || normal.equals(DirVector.zeroVector()))
-            throw new IllegalArgumentException("Customshape.addNormal(DirVector): normal can not be zero");
+            throw new IllegalArgumentException("Customshape.addNormal(DirVector): invalid normal: " + normal);
 
-        DirVector normalizedNormal = normal.normalize(new DirVector());
-        normals.add(normalizedNormal);
+        normals.add(normal);
         return normals.size() - 1;
     }
 
@@ -206,7 +224,7 @@ public class CustomShape {
             newNormal = newNormal.dot(normal.previous()) > 0 ? newNormal : newNormal.scale(-1, new DirVector());
             normal.update(newNormal);
 
-            addQuad(left.previous(), right.previous(), right.current(), left.current(), normal.current());
+            addFinalQuad(left.previous(), right.previous(), right.current(), left.current(), normal.current());
         }
 
         return new Pair<>(leftVertices, rightVertices);
@@ -243,7 +261,7 @@ public class CustomShape {
         while (positions.hasNext()) {
             targets.update(positions.next());
             DirVector normal = Plane.getNormalVector(point, targets.previous(), targets.current());
-            addTriangle(targets.previous(), targets.current(), point, normal);
+            addFinalTriangle(targets.previous(), targets.current(), point, normal);
         }
     }
 

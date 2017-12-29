@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Scenarios;
+package nl.NG.Jetfightergame.GeneralEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;

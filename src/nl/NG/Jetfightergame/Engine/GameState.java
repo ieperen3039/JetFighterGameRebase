@@ -7,10 +7,11 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
+import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
-import nl.NG.Jetfightergame.Scenarios.ContainerCube;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -18,6 +19,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,45 +60,35 @@ public class GameState {
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() {
         time.updateGameTime();
-        float previousTime = time.getGameTime().previous();
         float currentTime = time.getGameTime().current();
-        float deltaTime = currentTime - previousTime;
+        float deltaTime = time.getGameTime().difference();
 
         // update positions and apply physics
         dynamicEntities.forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
 
         // check and handle collisions
-        if (Settings.UNIT_COLLISION && deltaTime > 0f) {
+        if (deltaTime > 0f) {
             int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
-            Integer[] collisions = {0};
+            Integer[] collisions = {1};
 
-            do {
+            while (--remainingLoops > 0 && collisions[0] > 0) {
                 collisions[0] = 0;
 
                 /* as a single collision may result in a previously not-intersecting pair to collide,
                  * we cannot re-use the getIntersectingPairs method nor reduce non-collisions. We should add some form
                  * of caching for getIntersectingPairs, to make short-followed calls more efficient.
                  */
-
                 getIntersectingPairs().parallelStream()
                         .filter(GameState::checkPair)
                         .forEach(p -> {
                             collisions[0]++; // race conditions don't matter, as long as collisions[0] > 0
-                            applyCollisions(p, deltaTime, previousTime);
+                            applyCollisions(p, currentTime);
                         });
-
-            } while (
-                    // (1) recursive collision is enabled
-                    Settings.RECURSIVE_COLLISION
-                    // (2) we did not reach the maximum number of loops
-                    && --remainingLoops > 0
-                    // (3) there have been changes in the last loop
-                    && collisions[0] > 0
-                    );
+            }
         }
 
         gameChangeGuard.lock();
-        dynamicEntities.forEach(obj -> obj.update(currentTime, deltaTime));
+        dynamicEntities.forEach(obj -> obj.update(currentTime));
         gameChangeGuard.unlock();
     }
 
@@ -104,22 +96,22 @@ public class GameState {
         return DirVector.zeroVector();
     }
 
-    /** calls {@link MovingEntity#applyCollision(float, float)} on each object of p for which it is valid */
-    private void applyCollisions(Pair<Touchable, MovingEntity> p, float deltaTime, float previousTime) {
-        p.right.applyCollision(deltaTime, previousTime);
+    /** calls {@link MovingEntity#applyCollision(float)} on each object of p for which it is valid */
+    private void applyCollisions(Pair<Touchable, MovingEntity> p, float currentTime) {
+        p.right.applyCollision(currentTime);
         if (p.left instanceof MovingEntity) {
-            ((MovingEntity) p.left).applyCollision(deltaTime, previousTime);
+            ((MovingEntity) p.left).applyCollision(currentTime);
         }
     }
 
     /**
      * let each object of the pair check for collisions, but does not make any changes just yet.
-     * these only take effect after calling {@link MovingEntity#applyCollision(float, float)}
+     * these only take effect after calling {@link MovingEntity#applyCollision(float)}
      * @param p a pair of objects that may have collided.
      * @return true if this pair collided:
      * if this method returns false, then these objects do not collide and are not changed as a result.
      * if this method returns true, then these objects do collide and have this collision stored.
-     * The collision can be calculated by {@link MovingEntity#applyCollision(float, float)} and applied by {@link Updatable#update(float)}
+     * The collision can be calculated by {@link MovingEntity#applyCollision(float)} and applied by {@link Updatable#update(float)}
      */
     private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
         Touchable either = p.left;
@@ -155,10 +147,11 @@ public class GameState {
                 staticEntities
                         .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
             });
+
+            final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
+            if (nulls > 0) Toolbox.print("nulls: "+ nulls);
         }
 
-//        final long nulls = result.stream().filter(Objects::isNull).count();
-//        if (nulls > 0) Toolbox.print("nulls: "+ nulls);
 
         collisionMax.updateAndPrint("Intersections", allEntityPairs.size(), "pairs");
         return allEntityPairs;

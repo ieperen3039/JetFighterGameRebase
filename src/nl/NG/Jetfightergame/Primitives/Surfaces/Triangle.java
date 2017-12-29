@@ -25,10 +25,10 @@ public class Triangle extends Plane {
         CARef = A.sub(C, tempAlpha).cross(B.sub(C, tempBeta), new PosVector());
     }
 
-    public Triangle createTriangle(PosVector A, PosVector B, PosVector C, DirVector direction) {
+    public static Triangle createTriangle(PosVector A, PosVector B, PosVector C, DirVector direction) {
         final DirVector normal = getNormalVector(A, B, C);
 
-        if (normal.dot(direction) > 0) {
+        if (normal.dot(direction) >= 0) {
             return new Triangle(A, B, C, normal);
         } else {
             normal.negate();

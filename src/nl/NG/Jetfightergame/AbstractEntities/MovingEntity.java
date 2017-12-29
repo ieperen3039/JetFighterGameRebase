@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
 
@@ -54,15 +55,8 @@ public interface MovingEntity extends Touchable {
 
     /**
      * calculate effect of collision, but does not apply new position
-     * <p>The procedure for computing the post-collision linear velocities {@code v'_i} and angular velocities {@code  w'_i} is as follows:</p>
-     * (1) Compute the reaction impulse magnitude {@code j_r}
-     * (2) Compute the reaction impulse vector {@code J_r} in terms of its magnitude {@code j_r} and contact normal {@code |n|}  using {@code  J_r = j_r * |n|}.
-     * (3) Compute new linear velocities {@code  v'_i} in terms of old velocities {@code v_i}, masses {@code m_i} and reaction impulse vector {@code j_r}
-     * (4) Compute new angular velocities {@code  w'_i} in terms of old angular velocities {@code  w_i}, inertia tensors {@code I_i} and reaction impulse {@code j_r}
-     * @param deltaTime always > 0
-     * @param previousTimeStamp
      */
-    void applyCollision(float deltaTime, float previousTimeStamp);
+    void applyCollision(float currentTime);
 
     /**
      * checks the movement of the hitpoints of this object against the planes of 'other'.
@@ -76,6 +70,8 @@ public interface MovingEntity extends Touchable {
      * @return a copy of the position of the center of mass of this object, interpolated for a predefined timeStamp
      */
     PosVector interpolatedPosition();
+
+    Quaternionf interpolatedRotation();
 
     /**
      * @return movement of the center of mass of this object in world-space

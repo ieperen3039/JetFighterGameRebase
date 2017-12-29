@@ -52,8 +52,12 @@ public abstract class GameEntity implements MovingEntity {
     protected Extreme<Collision> nextCrash;
     /** cached positions of the hitpoints*/
     private Collection<TrackedVector<PosVector>> hitPoints = null;
-    /***/
+
+    /** the render timer. renderTime.current() will provide the current time for interpolation,
+     * and renderTime.difference() provides the deltaTime */
     private TrackedFloat renderTime;
+    /** time of the last update. deltaTime should be calculated from this point onward */
+    private float previousUpdateTime;
 
     /** worldspace / localspace */
     private float scale;
@@ -62,6 +66,7 @@ public abstract class GameEntity implements MovingEntity {
     private float cachedTime;
     private PosVector cachedPosition;
     private Quaternionf cachedRotation;
+    private DirVector netForce;
 
     /**
      * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
@@ -81,11 +86,13 @@ public abstract class GameEntity implements MovingEntity {
         this.rotation = new Quaternionf(initialRotation);
         this.extraRotation = new Quaternionf(initialRotation);
 
+
         this.surfaceMaterial = surfaceMaterial;
         this.scale = scale;
         this.velocity = new DirVector(initialVelocity);
+        this.extraVelocity = new DirVector(initialVelocity);
         this.mass = mass;
-        renderTime = renderTimer;
+        this.renderTime = renderTimer;
 
         cachedTime = renderTimer.current();
         cachedPosition = initialPosition;
@@ -101,18 +108,17 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public void preUpdate(float deltaTime, DirVector netForce) {
+        this.netForce = netForce;
 
         nextCrash = new Extreme<>(false);
-        extraPosition = new PosVector();
-        extraRotation = new Quaternionf();
-        extraVelocity = new DirVector();
 
         // nothing to do when no time is passed
-        if (deltaTime > 0) {
+        if (deltaTime != 0) {
             applyPhysics(deltaTime, netForce);
         } else {
             extraRotation.set(rotation);
             extraPosition.set(position);
+            extraVelocity.set(velocity);
         }
 
         updateShape(deltaTime);
@@ -120,7 +126,7 @@ public abstract class GameEntity implements MovingEntity {
 
 
     /**
-     * update the shape of the airplane, if applicable
+     * entities may include animations. These animations are updated here.
      */
     protected abstract void updateShape(float deltaTime);
 
@@ -154,7 +160,8 @@ public abstract class GameEntity implements MovingEntity {
 
     /**
      * apply net force on this object and possibly read input. Should not change the current state
-     * except for {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}
+     * except for {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}.
+     * The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity} are invalid.
      * @param deltaTime time-difference, cannot be 0
      * @param netForce accumulated external forces on this object
      */
@@ -163,10 +170,9 @@ public abstract class GameEntity implements MovingEntity {
     /**
      * update the state of this object, may not be called by any method from another interface
      * synchronization with other operations on position and rotation should be synchronized
-     * @param currentTime seconds between some startTime t0 and the begin of the current gameloop
-     * @param deltaTime time since last update call
+     * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
      */
-    public void update(float currentTime, float deltaTime) {
+    public void update(float currentTime) {
         if (position.x() == Float.NaN || position.y() == Float.NaN || position.z() == Float.NaN)
             throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
         if (rotation.x() == Float.NaN || rotation.y() == Float.NaN || rotation.z() == Float.NaN)
@@ -174,11 +180,13 @@ public abstract class GameEntity implements MovingEntity {
 
         hitPoints = null;
 
-        position = extraPosition;
-        rotation = extraRotation;
-        velocity = extraVelocity;
-        positionInterpolator.add(position, currentTime);
-        rotationInterpolator.add(rotation, currentTime);
+        position.set(extraPosition);
+        rotation.set(extraRotation);
+        velocity.set(extraVelocity);
+        positionInterpolator.add(new PosVector(position), currentTime);
+        rotationInterpolator.add(new Quaternionf(rotation), currentTime);
+
+        previousUpdateTime = currentTime;
     }
 
     @Override
@@ -200,7 +208,9 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void applyCollision(float deltaTime, float previousTimeStamp) {
+    public void applyCollision(float currentUpdateTime) {
+
+        float deltaTime = currentUpdateTime - previousUpdateTime;
 
         if (extraVelocity.length() > 100)
             Toolbox.printSpamless(Integer.toHexString(hashCode()), toString() + "\nmoving " + extraVelocity.length() + " m/s",
@@ -228,41 +238,42 @@ public abstract class GameEntity implements MovingEntity {
         final PosVector interPosition = position.add(interMovement, new PosVector());
         // object rotation when hitting
         Quaternionf interRotation = rotation.rotate(rollSpeed * hitDeltaTime, pitchSpeed * hitDeltaTime, yawSpeed * hitDeltaTime, new Quaternionf());
+        // velocity when hitting
+        final DirVector interVelocity = new DirVector();
+        velocity.add(velocity.to(extraVelocity, interVelocity).scale(timeScalar, interVelocity), interVelocity);
 
-        simpleBounceCollision(globalHitPos, contactNormal, rotationSpeedVector, interPosition, extraPosition);
+        simpleBounceCollision(interPosition, interVelocity, globalHitPos, contactNormal, rotationSpeedVector, interRotation);
+
+        extraPosition.set(interPosition);
+        extraRotation.set(interRotation);
+        extraVelocity.set(interVelocity);
 
         rollSpeed = rotationSpeedVector.x();
         pitchSpeed = rotationSpeedVector.y();
         yawSpeed = rotationSpeedVector.z();
 
-        interPosition.to(extraPosition, interMovement).reducedTo(extraVelocity.length(), extraVelocity);
-        hitPoints = null;
-
-        Toolbox.print(extraPosition, extraVelocity);
-
         // add intermediate position/rotation to interpolation
-        final float collisionTimeStamp = previousTimeStamp + hitDeltaTime;
-//        positionInterpolator.add(interPosition, collisionTimeStamp);
-//        rotationInterpolator.add(interRotation, collisionTimeStamp);
+        final float collisionTimeStamp = previousUpdateTime + hitDeltaTime;
+        update(collisionTimeStamp);
+        applyPhysics(currentUpdateTime - collisionTimeStamp, netForce);
+
+        nextCrash = new Extreme<>(false);
     }
 
     /**
      * bounce without rotation
-     *
+     * @param massCenterPosition  the global position of the center of mass at the moment of collision
+     * @param velocity            the global speed vector of this object
+     *                            This should contain the new velocity upon returning
      * @param hitPosition         global position of the point on this object that caused the collision
      * @param contactNormal       the normal of the plane that the point has hit
      * @param rotationSpeedVector vector of rotation, defined as (rollSpeed, pitchSpeed, yawSpeed).
-     *                            This should contain the new rotations upon returning
-     * @param interPosition       the position where the object is at the moment of collision
-     * @param newPosition         the current extrapolated position of this object.
-     *                            The new extrapolated position should be stored here upon returning
+     *                            This should contain the new rotationspeed upon returning
+     * @param rotation            current rotation of this object (unlikely to be relevant)
      */
-    private void simpleBounceCollision(PosVector hitPosition, DirVector contactNormal, Vector3f rotationSpeedVector,
-                                       PosVector interPosition, PosVector newPosition
-    ) {
-        final DirVector remainingMovement = interPosition.to(newPosition, new DirVector());
-        remainingMovement.reflect(contactNormal);
-        interPosition.add(remainingMovement, newPosition);
+    private void simpleBounceCollision(PosVector massCenterPosition, DirVector velocity, PosVector hitPosition,
+                                       DirVector contactNormal, Vector3f rotationSpeedVector, Quaternionf rotation) {
+        velocity.reflect(contactNormal);
     }
 
     /**
@@ -399,10 +410,11 @@ public abstract class GameEntity implements MovingEntity {
     @Override
     public PosVector interpolatedPosition() {
         updateInterpolationCache();
-        return new PosVector(cachedPosition);
+        return cachedPosition;
     }
 
-    private Quaternionf interpolatedRotation() {
+    @Override
+    public Quaternionf interpolatedRotation() {
         updateInterpolationCache();
         return cachedRotation;
     }

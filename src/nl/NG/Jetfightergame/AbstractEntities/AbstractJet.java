@@ -159,8 +159,8 @@ public abstract class AbstractJet extends GameEntity {
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }
 
-    public void update(float currentTime, float deltaTime) {
-        super.update(currentTime, deltaTime);
+    public void update(float currentTime) {
+        super.update(currentTime);
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
     }

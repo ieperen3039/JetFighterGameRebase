@@ -1,5 +1,6 @@
-package nl.NG.Jetfightergame.Engine;
+package nl.NG.Jetfightergame.Rendering;
 
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -21,8 +22,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  * A window which initializes GLFW and manages it.
  */
 public class GLFWWindow {
-
-    private static final boolean CULL_FACES = true; // TODO cockwise drawing
     private static final boolean GL_DEBUG_MESSAGES = false;
     private final long primaryMonitor;
 
@@ -97,12 +96,6 @@ public class GLFWWindow {
         // Support transparencies
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        if (CULL_FACES) {
-            // Cull backfaces
-            glEnable(GL_CULL_FACE);
-            glCullFace(GL_BACK);
-        }
 
         if (Settings.DEBUG && GL_DEBUG_MESSAGES) {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);

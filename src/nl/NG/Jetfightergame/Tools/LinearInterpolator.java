@@ -23,7 +23,7 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
      */
     public T getInterpolated(float timeStamp){
         updateTime(timeStamp);
-        if (nextTimeStamp() == null) throw new IllegalStateException("interpolator has less than two entries");
+//        if (nextTimeStamp() == null) throw new IllegalStateException("interpolator has less than two entries");
 
         double firstTime = activeTime;
         T firstElt = activeElement;

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Controllers.InputHandling;
 
-import nl.NG.Jetfightergame.Engine.GLFWWindow;
+import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
 import org.joml.Vector2i;
 import org.lwjgl.glfw.GLFWCursorPosCallback;

@@ -1,9 +1,9 @@
-package nl.NG.Jetfightergame.Engine.GameLoop;
+package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.Engine.GLFWWindow;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
+import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
@@ -22,11 +22,14 @@ import nl.NG.Jetfightergame.Vectors.Color4f;
 import java.io.IOException;
 import java.util.function.BooleanSupplier;
 
+import static org.lwjgl.opengl.GL11.*;
+
 /**
  * @author Jorren Hendriks.
  * @author Geert van Ieperen
  */
 public class JetFighterRenderer extends AbstractGameLoop {
+    private static final boolean CULL_FACES = true;
 
     private final ScreenOverlay screenOverlay;
     private GLFWWindow window;
@@ -70,6 +73,13 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             // update camera based on
             activeCamera.updatePosition(gameState.time.getRenderTime().difference());
+
+
+            if (CULL_FACES) {
+                // Cull backfaces
+                glEnable(GL_CULL_FACE);
+                glCullFace(GL_BACK);
+            }
 
             initShader();
             Toolbox.checkGLError();

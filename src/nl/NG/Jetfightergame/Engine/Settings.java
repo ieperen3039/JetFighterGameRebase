@@ -18,11 +18,9 @@ public class Settings {
     /** universal random to be used everywhere */
     public static final Random random = new Random();
     public static final boolean DEBUG = true;
-    public static final boolean UNIT_COLLISION = true;
     public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
-    public static final int HUD_STROKE_WIDTH = 3;
-    static final int MAX_COLLISION_ITERATIONS = 2;
-    public static boolean RECURSIVE_COLLISION = true;
+    public static final int HUD_STROKE_WIDTH = 0;
+    static final int MAX_COLLISION_ITERATIONS = 5;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings
