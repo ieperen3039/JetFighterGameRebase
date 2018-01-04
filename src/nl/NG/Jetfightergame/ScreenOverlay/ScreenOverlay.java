@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
@@ -40,6 +42,9 @@ public class ScreenOverlay {
     private final static Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
     private final static Collection<Consumer<Painter>> hudDrawBuffer = new ArrayList<>();
     private static BooleanSupplier menuMode;
+
+    private static final Lock menuBufferLock = new ReentrantLock();
+    private static final Lock hudBufferLock = new ReentrantLock();
 
     public enum Font {
         ORBITRON_REGULAR("res/fonts/Orbitron/Orbitron-Regular.ttf"),
@@ -95,7 +100,9 @@ public class ScreenOverlay {
      * @param render The code for drawing inside the hud.
      */
     public static void addMenuItem(Consumer<Painter> render) {
+        menuBufferLock.lock();
         menuDrawBuffer.add(render);
+        menuBufferLock.unlock();
     }
 
     /**
@@ -104,27 +111,20 @@ public class ScreenOverlay {
      * @param render The handler to remove.
      */
     public static void removeMenuItem(Consumer<Painter> render) {
-        menuDrawBuffer.remove(render);
+        menuBufferLock.lock();
+        try {
+            menuDrawBuffer.remove(render);
+        } finally {
+            menuBufferLock.unlock();
+        }
     }
 
     /** clear the menu drawBuffer */
     public static void removeMenuItem() {
+        menuBufferLock.lock();
         menuDrawBuffer.clear();
+        menuBufferLock.unlock();
     }
-    /**
-     * Remove an existing drawObjects handler from the Hud.
-     *
-     * @param render The handler to remove.
-     */
-    public static void removeHudItem(Consumer<Painter> render) {
-        hudDrawBuffer.remove(render);
-    }
-
-    /** clear the hud drawBuffer */
-    public static void removeHudItem(){
-        hudDrawBuffer.clear();
-    }
-
 
     /**
      * Create something for the hud to be drawn. Package the NanoVG drawObjects commands inside a
@@ -133,10 +133,38 @@ public class ScreenOverlay {
      * @param render The code for drawing inside the hud.
      */
     public static void addHudItem(Consumer<Painter> render) {
+        hudBufferLock.lock();
         hudDrawBuffer.add(render);
+        hudBufferLock.unlock();
+    }
+
+    /**
+     * Remove an existing drawObjects handler from the Hud.
+     *
+     * @param render The handler to remove.
+     */
+    public static void removeHudItem(Consumer<Painter> render) {
+        hudBufferLock.lock();
+        try {
+            hudDrawBuffer.remove(render);
+        } finally {
+            hudBufferLock.unlock();
+        }
+    }
+
+    /** clear the hud drawBuffer */
+    public static void removeHudItem(){
+        hudBufferLock.lock();
+        hudDrawBuffer.clear();
+        hudBufferLock.unlock();
     }
 
     public static class Painter {
+        private static final int PRINTROLLSIZE = 24;
+        private final int yPrintRoll = PRINTROLLSIZE + 5;
+        private final int xPrintRoll = 5;
+        private int printRollEntry = 0;
+
         /**
          * Get an instance of NVGColor with the correct values. All color values are floating point numbers supposed to be
          * between 0f and 1f.
@@ -253,6 +281,13 @@ public class ScreenOverlay {
             nvgText(vg, x, y, text);
         }
 
+        public void printRoll(String text){
+            int y = yPrintRoll + (PRINTROLLSIZE + 5) * printRollEntry;
+
+            text(xPrintRoll, y, PRINTROLLSIZE, Font.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
+            printRollEntry++;
+        }
+
         private void fill(float red, float green, float blue, float alpha) {
             nvgFillColor(vg, rgba(red, green, blue, alpha));
             nvgFill(vg);
@@ -297,7 +332,7 @@ public class ScreenOverlay {
         }
     }
 
-    public static void draw(int windowWidth, int windowHeight) {
+    public synchronized static void draw(int windowWidth, int windowHeight) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
 
