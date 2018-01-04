@@ -12,8 +12,8 @@ public class TrackedVector<V extends Vector> extends TrackedObject<V> implements
         super(initial);
     }
 
-    public TrackedVector(V current, V previous) {
-        super(current, previous);
+    public TrackedVector(V previous, V current) {
+        super(previous, current);
     }
 
     @Override

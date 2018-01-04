@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Rendering.Interpolation;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

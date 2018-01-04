@@ -129,6 +129,7 @@ public class GridMesh implements Shape {
         Collection<PosVector> list = new ArrayList<>();
         getPlanes()
                 .flatMap(Plane::getBorderAsStream)
+                .distinct()
                 .forEach(list::add);
         return list;
     }

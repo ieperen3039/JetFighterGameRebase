@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Rendering.Interpolation;
 
 import org.joml.Quaternionf;
 

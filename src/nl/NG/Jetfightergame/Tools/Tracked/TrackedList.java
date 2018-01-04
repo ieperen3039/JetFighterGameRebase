@@ -9,15 +9,11 @@ import java.util.ArrayDeque;
 public class TrackedList<T> extends TrackedObject<T> {
 
     /** FIFO queue: last is newest */
-    private ArrayDeque<T> olderValues;
-
-    public TrackedList(T current, T previous) {
-        super(current, previous);
-        olderValues = new ArrayDeque<>();
-    }
+    private final ArrayDeque<T> olderValues;
 
     public TrackedList(T initial) {
         super(initial);
+        olderValues = new ArrayDeque<>();
     }
 
     @Override

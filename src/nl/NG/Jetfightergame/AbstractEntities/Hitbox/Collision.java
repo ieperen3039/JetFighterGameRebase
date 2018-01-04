@@ -12,8 +12,8 @@ public class Collision implements Comparable<Collision> {
     public final float timeScalar;
     private final DirVector shapeLocalNormal;
     private final PosVector shapeLocalHitPos;
-    public PosVector hitPos = null;
-    public DirVector normal = null;
+    public PosVector hitPos;
+    public DirVector normal;
 
     public Collision(){
         this(1, DirVector.zeroVector(), PosVector.zeroVector());
@@ -31,6 +31,16 @@ public class Collision implements Comparable<Collision> {
     }
 
     /**
+     * @return a copy of the collision, with timeScalar == 1
+     */
+    public Collision inverse() {
+        final Collision copy = new Collision();
+        copy.hitPos = hitPos;
+        copy.normal = normal.normalize(new DirVector());
+        return copy;
+    }
+
+    /**
      * convert the values of the collision to global values, by providing the used matrix conversion.
      * @param ms the matrix state as how this collision was created.
      */
@@ -44,4 +54,5 @@ public class Collision implements Comparable<Collision> {
     public int compareTo(Collision c) {
         return c == null ? 0 : Double.compare(c.timeScalar, timeScalar);
     }
+
 }

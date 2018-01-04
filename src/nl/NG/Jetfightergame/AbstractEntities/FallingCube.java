@@ -46,11 +46,11 @@ public class FallingCube extends GameEntity {
 
     @Override
     public String toString() {
-        return "Fallingcube {pos = " + position + ", dir = " + velocity +"}";
+        return "FallingCube at " + position;
     }
 
     @Override
-    public void create(MatrixStack ms, Consumer<Shape> action, boolean extrapolate) {
+    public void create(MatrixStack ms, Consumer<Shape> action) {
         action.accept(GeneralShapes.CUBE);
     }
 }

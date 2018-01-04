@@ -3,6 +3,8 @@ package nl.NG.Jetfightergame.Engine.GameLoop;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.Settings;
 
+import java.util.function.Consumer;
+
 /**
  * @author Geert van Ieperen
  *         created on 16-11-2017.
@@ -11,8 +13,8 @@ public class JetFighterRunner extends AbstractGameLoop {
 
     private final GameState game;
 
-    public JetFighterRunner(GameState game) {
-        super("GameEngine loop", Settings.TARGET_TPS, true);
+    public JetFighterRunner(GameState game, Consumer<Exception> exceptionHandler) {
+        super("GameEngine loop", Settings.TARGET_TPS, true, exceptionHandler);
         this.game = game;
     }
 

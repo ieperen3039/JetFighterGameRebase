@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.FallingCube;
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
@@ -21,19 +21,24 @@ public class CollisionLaboratory extends GameState {
 
     private static final float CUBESIZE = 2f;
     private static final float CUBEMASS = 5f;
+    private static final int LAB_SIZE = 10;
+    private static final int NR_OF_CUBES = 3;
+
+
     private final int labSize;
     private final int nrOfCubes;
     private final int speeds;
 
     public CollisionLaboratory(Controller input) {
-        this(15, 2, input);
+        this(input, LAB_SIZE, NR_OF_CUBES);
     }
 
-    public CollisionLaboratory(int labSize, int nrOfCubes, Controller controller) {
+    public CollisionLaboratory(Controller controller, int labSize, int nrOfCubes) {
         super(controller);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
-        this.speeds = labSize/3;
+        this.speeds = 5;
+//        this.speeds = labSize/3;
     }
 
     @Override
@@ -65,7 +70,8 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    protected DirVector entityNetforce(GameEntity entity) {
-        return DirVector.zeroVector();
+    protected DirVector entityNetforce(MovingEntity entity) {
+        final DirVector random = DirVector.random();
+        return random.scale(labSize, random);
     }
 }

@@ -43,7 +43,7 @@ public class TestJet extends AbstractJet {
     }
 
     @Override
-    public void create(MatrixStack ms, Consumer<Shape> action, boolean extrapolate) {
+    public void create(MatrixStack ms, Consumer<Shape> action) {
     }
 
     @Override

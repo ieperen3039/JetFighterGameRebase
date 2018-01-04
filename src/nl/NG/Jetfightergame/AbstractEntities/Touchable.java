@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
@@ -16,7 +17,6 @@ public interface Touchable extends Drawable {
      * moves the reference frame from local space to each shape, executing {@code action} on every shape.
      * every create call should preserve the matrix stack.
      * If this object is moving, this applies to the current position
-     * @see MovingEntity#create(MatrixStack, Consumer, boolean)
      * @param ms reference frame to perform transformations on
      * @param action actions to execute for every Shape
      */
@@ -47,4 +47,12 @@ public interface Touchable extends Drawable {
      * This method should called inside the draw method
      */
     void preDraw(GL2 gl);
+
+    /**
+     * process the effect of another object colliding on this object.
+     * If this object has its own collision, it is not possible to check what collision comes first;
+     * we assume that the owners collision always comes first
+     * @param cause the data of the collision from causer's perspective
+     */
+    default void acceptCollision(Collision cause) {}
 }

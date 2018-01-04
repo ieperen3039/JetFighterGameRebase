@@ -24,7 +24,7 @@ public class ExponentialSmoothFloat extends TrackedFloat implements SmoothTracke
      * @param preservedFraction the fraction that must be preserved per second
      */
     public ExponentialSmoothFloat(float current, float previous, float preservedFraction) {
-        super(current, previous);
+        super(previous, current);
         this.preservedFraction = preservedFraction;
     }
 

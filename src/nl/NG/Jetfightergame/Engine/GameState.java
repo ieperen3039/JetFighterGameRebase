@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
@@ -20,8 +19,11 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static nl.NG.Jetfightergame.Engine.Settings.DEBUG;
+import static nl.NG.Jetfightergame.Engine.Settings.RENDER_DELAY;
 
 /**
  * @author Geert van Ieperen
@@ -32,12 +34,10 @@ public class GameState {
     private AbstractJet playerJet;
 
     protected Collection<Touchable> staticEntities = new ArrayList<>();
-    protected Collection<GameEntity> dynamicEntities = new ArrayList<>();
+    protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
     protected Collection<AbstractParticle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
-    /** a protector that should protecc the {@code objects} list (and possibly other   */
-    private Lock gameChangeGuard = new ReentrantLock();
     public final GameTimer time = new GameTimer();
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
@@ -63,45 +63,51 @@ public class GameState {
         float currentTime = time.getGameTime().current();
         float deltaTime = time.getGameTime().difference();
 
+
         // update positions and apply physics
-        dynamicEntities.forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
+        dynamicEntities.parallelStream()
+                .forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
 
+        int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
         // check and handle collisions
-        if (deltaTime > 0f) {
-            int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
-            Integer[] collisions = {1};
+        if (deltaTime > 0f && remainingLoops != 0) {
 
-            while (--remainingLoops > 0 && collisions[0] > 0) {
-                collisions[0] = 0;
-
+            int totalCollisions = 0;
+            Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
+            Collection<MovingEntity> collisions;
+            do {
                 /* as a single collision may result in a previously not-intersecting pair to collide,
-                 * we cannot re-use the getIntersectingPairs method nor reduce non-collisions. We should add some form
-                 * of caching for getIntersectingPairs, to make short-followed calls more efficient.
+                 * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
+                 * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
                  */
-                getIntersectingPairs().parallelStream()
+                collisions = closeTargets.parallelStream()
+                        // check for collisions
                         .filter(GameState::checkPair)
-                        .forEach(p -> {
-                            collisions[0]++; // race conditions don't matter, as long as collisions[0] > 0
-                            applyCollisions(p, currentTime);
-                        });
+                        // extract and collect all distinct moving collided elements to update them
+                        .flatMap(p -> Stream.of(p.left, p.right))
+                        .filter(e -> e instanceof MovingEntity)
+                        .map(e -> (MovingEntity) e)
+                        .distinct()
+                        .collect(Collectors.toList());
+
+                totalCollisions += collisions.size();
+
+                collisions.parallelStream()
+                        .forEach(p -> p.applyCollision(currentTime));
+
+            } while (collisions.size() > 0 && --remainingLoops > 0);
+            if (remainingLoops == 0) {
+                Toolbox.print("could not settle collision after " + totalCollisions + " collisions: " + collisions.size() + " entities left");
+            } else if (totalCollisions > 0) {
+                Toolbox.print("processed " + totalCollisions + " collisions");
             }
         }
 
-        gameChangeGuard.lock();
         dynamicEntities.forEach(obj -> obj.update(currentTime));
-        gameChangeGuard.unlock();
     }
 
-    protected DirVector entityNetforce(GameEntity entity) {
+    protected DirVector entityNetforce(MovingEntity entity) {
         return DirVector.zeroVector();
-    }
-
-    /** calls {@link MovingEntity#applyCollision(float)} on each object of p for which it is valid */
-    private void applyCollisions(Pair<Touchable, MovingEntity> p, float currentTime) {
-        p.right.applyCollision(currentTime);
-        if (p.left instanceof MovingEntity) {
-            ((MovingEntity) p.left).applyCollision(currentTime);
-        }
     }
 
     /**
@@ -114,8 +120,8 @@ public class GameState {
      * The collision can be calculated by {@link MovingEntity#applyCollision(float)} and applied by {@link Updatable#update(float)}
      */
     private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
-        Touchable either = p.left;
         MovingEntity moving = p.right;
+        Touchable either = p.left;
 
         boolean change = moving.checkCollisionWith(either);
         if (either instanceof MovingEntity) {
@@ -139,17 +145,17 @@ public class GameState {
             // check all moving objects against (1: all other moving objects, 2: all static objects)
             dynamicEntities.forEach(obj -> {
                 dynamicEntities.stream()
-                        // only other objects
                         .filter(other -> other != obj)
                         .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
-                        .filter(pair -> !allEntityPairs.contains(pair))
+                        .distinct()
                         .forEach(allEntityPairs::add);
                 staticEntities
                         .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
             });
-
-            final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
-            if (nulls > 0) Toolbox.print("nulls: "+ nulls);
+            if (DEBUG) {
+                final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
+                if (nulls > 0) Toolbox.print("nulls found by intersecting pairs: " + nulls);
+            }
         }
 
 
@@ -165,14 +171,10 @@ public class GameState {
      * draw all objects of the game
      */
     public void drawObjects(GL2 gl) {
-//        Toolbox.drawAxisFrame(gl);
+        Toolbox.drawAxisFrame(gl);
 
-        // static objects cannot have interference
         staticEntities.forEach(d -> d.draw(gl));
-
-        gameChangeGuard.lock();
         dynamicEntities.forEach(d -> d.draw(gl));
-        gameChangeGuard.unlock();
     }
 
     public void drawParticles(GL2 gl){
@@ -219,7 +221,7 @@ public class GameState {
         private GameTimer() {
             currentInGameTime = 0f;
             gameTime = new TrackedFloat(0f);
-            renderTime = new TrackedFloat(-Settings.RENDER_DELAY);
+            renderTime = new TrackedFloat(-RENDER_DELAY);
             lastMark = System.nanoTime();
         }
 
@@ -230,7 +232,7 @@ public class GameState {
 
         private void updateRenderTime(){
             updateTimer();
-            renderTime.update(currentInGameTime - Settings.RENDER_DELAY);
+            renderTime.update(currentInGameTime - RENDER_DELAY);
         }
 
         public TrackedFloat getGameTime(){

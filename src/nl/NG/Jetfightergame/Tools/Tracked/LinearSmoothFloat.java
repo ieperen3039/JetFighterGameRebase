@@ -16,7 +16,7 @@ public class LinearSmoothFloat extends TrackedFloat implements SmoothTracked<Flo
     }
 
     public LinearSmoothFloat(Float current, Float previous, float acceleration) {
-        super(current, previous);
+        super(previous, current);
         this.acceleration = acceleration;
     }
 

@@ -44,6 +44,7 @@ public abstract class GLFWGameEngine {
         Toolbox.print("Initialisation complete\n");
         window.open();
 
+        gameLoop.setUncaughtExceptionHandler((t, e) -> exitGame());
         gameLoop.start();
 
         try {

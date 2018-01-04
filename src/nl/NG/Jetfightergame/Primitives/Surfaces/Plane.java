@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Primitives.Surfaces;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -80,14 +79,15 @@ public abstract class Plane {
 
         if (asideHitbox(linePosition, endPoint)) return null;
 
-        DirVector hitDir = calculateMaxDirection(linePosition, direction);
+        float scalar = hitScalar(linePosition, direction);
 
-        if (hitDir.length() > direction.length()) return null;
+        if (scalar > 1.0f) return null;
 
-        final PosVector hitPos = linePosition.add(hitDir, relativePosition);
+        DirVector hitDir = direction.scale(scalar, new DirVector());
+        PosVector hitPos = linePosition.add(hitDir, relativePosition);
         if (!this.encapsules(hitPos)) return null;
 
-        return new Collision(hitDir.length() / direction.length(), normal, hitPos);
+        return new Collision(scalar, normal, hitPos);
     }
 
     /**
@@ -132,17 +132,11 @@ public abstract class Plane {
      * @return Vector D such that (linePosition.add(D)) will give the position of the hitPoint.
      * D lies in the extend, but not necessarily on the plane
      */
-    protected DirVector calculateMaxDirection(PosVector linePosition, DirVector direction) {
+    protected float hitScalar(PosVector linePosition, DirVector direction) {
         // random point is chosen
         boundary[0].sub(linePosition, relativePosition);
 
-        float scalar = (relativePosition.dot(normal) / direction.dot(normal));
-
-        if (Vector.almostZero(scalar)) {
-            return DirVector.zeroVector();
-        } else {
-            return direction.scale(scalar, new DirVector());
-        }
+        return relativePosition.dot(normal) / direction.dot(normal);
     }
 
     public Collection<PosVector> getVertices() {
@@ -175,7 +169,8 @@ public abstract class Plane {
      * @return true if this plane intersects with the line extended toward infinity
      */
     public boolean intersectWithRay(PosVector position, DirVector direction){
-        DirVector hitDir = calculateMaxDirection(position, direction);
+        DirVector hitDir = direction.scale(hitScalar(position, direction), new DirVector());
+
         if (hitDir.dot(direction) < 0) return false;
 
         PosVector hitPoint = position.add(hitDir, new PosVector());

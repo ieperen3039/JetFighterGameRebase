@@ -1,12 +1,9 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
-
-import java.util.function.Consumer;
 
 /**
  * {@author Geert van Ieperen
@@ -16,20 +13,6 @@ import java.util.function.Consumer;
  * {@link nl.NG.Jetfightergame.Engine.Updatable}
  */
 public interface MovingEntity extends Touchable {
-
-    /**
-     * moves the reference frame from local space to each shape, executing {@code action} on every shape.
-     * every create call should preserve the matrix stack.
-     * @param ms reference frame to perform transformations on
-     * @param action actions to execute for every Shape
-     * @param extrapolate false if the actions are done on the (stable) current points,
-     *                   true if the actions are done on the (unstable) extrapolated points
-     */
-    void create(MatrixStack ms, Consumer<Shape> action, boolean extrapolate);
-
-    default void create(MatrixStack ms, Consumer<Shape> action){
-        create(ms, action, false);
-    }
 
     /**
      * moves the reference frame from global space to this object and executes action.
@@ -54,12 +37,20 @@ public interface MovingEntity extends Touchable {
     void preUpdate(float deltaTime, DirVector netForce);
 
     /**
+     * update the state of this object, may not be called by any method from another interface
+     * synchronization with other operations on position and rotation should be synchronized
+     * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
+     */
+    void update(float currentTime);
+
+    /**
      * calculate effect of collision, but does not apply new position
      */
     void applyCollision(float currentTime);
 
     /**
      * checks the movement of the hitpoints of this object against the planes of 'other'.
+     * the method implementing this must be thread-safe
      * @param other an object that may hit this object
      * @return true if there was a collision
      */

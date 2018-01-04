@@ -9,7 +9,7 @@ public class TrackedObject<T> {
     private T current;
     private T previous;
 
-    public TrackedObject(T current, T previous) {
+    public TrackedObject(T previous, T current) {
         this.current = current;
         this.previous = previous;
     }

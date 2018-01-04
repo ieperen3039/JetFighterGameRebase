@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.FighterJets;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
@@ -46,7 +46,7 @@ public class PlayerJet extends AbstractJet {
     }
 
     @Override
-    public void create(MatrixStack gl, Consumer<Shape> action, boolean extrapolate) {
+    public void create(MatrixStack gl, Consumer<Shape> action) {
         gl.pushMatrix();
         gl.scale(-1, 1, 1);
         action.accept(shape);

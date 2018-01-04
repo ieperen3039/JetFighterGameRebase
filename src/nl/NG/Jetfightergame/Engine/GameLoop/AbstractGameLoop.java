@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 
 /**
@@ -24,10 +25,12 @@ public abstract class AbstractGameLoop extends Thread {
     private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
     private boolean shouldStop;
     private final boolean notifyDelay;
+    private Consumer<Exception> exceptionHandler;
 
-    public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
+    public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
         this.targetTps = targetTps;
         this.notifyDelay = notifyDelay;
+        this.exceptionHandler = exceptionHandler;
         loopName = name;
     }
 
@@ -67,7 +70,7 @@ public abstract class AbstractGameLoop extends Thread {
 
                 long remainingTime = (1000 / targetTps) - loopTimer.getTimeSinceLastUpdate();
                 if (Settings.DEBUG && notifyDelay && remainingTime < 0)
-                    System.out.println(loopName + " can't keep up! Running " + -remainingTime + " milliseconds behind");
+                    System.err.println(loopName + " can't keep up! Running " + -remainingTime + " milliseconds behind");
 
                 // sleep at least one millisecond
                 long correctedTime = Math.max(remainingTime, 1);
@@ -77,7 +80,6 @@ public abstract class AbstractGameLoop extends Thread {
 
                 // print Ticks per Second
                 TPSMinimum.updateAndPrint(loopName, 1000f / loopTimer.getElapsedTime(), "per second");
-
                 // store the duration and set this as length of next update
                 deltaTime = loopTimer.getElapsedSeconds();
                 // wait if the game is paused
@@ -86,6 +88,7 @@ public abstract class AbstractGameLoop extends Thread {
         } catch (Exception ex) {
             System.err.println(loopName + " has Crashed! Blame Menno.");
             ex.printStackTrace();
+            exceptionHandler.accept(ex);
         } finally {
             cleanup();
         }
@@ -96,12 +99,12 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void unPause(){
         pauseBlock.countDown();
-        if (Settings.DEBUG) Toolbox.printFrom(2, "unpaused " + loopName);
+        Toolbox.printFrom(2, "unpaused " + loopName);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        if (Settings.DEBUG) Toolbox.printFrom(2, "paused " + loopName);
+        Toolbox.printFrom(2, "paused " + loopName);
     }
 
     public boolean isPaused() {

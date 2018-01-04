@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Rendering.Interpolation;
 
 /**
  * @author Geert van Ieperen

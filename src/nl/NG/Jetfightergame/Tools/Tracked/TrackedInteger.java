@@ -6,7 +6,7 @@ package nl.NG.Jetfightergame.Tools.Tracked;
  */
 public class TrackedInteger extends TrackedObject<Integer> implements nl.NG.Jetfightergame.Tools.Differable {
     public TrackedInteger(Integer current, Integer previous) {
-        super(current, previous);
+        super(previous, current);
     }
 
     public TrackedInteger(Integer initial) {

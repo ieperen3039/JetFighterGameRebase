@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 import org.junit.Before;
@@ -25,7 +26,7 @@ public class VectorInterpolatorTest {
 
     @Test
     public void testVectorInterpolator() {
-        testValue(new PosVector((float) 0.5, (float) 0.5, (float) 0.5), 1.25f);
+        testValue(new PosVector(0.5f, 0.5f, 0.5f), 1.25f);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.Rendering.Interpolation.FloatInterpolator;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -20,7 +20,6 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
 import java.io.IOException;
-import java.util.function.BooleanSupplier;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -31,7 +30,6 @@ import static org.lwjgl.opengl.GL11.*;
 public class JetFighterRenderer extends AbstractGameLoop {
     private static final boolean CULL_FACES = true;
 
-    private final ScreenOverlay screenOverlay;
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
@@ -42,8 +40,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GameState gameState;
 
     public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
-                              Camera camera, MusicProvider musicProvider, ControllerManager input, BooleanSupplier menuMode) throws IOException, ShaderException {
-        super("Rendering loop", Settings.TARGET_FPS, false);
+                              Camera camera, MusicProvider musicProvider, ControllerManager input) throws IOException, ShaderException {
+        super("Rendering loop", Settings.TARGET_FPS, false, (ex) -> engine.exitGame());
 
         this.gameState = gameState;
         this.window = window;
@@ -56,10 +54,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
         window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
 
         ambientLight = Color4f.LIGHT_GREY;
-        this.screenOverlay = new ScreenOverlay(menuMode);
 
-        new JetFighterMenu(screenOverlay, musicProvider, engine::setSpectatorMode, engine::exitGame, input);
-        new GravityHud(screenOverlay, window.getDimensions(), engine.getPlayer(), camera);
+        new JetFighterMenu(musicProvider, engine::setSpectatorMode, engine::exitGame, input);
+        new GravityHud(window.getDimensions(), engine.getPlayer(), camera);
     }
 
     @Override
@@ -101,7 +98,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             currentShader.unbind();
 
-            screenOverlay.draw(window.getWidth(), window.getHeight());
+            ScreenOverlay.get().draw(window.getWidth(), window.getHeight());
 
             // update window
             window.update();
