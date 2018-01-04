@@ -34,9 +34,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable[] controlsMenu;
     private UIElement[] creditScreen;
 
-    public JetFighterMenu(ScreenOverlay screenOverlay, MusicProvider musicProvider, Runnable startGame, Runnable exitGame, ControllerManager input) {
-        super(screenOverlay);
-
+    public JetFighterMenu(MusicProvider musicProvider, Runnable startGame, Runnable exitGame, ControllerManager input) {
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
         {

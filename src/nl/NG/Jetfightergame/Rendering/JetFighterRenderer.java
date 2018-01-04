@@ -98,7 +98,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             currentShader.unbind();
 
-            ScreenOverlay.get().draw(window.getWidth(), window.getHeight());
+            ScreenOverlay.draw(window.getWidth(), window.getHeight());
 
             // update window
             window.update();

@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.Scenarios.CollisionLaboratory;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
@@ -50,12 +51,13 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
             MouseTracker.getInstance().setMenuModeDecision(inGame);
 
-            gameLoop = new JetFighterRunner(environment);
+            gameLoop = new JetFighterRunner(environment, e -> this.exitGame());
             MusicProvider musicProvider = new MusicProvider(new Timer());
 
-            final BooleanSupplier inMenu = () -> currentGameMode == GameMode.MENU_MODE;
+            ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
+
             renderLoop = new JetFighterRenderer(
-                    this, environment, window, camera, musicProvider, playerInput, inMenu
+                    this, environment, window, camera, musicProvider, playerInput
             );
 
             camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
@@ -67,9 +69,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             ShapeFromMesh.initAll();
             GeneralShapes.initAll();
-        } catch (Exception e) { // prevent game from freezing upon crashing
-            splash.dispose();
-            throw e;
         } finally {
             // remove splash frame
             splash.dispose();

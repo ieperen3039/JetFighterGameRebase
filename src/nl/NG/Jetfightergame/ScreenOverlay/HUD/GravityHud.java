@@ -25,10 +25,10 @@ public class GravityHud {
     private static final int TICKSIZE = 15;
     private static final int HUD_TEXT_SIZE = 30;
 
-    public GravityHud(ScreenOverlay screenOverlay, final Vector2ic screenDimensions, final AbstractJet target, Camera camera) {
+    public GravityHud(final Vector2ic screenDimensions, final AbstractJet target, Camera camera) {
 
         // we put all processing into a single drawable
-        screenOverlay.addHudItem(hud -> {
+        ScreenOverlay.addHudItem(hud -> {
             final int width = screenDimensions.x();
             final int height = screenDimensions.y();
             final int xMid = width /2;

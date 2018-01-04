@@ -24,20 +24,22 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
  * @author Jorren
+ * semi-singleton design to assist debug output to HUD
  */
 public class ScreenOverlay {
 
-    private long vg;
-    private NVGColor color;
-    private NVGPaint paint;
+    private static long vg;
+    private static NVGColor color;
+    private static NVGPaint paint;
 
     /** fontbuffer MUST be a field */
-    private final ByteBuffer[] fontBuffer;
-    private Map<String, Integer> imageBuffer;
+    @SuppressWarnings("FieldCanBeLocal")
+    private static final ByteBuffer[] fontBuffer = new ByteBuffer[Font.values().length];
+    private static Map<String, Integer> imageBuffer = new HashMap<>();
 
-    private final Collection<Consumer<Painter>> menuDrawBuffer;
-    private final Collection<Consumer<Painter>> hudDrawBuffer;
-    private final BooleanSupplier menuMode;
+    private final static Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
+    private final static Collection<Consumer<Painter>> hudDrawBuffer = new ArrayList<>();
+    private static BooleanSupplier menuMode;
 
     public enum Font {
         ORBITRON_REGULAR("res/fonts/Orbitron/Orbitron-Regular.ttf"),
@@ -56,20 +58,23 @@ public class ScreenOverlay {
     }
 
     /**
-     * Initialize the Hud.
+     * returns the Hud
      *
-     * @param menuMode
      * @throws IOException If an error occures during the setup of the Hud.
+     * @param menuMode
      */
-    public ScreenOverlay(BooleanSupplier menuMode) throws IOException {
-        this.menuMode = menuMode;
+    public static void initialize(BooleanSupplier menuMode) throws IOException {
+        new ScreenOverlay(menuMode);
+    }
+
+
+    private ScreenOverlay(BooleanSupplier menuMode) throws IOException {
+        ScreenOverlay.menuMode = menuMode;
 
         vg = GLFWWindow.antialiasing() ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
-        if (this.vg == NULL) {
+        if (vg == NULL) {
             throw new IOException("Could not initialize NanoVG");
         }
-
-        fontBuffer = new ByteBuffer[Font.values().length];
         Font[] fonts = Font.values();
 
         for (int i = 0; i < fonts.length; i++) {
@@ -79,12 +84,8 @@ public class ScreenOverlay {
             }
         }
 
-        imageBuffer = new HashMap<>();
         color = NVGColor.create();
         paint = NVGPaint.create();
-
-        menuDrawBuffer = new ArrayList<>();
-        hudDrawBuffer = new ArrayList<>();
     }
 
     /**
@@ -93,7 +94,7 @@ public class ScreenOverlay {
      *
      * @param render The code for drawing inside the hud.
      */
-    public void addMenuItem(Consumer<Painter> render) {
+    public static void addMenuItem(Consumer<Painter> render) {
         menuDrawBuffer.add(render);
     }
 
@@ -102,12 +103,12 @@ public class ScreenOverlay {
      *
      * @param render The handler to remove.
      */
-    public void removeMenuItem(Consumer<Painter> render) {
+    public static void removeMenuItem(Consumer<Painter> render) {
         menuDrawBuffer.remove(render);
     }
 
     /** clear the menu drawBuffer */
-    public void removeMenuItem() {
+    public static void removeMenuItem() {
         menuDrawBuffer.clear();
     }
     /**
@@ -115,12 +116,12 @@ public class ScreenOverlay {
      *
      * @param render The handler to remove.
      */
-    public void removeHudItem(Consumer<Painter> render) {
+    public static void removeHudItem(Consumer<Painter> render) {
         hudDrawBuffer.remove(render);
     }
 
     /** clear the hud drawBuffer */
-    public void removeHudItem(){
+    public static void removeHudItem(){
         hudDrawBuffer.clear();
     }
 
@@ -131,11 +132,11 @@ public class ScreenOverlay {
      *
      * @param render The code for drawing inside the hud.
      */
-    public void addHudItem(Consumer<Painter> render) {
+    public static void addHudItem(Consumer<Painter> render) {
         hudDrawBuffer.add(render);
     }
 
-    public class Painter {
+    public static class Painter {
         /**
          * Get an instance of NVGColor with the correct values. All color values are floating point numbers supposed to be
          * between 0f and 1f.
@@ -296,7 +297,7 @@ public class ScreenOverlay {
         }
     }
 
-    public void draw(int windowWidth, int windowHeight) {
+    public static void draw(int windowWidth, int windowHeight) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
 
@@ -311,10 +312,8 @@ public class ScreenOverlay {
         // End NanoVG frame
         nvgEndFrame(vg);
 
-
         // restore window state
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_STENCIL_TEST);
     }
-
 }

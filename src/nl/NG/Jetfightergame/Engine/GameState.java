@@ -97,8 +97,8 @@ public class GameState {
 
             } while (collisions.size() > 0 && --remainingLoops > 0);
             if (remainingLoops == 0) {
-                Toolbox.print("could not settle collision after " + totalCollisions + " collisions: " + collisions.size() + " entities left");
-            } else if (totalCollisions > 0) {
+                Toolbox.print(collisions.size() + " collision not resolved after " + totalCollisions + " collisions");
+            } else if (totalCollisions > 0 && DEBUG) {
                 Toolbox.print("processed " + totalCollisions + " collisions");
             }
         }

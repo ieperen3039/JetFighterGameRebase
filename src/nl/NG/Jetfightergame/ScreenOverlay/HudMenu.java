@@ -14,11 +14,9 @@ import java.util.Arrays;
  */
 
 public abstract class HudMenu implements TrackerClickListener {
-    private final ScreenOverlay screenOverlay;
     private UIElement[] activeElements;
 
-    public HudMenu(ScreenOverlay hud) {
-        this.screenOverlay = hud;
+    public HudMenu() {
         MouseTracker.getInstance().addClickListener(this, false);
     }
 
@@ -30,13 +28,13 @@ public abstract class HudMenu implements TrackerClickListener {
         activeElements = newElements;
 
         // destroy the current entries of the hud
-        screenOverlay.removeMenuItem();
+        ScreenOverlay.removeMenuItem();
 
         // correct positions of buttons
         MenuPositioner caret = new MenuPositionerLeft();
         for (UIElement element : activeElements) {
             caret.place(element);
-            screenOverlay.addMenuItem(element::draw);
+            ScreenOverlay.addMenuItem(element::draw);
         }
 
     }
