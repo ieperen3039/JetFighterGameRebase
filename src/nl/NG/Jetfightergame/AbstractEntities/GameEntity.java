@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -55,8 +56,6 @@ public abstract class GameEntity implements MovingEntity {
     /** the render timer. renderTime.current() will provide the current time for interpolation,
      * and renderTime.difference() provides the deltaTime */
     private TrackedFloat renderTime;
-    /** time of the last update. deltaTime should be calculated from this point onward */
-    private float previousUpdateTime;
 
     /** worldspace / localspace */
     private float scale;
@@ -179,7 +178,6 @@ public abstract class GameEntity implements MovingEntity {
         if (rotation.x() == Float.NaN || rotation.y() == Float.NaN || rotation.z() == Float.NaN)
             throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
 
-        previousUpdateTime = currentTime;
     }
 
     @Override
@@ -200,6 +198,9 @@ public abstract class GameEntity implements MovingEntity {
         nextCrash.check(newCollision);
         other.acceptCollision(newCollision);
 
+        if (other instanceof GameEntity)
+            Toolbox.print(this + "\n", nextCrash.get(), ((GameEntity) other).nextCrash.get());
+
         return true;
     }
 
@@ -209,14 +210,14 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void applyCollision(float currentUpdateTime) {
-
-        float deltaTime = currentUpdateTime - previousUpdateTime;
-        if (deltaTime < 0f) throw new RuntimeException("collisions of this object added up to a moment in the future. Running " + -deltaTime + "behind");
+    public RigidBody getFinalCollision(float deltaTime) {
+        if (deltaTime < 0f)
+            throw new RuntimeException("collisions of " + this + " added up to a moment in the future. Running " + -deltaTime + "behind");
+        if (nextCrash.get() == null)
+            throw new RuntimeException("tried calculating collision of " + this + " even though it did not collide");
 
         final DirVector movement = position.to(extraPosition, new DirVector());
 
-        if (nextCrash.get() == null || !movement.isScalable()) return;
 
         // global position of contact
         final PosVector globalHitPos = nextCrash.get().hitPos;
@@ -225,14 +226,15 @@ public abstract class GameEntity implements MovingEntity {
         // fraction of deltaTime until collision
         final float timeScalar = nextCrash.get().timeScalar;
         // seconds until this object hits the other
-        final float hitDeltaTime = timeScalar * deltaTime;
+//        final float hitDeltaTime = timeScalar * deltaTime;
         // current rotation speed of airplane
         final Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
         // object rotation when hitting
         Quaternionf interRotation = new Quaternionf();
         rotation.nlerp(extraRotation, timeScalar, interRotation);
         // movement until collision
-        final DirVector interMovement = movement.scale(timeScalar, movement);
+        final DirVector interMovement = new DirVector();
+        if (!movement.isScalable()) movement.scale(timeScalar, movement);
         // object position when hitting
         final PosVector interPosition = position.add(interMovement, new PosVector());
         // interpolated velocity when hitting
@@ -240,42 +242,30 @@ public abstract class GameEntity implements MovingEntity {
         interVelocity.set(extraVelocity);
 //        velocity.add(velocity.to(extraVelocity, interVelocity).scale(timeScalar, interVelocity), interVelocity);
 
-        collisionEffect(interPosition, interVelocity, globalHitPos, contactNormal, rotationSpeedVector, interRotation);
-
-        rollSpeed = rotationSpeedVector.x();
-        pitchSpeed = rotationSpeedVector.y();
-        yawSpeed = rotationSpeedVector.z();
-        extraVelocity.set(interVelocity);
-
-        if (timeScalar == 1.0f) return;
-
-        final float remainingTime = deltaTime - hitDeltaTime;
-        interPosition.add(interVelocity.scale(remainingTime, new DirVector()), extraPosition);
-        interRotation.rotate(rollSpeed * remainingTime, pitchSpeed * remainingTime, yawSpeed * remainingTime, extraRotation);
-
-        // add intermediate position/rotation to interpolation
-        final float collisionTimeStamp = previousUpdateTime + hitDeltaTime;
-        positionInterpolator.add(new PosVector(interPosition), collisionTimeStamp);
-        rotationInterpolator.add(new Quaternionf(interRotation), collisionTimeStamp);
-
-        nextCrash = new Extreme<>(false);
-        hitPoints = calculateHitpointMovement();
+        return new RigidBody(timeScalar, interPosition, interVelocity, globalHitPos,
+                contactNormal, rotationSpeedVector, interRotation, this);
     }
 
-    /**
-     * bounce without rotation
-     * @param massCenterPosition  the global position of the center of mass at the moment of collision
-     * @param velocity            the global speed vector of this object
-     *                            This should contain the new velocity upon returning
-     * @param hitPosition         global position of the point on this object that caused the collision
-     * @param contactNormal       the normal of the plane that the point has hit
-     * @param rotationSpeedVector vector of rotation, defined as (rollSpeed, pitchSpeed, yawSpeed).
-     *                            This should contain the new rotationspeed upon returning
-     * @param rotation            current rotation of this object (unlikely to be relevant)
-     */
-    private void collisionEffect(PosVector massCenterPosition, DirVector velocity, PosVector hitPosition,
-                                 DirVector contactNormal, Vector3f rotationSpeedVector, Quaternionf rotation) {
-        velocity.reflect(contactNormal);
+    @Override
+    public void applyCollision(RigidBody newState, float deltaTime, float currentTime){
+        rollSpeed = newState.rollSpeed();
+        pitchSpeed = newState.pitchSpeed();
+        yawSpeed = newState.yawSpeed();
+        extraVelocity.set(newState.velocity);
+
+        if (newState.isFinal()) return;
+
+        final float remainingTime = deltaTime * (1 - newState.timeScalar);
+        newState.massCenterPosition.add(extraVelocity.scale(remainingTime, new DirVector()), extraPosition);
+        newState.rotation.rotate(rollSpeed * remainingTime, pitchSpeed * remainingTime, yawSpeed * remainingTime, extraRotation);
+
+        // add intermediate position/rotation to interpolation
+        final float collisionTimeStamp = currentTime - remainingTime;
+        positionInterpolator.add(new PosVector(extraPosition), collisionTimeStamp);
+        rotationInterpolator.add(new Quaternionf(extraRotation), collisionTimeStamp);
+
+        hitPoints = calculateHitpointMovement();
+        nextCrash = new Extreme<>(false);
     }
 
     /**
@@ -406,6 +396,11 @@ public abstract class GameEntity implements MovingEntity {
             cachedRotation = rotationInterpolator.getInterpolated(cachedTime);
             cachedTime = newTime;
         }
+    }
+
+    @Override
+    public float getMass() {
+        return mass;
     }
 
     @Override

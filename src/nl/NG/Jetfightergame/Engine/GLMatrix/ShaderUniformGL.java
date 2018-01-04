@@ -4,7 +4,6 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Shaders.ShaderProgram;
-import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -37,11 +36,11 @@ public class ShaderUniformGL implements GL2 {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
 
-        viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
         modelMatrix = new Matrix4f();
+        viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
 
-        viewProjectionMatrix.assumePerspective();
         modelMatrix.assumeAffine();
+        viewProjectionMatrix.assumePerspective();
     }
 
     private Matrix4f getProjection(float windowWidth, float windowHeight, Camera camera) {
@@ -57,6 +56,7 @@ public class ShaderUniformGL implements GL2 {
                 camera.getFocus(),
                 camera.getUpVector()
         );
+
         return vpMatrix;
     }
 
@@ -79,13 +79,6 @@ public class ShaderUniformGL implements GL2 {
         Vector3f mPosition = new Vector3f(pos);
         mPosition.mulPosition(modelMatrix);
         currentShader.setPointLight(nextLightIndex++, mPosition, lightColor);
-
-        setMaterial(Material.GLOWING, lightColor);
-        pushMatrix();
-        translate(pos);
-        scale(0.1f);
-        draw(GeneralShapes.INVERSE_CUBE);
-        popMatrix();
     }
 
     @Override

@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.FallingCube;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
+import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -21,8 +21,8 @@ public class CollisionLaboratory extends GameState {
 
     private static final float CUBESIZE = 2f;
     private static final float CUBEMASS = 5f;
-    private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 3;
+    private static final int LAB_SIZE = 20;
+    private static final int NR_OF_CUBES = 2;
 
 
     private final int labSize;
@@ -37,7 +37,7 @@ public class CollisionLaboratory extends GameState {
         super(controller);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
-        this.speeds = 5;
+        this.speeds = 0;
 //        this.speeds = labSize/3;
     }
 
@@ -66,12 +66,13 @@ public class CollisionLaboratory extends GameState {
             }
         }
 
-        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE));
+        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.TRANSPARENT_GREY));
     }
 
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-        final DirVector random = DirVector.random();
-        return random.scale(labSize, random);
+//        final DirVector random = DirVector.zeroVector();
+//        return random.scale(labSize, random);
+        return entity.getPosition().to(Vector.random(), new DirVector());
     }
 }

@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -26,6 +27,7 @@ public abstract class AbstractGameLoop extends Thread {
     private boolean shouldStop;
     private final boolean notifyDelay;
     private Consumer<Exception> exceptionHandler;
+    private float realTPS = 0;
 
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
         this.targetTps = targetTps;
@@ -58,6 +60,9 @@ public abstract class AbstractGameLoop extends Thread {
         Toolbox.print(loopName + " enabled");
         Timer loopTimer = new Timer();
         float deltaTime = 0;
+
+        ScreenOverlay.addHudItem((hud) -> hud.printRoll(String.format("%s: %1.01f", loopName, realTPS)));
+
         try {
             pauseBlock.await();
 
@@ -79,7 +84,9 @@ public abstract class AbstractGameLoop extends Thread {
                 loopTimer.updateLoopTime();
 
                 // print Ticks per Second
-                TPSMinimum.updateAndPrint(loopName, 1000f / loopTimer.getElapsedTime(), "per second");
+                realTPS = 1000f / loopTimer.getElapsedTime();
+                TPSMinimum.updateAndPrint(loopName, realTPS, "per second");
+
                 // store the duration and set this as length of next update
                 deltaTime = loopTimer.getElapsedSeconds();
                 // wait if the game is paused

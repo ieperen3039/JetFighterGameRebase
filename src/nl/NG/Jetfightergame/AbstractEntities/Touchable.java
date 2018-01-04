@@ -50,9 +50,12 @@ public interface Touchable extends Drawable {
 
     /**
      * process the effect of another object colliding on this object.
-     * If this object has its own collision, it is not possible to check what collision comes first;
-     * we assume that the owners collision always comes first
      * @param cause the data of the collision from causer's perspective
      */
-    default void acceptCollision(Collision cause) {}
+    void acceptCollision(Collision cause);
+
+    /**
+     * returns the first collision of this object
+     */
+    RigidBody getFinalCollision(float deltaTime);
 }

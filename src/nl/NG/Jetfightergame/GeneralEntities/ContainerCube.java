@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.GeneralEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
@@ -28,6 +30,16 @@ public class ContainerCube implements Touchable {
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(material, Color4f.ORANGE);
+    }
+
+    @Override
+    public void acceptCollision(Collision cause) {
+        // ignore collisions
+    }
+
+    @Override
+    public RigidBody getFinalCollision(float deltaTime) {
+        return new RigidBody(this);
     }
 
     @Override

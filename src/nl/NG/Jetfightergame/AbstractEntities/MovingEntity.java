@@ -44,15 +44,18 @@ public interface MovingEntity extends Touchable {
     void update(float currentTime);
 
     /**
-     * calculate effect of collision, but does not apply new position
+     * applies the final collision after it has been processed to this object
+     * @param newState
+     * @param deltaTime
+     * @param currentTime
      */
-    void applyCollision(float currentTime);
+    void applyCollision(RigidBody newState, float deltaTime, float currentTime);
 
     /**
      * checks the movement of the hitpoints of this object against the planes of 'other'.
      * the method implementing this must be thread-safe
      * @param other an object that may hit this object
-     * @return true if there was a collision
+     * @return true if there was a collision. This also means that the other has a collision as well
      */
     boolean checkCollisionWith(Touchable other);
 
@@ -68,5 +71,9 @@ public interface MovingEntity extends Touchable {
      * @return movement of the center of mass of this object in world-space
      */
     DirVector getVelocity();
+
+    float getMass();
+
+    PosVector getPosition();
 }
 

@@ -2,12 +2,16 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -18,6 +22,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -40,9 +45,11 @@ public class GameState {
 
     public final GameTimer time = new GameTimer();
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
+    private int totalCollisions;
 
     public GameState(Controller input) {
         playerJet = new PlayerJet(input, time.getRenderTime());
+        ScreenOverlay.addHudItem((hud) -> hud.printRoll("Collision count: " + totalCollisions));
     }
 
     private Extreme<Integer> collisionMax = new Extreme<>(true);
@@ -72,34 +79,46 @@ public class GameState {
         // check and handle collisions
         if (deltaTime > 0f && remainingLoops != 0) {
 
-            int totalCollisions = 0;
-            Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
-            Collection<MovingEntity> collisions;
+            int newCollisions = 0;
+            final Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
+            List<Pair<Touchable, MovingEntity>> collisionPairs;
+            List<RigidBody> postCollisions = new ArrayList<>();
+
             do {
                 /* as a single collision may result in a previously not-intersecting pair to collide,
                  * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
                  * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
                  */
-                collisions = closeTargets.parallelStream()
+                collisionPairs = closeTargets.stream()
                         // check for collisions
                         .filter(GameState::checkPair)
-                        // extract and collect all distinct moving collided elements to update them
-                        .flatMap(p -> Stream.of(p.left, p.right))
-                        .filter(e -> e instanceof MovingEntity)
-                        .map(e -> (MovingEntity) e)
+                        .collect(Collectors.toList());
+
+                newCollisions += collisionPairs.size();
+                postCollisions.clear();
+
+                // process the final collisions in pairs
+                postCollisions = collisionPairs.stream()
+                        .map(ep -> new Pair<>(
+                                ep.left.getFinalCollision(deltaTime),
+                                ep.right.getFinalCollision(deltaTime)
+                        ))
+                        .flatMap(rp -> {
+                            RigidBody.process(rp.left, rp.right);
+                            return Stream.of(rp.left, rp.right);
+                        })
                         .distinct()
                         .collect(Collectors.toList());
 
-                totalCollisions += collisions.size();
+                // apply the collisions to the objects
+                postCollisions
+                        .forEach(r -> r.apply(deltaTime, currentTime));
 
-                collisions.parallelStream()
-                        .forEach(p -> p.applyCollision(currentTime));
+            } while (collisionPairs.size() > 0 && --remainingLoops > 0);
 
-            } while (collisions.size() > 0 && --remainingLoops > 0);
+            totalCollisions = newCollisions;
             if (remainingLoops == 0) {
-                Toolbox.print(collisions.size() + " collision not resolved after " + totalCollisions + " collisions");
-            } else if (totalCollisions > 0 && DEBUG) {
-                Toolbox.print("processed " + totalCollisions + " collisions");
+                Toolbox.print(collisionPairs.size() + " collisions not resolved after " + newCollisions + " calculations");
             }
         }
 
@@ -112,12 +131,12 @@ public class GameState {
 
     /**
      * let each object of the pair check for collisions, but does not make any changes just yet.
-     * these only take effect after calling {@link MovingEntity#applyCollision(float)}
+     * these only take effect after calling {@link MovingEntity#getFinalCollision(float)}
      * @param p a pair of objects that may have collided.
      * @return true if this pair collided:
      * if this method returns false, then these objects do not collide and are not changed as a result.
      * if this method returns true, then these objects do collide and have this collision stored.
-     * The collision can be calculated by {@link MovingEntity#applyCollision(float)} and applied by {@link Updatable#update(float)}
+     * The collision can be calculated by {@link MovingEntity#getFinalCollision(float)} and applied by {@link Updatable#update(float)}
      */
     private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
         MovingEntity moving = p.right;
@@ -164,14 +183,27 @@ public class GameState {
     }
 
     public void setLights(GL2 gl) {
-        lights.forEach((pointLight) -> gl.setLight(pointLight.left, pointLight.right));
+        for (Pair<PosVector, Color4f> l : lights) {
+            final PosVector pos = l.left;
+            final Color4f color = l.right;
+
+            gl.setLight(pos, color);
+            gl.setMaterial(Material.GLOWING, color);
+            gl.pushMatrix();
+            {
+                gl.translate(pos);
+                gl.scale(0.1f);
+                gl.draw(GeneralShapes.INVERSE_CUBE);
+            }
+            gl.popMatrix();
+        }
     }
 
     /**
      * draw all objects of the game
      */
     public void drawObjects(GL2 gl) {
-        Toolbox.drawAxisFrame(gl);
+//        Toolbox.drawAxisFrame(gl);
 
         staticEntities.forEach(d -> d.draw(gl));
         dynamicEntities.forEach(d -> d.draw(gl));

@@ -71,7 +71,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
             // update camera based on
             activeCamera.updatePosition(gameState.time.getRenderTime().difference());
 
-
             if (CULL_FACES) {
                 // Cull backfaces
                 glEnable(GL_CULL_FACE);
@@ -84,6 +83,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
             if (!engine.isPaused()) gameState.updateParticles();
 
             // activate lights in the scene
+            gl.setLight(activeCamera.getEye(), Color4f.TRANSPARENT_GREY);
             gameState.setLights(gl);
             Toolbox.checkGLError();
 

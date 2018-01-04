@@ -9,9 +9,10 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  *         created on 7-11-2017.
  */
 public class Collision implements Comparable<Collision> {
-    public final float timeScalar;
     private final DirVector shapeLocalNormal;
     private final PosVector shapeLocalHitPos;
+
+    public float timeScalar;
     public PosVector hitPos;
     public DirVector normal;
 
@@ -31,12 +32,14 @@ public class Collision implements Comparable<Collision> {
     }
 
     /**
-     * @return a copy of the collision, with timeScalar == 1
+     * @return a copy of the collision
+     * @throws NullPointerException if {@link #convertToGlobal(MatrixStack)} has not been called on this collision
      */
     public Collision inverse() {
         final Collision copy = new Collision();
         copy.hitPos = hitPos;
-        copy.normal = normal.normalize(new DirVector());
+        copy.normal = normal.negate(new DirVector());
+        copy.timeScalar = timeScalar;
         return copy;
     }
 

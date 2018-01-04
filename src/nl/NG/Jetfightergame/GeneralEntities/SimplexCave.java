@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.GeneralEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
@@ -10,7 +12,10 @@ import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.OpenSimplexNoise;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Vector2f;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
@@ -32,6 +37,8 @@ public class SimplexCave implements Touchable {
     // difference between minimum and maximum of OpenSimplexNoise
     private static final float SIM_VAR = 2 * 0.852f;
 
+    private Collection<Vector2f> collisions;
+
     private Shape topGrid;
     private Shape bottomGrid;
 
@@ -41,6 +48,8 @@ public class SimplexCave implements Touchable {
 
         topGrid = buildTerrain(noiseTop, 0.3f, ROWS, PLANE_SIZE);
         bottomGrid = buildTerrain(noiseBottom, 0.3f, ROWS, PLANE_SIZE);
+
+        collisions = new ArrayList<>();
     }
 
     /**
@@ -97,17 +106,24 @@ public class SimplexCave implements Touchable {
         action.run();
     }
 
-    /**
-         * checks the movement of the hitpoints of this object agains the planes of 'other'.
-         * @param other an object that may hit this object
-         */
-    public void checkCollisionWith(Touchable other) {
-
-    }
-
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(GROUND, Color4f.GREY);
+    }
+
+    @Override
+    public void acceptCollision(Collision cause) {
+        final PosVector pos = cause.hitPos;
+        collisions.add(new Vector2f(
+                pos.x(), pos.y()
+        ));
+    }
+
+    @Override
+    public RigidBody getFinalCollision(float deltaTime) {
+        collisions.forEach(a -> {});
+        collisions.clear();
+        return new RigidBody(this);
     }
 
     @Override
