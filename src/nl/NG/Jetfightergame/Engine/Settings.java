@@ -8,8 +8,7 @@ import java.util.Random;
 /**
  * @author Geert van Ieperen
  *         created on 2-11-2017.
- * a class that harbours the variables that can be set by the user
- * and maybe some that can not be set by the user
+ * a class that harbours the variables that may or may not be changed by the player
  */
 public class Settings {
     // final settings
@@ -18,9 +17,10 @@ public class Settings {
     /** universal random to be used everywhere */
     public static final Random random = new Random();
     public static final boolean DEBUG = true;
+    public static final boolean CULL_FACES = false;
     public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
     public static final int HUD_STROKE_WIDTH = 0;
-    static final int MAX_COLLISION_ITERATIONS = 100;
+    static final int MAX_COLLISION_ITERATIONS = 0;//100;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings
@@ -29,7 +29,7 @@ public class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 20;
+    public static int TARGET_TPS = 15;
     /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
     public static final float RENDER_DELAY = 1.1f/TARGET_TPS;
 
@@ -52,7 +52,7 @@ public class Settings {
 
     // visual settings
     public static boolean V_SYNC = true;
-    public static int ANTIALIAS = 4;
+    public static int ANTIALIAS = 3;
     public final static int MAX_POINT_LIGHTS = 10;
 
 }

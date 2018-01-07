@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Shaders;
+package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -21,7 +21,7 @@ import static org.lwjgl.opengl.GL20.*;
  *  @author Yoeri Poels
  *  @author Geert van Ieperen
  */
-public abstract class ShaderProgram {
+public abstract class AbstractShader implements ShaderProgram {
 
     private final Map<String, Integer> uniforms;
 
@@ -29,7 +29,7 @@ public abstract class ShaderProgram {
     private int vertexShaderId;
     private int fragmentShaderId;
 
-    public ShaderProgram(String vertexPath, String fragmentPath) throws ShaderException, IOException {
+    public AbstractShader(String vertexPath, String fragmentPath) throws ShaderException, IOException {
         uniforms = new HashMap<>();
 
         programId = glCreateProgram();
@@ -51,23 +51,17 @@ public abstract class ShaderProgram {
         createUniform("normalMatrix");
     }
 
-    /**
-     * Bind the renderer to the current rendering state
-     */
+    @Override
     public void bind() {
         glUseProgram(programId);
     }
 
-    /**
-     * Unbind the renderer from the current rendering state
-     */
+    @Override
     public void unbind() {
         glUseProgram(0);
     }
 
-    /**
-     * Cleanup the renderer after it's done
-     */
+    @Override
     public void cleanup() {
         unbind();
         if (programId != 0) {
@@ -75,11 +69,7 @@ public abstract class ShaderProgram {
         }
     }
 
-    /**
-     * Link the program and cleanup the shaders.
-     *
-     * @throws ShaderException If an error occures linking the shader code.
-     */
+    @Override
     public void link() throws ShaderException {
         glLinkProgram(programId);
         if (glGetProgrami(programId, GL_LINK_STATUS) == 0) {
@@ -189,14 +179,6 @@ public abstract class ShaderProgram {
     }
 
     /**
-     * pass a pointlight to the shader
-     * @param lightNumber the number which to adapt
-     * @param mPosition the position in model-space (worldspace)
-     * @param color the color of the light, with alpha as intensity
-     */
-    public abstract void setPointLight(int lightNumber, Vector3f mPosition, Color4f color);
-
-    /**
      * Set the value of a certain PointLight shader uniform
      *
      * @param uniformName The name of the uniform.
@@ -246,21 +228,24 @@ public abstract class ShaderProgram {
         setUniform(uniformName, value ? 1 : 0);
     }
 
+    @Override
     public void setProjectionMatrix(Matrix4f viewProjectionMatrix) {
         setUniform("viewProjectionMatrix", viewProjectionMatrix);
     }
 
+    @Override
     public void setModelMatrix(Matrix4f modelMatrix) {
         setUniform("modelMatrix", modelMatrix);
     }
 
+    @Override
     public void setNormalMatrix(Matrix3f normalMatrix){
         setUniform("normalMatrix", normalMatrix);
     }
 
+    @Override
     public void setMaterial(Material mat){
         setMaterial(mat, Color4f.WHITE);
     }
 
-    public abstract void setMaterial(Material material, Color4f color);
 }

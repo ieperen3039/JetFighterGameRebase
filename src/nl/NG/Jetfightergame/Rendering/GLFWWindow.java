@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector2i;
-import org.joml.Vector2ic;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
@@ -22,7 +22,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  * A window which initializes GLFW and manages it.
  */
 public class GLFWWindow {
-    private static final boolean GL_DEBUG_MESSAGES = false;
+    private static final boolean GL_DEBUG_MESSAGES = true;
     private final long primaryMonitor;
 
     private final String title;
@@ -30,14 +30,12 @@ public class GLFWWindow {
     // buffers for mouse input
     private final DoubleBuffer mousePosX;
     private final DoubleBuffer mousePosY;
-    private double lastTime;
-    private int nbFrames = 0;
-    private double frametime;
 
     private long window;
+    private int width;
+    private int height;
     private boolean fullScreen = false;
     private boolean mouseIsCaptured;
-    private Vector2i dimensions = new Vector2i();
 
     public GLFWWindow(String title) {
         this(title, 960, 720, true);
@@ -45,8 +43,9 @@ public class GLFWWindow {
 
     public GLFWWindow(String title, int width, int height, boolean resizable) {
         this.title = title;
+        this.width = width;
+        this.height = height;
         this.resizable = resizable;
-        this.dimensions.set(width, height);
 
         this.mousePosX = BufferUtils.createDoubleBuffer(1);
         this.mousePosY = BufferUtils.createDoubleBuffer(1);
@@ -73,9 +72,8 @@ public class GLFWWindow {
             glfwWindowHint(GLFW_SAMPLES, Settings.ANTIALIAS);
         }
 
-        window = getWindow(dimensions.x(), dimensions.y());
+        window = getWindow(this.width, this.height);
         primaryMonitor = glfwGetPrimaryMonitor();
-        lastTime = glfwGetTime();
 
         setWindowed();
 
@@ -122,9 +120,10 @@ public class GLFWWindow {
         }
         if (this.resizable) {
             // Setup resize callback
-            glfwSetFramebufferSizeCallback(newWindow,
-                    (window, newWidth, newHeight) -> dimensions.set(newWidth, newHeight)
-            );
+            glfwSetFramebufferSizeCallback(newWindow, (window, newWidth, newHeight) -> {
+                this.width = newWidth;
+                this.height = newHeight;
+            });
         }
 
         // Make GL context current
@@ -137,15 +136,6 @@ public class GLFWWindow {
      * which occurred on the window. Finally returns whether the window should close.
      */
     public void update() {
-        // Measure speed
-        double currentTime = glfwGetTime();
-        nbFrames++;
-        if (currentTime - lastTime >= 0.25) { // If last prinf() was more than 1 sec ago
-            // printf and reset timer
-            frametime = (250.0 / ((double) (nbFrames)));
-            nbFrames = 0;
-            lastTime += 0.25;
-        }
         // Swap buffers
         glfwSwapBuffers(window);
 
@@ -230,21 +220,12 @@ public class GLFWWindow {
     }
 
     /**
-     * Get the title of the window.
-     *
-     * @return The title of the window.
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
      * Get the width of the window.
      *
      * @return The width of the window.
      */
     public int getWidth() {
-        return dimensions.x();
+        return width;
     }
 
     /**
@@ -253,7 +234,7 @@ public class GLFWWindow {
      * @return The height of the window.
      */
     public int getHeight() {
-        return dimensions.y();
+        return height;
     }
 
     /**
@@ -314,8 +295,8 @@ public class GLFWWindow {
         // Center window on display
         glfwSetWindowPos(
                 window,
-                (vidmode.width() - dimensions.x()) / 2,
-                (vidmode.height() - dimensions.y()) / 2
+                (vidmode.width() - this.width) / 2,
+                (vidmode.height() - this.height) / 2
         );
         fullScreen = false;
     }
@@ -345,11 +326,8 @@ public class GLFWWindow {
         return mouseIsCaptured;
     }
 
-    /**
-     * @return a pointer to the dimensions of this window.
-     */
-    public Vector2ic getDimensions() {
-        return dimensions.toImmutable();
+    public void setClearColor(Color4f color4f) {
+        setClearColor(color4f.red, color4f.green, color4f.blue, color4f.alpha);
     }
 }
 

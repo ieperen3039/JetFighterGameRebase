@@ -7,10 +7,9 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
-import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
@@ -34,7 +33,7 @@ import static nl.NG.Jetfightergame.Engine.Settings.RENDER_DELAY;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public class GameState {
+public abstract class GameState {
 
     private AbstractJet playerJet;
 
@@ -54,18 +53,14 @@ public class GameState {
 
     private Extreme<Integer> collisionMax = new Extreme<>(true);
 
-    protected void buildScene() {
-        dynamicEntities.add(playerJet);
-//        staticEntities.add(new SimplexCave());
-        staticEntities.add(new ContainerCube(100));
-        lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
-    }
+    protected abstract void buildScene();
 
     /**
      * update the physics of all game objects and check for collisions
      */
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() {
+
         time.updateGameTime();
         float currentTime = time.getGameTime().current();
         float deltaTime = time.getGameTime().difference();
@@ -77,7 +72,7 @@ public class GameState {
 
         int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
         // check and handle collisions
-        if (deltaTime > 0f && remainingLoops != 0) {
+        if ((deltaTime > 0f) && (remainingLoops != 0)) {
 
             int newCollisions = 0;
             final Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
@@ -114,7 +109,7 @@ public class GameState {
                 postCollisions
                         .forEach(r -> r.apply(deltaTime, currentTime));
 
-            } while (collisionPairs.size() > 0 && --remainingLoops > 0);
+            } while (!collisionPairs.isEmpty() && (--remainingLoops > 0));
 
             totalCollisions = newCollisions;
             if (remainingLoops == 0) {
@@ -125,9 +120,7 @@ public class GameState {
         dynamicEntities.forEach(obj -> obj.update(currentTime));
     }
 
-    protected DirVector entityNetforce(MovingEntity entity) {
-        return DirVector.zeroVector();
-    }
+    protected abstract DirVector entityNetforce(MovingEntity entity);
 
     /**
      * let each object of the pair check for collisions, but does not make any changes just yet.

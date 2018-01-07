@@ -1,14 +1,10 @@
 package nl.NG.Jetfightergame.Vectors;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.Settings;
-import org.joml.Matrix3f;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.util.Locale;
-
-import static java.lang.Math.sin;
 
 /**
  * @author Geert van Ieperen
@@ -35,32 +31,6 @@ public abstract class Vector extends Vector3f{
         return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
     }
 
-    /**
-     * returns a translation matrix resulting from rotating angle radians over vector (x, y, z)
-     * in much the same way as {@link MatrixStack#rotate(float, float, float, float)}
-     *
-     * @param angle in RADIANS
-     * @return a 3x3 matrix as 9-element array.
-     */
-    public static Matrix3f getRotationMatrix(float x, float z, float y, float angle) {
-        float Mcos = (1 - (float) Math.cos(angle));
-        return new Matrix3f(
-                (x * x * Mcos + (float) Math.cos(angle)),
-                (x * y * Mcos - z * (float) sin(angle)),
-                (x * z * Mcos + y * (float) sin(angle)),
-                (y * x * Mcos + z * (float) sin(angle)),
-                (y * y * Mcos + (float) Math.cos(angle)),
-                (y * z * Mcos - x * (float) sin(angle)),
-                (z * x * Mcos - y * (float) sin(angle)),
-                (z * y * Mcos + x * (float) sin(angle)),
-                (z * z * Mcos + (float) Math.cos(angle))
-        );
-    }
-
-    public static Matrix3f getRotationMatrix(Vector v, float angle){
-        return getRotationMatrix(v.x, v.z, v.y, angle);
-    }
-
     public DirVector normalize(DirVector dest) {
         super.normalize(dest);
         return dest;
@@ -72,14 +42,14 @@ public abstract class Vector extends Vector3f{
      */
     public static DirVector random() {
         return new DirVector(
-                2 * Settings.random.nextFloat() - 1,
-                2 * Settings.random.nextFloat() - 1,
-                2 * Settings.random.nextFloat() - 1
+                (2 * Settings.random.nextFloat()) - 1,
+                (2 * Settings.random.nextFloat()) - 1,
+                (2 * Settings.random.nextFloat()) - 1
         );
     }
 
     public boolean isScalable(){
-        return !(Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || (x == 0 && y == 0 && z == 0));
+        return !(Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || ((x == 0) && (y == 0) && (z == 0)));
     }
 
     public float dot(Vector that) {

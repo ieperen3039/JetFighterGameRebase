@@ -8,13 +8,11 @@ import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
+import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Shaders.GouraudShader;
-import nl.NG.Jetfightergame.Shaders.PhongShader;
-import nl.NG.Jetfightergame.Shaders.ShaderException;
-import nl.NG.Jetfightergame.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -28,19 +26,18 @@ import static org.lwjgl.opengl.GL11.*;
  * @author Geert van Ieperen
  */
 public class JetFighterRenderer extends AbstractGameLoop {
-    private static final boolean CULL_FACES = true;
 
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
 
-    private ShaderProgram currentShader;
+    private ShaderManager shaderManager;
 
     private Color4f ambientLight;
     private GameState gameState;
 
     public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
-                              Camera camera, MusicProvider musicProvider, ControllerManager input) throws IOException, ShaderException {
+                              Camera camera, MusicProvider musicProvider, ControllerManager controllerManager) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false, (ex) -> engine.exitGame());
 
         this.gameState = gameState;
@@ -49,21 +46,20 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.engine = engine;
 
         // TODO allow toggle shader
-        currentShader = new GouraudShader();
-
-        window.setClearColor(0.8f, 0.8f, 0.8f, 1.0f);
+        shaderManager = new ShaderManager();
 
         ambientLight = Color4f.LIGHT_GREY;
+        window.setClearColor(ambientLight);
 
-        new JetFighterMenu(musicProvider, engine::setSpectatorMode, engine::exitGame, input);
-        new GravityHud(window.getDimensions(), engine.getPlayer(), camera);
+        new JetFighterMenu(musicProvider, engine::setSpectatorMode, engine::exitGame, controllerManager, shaderManager);
+        new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera);
     }
 
     @Override
     protected void update(float realDeltaTime) {
         try {
             Toolbox.checkGLError();
-            GL2 gl = new ShaderUniformGL(currentShader, window.getWidth(), window.getHeight(), activeCamera);
+            GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
             Toolbox.checkGLError();
 
             gameState.updateRenderTime();
@@ -71,13 +67,13 @@ public class JetFighterRenderer extends AbstractGameLoop {
             // update camera based on
             activeCamera.updatePosition(gameState.time.getRenderTime().difference());
 
-            if (CULL_FACES) {
+            if (Settings.CULL_FACES) {
                 // Cull backfaces
                 glEnable(GL_CULL_FACE);
                 glCullFace(GL_BACK);
             }
 
-            initShader();
+            shaderManager.initShader(activeCamera, ambientLight);
             Toolbox.checkGLError();
 
             if (!engine.isPaused()) gameState.updateParticles();
@@ -96,7 +92,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
             // overlay with transparent objects
             // TODO transparent meshes?
 
-            currentShader.unbind();
+            shaderManager.unbind();
 
             ScreenOverlay.draw(window.getWidth(), window.getHeight());
 
@@ -116,27 +112,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         }
     }
 
-    private void initShader() {
-        currentShader.bind();
-
-        if (currentShader instanceof PhongShader){
-            PhongShader shader = (PhongShader) currentShader;
-            shader.setSpecular(1f);
-            shader.setBlack(false);
-            shader.setShadowed(true);
-            shader.setAmbientLight(ambientLight);
-            shader.setCameraPosition(activeCamera.getEye());
-        } else if (currentShader instanceof GouraudShader){
-            GouraudShader shader = (GouraudShader) currentShader;
-            shader.setAmbientLight(ambientLight);
-            shader.setCameraPosition(activeCamera.getEye());
-        } else {
-            Toolbox.print("loaded shader without advanced parameters: " + currentShader.getClass().getSimpleName());
-        }
-    }
-
     @Override
     public void cleanup() {
-        currentShader.cleanup();
+        shaderManager.cleanup();
     }
 }

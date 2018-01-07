@@ -23,7 +23,7 @@ public abstract class AbstractGameLoop extends Thread {
     private final String loopName;
 
     private int targetTps;
-    private CountDownLatch pauseBlock = new CountDownLatch(0); //TODO find better way?
+    private CountDownLatch pauseBlock = new CountDownLatch(0);
     private boolean shouldStop;
     private final boolean notifyDelay;
     private Consumer<Exception> exceptionHandler;
@@ -47,7 +47,7 @@ public abstract class AbstractGameLoop extends Thread {
      */
     public void stopLoop(){
         shouldStop = true;
-        unPause();
+        pauseBlock.countDown();
     }
 
     protected abstract void cleanup();
@@ -74,7 +74,7 @@ public abstract class AbstractGameLoop extends Thread {
                 update(deltaTime);
 
                 long remainingTime = (1000 / targetTps) - loopTimer.getTimeSinceLastUpdate();
-                if (Settings.DEBUG && notifyDelay && remainingTime < 0)
+                if (Settings.DEBUG && notifyDelay && (remainingTime < 0))
                     System.err.println(loopName + " can't keep up! Running " + -remainingTime + " milliseconds behind");
 
                 // sleep at least one millisecond

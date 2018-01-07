@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
-import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -23,7 +23,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBEMASS = 5f;
     private static final int LAB_SIZE = 20;
     private static final int NR_OF_CUBES = 2;
-    private static final int INIT_SPEED = 0;
+    private static final int INIT_SPEED = 5;
 
 
     private final int labSize;
@@ -44,7 +44,6 @@ public class CollisionLaboratory extends GameState {
 
     @Override
     protected void buildScene() {
-
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
@@ -78,4 +77,5 @@ public class CollisionLaboratory extends GameState {
 //        return random.scale(labSize, random);
         return entity.getPosition().to(Vector.random(), new DirVector());
     }
+
 }

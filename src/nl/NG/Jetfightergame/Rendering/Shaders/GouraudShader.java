@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Shaders;
+package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector3f;
@@ -12,12 +12,12 @@ import static nl.NG.Jetfightergame.Engine.Settings.MAX_POINT_LIGHTS;
  *         created on 2-12-2017.
  */
 @SuppressWarnings("Duplicates")
-public class PhongShader extends ShaderProgram {
+public class GouraudShader extends AbstractShader {
 
-    public PhongShader() throws ShaderException, IOException {
+    public GouraudShader() throws IOException {
         super(
-                "res/shaders/Phong/vertex.vert", 
-                "res/shaders/Phong/fragment.frag"
+                "res/shaders/Gouraud/vertex.vert",
+                "res/shaders/Gouraud/fragment.frag"
         );
 
         // Create the Material uniform
@@ -27,26 +27,9 @@ public class PhongShader extends ShaderProgram {
         createUniform("material.reflectance");
 
         // Create the lighting uniforms
-        createUniform("specularPower");
         createUniform("ambientLight");
         createUniform("cameraPosition");
         createPointLightsUniform(MAX_POINT_LIGHTS);
-
-        // Create uniform for special lighting conditions for background elements
-        createUniform("blackAsAlpha");
-        createUniform("shadowed");
-    }
-
-    public void setSpecular(float power) {
-        setUniform("specularPower", power);
-    }
-
-    public void setBlack(boolean asAlpha) {
-        setUniform("blackAsAlpha", asAlpha);
-    }
-
-    public void setShadowed(boolean isShadowed) {
-        setUniform("shadowed", isShadowed);
     }
 
     public void setAmbientLight(Color4f ambientLight) {
@@ -61,7 +44,7 @@ public class PhongShader extends ShaderProgram {
      * Create an uniform for a pointslight array.
      *
      * @param size The size of the array.
-     * @throws ShaderException If an error occurs while fetching the memory location.
+     * @throws ShaderException If an error while fetching the memory location.
      */
     private void createPointLightsUniform(int size) throws ShaderException {
         for (int i = 0; i < size; i++) {
@@ -76,6 +59,7 @@ public class PhongShader extends ShaderProgram {
         setPointLightUniform("pointLights[" + lightNumber + "]", mPosition, color);
     }
 
+    @SuppressWarnings("Duplicates")
     @Override
     public void setMaterial(Material material, Color4f color) {
         float[] materialColor = material.mixWith(color);

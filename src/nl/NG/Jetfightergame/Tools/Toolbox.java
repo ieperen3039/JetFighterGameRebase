@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.TriangleParticle;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
-import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Vectors.Color4f;

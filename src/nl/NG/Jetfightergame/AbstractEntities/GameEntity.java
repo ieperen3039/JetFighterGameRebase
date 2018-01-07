@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
@@ -172,9 +172,9 @@ public abstract class GameEntity implements MovingEntity {
         positionInterpolator.add(new PosVector(position), currentTime);
         rotationInterpolator.add(new Quaternionf(rotation), currentTime);
 
-        if (position.x() == Float.NaN || position.y() == Float.NaN || position.z() == Float.NaN)
+        if ((position.x() == Float.NaN) || (position.y() == Float.NaN) || (position.z() == Float.NaN))
             throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
-        if (rotation.x() == Float.NaN || rotation.y() == Float.NaN || rotation.z() == Float.NaN)
+        if ((rotation.x() == Float.NaN) || (rotation.y() == Float.NaN) || (rotation.z() == Float.NaN))
             throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
 
     }
@@ -391,7 +391,7 @@ public abstract class GameEntity implements MovingEntity {
 
     private void updateInterpolationCache() {
         final float newTime = renderTime.current();
-        if (newTime > 0 && cachedTime != newTime) {
+        if ((newTime > 0) && (cachedTime != newTime)) {
             cachedPosition = positionInterpolator.getInterpolated(cachedTime).toPosVector();
             cachedRotation = rotationInterpolator.getInterpolated(cachedTime);
             cachedTime = newTime;

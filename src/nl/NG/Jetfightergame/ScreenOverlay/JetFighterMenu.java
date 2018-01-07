@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
 import nl.NG.Jetfightergame.Sound.MusicProvider;
 
@@ -34,11 +35,11 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable[] controlsMenu;
     private UIElement[] creditScreen;
 
-    public JetFighterMenu(MusicProvider musicProvider, Runnable startGame, Runnable exitGame, ControllerManager input) {
+    public JetFighterMenu(MusicProvider musicProvider, Runnable startGame, Runnable exitGame, ControllerManager input, ShaderManager shaderManager) {
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
         {
-            MenuClickable graphics = graphicsMenu();
+            MenuClickable graphics = graphicsMenu(shaderManager);
             MenuClickable audio = audioMenu(musicProvider);
             MenuClickable controls = controlMenu(input);
             MenuClickable backOptions = new MenuButton("Back", () -> switchContentTo(mainMenu));
@@ -71,7 +72,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable audioMenu(MusicProvider musicProvider) {
         MenuClickable audio = new MenuButton("Audio", () -> switchContentTo(audioMenu));
         {
-            MenuClickable master = new MenuSlider("Volume", (i) -> musicProvider.setBaseVolume((i < 0.05f ? 0.05f : i)));
+            MenuClickable master = new MenuSlider("Volume", (i) -> musicProvider.setBaseVolume((i < 0.05f) ? 0.05f : i));
             MenuToggle toggleAudio = new MenuToggle("Music", (i) -> musicProvider.toggle());
             toggleAudio.setValue(musicProvider.isOn());
             MenuClickable backAudio = new MenuButton("Back", () -> switchContentTo(optionMenu));
@@ -80,11 +81,12 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         return audio;
     }
 
-    private MenuClickable graphicsMenu() {
+    private MenuClickable graphicsMenu(ShaderManager shaders) {
         MenuClickable graphics = new MenuButton("Graphics", () -> switchContentTo(graphicsMenu));
         {
+            MenuToggleMultiple shader = new MenuToggleMultiple("Shader", shaders.names(), shaders::switchTo);
             MenuClickable backGraphics = new MenuButton("Back", () -> switchContentTo(optionMenu));
-            graphicsMenu = new MenuClickable[]{backGraphics};
+            graphicsMenu = new MenuClickable[]{shader, backGraphics};
         }
         return graphics;
     }

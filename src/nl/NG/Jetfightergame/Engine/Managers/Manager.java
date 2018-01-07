@@ -3,12 +3,13 @@ package nl.NG.Jetfightergame.Engine.Managers;
 import java.util.stream.IntStream;
 
 /**
- * @author Geert van Ieperen
- * created on 22-12-2017.
  * A manager represents some implementation of some interface.
  * Objects implementing Manager should also implement the common interface of the implementations that it represent,
  * and mimic the behaviour of these.
  * Additionally, it is advised to make the initial implementation be the first defined enum, although this is not enforced.
+ *
+ * @author Geert van Ieperen
+ * created on 22-12-2017.
  */
 public interface Manager<E extends Enum> {
 

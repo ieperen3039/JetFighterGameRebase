@@ -6,7 +6,9 @@ import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import org.joml.Vector2i;
-import org.joml.Vector2ic;
+
+import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 
 import static nl.NG.Jetfightergame.Engine.Settings.HUD_COLOR;
 import static nl.NG.Jetfightergame.Engine.Settings.HUD_STROKE_WIDTH;
@@ -25,14 +27,15 @@ public class GravityHud {
     private static final int TICKSIZE = 15;
     private static final int HUD_TEXT_SIZE = 30;
 
-    public GravityHud(final Vector2ic screenDimensions, final AbstractJet target, Camera camera) {
+    public final Consumer<ScreenOverlay.Painter> display;
 
-        // we put all processing into a single drawable
-        ScreenOverlay.addHudItem(hud -> {
-            final int width = screenDimensions.x();
-            final int height = screenDimensions.y();
-            final int xMid = width /2;
-            final int yMid = height /2;
+    public GravityHud(IntSupplier windowWidth, IntSupplier windowHeight, final AbstractJet target, Camera camera) {
+
+        display = hud -> {
+            final int width = windowWidth.getAsInt();
+            final int height = windowHeight.getAsInt();
+            final int xMid = width / 2;
+            final int yMid = height / 2;
             final float barMargin = (1 - ALTVEL_BAR_SIZE) / 2;
             final float inverseBarMargin = 1 - barMargin;
             final DirVector lookDirection = camera.vectorToFocus();
@@ -104,7 +107,15 @@ public class GravityHud {
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX, FPVY - 25, FPVX, FPVY - 10);
             }
 
-        });
+        };
+    }
+
+    public void activate(){
+        ScreenOverlay.addHudItem(display);
+    }
+
+    public void deactivate(){
+        ScreenOverlay.removeHudItem(display);
     }
 
     /**
@@ -122,7 +133,7 @@ public class GravityHud {
         float[] output = new float[nrOfTicks];
 
         // we start with the tick just below the minimum. take negative values into account
-        float tick = minimum > 0 ? minimum + (minimum % stepSize) : minimum - (minimum % stepSize);
+        float tick = (minimum > 0) ? (minimum + (minimum % stepSize)) : (minimum - (minimum % stepSize));
 
         for (int i = 0; i < nrOfTicks; i++) {
             // store relative position

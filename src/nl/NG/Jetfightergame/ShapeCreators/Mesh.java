@@ -83,11 +83,11 @@ public class Mesh implements Renderable {
      * @throws IllegalArgumentException if the arrays are of unequal length
      */
     private void writeToGL(float[] positions, float[] normals) {
-        if (positions.length % 3 != 0 || positions.length == 0) {
+        if (((positions.length % 3) != 0) || (positions.length == 0)) {
             throw new IllegalArgumentException("received invalid position array of length " + positions.length + ".");
         } else if (normals.length != positions.length) {
             throw new IllegalArgumentException("received a normals array that is not as long as positions: " +
-                    positions.length + " positions and " + normals.length + "normals.");
+                    positions.length + " position values and " + normals.length + "normal values");
         }
 
         vertexCount = positions.length;

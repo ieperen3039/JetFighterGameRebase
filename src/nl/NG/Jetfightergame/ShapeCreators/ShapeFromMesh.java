@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,11 +80,11 @@ public class ShapeFromMesh implements Shape {
      * @param faces    a collection of indices mapping to 3 vertices and corresponding normals
      */
     public ShapeFromMesh(List<PosVector> vertices, List<DirVector> normals, List<Mesh.Face> faces) {
-        this.vertices = vertices;
+        this.vertices = new ArrayList<>(vertices);
         triangles = faces.stream()
                 .map(f -> toTriangle(f, vertices, normals))
                 .collect(Collectors.toCollection(() -> new ArrayList<>(faces.size())));
-        mesh = new Mesh(vertices, normals, faces);
+        mesh = new Mesh(this.vertices, normals, faces);
     }
 
     @Override
@@ -93,7 +94,7 @@ public class ShapeFromMesh implements Shape {
 
     @Override
     public Collection<PosVector> getPoints() {
-        return vertices;
+        return Collections.unmodifiableList(vertices);
     }
 
     @Override
@@ -124,7 +125,7 @@ public class ShapeFromMesh implements Shape {
     }
 
     private static DirVector fetchDir(List<DirVector> normals, int index) {
-        return index < 0 ? DirVector.zeroVector() : normals.get(index);
+        return (index < 0) ? DirVector.zeroVector() : normals.get(index);
     }
 
     private static class MeshParameters {
@@ -168,9 +169,11 @@ public class ShapeFromMesh implements Shape {
                         break;
                 }
             }
+
+
         }
 
-        private List<String> openMesh(String fileName) {
+        private static List<String> openMesh(String fileName) {
             try {
                 return Files.readAllLines(Paths.get(fileName));
             } catch (IOException e) {
@@ -184,7 +187,7 @@ public class ShapeFromMesh implements Shape {
          * for storage of vertex-indices
          * face == plane
          */
-        public Mesh.Face makeFace(String v1, String v2, String v3) {
+        private static Mesh.Face makeFace(String v1, String v2, String v3) {
             Pair<Integer, Integer> a = (parseVertex(v1));
             Pair<Integer, Integer> b = (parseVertex(v2));
             Pair<Integer, Integer> c = (parseVertex(v3));

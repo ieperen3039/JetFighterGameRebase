@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Shaders;
+package nl.NG.Jetfightergame.Rendering.Shaders;
 
 /**
  * @author Geert van Ieperen

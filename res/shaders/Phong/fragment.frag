@@ -26,8 +26,6 @@ const int MAX_POINT_LIGHTS = 10;
 uniform float specularPower;
 uniform Material material;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform int shadowed;
-uniform int blackAsAlpha;
 uniform vec3 ambientLight;
 // in model space
 uniform vec3 cameraPosition;
@@ -36,55 +34,37 @@ vec4 materialColor;
 vec4 diffuseC;
 vec4 speculrC;
 
-vec4 calcLightcolor(vec3 light_color, float light_intensity, vec3 position, vec3 to_light_dir, vec3 normal)
-{
-    vec4 diffusecolor = vec4(0, 0, 0, 0);
-    vec4 speccolor = vec4(0, 0, 0, 0);
+// P, N, eye and light.mPosition in model-space
+vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 
-    // Diffuse Light
-    float diffuseFactor = max(dot(normal, to_light_dir), 0.0);
-    diffusecolor = diffuseC * vec4(light_color, 1.0) * light_intensity * diffuseFactor;
+    vec3 result = vec3(0.0, 0.0, 0.0);
 
-    // Specular Light
-    vec3 cameraDirection = normalize(cameraPosition - position);
-    vec3 from_light_dir = -to_light_dir;
-    vec3 reflected_light = normalize(reflect(from_light_dir , normal));
-    float specularFactor = max( dot(cameraDirection, reflected_light), 0.0);
-    specularFactor = pow(specularFactor, specularPower);
-    speccolor = speculrC * light_intensity  * specularFactor * material.reflectance * vec4(light_color, 1.0);
+	vec3 lightDirection = normalize(light.mPosition.xyz - P); //vector towards light source
+    // diffuse component
+    float intensity = max(0.0, dot(N, lightDirection));
+    result += intensity * light.color * material.diffuse.xyz;
 
-    return (diffusecolor + speccolor);
-}
+	vec3 reflection = (reflect(lightDirection, N));
+	vec3 virtualLightPosition = normalize(-reflection);
 
-vec4 calcPointLight(PointLight light, vec3 position, vec3 normal)
-{
-    vec3 light_direction = light.mPosition - position;
-    vec3 to_light_dir  = normalize(light_direction);
-    vec4 light_color = calcLightcolor(light.color, light.intensity, position, to_light_dir, normal);
+	// specular component
+    float shine = pow( max(0.0, dot(virtualLightPosition, normalize(eye))), material.reflectance);
+    //float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
+    result += pow(shine, specularPower) * light.color;
 
-    return light_color;
+	return result;
 }
 
 void main()
 {
     materialColor = material.ambient;
 
-    vec4 diffuseSpecularComponent = vec4(0.0, 0.0, 0.0, 0.0);
-
-    if (shadowed == 1) {
-        for (int i=0; i < MAX_POINT_LIGHTS; i++) {
-            if (pointLights[i].intensity > 0 ) {
-                diffuseSpecularComponent += calcPointLight(pointLights[i], mVertexPosition, mVertexNormal);
-            }
-        }
-
-        fragColor = materialColor * vec4(ambientLight, 1.0) + diffuseSpecularComponent;
-    } else {
-        if (blackAsAlpha == 1) {
-            vec3 colorstart = materialColor.xyz * vec4(ambientLight, 1).xyz;
-            fragColor = vec4(colorstart.x, colorstart.y, colorstart.z, 0.0);
-        } else {
-            fragColor = materialColor * vec4(ambientLight, 1.0);
+    vec3 diffuseSpecularComponent = vec3(0.0, 0.0, 0.0);
+    for (int i=0; i < MAX_POINT_LIGHTS; i++) {
+        if (pointLights[i].intensity > 0 ) {
+            diffuseSpecularComponent += calculateLighting(mVertexPosition, mVertexNormal, cameraPosition, pointLights[i]);
         }
     }
+
+    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
 }
