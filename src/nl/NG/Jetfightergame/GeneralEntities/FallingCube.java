@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.GeneralEntities;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
@@ -31,8 +32,12 @@ public class FallingCube extends GameEntity {
      * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
      *                        return the interpolated position
      */
-    public FallingCube(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation, TrackedFloat renderTimer) {
+    public FallingCube(Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
+                       DirVector initialVelocity, Quaternionf initialRotation, TrackedFloat renderTimer) {
         super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer);
+        yawSpeed = Settings.random.nextFloat() - 0.5f;
+        pitchSpeed = Settings.random.nextFloat() - 0.5f;
+        rollSpeed = Settings.random.nextFloat() - 0.5f;
     }
 
     @Override

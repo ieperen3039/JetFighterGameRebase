@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -16,7 +17,7 @@ public class RigidBody {
     public final Touchable source;
     public final float mass;
     public final DirVector velocity;
-    private Matrix3f inertTensor = new Matrix3f();
+    private Matrix3f inertTensor;
 
     /**
      * represents a static body
@@ -35,6 +36,7 @@ public class RigidBody {
         this.rotationSpeedVector = new Vector3f();
         this.rotation = new Quaternionf();
         this.mass = Float.POSITIVE_INFINITY;
+        inertTensor = new Matrix3f();
     }
 
     /**
@@ -44,7 +46,7 @@ public class RigidBody {
      * @param velocity            the global speed vector of this object
      *                            This should contain the new velocity upon returning
      * @param hitPosition         global position of the point on this object that caused the collision
-     * @param contactNormal       the normal of the plane that the point has hit
+     * @param contactNormal       the normal of the plane that the point has hit. Must be normalized
      * @param rotationSpeedVector vector of rotation, defined as (rollSpeed, pitchSpeed, yawSpeed).
      *                            This should contain the new rotationspeed upon returning
      * @param rotation            current rotation of this object (unlikely to be relevant)
@@ -61,6 +63,7 @@ public class RigidBody {
         this.rotation = rotation;
         this.source = source;
         this.mass = source.getMass();
+        inertTensor = new Matrix3f().scale(mass); // no clue
     }
 
     /**
@@ -78,6 +81,7 @@ public class RigidBody {
         this.rotationSpeedVector = new Vector3f();
         this.rotation = new Quaternionf();
         this.mass = Float.POSITIVE_INFINITY;
+        inertTensor = new Matrix3f();
     }
 
     public float rollSpeed(){
@@ -122,15 +126,15 @@ public class RigidBody {
         Vector3f angularVelChangea  = normal.cross(ra, new Vector3f()); // start calculating the change in angular rotation of a
         Ia.invert().transform(angularVelChangea);
         Vector3f vaLinDueToR = angularVelChangea.cross(ra, new Vector3f());  // calculate the linear velocity of collision point on a due to rotation of a
-        float scalar = 1/ma + vaLinDueToR.dot(normal);
+        float scalar = (1 / ma) + vaLinDueToR.dot(normal);
 
         Vector3f angularVelChangeb = normal.cross(rb, new Vector3f());
         Ib.invert().transform(angularVelChangeb);
         Vector3f vbLinDueToR = angularVelChangeb.cross(rb, new Vector3f());  // calculate the linear velocity of collision point on b due to rotation of b
-        scalar += 1/mb + vbLinDueToR.dot(normal);
+        scalar += (1 / mb) + vbLinDueToR.dot(normal);
 
-        final float netVel = vai.sub(vbi, new Vector3f()).length();
-        float Jmod = 2 * netVel / scalar;
+        final float netSpeed = vai.sub(vbi, new Vector3f()).length();
+        float Jmod = 2 * (netSpeed / scalar);
         Vector3f J = normal.mul(Jmod, new Vector3f());
 
         vai.sub(J.mul(1 / ma), vai);
@@ -139,8 +143,33 @@ public class RigidBody {
         wbi.sub(angularVelChangeb, wbi);
     }
 
+    /**
+     * calculates the effect of colliding with an unmovable object
+     * @param mass mass of this object
+     * @param InertiaTensor inertia tensor of this object
+     * @param hitPos relative position of collision in world-coordinates
+     * @param velocity velocity of this object
+     * @param rotationVec angular velocity of this object
+     * @param normal normal to collision point, the line along which the impulse acts. Must be normalized.
+     */
+    private static void collisionWithStaticResponse(float mass, Matrix3f InertiaTensor, Vector hitPos, DirVector velocity, Vector3f rotationVec, DirVector normal){
+        Vector3f angularVelChange  = normal.cross(hitPos, new Vector3f()); // start calculating the change in angular rotation of a
+        InertiaTensor.invert().transform(angularVelChange);
+        Vector3f velocityByRotation = angularVelChange.cross(hitPos, new Vector3f());  // calculate the linear velocity of collision point on a due to rotation of a
+        float scalar = (1 / mass) + velocityByRotation.dot(normal);
+
+        final float netSpeed = velocity.length();
+        float Jmod = 2 * (netSpeed / scalar);
+        Vector3f J = normal.mul(Jmod, new Vector3f());
+
+        velocity.sub(J.mul(1 / mass), velocity);
+        rotationVec.sub(angularVelChange, rotationVec);
+    }
+
+    private static void collisionResponseSimple(){}
+
     public void apply(float deltaTime, float currentTime) {
-        if (source instanceof MovingEntity && !Float.isInfinite(mass)){
+        if ((source instanceof MovingEntity) && !Float.isInfinite(mass)){
             ((MovingEntity) source).applyCollision(this, deltaTime, currentTime);
         }
     }
@@ -153,21 +182,27 @@ public class RigidBody {
      * @throws NullPointerException if both bodies are of infinite mass
      */
     public static void process(RigidBody alpha, RigidBody beta) {
-        if (Float.isInfinite(alpha.mass)){
-            beta.velocity.reflect(beta.contactNormal);
-            return;
-        }
-        if (Float.isInfinite(beta.mass)){
-            alpha.velocity.reflect(alpha.contactNormal);
-        }
 
-        collisionResponse(
-                alpha.mass, beta.mass,
-                alpha.inertTensor, beta.inertTensor,
-                alpha.vectorToHitPos(), beta.vectorToHitPos(),
-                alpha.velocity, beta.velocity,
-                alpha.rotationSpeedVector, beta.rotationSpeedVector,
-                alpha.contactNormal
-        );
+        RigidBody body = null;
+        if (Float.isInfinite(alpha.mass)) body = beta;
+        else if (Float.isInfinite(beta.mass)) body = alpha;
+
+        if (body == null) {
+            collisionResponse(
+                    alpha.mass, beta.mass,
+                    alpha.inertTensor, beta.inertTensor,
+                    alpha.vectorToHitPos(), beta.vectorToHitPos(),
+                    alpha.velocity, beta.velocity,
+                    alpha.rotationSpeedVector, beta.rotationSpeedVector,
+                    alpha.contactNormal
+            );
+        } else {
+            collisionWithStaticResponse(
+                    body.mass, body.inertTensor, body.vectorToHitPos(),
+                    body.velocity, body.rotationSpeedVector, body.contactNormal
+            );
+        }
     }
+
+
 }

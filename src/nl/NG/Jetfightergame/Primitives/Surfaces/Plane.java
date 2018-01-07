@@ -84,7 +84,7 @@ public abstract class Plane {
         if (scalar > 1.0f) return null;
 
         DirVector hitDir = direction.scale(scalar, new DirVector());
-        PosVector hitPos = linePosition.add(hitDir, relativePosition);
+        PosVector hitPos = linePosition.add(hitDir, new PosVector());
         if (!this.encapsules(hitPos)) return null;
 
         return new Collision(scalar, normal, hitPos);

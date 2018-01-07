@@ -23,6 +23,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBEMASS = 5f;
     private static final int LAB_SIZE = 20;
     private static final int NR_OF_CUBES = 2;
+    private static final int INIT_SPEED = 0;
 
 
     private final int labSize;
@@ -37,7 +38,7 @@ public class CollisionLaboratory extends GameState {
         super(controller);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
-        this.speeds = 0;
+        this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
     }
 
@@ -55,11 +56,13 @@ public class CollisionLaboratory extends GameState {
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 for (int z = 0; z < gridSize; z++) {
-                    final PosVector pos = new PosVector(-labSize + (x + 1) * interSpace, -labSize + (y + 1) * interSpace, -labSize + (z + 1) * interSpace);
+                    final PosVector pos = new PosVector(-labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace));
+                    DirVector random = Vector.random();
+                    random.scale(speeds, random);
                     dynamicEntities.add(new FallingCube(
                             Material.SILVER, CUBEMASS, CUBESIZE,
                             pos.scale(0.8f, pos).toPosVector(),
-                            Vector.random().scale(speeds, new DirVector()), new Quaternionf(), time.getRenderTime()
+                            random, new Quaternionf(), time.getRenderTime()
                     ));
                     if (--remainingCubes <= 0) break cubing;
                 }

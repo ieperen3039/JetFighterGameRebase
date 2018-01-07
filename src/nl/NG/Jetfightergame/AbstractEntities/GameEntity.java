@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -198,9 +197,6 @@ public abstract class GameEntity implements MovingEntity {
         nextCrash.check(newCollision);
         other.acceptCollision(newCollision);
 
-        if (other instanceof GameEntity)
-            Toolbox.print(this + "\n", nextCrash.get(), ((GameEntity) other).nextCrash.get());
-
         return true;
     }
 
@@ -278,13 +274,15 @@ public abstract class GameEntity implements MovingEntity {
     private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other) {
 
         Stream.Builder<Collision> collisions = Stream.builder();
+        final PosVector previous = point.previous();
+        final PosVector current = point.current();
 
         // collect the collisions
         final ShadowMatrix identity = new ShadowMatrix();
-        final Consumer<Shape> exec = shape -> {
+        final Consumer<Shape> addCollisions = shape -> {
             // map point to local space
-            PosVector startPoint = identity.mapToLocal(point.previous());
-            PosVector endPoint = identity.mapToLocal(point.current());
+            PosVector startPoint = identity.mapToLocal(previous);
+            PosVector endPoint = identity.mapToLocal(current);
             DirVector direction = startPoint.to(endPoint, new DirVector());
             // search hitpoint, add it when found
             Collision newCrash = shape.getCollision(startPoint, direction, endPoint);
@@ -296,9 +294,11 @@ public abstract class GameEntity implements MovingEntity {
 
         if (other instanceof MovingEntity){
             final MovingEntity moving = (MovingEntity) other;
-            moving.toLocalSpace(identity, () -> moving.create(identity, exec), true);
+            // consider the movement of the plane, by assuming relative movement
+            previous.add(moving.getVelocity());
+            moving.toLocalSpace(identity, () -> moving.create(identity, addCollisions), true);
         } else {
-            other.toLocalSpace(identity, () -> other.create(identity, exec));
+            other.toLocalSpace(identity, () -> other.create(identity, addCollisions));
         }
 
         // iterate over all collisions

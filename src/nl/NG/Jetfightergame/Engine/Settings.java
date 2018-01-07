@@ -20,7 +20,7 @@ public class Settings {
     public static final boolean DEBUG = true;
     public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
     public static final int HUD_STROKE_WIDTH = 0;
-    static final int MAX_COLLISION_ITERATIONS = 10;
+    static final int MAX_COLLISION_ITERATIONS = 100;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings
@@ -29,9 +29,9 @@ public class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 10;
+    public static int TARGET_TPS = 20;
     /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
-    public static final float RENDER_DELAY = 2f/TARGET_TPS;
+    public static final float RENDER_DELAY = 1.1f/TARGET_TPS;
 
     // controller settings
     public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
