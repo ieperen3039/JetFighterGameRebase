@@ -1,7 +1,8 @@
-package nl.NG.Jetfightergame.Engine;
+package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 
 /**
  * @author Geert van Ieperen

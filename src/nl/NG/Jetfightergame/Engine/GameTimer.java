@@ -32,7 +32,7 @@ public class GameTimer {
         lastMark = System.nanoTime();
     }
 
-    private void updateGameTime(){
+    public void updateGameTime(){
         updateTimer();
         gameTime.update(currentInGameTime);
     }

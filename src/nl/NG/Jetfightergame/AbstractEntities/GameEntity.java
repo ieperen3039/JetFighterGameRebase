@@ -181,7 +181,7 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public boolean checkCollisionWith(Touchable other){
-        Collision newCollision = hitPoints.parallelStream()
+        Collision newCollision = hitPoints.stream()
                 // see which points collide with the other
                 .map(point -> getPointCollision(point, other))
                 // exclude points that didn't hit

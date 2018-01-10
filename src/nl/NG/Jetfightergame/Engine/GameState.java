@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.Scenarios.Environment;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Tools.Extreme;
@@ -236,7 +237,6 @@ public abstract class GameState implements Environment {
         dynamicEntities.clear();
         staticEntities.clear();
         particles.clear();
-        allEntityPairs.clear();
         System.gc();
     }
 }

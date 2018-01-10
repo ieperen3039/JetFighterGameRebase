@@ -55,6 +55,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             MouseTracker.getInstance().setMenuModeDecision(inGame);
 
             gameLoop = new JetFighterRunner(environment, e -> this.exitGame());
+
             MusicProvider musicProvider = new MusicProvider(new Timer());
 
             ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
@@ -77,6 +78,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
         // reclaim all space used for initialisation
         System.gc();
+        Toolbox.print("Initialisation complete\n");
     }
 
     public static void main(String args[]) throws Exception {
@@ -110,18 +112,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 gameLoop.resetTPSCounter();
                 renderLoop.resetTPSCounter();
                 break;
-            case GLFW_KEY_BACKSPACE:
-                setGameState(Worlds.CollisionLaboratory);
         }
     }
 
     @Override
     public AbstractJet getPlayer() {
         return environment.getPlayer();
-    }
-
-    private void setGameState(Worlds testEnvironment) {
-        environment.switchTo(testEnvironment);
     }
 
     /**
@@ -146,8 +142,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             Point centerPoint = ge.getCenterPoint();
 
-            int dx = centerPoint.x - getWidth() / 2;
-            int dy = centerPoint.y - getHeight() / 2;
+            int dx = centerPoint.x - (getWidth() / 2);
+            int dy = centerPoint.y - (getHeight() / 2);
 
             setLocation(dx, dy);
             setUndecorated(true);

@@ -41,10 +41,8 @@ public abstract class GLFWGameEngine {
      * Rendering must happen in the main thread.
      */
     public void startGame(){
-        Toolbox.print("Initialisation complete\n");
         window.open();
 
-        gameLoop.setUncaughtExceptionHandler((t, e) -> exitGame());
         gameLoop.start();
 
         try {

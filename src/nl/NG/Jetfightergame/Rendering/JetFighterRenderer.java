@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
@@ -12,6 +11,7 @@ import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
+import nl.NG.Jetfightergame.Scenarios.Environment;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;

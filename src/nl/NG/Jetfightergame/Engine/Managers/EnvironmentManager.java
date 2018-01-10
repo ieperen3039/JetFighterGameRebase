@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.Engine.Managers;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Scenarios.CollisionLaboratory;
+import nl.NG.Jetfightergame.Scenarios.Environment;
 import nl.NG.Jetfightergame.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 

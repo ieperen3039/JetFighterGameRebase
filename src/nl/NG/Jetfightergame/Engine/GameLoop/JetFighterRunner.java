@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
-import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Scenarios.Environment;
 
 import java.util.function.Consumer;
 
@@ -20,7 +20,7 @@ public class JetFighterRunner extends AbstractGameLoop {
 
     @Override
     protected void update(float deltaTime) {
-        game.getTimer().updateRenderTime();
+        game.getTimer().updateGameTime();
         game.updateGameLoop();
 //            Toolbox.print("\n" + game.getPlayer());
     }
