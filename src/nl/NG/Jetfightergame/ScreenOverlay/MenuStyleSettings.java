@@ -14,7 +14,7 @@ public class MenuStyleSettings {
 
     public static final int MENU_STROKE_WIDTH = 8;
     public static final int TEXT_SIZE_LARGE = 48;
-    public static final int BUTTON_WIDTH = 600;
+    public static final int BUTTON_WIDTH = 800;
     public static final int BUTTON_HEIGHT = 80;
     public static final int INTERNAL_MARGIN = 10;
     public static final int EXTERNAL_MARGIN = 30;

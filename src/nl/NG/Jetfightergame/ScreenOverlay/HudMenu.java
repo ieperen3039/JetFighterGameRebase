@@ -4,9 +4,10 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuClickable;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositioner;
-import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerLeft;
+import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerCenter;
 
 import java.util.Arrays;
+import java.util.function.Supplier;
 
 /**
  * @author Jorren Hendriks
@@ -14,9 +15,13 @@ import java.util.Arrays;
  */
 
 public abstract class HudMenu implements TrackerClickListener {
+    private final Supplier<Integer> width;
+    private final Supplier<Integer> height;
     private UIElement[] activeElements;
 
-    public HudMenu() {
+    public HudMenu(Supplier<Integer> width, Supplier<Integer> height) {
+        this.width = width;
+        this.height = height;
         MouseTracker.getInstance().addClickListener(this, false);
     }
 
@@ -31,7 +36,7 @@ public abstract class HudMenu implements TrackerClickListener {
         ScreenOverlay.removeMenuItem();
 
         // correct positions of buttons
-        MenuPositioner caret = new MenuPositionerLeft();
+        MenuPositioner caret = new MenuPositionerCenter(width.get());
         for (UIElement element : activeElements) {
             caret.place(element);
             ScreenOverlay.addMenuItem(element::draw);
@@ -51,10 +56,6 @@ public abstract class HudMenu implements TrackerClickListener {
                 .filter(button -> button.contains(x, y))
                 // execute buttonpress
                 .forEach(button -> button.onClick(x, y));
-    }
-
-    public UIElement[] getActiveElements() {
-        return activeElements;
     }
 
     @Override

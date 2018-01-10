@@ -49,7 +49,7 @@ public abstract class Vector extends Vector3f{
     }
 
     public boolean isScalable(){
-        return !(Double.isNaN(x) || Double.isNaN(y) || Double.isNaN(z) || ((x == 0) && (y == 0) && (z == 0)));
+        return !Float.isNaN(x) && !Float.isNaN(y) && !Float.isNaN(z) && !((x == 0) && (y == 0) && (z == 0));
     }
 
     public float dot(Vector that) {

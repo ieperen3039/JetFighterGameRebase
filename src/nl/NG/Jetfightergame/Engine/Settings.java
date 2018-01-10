@@ -10,17 +10,18 @@ import java.util.Random;
  *         created on 2-11-2017.
  * a class that harbours the variables that may or may not be changed by the player
  */
-public class Settings {
+public final class Settings {
     // final settings
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
 
     /** universal random to be used everywhere */
     public static final Random random = new Random();
     public static final boolean DEBUG = true;
-    public static final boolean CULL_FACES = false;
+    public static final boolean CULL_FACES = true;
     public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
     public static final int HUD_STROKE_WIDTH = 0;
-    static final int MAX_COLLISION_ITERATIONS = 0;//100;
+    static final int MAX_COLLISION_ITERATIONS = 10;
+    public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings
@@ -29,7 +30,7 @@ public class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 15;
+    public static int TARGET_TPS = 30;
     /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
     public static final float RENDER_DELAY = 1.1f/TARGET_TPS;
 
@@ -54,5 +55,4 @@ public class Settings {
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 3;
     public final static int MAX_POINT_LIGHTS = 10;
-
 }

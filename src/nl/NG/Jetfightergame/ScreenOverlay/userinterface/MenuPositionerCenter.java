@@ -16,7 +16,7 @@ public class MenuPositionerCenter extends MenuPositioner {
 
     @Override
     public void place(UIElement element) {
-        element.setPosition(x - element.getWidth() / 2, y);
+        element.setPosition(x - (element.getWidth() / 2), y);
         y += (margin + element.getHeight());
     }
 }

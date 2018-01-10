@@ -4,8 +4,10 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerDragListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerScrollListener;
+import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -146,6 +148,11 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     @Override
     public DirVector getUpVector() {
         return DirVector.zVector();
+    }
+
+    @Override
+    public void cameraLighting(GL2 gl) {
+        gl.setLight(getEye(), Color4f.TRANSPARENT_GREY);
     }
 
     public void cleanUp(){

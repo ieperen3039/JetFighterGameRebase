@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,7 @@ import static nl.NG.Jetfightergame.Engine.Settings.RENDER_DELAY;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public abstract class GameState {
+public abstract class GameState implements Environment {
 
     private AbstractJet playerJet;
 
@@ -42,22 +43,26 @@ public abstract class GameState {
     protected Collection<AbstractParticle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
-    public final GameTimer time = new GameTimer();
+    private final GameTimer time = new GameTimer();
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
     private int totalCollisions;
+    private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) -> hud.printRoll("Collision count: " + totalCollisions);
 
     public GameState(Controller input) {
         playerJet = new PlayerJet(input, time.getRenderTime());
-        ScreenOverlay.addHudItem((hud) -> hud.printRoll("Collision count: " + totalCollisions));
+        /* TODO playerjet responsibillity
+         * Currently, the player is part of the world. It would be interesting if the playerJet is preserved along all
+         * different worlds and stages of the game, even stored in savefiles. If not for structure, then just for the
+         * idea that fits in the spirit of the game
+         */
+        ScreenOverlay.addHudItem(collisionCounter);
     }
 
     private Extreme<Integer> collisionMax = new Extreme<>(true);
 
-    protected abstract void buildScene();
+    public abstract void buildScene();
 
-    /**
-     * update the physics of all game objects and check for collisions
-     */
+    @Override
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() {
 
@@ -157,7 +162,10 @@ public abstract class GameState {
             // check all moving objects against (1: all other moving objects, 2: all static objects)
             dynamicEntities.forEach(obj -> {
                 dynamicEntities.stream()
-                        .filter(other -> other != obj)
+                        // this makes sure that one object pair does not occur the other way around.
+                        .filter(other -> other.hashCode() >= obj.hashCode())
+                        // as hashcode does not guarantees an identifier, we can not assume equality.
+                        .filter(other -> !other.equals(obj))
                         .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
                         .distinct()
                         .forEach(allEntityPairs::add);
@@ -175,26 +183,28 @@ public abstract class GameState {
         return allEntityPairs;
     }
 
+    @Override
     public void setLights(GL2 gl) {
         for (Pair<PosVector, Color4f> l : lights) {
             final PosVector pos = l.left;
             final Color4f color = l.right;
 
             gl.setLight(pos, color);
-            gl.setMaterial(Material.GLOWING, color);
-            gl.pushMatrix();
-            {
-                gl.translate(pos);
-                gl.scale(0.1f);
-                gl.draw(GeneralShapes.INVERSE_CUBE);
+
+            if (Settings.SHOW_LIGHT_POSITIONS){
+                gl.setMaterial(Material.GLOWING, color);
+                gl.pushMatrix();
+                {
+                    gl.translate(pos);
+                    gl.scale(0.1f);
+                    gl.draw(GeneralShapes.INVERSE_CUBE);
+                }
+                gl.popMatrix();
             }
-            gl.popMatrix();
         }
     }
 
-    /**
-     * draw all objects of the game
-     */
+    @Override
     public void drawObjects(GL2 gl) {
 //        Toolbox.drawAxisFrame(gl);
 
@@ -202,24 +212,40 @@ public abstract class GameState {
         dynamicEntities.forEach(d -> d.draw(gl));
     }
 
+    @Override
     public void drawParticles(GL2 gl){
         particles.forEach(gl::draw);
     }
 
-    /**
-     * update the position of the particles.
-     * should be called every renderloop
-     */
+    @Override
     public void updateParticles() {
         particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
     }
 
+    @Override
     public AbstractJet getPlayer() {
         return playerJet;
     }
 
+    @Override // TODO move to updateRenderLoop
     public void updateRenderTime() {
         time.updateRenderTime();
+    }
+
+    @Override
+    public GameTimer getTimer() {
+        return time;
+    }
+
+    /**
+     * (this method may be redundant in the future)
+     */
+    public void cleanUp() {
+        ScreenOverlay.removeHudItem(collisionCounter);
+        dynamicEntities = null;
+        staticEntities = null;
+        particles = null;
+        System.gc();
     }
 
     /**

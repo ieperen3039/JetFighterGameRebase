@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -23,12 +24,13 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBEMASS = 5f;
     private static final int LAB_SIZE = 20;
     private static final int NR_OF_CUBES = 2;
-    private static final int INIT_SPEED = 5;
-
+    private static final int INIT_SPEED = 0;
 
     private final int labSize;
     private final int nrOfCubes;
     private final int speeds;
+
+    private int totalCollisions;
 
     public CollisionLaboratory(Controller input) {
         this(input, LAB_SIZE, NR_OF_CUBES);
@@ -40,10 +42,11 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
+        ScreenOverlay.addHudItem((hud) -> hud.printRoll("Collision count: " + totalCollisions));
     }
 
     @Override
-    protected void buildScene() {
+    public void buildScene() {
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
@@ -61,7 +64,7 @@ public class CollisionLaboratory extends GameState {
                     dynamicEntities.add(new FallingCube(
                             Material.SILVER, CUBEMASS, CUBESIZE,
                             pos.scale(0.8f, pos).toPosVector(),
-                            random, new Quaternionf(), time.getRenderTime()
+                            random, new Quaternionf(), getTimer().getRenderTime()
                     ));
                     if (--remainingCubes <= 0) break cubing;
                 }

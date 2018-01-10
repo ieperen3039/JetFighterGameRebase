@@ -18,12 +18,12 @@ public class Pair<L, R> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if ((o == null) || (getClass() != o.getClass())) return false;
 
         Pair<?, ?> pair = (Pair<?, ?>) o;
 
-        if (left != null ? left.equals(pair.left) : pair.left == null)
-            if (right != null ? right.equals(pair.right) : pair.right == null) return true;
+        if ((left != null) ? left.equals(pair.left) : (pair.left == null))
+            if ((right != null) ? right.equals(pair.right) : (pair.right == null)) return true;
         return false;
     }
 

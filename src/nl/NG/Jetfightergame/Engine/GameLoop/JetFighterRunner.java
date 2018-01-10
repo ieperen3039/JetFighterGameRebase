@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
-import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.Settings;
 
 import java.util.function.Consumer;
@@ -11,9 +11,9 @@ import java.util.function.Consumer;
  */
 public class JetFighterRunner extends AbstractGameLoop {
 
-    private final GameState game;
+    private final Environment game;
 
-    public JetFighterRunner(GameState game, Consumer<Exception> exceptionHandler) {
+    public JetFighterRunner(Environment game, Consumer<Exception> exceptionHandler) {
         super("GameEngine loop", Settings.TARGET_TPS, true, exceptionHandler);
         this.game = game;
     }
@@ -26,13 +26,13 @@ public class JetFighterRunner extends AbstractGameLoop {
 
     @Override
     public void unPause() {
-        game.time.setEngineMultiplier(1f);
+        game.getTimer().setEngineMultiplier(1f);
         super.unPause();
     }
 
     @Override
     public void pause() {
-        game.time.setEngineMultiplier(0f);
+        game.getTimer().setEngineMultiplier(0f);
         super.pause();
     }
 

@@ -144,11 +144,11 @@ public class Mesh implements Renderable {
      */
     public static void cleanAll() {
         while (!registeredMeshes.isEmpty()){
-            registeredMeshes.peek().cleanup();
+            registeredMeshes.peek().dispose();
         }
     }
 
-    public void cleanup() {
+    public void dispose() {
         glDisableVertexAttribArray(0);
 
         glDeleteBuffers(posVboID);

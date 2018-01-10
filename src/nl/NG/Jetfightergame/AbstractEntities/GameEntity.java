@@ -220,7 +220,7 @@ public abstract class GameEntity implements MovingEntity {
         // normal of the plane of contact
         final DirVector contactNormal = nextCrash.get().normal;
         // fraction of deltaTime until collision
-        final float timeScalar = nextCrash.get().timeScalar;
+        final float timeScalar = nextCrash.get().timeScalar * 0.99f;
         // seconds until this object hits the other
 //        final float hitDeltaTime = timeScalar * deltaTime;
         // current rotation speed of airplane
@@ -294,7 +294,7 @@ public abstract class GameEntity implements MovingEntity {
 
         if (other instanceof MovingEntity){
             final MovingEntity moving = (MovingEntity) other;
-            // consider the movement of the plane, by assuming relative movement
+            // consider the movement of the plane, by assuming relative movement and linear interpolation
             previous.add(moving.getVelocity());
             moving.toLocalSpace(identity, () -> moving.create(identity, addCollisions), true);
         } else {

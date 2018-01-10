@@ -88,7 +88,7 @@ public abstract class AbstractJet extends GameEntity {
 
         // thrust forces
         float throttle = input.throttle();
-        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower * airResistance);
+        float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower * airResistance));
         forwardForce += thrust;
 
         // exponential reduction of speed (before rotational forces, as this is the result of momentum)
@@ -111,6 +111,7 @@ public abstract class AbstractJet extends GameEntity {
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
         speed += forwardForce * (deltaTime/mass);
+        forward.reducedTo(speed, extraVelocity);
 
         // collect extrapolated variables
         position.add(forward.reducedTo(speed * deltaTime, new DirVector()), extraPosition);
@@ -127,7 +128,7 @@ public abstract class AbstractJet extends GameEntity {
 
         // thrust forces
         float throttle = input.throttle();
-        float thrust = (throttle > 0 ? throttle * throttlePower : throttle * brakePower);
+        float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower));
         netForce.add(forward.reducedTo(thrust, new DirVector()), netForce);
 
         // exponential reduction of speed (before rotational forces, as this is the result of momentum)
@@ -163,6 +164,12 @@ public abstract class AbstractJet extends GameEntity {
         super.update(currentTime);
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
+
+        if (!Settings.GYRO_PHYSICS_MODEL && velocity.isScalable()) {
+            float angle = forward.dot(velocity.normalize(new DirVector()));
+//            Toolbox.print(angle, forward, velocity, forward.cross(velocity, new DirVector()));
+//            rotation.rotateAxis((float) Math.acos(angle), forward.cross(velocity, new DirVector()));
+        }
     }
 
     /**

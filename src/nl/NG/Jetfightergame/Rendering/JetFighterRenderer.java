@@ -1,12 +1,13 @@
 package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
+import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
@@ -34,9 +35,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private ShaderManager shaderManager;
 
     private Color4f ambientLight;
-    private GameState gameState;
+    private Environment gameState;
 
-    public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
+    public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
                               Camera camera, MusicProvider musicProvider, ControllerManager controllerManager) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false, (ex) -> engine.exitGame());
 
@@ -51,7 +52,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         ambientLight = Color4f.LIGHT_GREY;
         window.setClearColor(ambientLight);
 
-        new JetFighterMenu(musicProvider, engine::setSpectatorMode, engine::exitGame, controllerManager, shaderManager);
+        new JetFighterMenu(window::getWidth, window::getHeight, musicProvider, engine::setSpectatorMode, engine::exitGame, controllerManager, shaderManager, gameState);
         new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera);
     }
 
@@ -65,7 +66,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
             gameState.updateRenderTime();
 
             // update camera based on
-            activeCamera.updatePosition(gameState.time.getRenderTime().difference());
+            activeCamera.updatePosition(gameState.getTimer().getRenderTime().difference());
 
             if (Settings.CULL_FACES) {
                 // Cull backfaces
@@ -78,8 +79,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             if (!engine.isPaused()) gameState.updateParticles();
 
-            // activate lights in the scene
-            gl.setLight(activeCamera.getEye(), Color4f.TRANSPARENT_GREY);
+            // scene lighting
+            activeCamera.cameraLighting(gl);
             gameState.setLights(gl);
             Toolbox.checkGLError();
 

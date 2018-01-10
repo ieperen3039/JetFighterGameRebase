@@ -8,6 +8,8 @@ import java.util.stream.IntStream;
  * and mimic the behaviour of these.
  * Additionally, it is advised to make the initial implementation be the first defined enum, although this is not enforced.
  *
+ * Note that the implementation should not extend an abstract class, as overridden methods are ignored in this manner.
+ *
  * @author Geert van Ieperen
  * created on 22-12-2017.
  */

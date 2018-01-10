@@ -5,6 +5,8 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
+import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
+import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager.Worlds;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
@@ -31,7 +33,7 @@ import static org.lwjgl.glfw.GLFW.*;
  *         a class that manages all game objects, and houses both the rendering- and the gameloop
  */
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
-    private GameState environment;
+    private EnvironmentManager environment;
 
     /**
      * openWindow the game by creating a frame based on this engine
@@ -42,8 +44,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-//            environment = new CollisionLaboratory(playerInput);
-            environment = new PlayerJetLaboratory(playerInput);
+            environment = new EnvironmentManager(playerInput);
+            environment.switchTo(Worlds.CollisionLaboratory);
+//            environment = new PlayerJetLaboratory(playerInput);
 
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);
@@ -61,8 +64,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             );
 
             camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
-
-            environment.buildScene();
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
@@ -109,6 +110,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 gameLoop.resetTPSCounter();
                 renderLoop.resetTPSCounter();
                 break;
+            case GLFW_KEY_BACKSPACE:
+                setGameState(Worlds.CollisionLaboratory);
         }
     }
 
@@ -117,12 +120,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         return environment.getPlayer();
     }
 
-    /**
-     * a method to facillitate testing
-     * @param testEnvironment a new environment
-     */
-    void setGameState(GameState testEnvironment) {
-        environment = testEnvironment;
+    private void setGameState(Worlds testEnvironment) {
+        environment.switchTo(testEnvironment);
     }
 
     /**

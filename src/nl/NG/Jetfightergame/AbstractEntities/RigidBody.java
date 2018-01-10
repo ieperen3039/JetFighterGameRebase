@@ -63,7 +63,7 @@ public class RigidBody {
         this.rotation = rotation;
         this.source = source;
         this.mass = source.getMass();
-        inertTensor = new Matrix3f().scale(mass); // no clue
+        inertTensor = new Matrix3f().scale(mass);
     }
 
     /**
@@ -123,10 +123,13 @@ public class RigidBody {
      */
     private static void collisionResponse(float ma, float mb, Matrix3f Ia, Matrix3f Ib, Vector3f ra, Vector3f rb, Vector3f vai,
                                           Vector3f vbi, Vector3f wai, Vector3f wbi, Vector3f normal) {
+
         Vector3f angularVelChangea  = normal.cross(ra, new Vector3f()); // start calculating the change in angular rotation of a
         Ia.invert().transform(angularVelChangea);
         Vector3f vaLinDueToR = angularVelChangea.cross(ra, new Vector3f());  // calculate the linear velocity of collision point on a due to rotation of a
         float scalar = (1 / ma) + vaLinDueToR.dot(normal);
+
+        normal.negate();
 
         Vector3f angularVelChangeb = normal.cross(rb, new Vector3f());
         Ib.invert().transform(angularVelChangeb);

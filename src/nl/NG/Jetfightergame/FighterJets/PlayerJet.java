@@ -41,7 +41,7 @@ public class PlayerJet extends AbstractJet {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.2f, renderTimer);
+                0.1f, renderTimer);
         shape = ShapeFromMesh.ConceptBlueprint;
     }
 

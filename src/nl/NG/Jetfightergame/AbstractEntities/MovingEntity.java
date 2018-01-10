@@ -37,8 +37,8 @@ public interface MovingEntity extends Touchable {
     void preUpdate(float deltaTime, DirVector netForce);
 
     /**
-     * update the state of this object, may not be called by any method from another interface
-     * synchronization with other operations on position and rotation should be synchronized
+     * update the state of this object, may not be called by any method from another interface.
+     * Other operations on position and rotation should be synchronized
      * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
      */
     void update(float currentTime);
