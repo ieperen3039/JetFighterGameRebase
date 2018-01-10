@@ -31,7 +31,5 @@ public interface Environment {
 
     AbstractJet getPlayer();
 
-    void updateRenderTime();
-
-    GameState.GameTimer getTimer();
+    GameTimer getTimer();
 }

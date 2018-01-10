@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
@@ -59,14 +60,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
     @Override
     protected void update(float realDeltaTime) {
         try {
+            GameTimer timer = gameState.getTimer();
+            timer.updateRenderTime();
+            activeCamera.updatePosition(timer.getRenderTime().difference());
+
             Toolbox.checkGLError();
             GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
             Toolbox.checkGLError();
 
-            gameState.updateRenderTime();
-
-            // update camera based on
-            activeCamera.updatePosition(gameState.getTimer().getRenderTime().difference());
 
             if (Settings.CULL_FACES) {
                 // Cull backfaces

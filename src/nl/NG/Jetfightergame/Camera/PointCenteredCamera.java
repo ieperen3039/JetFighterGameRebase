@@ -119,10 +119,10 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public void mouseDragged(int deltaX, int deltaY) {
-        theta += deltaX * DRAG_PIXEL_TO_RADIAN * -1;
+        theta -= deltaX * DRAG_PIXEL_TO_RADIAN;
         phi = Math.max(PHI_MIN,
                 Math.min(PHI_MAX,
-                        phi + deltaY * DRAG_PIXEL_TO_RADIAN ));
+                        phi + (deltaY * DRAG_PIXEL_TO_RADIAN)));
     }
 
     @Override

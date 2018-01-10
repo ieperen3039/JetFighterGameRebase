@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.Environment;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Scenarios.CollisionLaboratory;
 import nl.NG.Jetfightergame.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -58,12 +59,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void updateRenderTime() {
-        instance.updateRenderTime();
-    }
-
-    @Override
-    public GameState.GameTimer getTimer() {
+    public GameTimer getTimer() {
         return instance.getTimer();
     }
 

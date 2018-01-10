@@ -14,7 +14,6 @@ import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -28,7 +27,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.NG.Jetfightergame.Engine.Settings.DEBUG;
-import static nl.NG.Jetfightergame.Engine.Settings.RENDER_DELAY;
 
 /**
  * @author Geert van Ieperen
@@ -44,6 +42,7 @@ public abstract class GameState implements Environment {
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
     private final GameTimer time = new GameTimer();
+
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
     private int totalCollisions;
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) -> hud.printRoll("Collision count: " + totalCollisions);
@@ -65,11 +64,8 @@ public abstract class GameState implements Environment {
     @Override
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() {
-
-        time.updateGameTime();
         float currentTime = time.getGameTime().current();
         float deltaTime = time.getGameTime().difference();
-
 
         // update positions and apply physics
         dynamicEntities.parallelStream()
@@ -227,11 +223,6 @@ public abstract class GameState implements Environment {
         return playerJet;
     }
 
-    @Override // TODO move to updateRenderLoop
-    public void updateRenderTime() {
-        time.updateRenderTime();
-    }
-
     @Override
     public GameTimer getTimer() {
         return time;
@@ -242,84 +233,10 @@ public abstract class GameState implements Environment {
      */
     public void cleanUp() {
         ScreenOverlay.removeHudItem(collisionCounter);
-        dynamicEntities = null;
-        staticEntities = null;
-        particles = null;
+        dynamicEntities.clear();
+        staticEntities.clear();
+        particles.clear();
+        allEntityPairs.clear();
         System.gc();
-    }
-
-    /**
-     * a class that harbors a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
-     * with a modifiable in-game time.
-     */
-    public class GameTimer {
-
-        /** multiplication of time as effect of in-game events. with playMultiplier = 2, the game goes twice as fast. */
-        private float playMultiplier = 1f;
-        /** multiplication of time by the engine. Main use is for pausing. with engineMultiplier = 2, the game goes twice as fast. */
-        private float engineMultiplier;
-
-        /** game-seconds since creating this gametimer */
-        private float currentInGameTime;
-        /** last record of system time */
-        private long lastMark;
-        /** multiplication factor to multiply system time units to game-seconds */
-        private static final float MUL_TO_SECONDS = 1E-9f;
-
-        private final TrackedFloat gameTime;
-        private final TrackedFloat renderTime;
-
-        private GameTimer() {
-            currentInGameTime = 0f;
-            gameTime = new TrackedFloat(0f);
-            renderTime = new TrackedFloat(-RENDER_DELAY);
-            lastMark = System.nanoTime();
-        }
-
-        private void updateGameTime(){
-            updateTimer();
-            gameTime.update(currentInGameTime);
-        }
-
-        private void updateRenderTime(){
-            updateTimer();
-            renderTime.update(currentInGameTime - RENDER_DELAY);
-        }
-
-        public TrackedFloat getGameTime(){
-            return gameTime;
-        }
-
-        public TrackedFloat getRenderTime(){
-            return renderTime;
-        }
-
-        /** returns the current in-game time of this moment */
-        public float time(){
-            updateTimer();
-            return currentInGameTime;
-        }
-
-        /** may be called anytime */
-        private void updateTimer(){
-            long currentTime = System.nanoTime();
-            float deltaTime = (currentTime - lastMark) * MUL_TO_SECONDS;
-            lastMark = currentTime;
-            currentInGameTime += deltaTime * playMultiplier * engineMultiplier;
-        }
-
-        /**
-         * @param multiplier time will move {@code multiplier} times as fast
-         */
-        public void setGameTimeMultiplier(float multiplier) {
-            playMultiplier = multiplier;
-        }
-
-        /**
-         * @param multiplier time will move {@code multiplier} times as fast
-         */
-        public void setEngineMultiplier(float multiplier){
-            engineMultiplier = multiplier;
-        }
     }
 }
