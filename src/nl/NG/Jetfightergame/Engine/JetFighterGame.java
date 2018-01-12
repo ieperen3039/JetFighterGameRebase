@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
+import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
 import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
 import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager.Worlds;
@@ -22,6 +23,9 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.function.BooleanSupplier;
 
 import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.PointCenteredCamera;
@@ -34,6 +38,9 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
     private EnvironmentManager environment;
+    protected AbstractGameLoop renderLoop;
+    protected AbstractGameLoop gameLoop;
+    private Collection<AbstractGameLoop> otherLoops = new ArrayList<>();
 
     /**
      * openWindow the game by creating a frame based on this engine
@@ -51,10 +58,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);
 
-            final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
+            final BooleanSupplier inGame = () -> currentGameMode != GameMode.MENU_MODE;
             MouseTracker.getInstance().setMenuModeDecision(inGame);
 
             gameLoop = new JetFighterRunner(environment, e -> this.exitGame());
+            otherLoops.add(gameLoop);
 
             MusicProvider musicProvider = new MusicProvider(new Timer());
 
@@ -79,6 +87,16 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         // reclaim all space used for initialisation
         System.gc();
         Toolbox.print("Initialisation complete\n");
+    }
+
+    @Override
+    protected AbstractGameLoop renderingLoop() {
+        return renderLoop;
+    }
+
+    @Override
+    protected Collection<AbstractGameLoop> secondaryGameLoops() {
+        return Collections.unmodifiableCollection(otherLoops);
     }
 
     public static void main(String args[]) throws Exception {

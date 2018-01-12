@@ -8,6 +8,8 @@ import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
+import java.util.Collection;
+
 import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.FollowingCamera;
 import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.PointCenteredCamera;
 
@@ -19,8 +21,6 @@ import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.Poin
 public abstract class GLFWGameEngine {
 
     protected final ControllerManager playerInput;
-    protected AbstractGameLoop renderLoop;
-    protected AbstractGameLoop gameLoop;
 
     protected GLFWWindow window;
     protected CameraManager camera;
@@ -43,15 +43,18 @@ public abstract class GLFWGameEngine {
     public void startGame(){
         window.open();
 
-        gameLoop.start();
+        secondaryGameLoops().forEach(Thread::start);
 
         try {
-            renderLoop.run();
-            gameLoop.join();
+            renderingLoop().run();
+
+            for (AbstractGameLoop abstractGameLoop : secondaryGameLoops()) {
+                abstractGameLoop.join();
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            renderLoop.interrupt();
-            gameLoop.interrupt();
+            renderingLoop().interrupt();
+            secondaryGameLoops().forEach(Thread::interrupt);
         } finally {
             Toolbox.checkGLError();
             this.cleanUp();
@@ -62,12 +65,16 @@ public abstract class GLFWGameEngine {
         // Finish execution
     }
 
+    protected abstract AbstractGameLoop renderingLoop();
+
+    protected abstract Collection<AbstractGameLoop> secondaryGameLoops();
+
     /** tells the renderloop to stop, renderloop must call back to clean up others */
     public void exitGame(){ // TODO add timer for forced shutdown // TODO add stopping boolean
         System.out.println();
         Toolbox.print("Stopping game...");
-        renderLoop.stopLoop();
-        gameLoop.stopLoop();
+        renderingLoop().stopLoop();
+        secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);
     }
 
     /**
@@ -96,21 +103,21 @@ public abstract class GLFWGameEngine {
         currentGameMode = GameMode.MENU_MODE;
         window.freePointer();
         camera.switchTo(PointCenteredCamera);
-        gameLoop.pause();
+        renderingLoop().pause();
     }
 
     public void setPlayMode() {
         currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
         camera.switchTo(FollowingCamera);
-        gameLoop.unPause();
+        renderingLoop().unPause();
     }
 
     public void setSpectatorMode(){
         currentGameMode = GameMode.SPECTATOR_MODE;
         window.freePointer();
         camera.switchTo(PointCenteredCamera);
-        gameLoop.unPause();
+        renderingLoop().unPause();
     }
 
     public boolean isPaused() {

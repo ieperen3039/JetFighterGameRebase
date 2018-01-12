@@ -30,7 +30,7 @@ public abstract class HudMenu implements TrackerClickListener {
      * @param newElements new elements of the menu
      */
     public void switchContentTo(UIElement[] newElements) {
-        activeElements = newElements;
+        activeElements = newElements.clone();
 
         // destroy the current entries of the hud
         ScreenOverlay.removeMenuItem();
