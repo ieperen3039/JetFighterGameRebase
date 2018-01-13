@@ -33,4 +33,6 @@ public interface Environment {
     AbstractJet getPlayer();
 
     GameTimer getTimer();
+
+    int getNumberOfLights();
 }

@@ -6,8 +6,8 @@
 JetFighterGameRebase.iml
 pom.xml
 out
-/res/music/SICCMIXX.wav
 MANIFEST.MF
 README.md
 Unused Sources/
 /src/unrelated/dynamics/
+res/music/

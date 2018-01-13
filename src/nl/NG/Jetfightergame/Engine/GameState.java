@@ -207,12 +207,11 @@ public abstract class GameState implements Environment {
 
         staticEntities.forEach(d -> d.draw(gl));
         dynamicEntities.forEach(d -> d.draw(gl));
-        particles.forEach(p -> p.draw(gl));
     }
 
     @Override
     public void drawParticles(GL2 gl){
-        particles.forEach(gl::draw);
+        particles.forEach(p -> p.draw(gl));
     }
 
     @Override
@@ -230,13 +229,19 @@ public abstract class GameState implements Environment {
         return time;
     }
 
+    @Override
+    public int getNumberOfLights() {
+        return lights.size();
+    }
+
     /**
-     * (this method may be redundant in the future)
+     * (this method may be redundant)
      */
     public void cleanUp() {
         ScreenOverlay.removeHudItem(collisionCounter);
         dynamicEntities.clear();
         staticEntities.clear();
+        lights.clear();
         particles.clear();
         System.gc();
     }

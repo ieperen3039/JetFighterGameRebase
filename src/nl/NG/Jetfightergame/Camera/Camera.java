@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -19,6 +18,4 @@ public interface Camera {
     PosVector getFocus();
 
     DirVector getUpVector();
-
-    default void cameraLighting(GL2 gl) {}
 }

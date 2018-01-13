@@ -55,7 +55,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);
 
-            final BooleanSupplier inGame = () -> currentGameMode != GameMode.MENU_MODE;
+            final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
             MouseTracker.getInstance().setMenuModeDecision(inGame);
 
             gameLoop = new JetFighterRunner(environment, e -> this.exitGame());

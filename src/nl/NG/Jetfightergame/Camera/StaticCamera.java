@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
@@ -44,10 +42,5 @@ public class StaticCamera implements Camera {
     @Override
     public DirVector getUpVector() {
         return up;
-    }
-
-    @Override
-    public void cameraLighting(GL2 gl) {
-        gl.setLight(getEye(), Color4f.LIGHT_GREY);
     }
 }

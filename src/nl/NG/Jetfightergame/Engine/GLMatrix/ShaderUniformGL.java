@@ -29,7 +29,15 @@ public class ShaderUniformGL implements GL2 {
     private ShaderProgram currentShader;
     private int nextLightIndex = 0;
 
-    public ShaderUniformGL(ShaderProgram shader, int windowWidth, int windowHeight, Camera camera) {
+    /**
+     *
+     * @param shader
+     * @param windowWidth
+     * @param windowHeight
+     * @param camera
+     * @param nrOfLights minimum number of lights, not necessarily an upper-bound
+     */
+    public ShaderUniformGL(ShaderProgram shader, int windowWidth, int windowHeight, Camera camera, int nrOfLights) {
         currentShader = shader;
 
         matrixStack = new Stack<>();
@@ -41,6 +49,10 @@ public class ShaderUniformGL implements GL2 {
 
         modelMatrix.assumeAffine();
         viewProjectionMatrix.assumePerspective();
+
+        for (int i = nrOfLights; i < Settings.MAX_POINT_LIGHTS; i++) {
+            shader.setPointLight(i, new Vector3f(), Color4f.INVISIBLE);
+        }
     }
 
     private Matrix4f getProjection(float windowWidth, float windowHeight, Camera camera) {
@@ -71,7 +83,7 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void setLight(DirVector dir, Color4f lightColor){
-        this.setLight(dir.toPosVector(), lightColor);
+        this.setLight(dir.scale(-100f, new DirVector()).toPosVector(), lightColor);
     }
 
     @Override

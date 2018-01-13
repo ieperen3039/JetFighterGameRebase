@@ -57,11 +57,13 @@ public class CollisionLaboratory extends GameState {
                     final PosVector pos = new PosVector(-labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace));
                     DirVector random = Vector.random();
                     random.scale(speeds, random);
-                    dynamicEntities.add(new FallingCube(
+                    FallingCube cube = new FallingCube(
                             Material.SILVER, CUBEMASS, CUBESIZE,
                             pos.scale(0.8f, pos).toPosVector(),
                             random, new Quaternionf(), getTimer().getRenderTime()
-                    ));
+                    );
+                    cube.addRandomRotation();
+                    dynamicEntities.add(cube);
                     if (--remainingCubes <= 0) break cubing;
                 }
             }

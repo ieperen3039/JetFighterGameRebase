@@ -41,7 +41,7 @@ public class GouraudShader extends AbstractShader {
     }
 
     /**
-     * Create an uniform for a pointslight array.
+     * Create an uniform for a pointlight array.
      *
      * @param size The size of the array.
      * @throws ShaderException If an error while fetching the memory location.

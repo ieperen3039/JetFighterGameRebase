@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Primitives.Particles;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Vector3f;
@@ -45,13 +46,14 @@ public final class Particles {
      * @param angleVector vector orthogonal on the rotationSpeed of this particle
      * @param rotationSpeed rotation speed of this particle (rad/s)
      * @param timeToLive seconds before this particle should be destroyed
+     * @param particleColor color of the particle
      */
-    public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, Vector3f angleVector, float rotationSpeed, float timeToLive){
-        PosVector centroid = a.add(b, new PosVector()).add(c, new PosVector()).scale(1/3f, new PosVector()).toPosVector(); // works when (A+B+C < Double.MAX_VALUE)
+    public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, Vector3f angleVector, float rotationSpeed, float timeToLive, Color4f particleColor){
+        PosVector centroid = a.add(b, new PosVector()).add(c, new PosVector()).scale(1/3f, new PosVector()).toPosVector(); // works when (A+B+C < Float.MAX_VALUE)
         DirVector A = centroid.to(a, new DirVector());
         DirVector B = centroid.to(b, new DirVector());
         DirVector C = centroid.to(c, new DirVector());
-        return new TriangleParticle(A, B, C, centroid, movement, angleVector, rotationSpeed, timeToLive);
+        return new TriangleParticle(A, B, C, centroid, movement, angleVector, rotationSpeed, timeToLive, particleColor);
     }
 
     /**
@@ -62,12 +64,13 @@ public final class Particles {
      * @param c third point in world-space
      * @param movement direction in which this particle is moving (m/s)
      * @param timeToLive seconds before this particle should be destroyed
+     * @param particleColor color of the particle
      */
-    public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, float timeToLive){
+    public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, float timeToLive, Color4f particleColor){
         Vector3f angleVector = DirVector.random();
         float rotationSpeed = Settings.random.nextFloat();
         rotationSpeed *= rotationSpeed * RANDOM_ROTATION;
-        return generateParticle(a, b, c, movement, angleVector, rotationSpeed, timeToLive);
+        return generateParticle(a, b, c, movement, angleVector, rotationSpeed, timeToLive, particleColor);
     }
 
     /**
@@ -105,7 +108,7 @@ public final class Particles {
                     .scale(speed, movement);
 
             particles.add(generateParticle(
-                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime)
+                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime, Color4f.WHITE)
             );
         }
         return particles;

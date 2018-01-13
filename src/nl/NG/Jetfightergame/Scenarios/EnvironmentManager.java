@@ -25,6 +25,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     public EnvironmentManager(Controller input) {
         this.input = input;
         instance = new ExplosionLaboratory(input);
+        instance.buildScene();
     }
 
     public enum Worlds {
@@ -66,6 +67,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     @Override
     public GameTimer getTimer() {
         return instance.getTimer();
+    }
+
+    @Override
+    public int getNumberOfLights() {
+        return instance.getNumberOfLights();
     }
 
 

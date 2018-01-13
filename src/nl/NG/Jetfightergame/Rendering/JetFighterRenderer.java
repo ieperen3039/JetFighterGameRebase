@@ -63,9 +63,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
             GameTimer timer = gameState.getTimer();
             timer.updateRenderTime();
             activeCamera.updatePosition(timer.getRenderTime().difference());
+            int nrOfLights = gameState.getNumberOfLights();
 
             Toolbox.checkGLError();
-            GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
+
+            shaderManager.initShader(activeCamera, ambientLight);
+            Toolbox.checkGLError();
+
+            GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera, nrOfLights);
             Toolbox.checkGLError();
 
 
@@ -75,24 +80,23 @@ public class JetFighterRenderer extends AbstractGameLoop {
                 glCullFace(GL_BACK);
             }
 
-            shaderManager.initShader(activeCamera, ambientLight);
-            Toolbox.checkGLError();
-
             if (!engine.isPaused()) gameState.updateParticles();
 
             // scene lighting
-            activeCamera.cameraLighting(gl);
+            gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.5f));
             gameState.setLights(gl);
             Toolbox.checkGLError();
 
             // first draw the non-transparent objects
             gameState.drawObjects(gl);
             Toolbox.checkGLError();
-            gameState.drawParticles(gl);
-            Toolbox.checkGLError();
 
             // overlay with transparent objects
             // TODO transparent meshes?
+
+            glDisable(GL_CULL_FACE);
+            gameState.drawParticles(gl);
+            Toolbox.checkGLError();
 
             shaderManager.unbind();
 

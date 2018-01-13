@@ -4,10 +4,8 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerDragListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerScrollListener;
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
-import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -21,8 +19,8 @@ import nl.NG.Jetfightergame.Vectors.Vector;
 public class PointCenteredCamera implements Camera, TrackerMoveListener, TrackerScrollListener, TrackerDragListener {
 
     private static final float ZOOM_SPEED = -0.1f;
-    public static float PHI_MIN = -(float) Math.PI / 2f + 0.01f;
-    public static float PHI_MAX = (float) Math.PI / 2f - 0.01f;
+    public static float PHI_MIN = (-(float) Math.PI / 2f) + 0.01f;
+    public static float PHI_MAX = ((float) Math.PI / 2f) - 0.01f;
     // Ratio of distance in pixels dragged and radial change of camera.
     public static float DRAG_PIXEL_TO_RADIAN = 0.025f;
 
@@ -148,11 +146,6 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
     @Override
     public DirVector getUpVector() {
         return DirVector.zVector();
-    }
-
-    @Override
-    public void cameraLighting(GL2 gl) {
-        gl.setLight(getEye(), Color4f.TRANSPARENT_GREY);
     }
 
     public void cleanUp(){

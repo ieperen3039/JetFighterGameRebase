@@ -17,6 +17,9 @@ import org.joml.Quaternionf;
  * created on 7-1-2018.
  */
 public class PlayerJetLaboratory extends GameState {
+
+    private static final int CUBE_SIZE = 100;
+
     public PlayerJetLaboratory(Controller input) {
         super(input);
     }
@@ -25,7 +28,7 @@ public class PlayerJetLaboratory extends GameState {
     public void buildScene() {
         dynamicEntities.add(getPlayer());
 //        staticEntities.add(new SimplexCave());
-        staticEntities.add(new ContainerCube(100));
+        staticEntities.add(new ContainerCube(CUBE_SIZE));
 
         // for x = -1 and x = 1
         for (int x = -1; x < 2; x += 2) {
@@ -35,7 +38,7 @@ public class PlayerJetLaboratory extends GameState {
                 for (int z = -1; z < 2; z += 2) {
                     dynamicEntities.add(new FallingCube(
                             Material.SILVER, 1000, 20,
-                            new PosVector(x, y, z),
+                            new PosVector((x * CUBE_SIZE) / 2, (y * CUBE_SIZE) / 2, (z * CUBE_SIZE) / 2),
                             new DirVector(), new Quaternionf(), getTimer().getRenderTime()
                     ));
                 }

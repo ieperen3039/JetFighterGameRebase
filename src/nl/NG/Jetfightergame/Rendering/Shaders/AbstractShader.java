@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Rendering.Shaders;
 import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
-import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -186,8 +185,6 @@ public abstract class AbstractShader implements ShaderProgram {
      * @param color the light color with its intensity as alpha value
      */
     protected void setPointLightUniform(String uniformName, Vector3f mPosition, Color4f color) {
-        Toolbox.printSpamless(uniformName, "Set light: " + uniformName, new PosVector(mPosition));
-
         setUniform(uniformName + ".color", color.toVector3f());
         setUniform(uniformName + ".mPosition", mPosition);
         setUniform(uniformName + ".intensity", color.alpha);

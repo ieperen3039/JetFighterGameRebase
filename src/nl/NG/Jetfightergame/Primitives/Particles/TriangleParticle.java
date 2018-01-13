@@ -1,9 +1,12 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
@@ -26,6 +29,7 @@ public class TriangleParticle implements Particle {
     /** to map the general triangle to a unit triangle */
 
     private final Matrix4f combinedTransformation;
+    private Color4f color;
 
     /**
      * creates a triangle particle in world-space
@@ -37,12 +41,14 @@ public class TriangleParticle implements Particle {
      * @param angleVector vector orthogonal on the rotationSpeed of this particle
      * @param rotationSpeed rotation speed of this particle (rad/s)
      * @param timeToLive seconds before this particle should be destroyed
+     * @param particleColor
      */
-    public TriangleParticle(DirVector a, DirVector b, DirVector c, PosVector centroid,
-                            DirVector movement, Vector3f angleVector, float rotationSpeed, float timeToLive) {
+    public TriangleParticle(Vector a, Vector b, Vector c, PosVector centroid,
+                            DirVector movement, Vector3f angleVector, float rotationSpeed, float timeToLive, Color4f particleColor) {
         x = centroid.x();
         y = centroid.y();
         z = centroid.z();
+        color = particleColor;
 
         combinedTransformation = getMapping(a, b, c);
 
@@ -64,7 +70,7 @@ public class TriangleParticle implements Particle {
      *
      * Solution:
      * we find that to map Rc to Tc, we cannot use multiplication, but instead we must translate with Rc,
-     * giving us a mapping M(p) = A*p*Rc for any point in R.
+     * giving us a mapping M(p) = A*p*Rc for any point in R for some transformation matrix A.
      * some indices for A are found by calculating M(p) for p = Ra and Rb, but not all.
      * The remaining indices describe transformations for when the base triangle has values in the n-th dimension
      * (in our case, only the 3rd dimension). Yet our triangle does not have any values in the 3rd dimension,
@@ -72,21 +78,20 @@ public class TriangleParticle implements Particle {
      * Multiplying C with our new A gives R.
      */
     private Matrix4f getMapping(Vector3f a, Vector3f b, Vector3f c){
-        // get identity
-        Matrix4f result = new Matrix4f();
         // apply transformation M(p)
-        result.mul(new Matrix4f(
+        Matrix4f result = new Matrix4f(
                 a.x - c.x, b.x - c.x, 0, 0,
                 a.y - c.y, b.y - c.y, 0, 0,
                 a.z - c.y, b.z - c.z, 0, 1,
                 0, 0, 0, 1
-        ));
+        );
         // translate with point c
         result.translate(c);
         return result;
     }
 
     public void draw(GL2 gl) {
+        gl.setMaterial(Material.GLOWING, color);
         gl.pushMatrix();
         {
             gl.translate(x, y, z);
