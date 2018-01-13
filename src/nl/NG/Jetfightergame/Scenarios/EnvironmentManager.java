@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.Managers;
+package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
@@ -6,9 +6,8 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Scenarios.CollisionLaboratory;
-import nl.NG.Jetfightergame.Scenarios.Environment;
-import nl.NG.Jetfightergame.Scenarios.PlayerJetLaboratory;
+import nl.NG.Jetfightergame.Engine.Managers.Manager;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 
 /**
@@ -25,7 +24,13 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     public EnvironmentManager(Controller input) {
         this.input = input;
-        instance = new MissionMenu(input);
+        instance = new ExplosionLaboratory(input);
+    }
+
+    public enum Worlds {
+        CollisionLaboratory,
+        PlayerJetLaboratory,
+        ExplosionLaboratory
     }
 
     @Override
@@ -63,10 +68,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         return instance.getTimer();
     }
 
-    public enum Worlds {
-        CollisionLaboratory,
-        PlayerJetLaboratory
-    }
 
     @Override
     public Worlds[] implementations() {
@@ -84,7 +85,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
             case PlayerJetLaboratory:
                 instance = new PlayerJetLaboratory(input);
                 break;
+            case ExplosionLaboratory:
+                instance = new ExplosionLaboratory(input);
+                break;
             default:
+                Toolbox.print("Environment not properly installed: " + implementation + " (did we forget a break statement?)");
                 instance = new MissionMenu(input);
         }
 

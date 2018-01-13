@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
-import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -30,8 +29,6 @@ public class CollisionLaboratory extends GameState {
     private final int nrOfCubes;
     private final int speeds;
 
-    private int totalCollisions;
-
     public CollisionLaboratory(Controller input) {
         this(input, LAB_SIZE, NR_OF_CUBES);
     }
@@ -42,7 +39,6 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
-        ScreenOverlay.addHudItem((hud) -> hud.printRoll("Collision count: " + totalCollisions));
     }
 
     @Override

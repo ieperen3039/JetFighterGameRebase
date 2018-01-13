@@ -47,6 +47,8 @@ public abstract class HudMenu implements TrackerClickListener {
     // note that these can only fire when mouse is not in capture mode
     @Override
     public void clickEvent(int x, int y) {
+        if (!ScreenOverlay.isMenuMode()) return;
+
         Arrays.stream(activeElements)
                 // take all clickable elements
                 .filter(element -> element instanceof MenuClickable)

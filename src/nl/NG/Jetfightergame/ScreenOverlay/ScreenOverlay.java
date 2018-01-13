@@ -46,6 +46,10 @@ public class ScreenOverlay {
     private static final Lock menuBufferLock = new ReentrantLock();
     private static final Lock hudBufferLock = new ReentrantLock();
 
+    public static boolean isMenuMode() {
+        return menuMode.getAsBoolean();
+    }
+
     public enum Font {
         ORBITRON_REGULAR("res/fonts/Orbitron/Orbitron-Regular.ttf"),
         ORBITRON_MEDIUM("res/fonts/Orbitron/Orbitron-Medium.ttf"),
@@ -338,7 +342,7 @@ public class ScreenOverlay {
 
         Painter vanGogh = new Painter();
         // Draw the right drawhandlers
-        if (menuMode.getAsBoolean()) {
+        if (isMenuMode()) {
             menuDrawBuffer.forEach(m -> m.accept(vanGogh));
         } else {
             hudDrawBuffer.forEach(m -> m.accept(vanGogh));

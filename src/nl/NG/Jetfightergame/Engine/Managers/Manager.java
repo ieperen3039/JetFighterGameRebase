@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Engine.Managers;
 
-import java.util.stream.IntStream;
-
 /**
  * A manager represents some implementation of some interface.
  * Objects implementing Manager should also implement the common interface of the implementations that it represent,
@@ -42,7 +40,10 @@ public interface Manager<E extends Enum> {
     default String[] names(){
         Enum[] values = implementations();
         String[] result = new String[values.length];
-        IntStream.range(0, values.length).forEach(i -> result[i] = values[i].toString());
+
+        for (int i = 0; i < values.length; i++) {
+            result[i] = values[i].toString();
+        }
 
         return result;
     }

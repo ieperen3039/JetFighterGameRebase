@@ -16,7 +16,7 @@ void main() {
 // diffuse component
     float intensity = max(0.0, dot(mVertexNormal, normalize(cameraPosition - mVertexPosition.xyz)));
 
-    float height = sigmoid(mVertexPosition.z / 10);
+    float height = sigmoid(mVertexPosition.z / 5);
 
     float r = -abs(height) + 1.0;
     float g = max(min(-height, 1.0), 0.0);

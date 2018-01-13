@@ -1,11 +1,12 @@
 package nl.NG.Jetfightergame.Controllers;
 
 /**
- * @author Geert van Ieperen
- *         created on 31-10-2017.
  * may be called to check the current actions of this controller
  * at least one implementation will concern player input.
  * Each call should only be called once for evaluation
+ *
+ * @author Geert van Ieperen
+ *         created on 31-10-2017.
  */
 public interface Controller {
 
@@ -61,4 +62,39 @@ public interface Controller {
      * @return whether primary fire should be activated
      */
     boolean secondaryFire();
+
+    /**
+     * a controller that does nothing
+     */
+    class EmptyController implements Controller {
+        @Override
+        public float throttle() {
+            return 0;
+        }
+
+        @Override
+        public float pitch() {
+            return 0;
+        }
+
+        @Override
+        public float yaw() {
+            return 0;
+        }
+
+        @Override
+        public float roll() {
+            return 0;
+        }
+
+        @Override
+        public boolean primaryFire() {
+            return false;
+        }
+
+        @Override
+        public boolean secondaryFire() {
+            return false;
+        }
+    }
 }

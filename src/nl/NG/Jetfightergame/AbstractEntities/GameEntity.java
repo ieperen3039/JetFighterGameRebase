@@ -4,6 +4,8 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
+import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
@@ -396,6 +398,25 @@ public abstract class GameEntity implements MovingEntity {
             cachedRotation = rotationInterpolator.getInterpolated(cachedTime);
             cachedTime = newTime;
         }
+    }
+
+    /**
+     * #BOOM
+     * This method does not remove this entity, only generate particles
+     * @param force arbitrary number. higher == more boom
+     * @return the generated particles resulting from this entity
+     */
+    public Collection<Particle> explode(float force){
+        Collection<Particle> result = new ArrayList<>();
+        ShadowMatrix sm = new ShadowMatrix();
+
+        Consumer<Shape> particleMapper = (shape) -> shape.getPlanes()
+                .map(p -> Particles.splitIntoParticles(p, sm, getPosition(), force))
+                .forEach(result::addAll);
+
+        toLocalSpace(sm, () -> create(sm, particleMapper));
+
+        return result;
     }
 
     @Override

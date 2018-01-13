@@ -108,11 +108,11 @@ public abstract class Plane {
      */
     @SuppressWarnings("SimplifiableIfStatement")
     protected boolean asideHitbox(PosVector alpha, PosVector beta) {
-        if ((alpha.x() < leastX) && (beta.x() < leastX) || (alpha.x() > mostX) && (beta.x() > mostX))
+        if (((alpha.x() < leastX) && (beta.x() < leastX)) || ((alpha.x() > mostX) && (beta.x() > mostX)))
             return true;
-        if ((alpha.y() < leastY) && (beta.y() < leastY) || (alpha.y() > mostY) && (beta.y() > mostY))
+        if (((alpha.y() < leastY) && (beta.y() < leastY)) || ((alpha.y() > mostY) && (beta.y() > mostY)))
             return true;
-        return (alpha.z() < leastZ) && (beta.z() < leastZ) || (alpha.z() > mostZ) && (beta.z() > mostZ);
+        return ((alpha.z() < leastZ) && (beta.z() < leastZ)) || ((alpha.z() > mostZ) && (beta.z() > mostZ));
     }
 
     /**
@@ -143,6 +143,10 @@ public abstract class Plane {
         return Arrays.asList(boundary);
     }
 
+    /**
+     * @see #getVertices()
+     * @return a stream of the vertices of this object
+     */
     public Stream<PosVector> getBorderAsStream() {
         return Arrays.stream(boundary);
     }
@@ -175,6 +179,20 @@ public abstract class Plane {
 
         PosVector hitPoint = position.add(hitDir, new PosVector());
         return this.encapsules(hitPoint);
+    }
+
+    /**
+     * @return the local average of all border positions
+     */
+    public PosVector getMiddle() {
+        PosVector m = PosVector.zeroVector();
+        int i = 0;
+        while (i < boundary.length) {
+            m.add(boundary[i]);
+            i++;
+        }
+        m.scale(1f/i, m);
+        return m;
     }
 }
 

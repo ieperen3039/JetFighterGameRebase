@@ -46,6 +46,7 @@ public abstract class GLFWGameEngine {
         secondaryGameLoops().forEach(Thread::start);
 
         try {
+            renderingLoop().unPause();
             renderingLoop().run();
 
             for (AbstractGameLoop abstractGameLoop : secondaryGameLoops()) {
@@ -72,7 +73,7 @@ public abstract class GLFWGameEngine {
     /** tells the renderloop to stop, renderloop must call back to clean up others */
     public void exitGame(){ // TODO add timer for forced shutdown // TODO add stopping boolean
         System.out.println();
-        Toolbox.print("Stopping game...");
+        Toolbox.printFrom(2, "Stopping game...");
         renderingLoop().stopLoop();
         secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);
     }
@@ -103,21 +104,21 @@ public abstract class GLFWGameEngine {
         currentGameMode = GameMode.MENU_MODE;
         window.freePointer();
         camera.switchTo(PointCenteredCamera);
-        renderingLoop().pause();
+        secondaryGameLoops().forEach(AbstractGameLoop::pause);
     }
 
     public void setPlayMode() {
         currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
         camera.switchTo(FollowingCamera);
-        renderingLoop().unPause();
+        secondaryGameLoops().forEach(AbstractGameLoop::unPause);
     }
 
     public void setSpectatorMode(){
         currentGameMode = GameMode.SPECTATOR_MODE;
         window.freePointer();
         camera.switchTo(PointCenteredCamera);
-        renderingLoop().unPause();
+        secondaryGameLoops().forEach(AbstractGameLoop::unPause);
     }
 
     public boolean isPaused() {

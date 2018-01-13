@@ -6,9 +6,8 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
-import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
-import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager.Worlds;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
+import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
@@ -52,8 +51,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
         try {
             environment = new EnvironmentManager(playerInput);
-            environment.switchTo(Worlds.CollisionLaboratory);
-//            environment = new PlayerJetLaboratory(playerInput);
 
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);

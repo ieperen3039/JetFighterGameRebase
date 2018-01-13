@@ -7,11 +7,11 @@ import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
-import nl.NG.Jetfightergame.Engine.Managers.EnvironmentManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.Scenarios.Environment;
+import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
@@ -107,7 +107,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
             }
             Toolbox.checkGLError();
 
-        } catch (Exception ex){
+        } catch (Exception ex){ // this catch clause seems to be redundant
             window.close();
             engine.exitGame();
             throw ex;

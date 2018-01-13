@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -12,10 +11,9 @@ import org.joml.Vector3f;
  * @author Geert van Ieperen
  *         created on 1-11-2017.
  */
-public class TriangleParticle implements AbstractParticle {
+public class TriangleParticle implements Particle {
 
     public static final int RANDOM_TTL = 5;
-    private static final float RANDOM_ROTATION = 1f;
     /** the three points of this relative to position */
     private final DirVector movement;
     private final Vector3f angVec;
@@ -40,11 +38,11 @@ public class TriangleParticle implements AbstractParticle {
      * @param rotationSpeed rotation speed of this particle (rad/s)
      * @param timeToLive seconds before this particle should be destroyed
      */
-    private TriangleParticle(DirVector a, DirVector b, DirVector c, PosVector centroid,
-                             DirVector movement, DirVector angleVector, float rotationSpeed, float timeToLive) {
-        x = (float) centroid.x();
-        y = (float) centroid.y();
-        z = (float) centroid.z();
+    public TriangleParticle(DirVector a, DirVector b, DirVector c, PosVector centroid,
+                            DirVector movement, Vector3f angleVector, float rotationSpeed, float timeToLive) {
+        x = centroid.x();
+        y = centroid.y();
+        z = centroid.z();
 
         combinedTransformation = getMapping(a, b, c);
 
@@ -52,40 +50,6 @@ public class TriangleParticle implements AbstractParticle {
         this.angVec = angleVector;
         this.rotationSpeed = rotationSpeed;
         this.timeToLive = timeToLive;
-    }
-
-    /**
-     * factory for a particle based on world-space
-     * @param a one point in world-space
-     * @param b another point in wold-space
-     * @param c third point in world-space
-     * @param movement direction in which this particle is moving (m/s)
-     * @param angleVector vector orthogonal on the rotationSpeed of this particle
-     * @param rotationSpeed rotation speed of this particle (rad/s)
-     * @param timeToLive seconds before this particle should be destroyed
-     */
-    public static TriangleParticle worldspaceParticle(PosVector a, PosVector b, PosVector c, DirVector movement, DirVector angleVector, float rotationSpeed, float timeToLive){
-        PosVector centroid = a.add(b, new PosVector()).add(c, new PosVector()).scale(1f/3, new PosVector()).toPosVector(); // works when (A+B+C < Double.MAX_VALUE)
-        DirVector A = centroid.to(a, new DirVector());
-        DirVector B = centroid.to(b, new DirVector());
-        DirVector C = centroid.to(c, new DirVector());
-        return new TriangleParticle(A, B, C, centroid, movement, angleVector, rotationSpeed, timeToLive);
-    }
-
-    /**
-     * factory for a particle based on world-space.
-     * the particle receives a random rotation
-     * @param a one point in world-space
-     * @param b another point in wold-space
-     * @param c third point in world-space
-     * @param movement direction in which this particle is moving (m/s)
-     * @param timeToLive seconds before this particle should be destroyed
-     */
-    public static TriangleParticle worldspaceParticle(PosVector a, PosVector b, PosVector c, DirVector movement, float timeToLive){
-        DirVector angleVector = new DirVector((float) (Settings.random.nextDouble() - 0.5), (float) (Settings.random.nextDouble() - 0.5), (float) (Settings.random.nextDouble() - 0.5));
-        float rotationSpeed = Settings.random.nextFloat();
-        rotationSpeed *= rotationSpeed * RANDOM_ROTATION;
-        return worldspaceParticle(a, b, c, movement, angleVector, rotationSpeed, timeToLive);
     }
 
     /**

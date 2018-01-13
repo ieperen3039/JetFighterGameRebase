@@ -7,7 +7,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
-import nl.NG.Jetfightergame.Primitives.Particles.AbstractParticle;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Scenarios.Environment;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
@@ -39,7 +39,7 @@ public abstract class GameState implements Environment {
 
     protected Collection<Touchable> staticEntities = new ArrayList<>();
     protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
-    protected Collection<AbstractParticle> particles = new ArrayList<>();
+    protected Collection<Particle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
     private final GameTimer time = new GameTimer();
@@ -207,6 +207,7 @@ public abstract class GameState implements Environment {
 
         staticEntities.forEach(d -> d.draw(gl));
         dynamicEntities.forEach(d -> d.draw(gl));
+        particles.forEach(p -> p.draw(gl));
     }
 
     @Override

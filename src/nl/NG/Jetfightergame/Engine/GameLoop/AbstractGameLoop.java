@@ -53,7 +53,7 @@ public abstract class AbstractGameLoop extends Thread {
     protected abstract void cleanup();
 
     /**
-     * start the gameloop once game is unpaused, and never terminate.
+     * start the loop, running until {@link #stopLoop()} is called
      * wrap-up must end up in a finally bock
      */
     public void run() {

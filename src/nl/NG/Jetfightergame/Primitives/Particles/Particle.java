@@ -8,7 +8,8 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
  *         created on 1-11-2017.
  * a drawableTriangle that is
  */
-public interface AbstractParticle extends Renderable {
+public interface Particle extends Renderable {
+
     /**
      * updates this particle (position, rotation) in the rendering loop
      * @param time gametime since last rendering frame
