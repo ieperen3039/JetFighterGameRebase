@@ -75,6 +75,8 @@ public abstract class AbstractGameLoop extends Thread {
                 // do stuff
                 update(deltaTime);
 
+                if (Thread.interrupted()) break;
+
                 long remainingTime = (1000 / targetTps) - loopTimer.getTimeSinceLastUpdate();
                 if (Settings.DEBUG && notifyDelay && (remainingTime < 0))
                     System.err.println(loopName + " can't keep up! Running " + -remainingTime + " milliseconds behind");

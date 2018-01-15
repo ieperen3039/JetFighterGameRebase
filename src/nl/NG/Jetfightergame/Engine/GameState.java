@@ -34,14 +34,14 @@ public abstract class GameState implements Environment {
 
     private AbstractJet playerJet;
 
-    protected Collection<Touchable> staticEntities;
-    protected Collection<MovingEntity> dynamicEntities;
-    protected Collection<Particle> particles;
-    protected Collection<Pair<PosVector, Color4f>> lights;
+    protected Collection<Touchable> staticEntities = new ArrayList<>();
+    protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
+    protected Collection<Particle> particles = new ArrayList<>();
+    protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
     private final GameTimer time;
 
-    private Collection<Pair<Touchable, MovingEntity>> allEntityPairs;
+    private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
     private int totalCollisions;
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) -> hud.printRoll("Collision count: " + totalCollisions);
 
@@ -53,12 +53,6 @@ public abstract class GameState implements Environment {
     public GameState(Controller input) {
         time = new GameTimer();
         playerJet = new PlayerJet(input, time.getRenderTime());
-
-        staticEntities = new ArrayList<>();
-        dynamicEntities = new ArrayList<>();
-        particles = new ArrayList<>();
-        lights = new ArrayList<>();
-        allEntityPairs = null;
 
         ScreenOverlay.addHudItem(collisionCounter);
     }
@@ -87,6 +81,7 @@ public abstract class GameState implements Environment {
             List<RigidBody> postCollisions = new ArrayList<>();
 
             do {
+                if (Thread.interrupted()) return;
                 /* as a single collision may result in a previously not-intersecting pair to collide,
                  * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
                  * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.

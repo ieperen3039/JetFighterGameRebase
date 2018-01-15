@@ -272,7 +272,7 @@ public abstract class GameEntity implements MovingEntity {
      * the returned collision is caused by the first plane hit by point
      * @param point a point in global space
      * @param other another object
-     * @param deltaTime
+     * @param deltaTime time-difference of this loop
      * @return the first collision caused by this point
      */
     private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other, float deltaTime) {

@@ -22,7 +22,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBESIZE = 2f;
     private static final float CUBEMASS = 5f;
     private static final int LAB_SIZE = 20;
-    private static final int NR_OF_CUBES = 2;
+    private static final int NR_OF_CUBES = 8;
     private static final int INIT_SPEED = 0;
 
     private final int labSize;
@@ -39,7 +39,7 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
-        getTimer().setEngineMultiplier(2f);
+//        getTimer().setEngineMultiplier(2f);
     }
 
     @Override
@@ -75,9 +75,13 @@ public class CollisionLaboratory extends GameState {
 
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-        final DirVector middle = DirVector.random();//.scale(labSize, new DirVector());
-        entity.getPosition().to(middle, middle);
-        return middle;
+//        // toward middle
+//        final DirVector middle = DirVector.random();//.scale(labSize, new DirVector());
+//        entity.getPosition().to(middle, middle);
+//        return middle;
+
+        // random
+        return DirVector.random().scale(labSize, new DirVector());
     }
 
 }

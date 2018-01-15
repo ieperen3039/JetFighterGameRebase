@@ -31,7 +31,7 @@ public final class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 30;
+    public static int TARGET_TPS = 15;
     /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
     public static final float RENDER_DELAY = 1.1f/TARGET_TPS;
 
