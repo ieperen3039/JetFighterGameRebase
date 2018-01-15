@@ -25,6 +25,7 @@ public abstract class AbstractGameLoop extends Thread {
     private int targetTps;
     private CountDownLatch pauseBlock = new CountDownLatch(0);
     private boolean shouldStop;
+    private boolean isPaused = true;
     private final boolean notifyDelay;
     private Consumer<Exception> exceptionHandler;
     private float realTPS = 0;
@@ -65,6 +66,7 @@ public abstract class AbstractGameLoop extends Thread {
 
         try {
             pauseBlock.await();
+            isPaused = false;
 
             while (!shouldStop) {
                 // start measuring how long a gameloop takes
@@ -90,7 +92,9 @@ public abstract class AbstractGameLoop extends Thread {
                 // store the duration and set this as length of next update
                 deltaTime = loopTimer.getElapsedSeconds();
                 // wait if the game is paused
+                isPaused = true;
                 pauseBlock.await();
+                isPaused = false;
             }
         } catch (Exception ex) {
             System.err.println(loopName + " has Crashed! Blame Menno.");
@@ -114,8 +118,13 @@ public abstract class AbstractGameLoop extends Thread {
         Toolbox.printFrom(2, "paused " + loopName);
     }
 
+    /**
+     * @return true if this loop is not executing its loop.
+     * This method returns false if {@link #pause()} is called, but the loop is still finishing its loop
+     * @see #unPause()
+     */
     public boolean isPaused() {
-        return pauseBlock.getCount() != 0;
+        return isPaused && (pauseBlock.getCount() > 0);
     }
 
     public void resetTPSCounter(){

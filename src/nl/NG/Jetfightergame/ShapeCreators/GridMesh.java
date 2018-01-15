@@ -173,9 +173,9 @@ public class GridMesh implements Shape {
      * @return the earliest collision of currLeast and the new collision
      */
     private Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint, Collision currentLeast, Triangle target) {
-        Collision hit = target.getHitvector(linePosition, direction, endPoint);
+        Collision hit = target.getCollisionWith(linePosition, direction, endPoint);
         if (hit != null) {
-            if (currentLeast == null || hit.compareTo(currentLeast) < 0) {
+            if ((currentLeast == null) || (hit.compareTo(currentLeast) < 0)) {
                 currentLeast = hit;
             }
         }

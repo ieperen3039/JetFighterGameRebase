@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -7,6 +8,11 @@ import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+/**
+ * a class that represents the collision state of a Touchable Entity.
+ * May be considered a subclass of Touchable / GameEntity
+ * @author Geert van Ieperen
+ */
 public class RigidBody {
     public final float timeScalar;
     public final PosVector massCenterPosition;
@@ -96,6 +102,9 @@ public class RigidBody {
         return rotationSpeedVector.y();
     }
 
+    /** False in most cases
+     * @return true iff timeScalar == 1.
+     */
     public boolean isFinal() {
         return timeScalar == 1f;
     }
@@ -169,7 +178,10 @@ public class RigidBody {
         rotationVec.sub(angularVelChange, rotationVec);
     }
 
-    private static void collisionResponseSimple(){}
+    private static void collisionResponseSimple(RigidBody alpha, RigidBody beta){
+        if (alpha.contactNormal != null) alpha.velocity.reflect(alpha.contactNormal);
+        if (beta.contactNormal != null) beta.velocity.reflect(beta.contactNormal);
+    }
 
     public void apply(float deltaTime, float currentTime) {
         if ((source instanceof MovingEntity) && !Float.isInfinite(mass)){
@@ -186,26 +198,29 @@ public class RigidBody {
      */
     public static void process(RigidBody alpha, RigidBody beta) {
 
-        RigidBody body = null;
-        if (Float.isInfinite(alpha.mass)) body = beta;
-        else if (Float.isInfinite(beta.mass)) body = alpha;
-
-        if (body == null) {
-            collisionResponse(
-                    alpha.mass, beta.mass,
-                    alpha.inertTensor, beta.inertTensor,
-                    alpha.vectorToHitPos(), beta.vectorToHitPos(),
-                    alpha.velocity, beta.velocity,
-                    alpha.rotationSpeedVector, beta.rotationSpeedVector,
-                    alpha.contactNormal
-            );
+        if (Settings.SIMPLE_COLLISION_RESPONSE){
+            collisionResponseSimple(alpha, beta);
         } else {
-            collisionWithStaticResponse(
-                    body.mass, body.inertTensor, body.vectorToHitPos(),
-                    body.velocity, body.rotationSpeedVector, body.contactNormal
-            );
+
+            RigidBody body = null;
+            if (Float.isInfinite(alpha.mass)) body = beta;
+            else if (Float.isInfinite(beta.mass)) body = alpha;
+
+            if (body == null) {
+                collisionResponse(
+                        alpha.mass, beta.mass,
+                        alpha.inertTensor, beta.inertTensor,
+                        alpha.vectorToHitPos(), beta.vectorToHitPos(),
+                        alpha.velocity, beta.velocity,
+                        alpha.rotationSpeedVector, beta.rotationSpeedVector,
+                        alpha.contactNormal
+                );
+            } else {
+                collisionWithStaticResponse(
+                        body.mass, body.inertTensor, body.vectorToHitPos(),
+                        body.velocity, body.rotationSpeedVector, body.contactNormal
+                );
+            }
         }
     }
-
-
 }

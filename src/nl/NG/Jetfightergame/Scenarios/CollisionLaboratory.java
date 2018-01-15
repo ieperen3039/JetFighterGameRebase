@@ -39,6 +39,7 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
+        getTimer().setEngineMultiplier(2f);
     }
 
     @Override
@@ -74,9 +75,9 @@ public class CollisionLaboratory extends GameState {
 
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-//        final DirVector random = DirVector.zeroVector();
-//        return random.scale(labSize, random);
-        return entity.getPosition().to(Vector.random(), new DirVector());
+        final DirVector middle = DirVector.random();//.scale(labSize, new DirVector());
+        entity.getPosition().to(middle, middle);
+        return middle;
     }
 
 }

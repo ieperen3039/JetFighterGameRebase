@@ -74,7 +74,7 @@ public abstract class Plane {
      * @param endPoint     the endpoint of this vector, defined as {@code linePosition.add(direction)}
      * @return {@code null} if it does not hit with direction scalar < 1
      */
-    public Collision getHitvector(PosVector linePosition, DirVector direction, PosVector endPoint) {
+    public Collision getCollisionWith(PosVector linePosition, DirVector direction, PosVector endPoint) {
         if (hasWrongDirection(direction)) return null;
 
         if (asideHitbox(linePosition, endPoint)) return null;
@@ -130,13 +130,15 @@ public abstract class Plane {
      * where the given line will hit this plane if this plane was infinite
      *
      * @return Vector D such that (linePosition.add(D)) will give the position of the hitPoint.
-     * D lies in the extend, but not necessarily on the plane
+     * D lies in the extend, but not necessarily on the plane.
+     * D is given by ((p0 - l0)*n) \ (l*n)
      */
     protected float hitScalar(PosVector linePosition, DirVector direction) {
-        // random point is chosen
-        boundary[0].sub(linePosition, relativePosition);
+        relativePosition.set(boundary[0]);
 
-        return relativePosition.dot(normal) / direction.dot(normal);
+        float upper = relativePosition.sub(linePosition, relativePosition).dot(normal);
+        float lower = direction.dot(normal);
+        return upper / lower;
     }
 
     public Collection<PosVector> getVertices() {

@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 
+import java.util.Map;
 import java.util.function.Consumer;
 
 /**
@@ -12,6 +13,19 @@ import java.util.function.Consumer;
  *         created on 6-11-2017.
  */
 public interface Touchable extends Drawable {
+
+    default RigidBody getRigidBody(Map<Touchable, RigidBody> finalCollisions, float deltaTime) {
+        RigidBody item;
+        if (finalCollisions.containsKey(this)) {
+            item = finalCollisions.get(this);
+        } else {
+            item = getFinalCollision(deltaTime);
+            finalCollisions.put(this, item);
+        }
+
+        finalCollisions.getOrDefault(this, item);
+        return item;
+    }
 
     /**
      * moves the reference frame from local space to each shape, executing {@code action} on every shape.

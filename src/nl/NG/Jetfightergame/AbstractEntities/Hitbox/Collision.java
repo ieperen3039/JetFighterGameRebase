@@ -32,15 +32,15 @@ public class Collision implements Comparable<Collision> {
     }
 
     /**
-     * @return a copy of the collision
-     * @throws NullPointerException if {@link #convertToGlobal(MatrixStack)} has not been called on this collision
+     * creates a copy of the collision
+     * @throws NullPointerException if {@link #convertToGlobal(MatrixStack)} has not been called on the source collision
      */
-    public Collision inverse() {
-        final Collision copy = new Collision();
-        copy.hitPos = hitPos;
-        copy.normal = normal.negate(new DirVector());
-        copy.timeScalar = timeScalar;
-        return copy;
+    public Collision(Collision cause) {
+        this.hitPos = cause.hitPos;
+        this.normal = cause.normal.negate(new DirVector());
+        this.timeScalar = cause.timeScalar;
+        shapeLocalNormal = null;
+        shapeLocalHitPos = null;
     }
 
     /**
@@ -55,7 +55,7 @@ public class Collision implements Comparable<Collision> {
 
     @Override
     public int compareTo(Collision c) {
-        return c == null ? 0 : Double.compare(c.timeScalar, timeScalar);
+        return (c == null) ? 0 : Double.compare(c.timeScalar, timeScalar);
     }
 
 }

@@ -24,7 +24,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     public EnvironmentManager(Controller input) {
         this.input = input;
-        instance = new ExplosionLaboratory(input);
+        instance = new CollisionLaboratory(input);
         instance.buildScene();
     }
 

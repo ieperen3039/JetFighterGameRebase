@@ -19,10 +19,7 @@ import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,24 +34,32 @@ public abstract class GameState implements Environment {
 
     private AbstractJet playerJet;
 
-    protected Collection<Touchable> staticEntities = new ArrayList<>();
-    protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
-    protected Collection<Particle> particles = new ArrayList<>();
-    protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
+    protected Collection<Touchable> staticEntities;
+    protected Collection<MovingEntity> dynamicEntities;
+    protected Collection<Particle> particles;
+    protected Collection<Pair<PosVector, Color4f>> lights;
 
-    private final GameTimer time = new GameTimer();
+    private final GameTimer time;
 
-    private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
+    private Collection<Pair<Touchable, MovingEntity>> allEntityPairs;
     private int totalCollisions;
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) -> hud.printRoll("Collision count: " + totalCollisions);
 
+    /* TODO playerjet responsibillity
+     * Currently, the player is part of the world. It would be interesting if the playerJet is preserved along all
+     * different worlds and stages of the game, even stored in savefiles. If not for structure, then just for the
+     * idea that fits in the spirit of the game
+     */
     public GameState(Controller input) {
+        time = new GameTimer();
         playerJet = new PlayerJet(input, time.getRenderTime());
-        /* TODO playerjet responsibillity
-         * Currently, the player is part of the world. It would be interesting if the playerJet is preserved along all
-         * different worlds and stages of the game, even stored in savefiles. If not for structure, then just for the
-         * idea that fits in the spirit of the game
-         */
+
+        staticEntities = new ArrayList<>();
+        dynamicEntities = new ArrayList<>();
+        particles = new ArrayList<>();
+        lights = new ArrayList<>();
+        allEntityPairs = null;
+
         ScreenOverlay.addHudItem(collisionCounter);
     }
 
@@ -88,18 +93,20 @@ public abstract class GameState implements Environment {
                  */
                 collisionPairs = closeTargets.stream()
                         // check for collisions
-                        .filter(GameState::checkPair)
+                        .filter(closeTarget -> checkCollisionPair(closeTarget.right, closeTarget.left, deltaTime))
                         .collect(Collectors.toList());
 
                 newCollisions += collisionPairs.size();
                 postCollisions.clear();
+                Map<Touchable, RigidBody> finalCollisions = new HashMap<>();
 
                 // process the final collisions in pairs
                 postCollisions = collisionPairs.stream()
-                        .map(ep -> new Pair<>(
-                                ep.left.getFinalCollision(deltaTime),
-                                ep.right.getFinalCollision(deltaTime)
-                        ))
+                        .map(p -> {
+                            RigidBody left = p.left.getRigidBody(finalCollisions, deltaTime);
+                            RigidBody right = p.right.getRigidBody(finalCollisions, deltaTime);
+                            return new Pair<>(left, right);
+                        })
                         .flatMap(rp -> {
                             RigidBody.process(rp.left, rp.right);
                             return Stream.of(rp.left, rp.right);
@@ -122,27 +129,16 @@ public abstract class GameState implements Environment {
         dynamicEntities.forEach(obj -> obj.update(currentTime));
     }
 
-    protected abstract DirVector entityNetforce(MovingEntity entity);
-
     /**
-     * let each object of the pair check for collisions, but does not make any changes just yet.
-     * these only take effect after calling {@link MovingEntity#getFinalCollision(float)}
-     * @param p a pair of objects that may have collided.
-     * @return true if this pair collided:
-     * if this method returns false, then these objects do not collide and are not changed as a result.
-     * if this method returns true, then these objects do collide and have this collision stored.
-     * The collision can be calculated by {@link MovingEntity#getFinalCollision(float)} and applied by {@link Updatable#update(float)}
+     * @return false iff neither hits the other
      */
-    private static boolean checkPair(Pair<Touchable, MovingEntity> p) {
-        MovingEntity moving = p.right;
-        Touchable either = p.left;
-
-        boolean change = moving.checkCollisionWith(either);
-        if (either instanceof MovingEntity) {
-            return change || ((MovingEntity) either).checkCollisionWith(moving);
-        }
-        return change;
+    public boolean checkCollisionPair(MovingEntity moving, Touchable either, float deltaTime) {
+        return moving.checkCollisionWith(either, deltaTime) || (
+                        (either instanceof MovingEntity) && ((MovingEntity) either).checkCollisionWith(moving, deltaTime)
+        );
     }
+
+    protected abstract DirVector entityNetforce(MovingEntity entity);
 
     /** TODO efficient implementation, Possibly move to dedicated class
      * generate a list (possibly empty) of all objects that may have collided.
@@ -243,6 +239,7 @@ public abstract class GameState implements Environment {
         staticEntities.clear();
         lights.clear();
         particles.clear();
+        if (allEntityPairs != null) allEntityPairs.clear();
         System.gc();
     }
 }

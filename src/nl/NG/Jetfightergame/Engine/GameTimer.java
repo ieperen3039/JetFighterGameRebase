@@ -68,6 +68,7 @@ public class GameTimer {
      * @param multiplier time will move {@code multiplier} times as fast
      */
     public void setGameTimeMultiplier(float multiplier) {
+        updateTimer();
         playMultiplier = multiplier;
     }
 
@@ -75,6 +76,7 @@ public class GameTimer {
      * @param multiplier time will move {@code multiplier} times as fast
      */
     public void setEngineMultiplier(float multiplier){
+        updateTimer();
         engineMultiplier = multiplier;
     }
 }

@@ -34,7 +34,7 @@ public interface Shape extends Renderable {
     default Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint){
         return getPlanes()
                 // find the vector that hits the planes
-                .map((plane) -> plane.getHitvector(linePosition, direction, endPoint))
+                .map((plane) -> plane.getCollisionWith(linePosition, direction, endPoint))
                 // exclude the vectors that did not hit
                 .filter(Objects::nonNull)
                 // return the shortest vector

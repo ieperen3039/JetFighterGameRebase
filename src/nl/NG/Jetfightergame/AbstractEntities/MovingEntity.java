@@ -55,9 +55,10 @@ public interface MovingEntity extends Touchable {
      * checks the movement of the hitpoints of this object against the planes of 'other'.
      * the method implementing this must be thread-safe
      * @param other an object that may hit this object
+     * @param deltaTime
      * @return true if there was a collision. This also means that the other has a collision as well
      */
-    boolean checkCollisionWith(Touchable other);
+    boolean checkCollisionWith(Touchable other, float deltaTime);
 
     /**
      * The entity should take care of defining a valid timestamp method to ensure correct interpolation

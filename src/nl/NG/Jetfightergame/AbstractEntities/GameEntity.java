@@ -182,10 +182,10 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public boolean checkCollisionWith(Touchable other){
+    public boolean checkCollisionWith(Touchable other, float deltaTime){
         Collision newCollision = hitPoints.stream()
                 // see which points collide with the other
-                .map(point -> getPointCollision(point, other))
+                .map(point -> getPointCollision(point, other, deltaTime))
                 // exclude points that didn't hit
                 .filter(Objects::nonNull)
                 // select first point hit
@@ -204,7 +204,7 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public void acceptCollision(Collision cause) {
-        nextCrash.check(cause.inverse());
+        nextCrash.check(new Collision(cause));
     }
 
     @Override
@@ -222,9 +222,7 @@ public abstract class GameEntity implements MovingEntity {
         // normal of the plane of contact
         final DirVector contactNormal = nextCrash.get().normal;
         // fraction of deltaTime until collision
-        final float timeScalar = nextCrash.get().timeScalar * 0.99f;
-        // seconds until this object hits the other
-//        final float hitDeltaTime = timeScalar * deltaTime;
+        final float timeScalar = nextCrash.get().timeScalar * 0.99f; // prevent rounding errors.
         // current rotation speed of airplane
         final Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
         // object rotation when hitting
@@ -232,7 +230,7 @@ public abstract class GameEntity implements MovingEntity {
         rotation.nlerp(extraRotation, timeScalar, interRotation);
         // movement until collision
         final DirVector interMovement = new DirVector();
-        if (!movement.isScalable()) movement.scale(timeScalar, movement);
+        if (movement.isScalable()) movement.scale(timeScalar, interMovement);
         // object position when hitting
         final PosVector interPosition = position.add(interMovement, new PosVector());
         // interpolated velocity when hitting
@@ -254,16 +252,19 @@ public abstract class GameEntity implements MovingEntity {
         if (newState.isFinal()) return;
 
         final float remainingTime = deltaTime * (1 - newState.timeScalar);
-        newState.massCenterPosition.add(extraVelocity.scale(remainingTime, new DirVector()), extraPosition);
+        final DirVector bounceMovement = extraVelocity.scale(remainingTime, new DirVector());
+        newState.massCenterPosition.add(bounceMovement, extraPosition);
         newState.rotation.rotate(rollSpeed * remainingTime, pitchSpeed * remainingTime, yawSpeed * remainingTime, extraRotation);
 
         // add intermediate position/rotation to interpolation
         final float collisionTimeStamp = currentTime - remainingTime;
-        positionInterpolator.add(new PosVector(extraPosition), collisionTimeStamp);
-        rotationInterpolator.add(new Quaternionf(extraRotation), collisionTimeStamp);
+        positionInterpolator.add(new PosVector(newState.massCenterPosition), collisionTimeStamp);
+        rotationInterpolator.add(new Quaternionf(newState.rotation), collisionTimeStamp);
 
         hitPoints = calculateHitpointMovement();
         nextCrash = new Extreme<>(false);
+
+//        Toolbox.print(bounceMovement, newState.timeScalar);
     }
 
     /**
@@ -271,9 +272,10 @@ public abstract class GameEntity implements MovingEntity {
      * the returned collision is caused by the first plane hit by point
      * @param point a point in global space
      * @param other another object
+     * @param deltaTime
      * @return the first collision caused by this point
      */
-    private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other) {
+    private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other, float deltaTime) {
 
         Stream.Builder<Collision> collisions = Stream.builder();
         final PosVector previous = point.previous();
@@ -297,7 +299,8 @@ public abstract class GameEntity implements MovingEntity {
         if (other instanceof MovingEntity){
             final MovingEntity moving = (MovingEntity) other;
             // consider the movement of the plane, by assuming relative movement and linear interpolation
-            previous.add(moving.getVelocity());
+            final DirVector otherMovement = moving.getVelocity().scale(deltaTime, new DirVector());
+            previous.add(otherMovement);
             moving.toLocalSpace(identity, () -> moving.create(identity, addCollisions), true);
         } else {
             other.toLocalSpace(identity, () -> other.create(identity, addCollisions));

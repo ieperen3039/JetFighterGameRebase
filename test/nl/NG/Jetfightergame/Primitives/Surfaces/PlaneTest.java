@@ -27,7 +27,7 @@ public class PlaneTest {
         System.out.println("\nVector " + first + " towards " + second + ": direction is " + dir);
         if (expected == null) System.out.println("Expecting no intersection");
 
-        Collision box = instance.getHitvector(first, dir, second);
+        Collision box = instance.getCollisionWith(first, dir, second);
 
         PosVector result = new PosVector();
 

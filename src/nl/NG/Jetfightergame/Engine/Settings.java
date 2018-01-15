@@ -22,6 +22,7 @@ public final class Settings {
     public static final int HUD_STROKE_WIDTH = 0;
     static final int MAX_COLLISION_ITERATIONS = 10;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
+    public static final boolean SIMPLE_COLLISION_RESPONSE = true;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings

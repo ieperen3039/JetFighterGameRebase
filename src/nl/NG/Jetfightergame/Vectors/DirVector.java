@@ -69,7 +69,7 @@ public class DirVector extends Vector {
     /**
      * multiplies the length of this vector with scalar
      * @param scalar multiplication factor.
-     * @param dest
+     * @param dest will hold the result
      * @return new vector with length equal to {@code this.length() * scalar}
      */
     public DirVector scale(float scalar, DirVector dest) {
@@ -104,7 +104,7 @@ public class DirVector extends Vector {
      * equals (this + (1/2)*(that - this))
      */
     public Vector middleTo(Vector that, Vector dest) {
-        dest.set(this.x + 0.5f * (that.x - this.x), this.y + 0.5f * (that.y - this.y), this.z + 0.5f * (that.z - this.z));
+        dest.set(this.x + (0.5f * (that.x - this.x)), this.y + (0.5f * (that.y - this.y)), this.z + (0.5f * (that.z - this.z)));
         return dest;
     }
 }

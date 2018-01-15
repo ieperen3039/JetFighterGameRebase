@@ -126,4 +126,13 @@ public class Toolbox {
             printFrom(2, ": glError " + error);
         }
     }
+
+    /**
+     * call System.exit and tells who did it
+     */
+    public static void exitJava() {
+        System.out.println();
+        Toolbox.printFrom(2, "Ending JVM");
+        System.exit(-1);
+    }
 }
