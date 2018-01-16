@@ -22,7 +22,7 @@ public final class Settings {
     public static final int HUD_STROKE_WIDTH = 0;
     static final int MAX_COLLISION_ITERATIONS = 10;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
-    public static final boolean SIMPLE_COLLISION_RESPONSE = true;
+    public static final boolean SIMPLE_COLLISION_RESPONSE = false;
     public static boolean GYRO_PHYSICS_MODEL = false;
 
     // final music settings
@@ -31,7 +31,7 @@ public final class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 15;
+    public static int TARGET_TPS = 20;
     /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
     public static final float RENDER_DELAY = 1.1f/TARGET_TPS;
 

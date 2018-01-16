@@ -75,11 +75,11 @@ public abstract class GLFWGameEngine {
         System.out.println();
         Toolbox.printFrom(2, "Stopping game...");
 
-        new TimeOutTimer("Stop game", 1000, () -> {
+        new TimeOutTimer("Interrupt Threads", 1000, () -> {
             renderingLoop().interrupt();
             secondaryGameLoops().forEach(Thread::interrupt);
         }).start();
-        new TimeOutTimer("Stop game", 1500, () -> System.exit(-1)).start();
+        new TimeOutTimer("Kill Threads", 1500, () -> System.exit(-1)).start();
 
         renderingLoop().stopLoop();
         secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);
@@ -147,6 +147,7 @@ public abstract class GLFWGameEngine {
             this.name = name;
             this.millis = millis;
             this.action = action;
+            setDaemon(true);
         }
 
         @Override

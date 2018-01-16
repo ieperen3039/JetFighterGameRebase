@@ -70,6 +70,7 @@ public abstract class GameEntity implements MovingEntity {
      * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
      *
      * @param surfaceMaterial material properties
+     * @param mass the mass of the object in kilograms.
      * @param scale           scalefactor applied to this object. the scale is in global space and executed in
      *                        {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param initialPosition position of spawining (of the origin) in world coordinates
@@ -269,16 +270,17 @@ public abstract class GameEntity implements MovingEntity {
 
     /**
      * returns the collisions caused by {@code point} in the given reference frame.
-     * the returned collision is caused by the first plane hit by point
-     * @param point a point in global space
+     * the returned collision is caused by the first plane of #other, as it is hit by #point
+     * @param point the movement of a point in global space
      * @param other another object
      * @param deltaTime time-difference of this loop
-     * @return the first collision caused by this point
+     * @return the first collision caused by this point on the other object
      */
     private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other, float deltaTime) {
 
         Stream.Builder<Collision> collisions = Stream.builder();
-        final PosVector previous = point.previous();
+        // copy previous, because we may want to temporarily override it.
+        final PosVector previous = new PosVector(point.previous());
         final PosVector current = point.current();
 
         // collect the collisions
@@ -298,9 +300,12 @@ public abstract class GameEntity implements MovingEntity {
 
         if (other instanceof MovingEntity){
             final MovingEntity moving = (MovingEntity) other;
-            // consider the movement of the plane, by assuming relative movement and linear interpolation
-            final DirVector otherMovement = moving.getVelocity().scale(deltaTime, new DirVector());
-            previous.add(otherMovement);
+
+            // consider the movement of the plane, by assuming relative movement and linear interpolation.
+            // despite that #previous is as final in Consumer #addCollision, this will still be considered, because the fields are not final
+            final DirVector velocity = moving.getVelocity();
+            if (velocity.isScalable()) previous.add(velocity.scale(deltaTime, velocity));
+
             moving.toLocalSpace(identity, () -> moving.create(identity, addCollisions), true);
         } else {
             other.toLocalSpace(identity, () -> other.create(identity, addCollisions));
@@ -429,7 +434,7 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public DirVector getVelocity() {
-        return velocity;
+        return new DirVector(velocity);
     }
 
     @Override

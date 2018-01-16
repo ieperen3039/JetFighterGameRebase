@@ -23,11 +23,11 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBEMASS = 5f;
     private static final int LAB_SIZE = 20;
     private static final int NR_OF_CUBES = 8;
-    private static final int INIT_SPEED = 0;
+    private static final float INIT_SPEED = 0.1f;
 
     private final int labSize;
     private final int nrOfCubes;
-    private final int speeds;
+    private final float speeds;
 
     public CollisionLaboratory(Controller input) {
         this(input, LAB_SIZE, NR_OF_CUBES);
@@ -39,7 +39,7 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
-//        getTimer().setEngineMultiplier(2f);
+        getTimer().setEngineMultiplier(2f);
     }
 
     @Override
@@ -63,7 +63,7 @@ public class CollisionLaboratory extends GameState {
                             pos.scale(0.8f, pos).toPosVector(),
                             random, new Quaternionf(), getTimer().getRenderTime()
                     );
-                    cube.addRandomRotation();
+                    cube.addRandomRotation(0.1f);
                     dynamicEntities.add(cube);
                     if (--remainingCubes <= 0) break cubing;
                 }
@@ -80,8 +80,11 @@ public class CollisionLaboratory extends GameState {
 //        entity.getPosition().to(middle, middle);
 //        return middle;
 
-        // random
-        return DirVector.random().scale(labSize, new DirVector());
+//        // random
+//        return DirVector.random().scale(labSize, new DirVector());
+
+        // gravity
+        return new DirVector(0, 0, -9.81f);
     }
 
 }

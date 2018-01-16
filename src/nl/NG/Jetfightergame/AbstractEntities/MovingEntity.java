@@ -61,20 +61,30 @@ public interface MovingEntity extends Touchable {
     boolean checkCollisionWith(Touchable other, float deltaTime);
 
     /**
-     * The entity should take care of defining a valid timestamp method to ensure correct interpolation
+     * @implNote The entity should take care of defining a valid timestamp method to ensure correct interpolation
      * @return a copy of the position of the center of mass of this object, interpolated for a predefined timeStamp
      */
     PosVector interpolatedPosition();
 
+    /**
+     * @implNote The entity should take care of defining a valid timestamp method to ensure correct interpolation
+     * @return a copy of the rotation of this object, interpolated for a predefined timeStamp
+     */
     Quaternionf interpolatedRotation();
 
     /**
-     * @return movement of the center of mass of this object in world-space
+     * @return a copy of the movement of the center of mass of this object in world-space
      */
     DirVector getVelocity();
 
+    /**
+     * @return the mass of this object in kilograms.
+     */
     float getMass();
 
+    /**
+     * @return a cpoy of the position of the center of mass of this object in wolrd-space
+     */
     PosVector getPosition();
 }
 

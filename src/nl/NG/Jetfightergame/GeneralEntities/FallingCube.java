@@ -37,10 +37,14 @@ public class FallingCube extends GameEntity {
         super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer);
     }
 
-    public void addRandomRotation(){
-        yawSpeed += Settings.random.nextFloat() - 0.5f;
-        pitchSpeed += Settings.random.nextFloat() - 0.5f;
-        rollSpeed += Settings.random.nextFloat() - 0.5f;
+    /**
+     * ad a random twitch to the object
+     * @param factor arbitrary factor. higher is more rotation, 0 is no rotation
+     */
+    public void addRandomRotation(float factor){
+        yawSpeed += (Settings.random.nextFloat() - 0.5f) * factor;
+        pitchSpeed += (Settings.random.nextFloat() - 0.5f) * factor;
+        rollSpeed += (Settings.random.nextFloat() - 0.5f) * factor;
     }
 
     @Override
