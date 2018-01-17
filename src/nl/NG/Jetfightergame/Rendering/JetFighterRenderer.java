@@ -53,7 +53,15 @@ public class JetFighterRenderer extends AbstractGameLoop {
         ambientLight = Color4f.LIGHT_GREY;
         window.setClearColor(ambientLight);
 
-        new JetFighterMenu(window::getWidth, window::getHeight, musicProvider, engine::setSpectatorMode, engine::exitGame, controllerManager, shaderManager, gameState);
+        final Runnable cameraMode = () -> {
+            if (Settings.SPECTATOR_MODE) {
+                engine.setSpectatorMode();
+            } else {
+                engine.setPlayMode();
+            }
+        };
+
+        new JetFighterMenu(window::getWidth, window::getHeight, musicProvider, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
         new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera);
     }
 

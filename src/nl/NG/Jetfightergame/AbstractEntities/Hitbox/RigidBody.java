@@ -1,5 +1,7 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.AbstractEntities.Hitbox;
 
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -69,6 +71,11 @@ public class RigidBody {
         this.rotation = rotation;
         this.source = source;
         this.mass = source.getMass();
+        /*
+        The parallel axis theorem states that we can calculate the Inertia tensor from a basis using a simple calculation
+        I_{ij}' = I_{ij} + M(\delta-{ij}a^2 - a_i a_j)
+
+         */
         inertTensor = new Matrix3f().scale(mass);
     }
 
@@ -198,9 +205,7 @@ public class RigidBody {
      */
     public static void process(RigidBody alpha, RigidBody beta) {
 
-        if (Settings.SIMPLE_COLLISION_RESPONSE){
-            collisionResponseSimple(alpha, beta);
-        } else {
+        if (Settings.ADVANCED_COLLISION_RESPONSE) {
 
             RigidBody body = null;
             if (Float.isInfinite(alpha.mass)) body = beta;
@@ -221,6 +226,8 @@ public class RigidBody {
                         body.velocity, body.rotationSpeedVector, body.contactNormal
                 );
             }
+        } else {
+            collisionResponseSimple(alpha, beta);
         }
     }
 }

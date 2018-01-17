@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Managers.Manager;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 
@@ -24,7 +25,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     public EnvironmentManager(Controller input) {
         this.input = input;
-        instance = new CollisionLaboratory(input);
+        instance = new ExplosionLaboratory(input);
         instance.buildScene();
     }
 
@@ -83,6 +84,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     @Override
     public void switchTo(Worlds implementation) {
         instance.cleanUp();
+        Settings.SPECTATOR_MODE = false;
 
         switch (implementation) {
             case CollisionLaboratory:

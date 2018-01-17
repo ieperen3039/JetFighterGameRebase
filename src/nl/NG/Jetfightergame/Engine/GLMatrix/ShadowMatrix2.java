@@ -133,7 +133,7 @@ public class ShadowMatrix2 implements MatrixStack {
     // unsupported operations
 
     @Override
-    public void multiplyAffine(Matrix4f preTransformation) { //TODO look for possibility to implement
+    public void multiplyAffine(Matrix4f postTransformation) { //TODO look for possibility to implement
         throw new UnsupportedOperationException("ShadowMatrix has not yet implemented multiplyAffine");
     }
 

@@ -25,7 +25,7 @@ public class GameTimer {
     private final TrackedFloat gameTime;
     private final TrackedFloat renderTime;
 
-    GameTimer() {
+    public GameTimer() {
         currentInGameTime = 0f;
         gameTime = new TrackedFloat(0f);
         renderTime = new TrackedFloat(-RENDER_DELAY);

@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
@@ -51,7 +51,9 @@ public abstract class GameState implements Environment {
      * idea that fits in the spirit of the game
      */
     public GameState(Controller input) {
-        time = new GameTimer();
+        if (Settings.FIXED_DELTA_TIME) time = new StaticTimer(Settings.TARGET_TPS);
+        else time = new GameTimer();
+
         playerJet = new PlayerJet(input, time.getRenderTime());
 
         ScreenOverlay.addHudItem(collisionCounter);
@@ -81,7 +83,6 @@ public abstract class GameState implements Environment {
             List<RigidBody> postCollisions = new ArrayList<>();
 
             do {
-                if (Thread.interrupted()) return;
                 /* as a single collision may result in a previously not-intersecting pair to collide,
                  * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
                  * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
@@ -93,18 +94,16 @@ public abstract class GameState implements Environment {
 
                 newCollisions += collisionPairs.size();
                 postCollisions.clear();
+                // caches previously calculated rigid body calculations
                 Map<Touchable, RigidBody> finalCollisions = new HashMap<>();
 
                 // process the final collisions in pairs
                 postCollisions = collisionPairs.stream()
-                        .map(p -> {
+                        .flatMap(p -> {
                             RigidBody left = p.left.getRigidBody(finalCollisions, deltaTime);
                             RigidBody right = p.right.getRigidBody(finalCollisions, deltaTime);
-                            return new Pair<>(left, right);
-                        })
-                        .flatMap(rp -> {
-                            RigidBody.process(rp.left, rp.right);
-                            return Stream.of(rp.left, rp.right);
+                            RigidBody.process(left, right);
+                            return Stream.of(left, right);
                         })
                         .distinct()
                         .collect(Collectors.toList());
@@ -113,7 +112,7 @@ public abstract class GameState implements Environment {
                 postCollisions
                         .forEach(r -> r.apply(deltaTime, currentTime));
 
-            } while (!collisionPairs.isEmpty() && (--remainingLoops > 0));
+            } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
             totalCollisions = newCollisions;
             if (remainingLoops == 0) {

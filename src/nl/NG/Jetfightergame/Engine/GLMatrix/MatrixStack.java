@@ -84,9 +84,9 @@ public interface MatrixStack {
 
     /**
      * the transformation resulting from preTransformation will be applied before applying the current transformation
-     * @param preTransformation some affine matrix
+     * @param postTransformation some affine matrix
      */
-    void multiplyAffine(Matrix4f preTransformation);
+    void multiplyAffine(Matrix4f postTransformation);
 
     /**
      * returns the matrix to the initialized form, as a kind of error-handling

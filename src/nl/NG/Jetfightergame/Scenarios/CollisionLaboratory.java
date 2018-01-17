@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
@@ -22,8 +23,8 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBESIZE = 2f;
     private static final float CUBEMASS = 5f;
     private static final int LAB_SIZE = 20;
-    private static final int NR_OF_CUBES = 8;
-    private static final float INIT_SPEED = 0.1f;
+    private static final int NR_OF_CUBES = 2;
+    private static final float INIT_SPEED = 0;
 
     private final int labSize;
     private final int nrOfCubes;
@@ -44,6 +45,7 @@ public class CollisionLaboratory extends GameState {
 
     @Override
     public void buildScene() {
+        Settings.SPECTATOR_MODE = true;
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
@@ -75,16 +77,23 @@ public class CollisionLaboratory extends GameState {
 
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-//        // toward middle
-//        final DirVector middle = DirVector.random();//.scale(labSize, new DirVector());
-//        entity.getPosition().to(middle, middle);
-//        return middle;
+        int version = 1;
 
-//        // random
-//        return DirVector.random().scale(labSize, new DirVector());
-
-        // gravity
-        return new DirVector(0, 0, -9.81f);
+        switch (version){
+            case 1:
+                // toward middle
+                final DirVector middle = DirVector.random();//.scale(labSize, new DirVector());
+                entity.getPosition().to(middle, middle);
+                return middle;
+            case 2:
+                // random
+                return DirVector.random().scale(labSize, new DirVector());
+            case 3:
+                // gravity
+                final DirVector g = new DirVector(0, 0, -9.81f);
+                return g.scale(entity.getMass(), g);
+        }
+        return DirVector.zeroVector();
     }
 
 }

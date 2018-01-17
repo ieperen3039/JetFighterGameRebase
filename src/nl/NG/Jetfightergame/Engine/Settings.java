@@ -13,17 +13,18 @@ import java.util.Random;
 public final class Settings {
     // final settings
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
+    public static boolean SPECTATOR_MODE = true;
 
     /** universal random to be used everywhere */
     public static final Random random = new Random();
     public static final boolean DEBUG = true;
     public static final boolean CULL_FACES = true;
     public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
-    public static final int HUD_STROKE_WIDTH = 0;
-    static final int MAX_COLLISION_ITERATIONS = 10;
+    public static final int MAX_COLLISION_ITERATIONS = 2000;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
-    public static final boolean SIMPLE_COLLISION_RESPONSE = false;
+    public static final boolean ADVANCED_COLLISION_RESPONSE = false;
     public static boolean GYRO_PHYSICS_MODEL = false;
+    public static boolean FIXED_DELTA_TIME = false;
 
     // final music settings
     public static final float MAX_VOLUME = 6f;
@@ -31,9 +32,9 @@ public final class Settings {
 
     // engine settings
     public static int TARGET_FPS = 60;
-    public static int TARGET_TPS = 20;
+    public static int TARGET_TPS = 10;
     /** rendering is delayed by {@code RENDER_DELAY} seconds to smoothen rendering and prevent extrapolation of the gamestate*/
-    public static final float RENDER_DELAY = 1.1f/TARGET_TPS;
+    public static final float RENDER_DELAY = 1.5f/TARGET_TPS;
 
     // controller settings
     public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
@@ -55,5 +56,6 @@ public final class Settings {
     // visual settings
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 3;
-    public final static int MAX_POINT_LIGHTS = 10;
+    public static final int MAX_POINT_LIGHTS = 10;
+    public static final int HUD_STROKE_WIDTH = 0;
 }

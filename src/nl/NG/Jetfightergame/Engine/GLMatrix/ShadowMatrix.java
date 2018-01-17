@@ -87,9 +87,9 @@ public class ShadowMatrix implements MatrixStack {
     }
 
     @Override
-    public void multiplyAffine(Matrix4f preTransformation) {
+    public void multiplyAffine(Matrix4f postTransformation) {
         // first apply combinedTransformation, then the viewTransformation
-        preTransformation.mul(matrix, matrix);
+        postTransformation.mul(matrix, matrix);
         inverseMatrix = null;
     }
 
