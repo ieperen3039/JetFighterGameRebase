@@ -129,7 +129,7 @@ public abstract class GLFWGameEngine {
     }
 
     public boolean isPaused() {
-        return getCurrentGameMode() != GameMode.PLAY_MODE;
+        return getCurrentGameMode() == GameMode.MENU_MODE;
     }
 
     public abstract AbstractJet getPlayer();

@@ -3,10 +3,10 @@ package nl.NG.Jetfightergame.FighterJets;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -33,11 +33,11 @@ public class PlayerJet extends AbstractJet {
 
     private Shape shape;
 
-    public PlayerJet(Controller input, TrackedFloat renderTimer) {
+    public PlayerJet(Controller input, GameTimer renderTimer) {
         this(PosVector.zeroVector(), input, new Quaternionf(), renderTimer);
     }
 
-    public PlayerJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, TrackedFloat renderTimer) {
+    public PlayerJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer) {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
@@ -51,6 +51,10 @@ public class PlayerJet extends AbstractJet {
         gl.scale(-1, 1, 1);
         action.accept(shape);
         gl.popMatrix();
+    }
+
+    public void teleport(PosVector newPosition){
+        position.set(newPosition);
     }
 
     @Override

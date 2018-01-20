@@ -2,9 +2,9 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -51,7 +51,7 @@ public abstract class AbstractJet extends GameEntity {
     public AbstractJet(Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
                        Material material, float mass, float liftFactor, float airResistanceCoefficient,
                        float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
-                       float rotationReductionFactor, TrackedFloat renderTimer) {
+                       float rotationReductionFactor, GameTimer renderTimer) {
         super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
 
         this.input = input;

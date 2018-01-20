@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  * @author Geert van Ieperen
  *         created on 7-11-2017.
  */
-public class GeneralShapes {
+public final class GeneralShapes {
 
     /** a triangle with vertices [a(1, 0, 0), b(0, 1, 0), c(0, 0, 0)] */
     public static final Shape TRIANGLE = makeTriangle();
@@ -23,12 +23,13 @@ public class GeneralShapes {
     public static void initAll(){}
 
     private static Shape makeTriangle() {
-        CustomShape frame = new CustomShape();
+        CustomShape frame = new CustomShape(new PosVector(0, 0, -1));
 
         frame.addTriangle(
                 new PosVector(1, 0, 0),
-                new PosVector(0,  1, 0),
-                new PosVector(0, 0, 0)
+                new PosVector(0, 1, 0),
+                new PosVector(0, 0, 0),
+                new DirVector(0, 0, 1)
         );
 
         return frame.wrapUp();

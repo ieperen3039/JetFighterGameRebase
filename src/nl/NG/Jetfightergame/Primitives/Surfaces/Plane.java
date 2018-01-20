@@ -33,6 +33,7 @@ public abstract class Plane {
 
     /** reserved space for collision detection */
     private PosVector relativePosition = new PosVector();
+    private PosVector middle = null;
 
     public Plane(PosVector[] vertices, DirVector normal) {
         this.normal = normal;
@@ -187,14 +188,16 @@ public abstract class Plane {
      * @return the local average of all border positions
      */
     public PosVector getMiddle() {
-        PosVector m = PosVector.zeroVector();
-        int i = 0;
-        while (i < boundary.length) {
-            m.add(boundary[i]);
-            i++;
+        if (middle == null){
+            middle = PosVector.zeroVector();
+            int i = 0;
+            while (i < boundary.length) {
+                middle.add(boundary[i]);
+                i++;
+            }
+            middle.scale(1f/i, middle);
         }
-        m.scale(1f/i, m);
-        return m;
+        return middle;
     }
 }
 

@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
@@ -10,8 +11,8 @@ import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -53,9 +54,10 @@ public abstract class GameEntity implements MovingEntity {
     /** cached positions of the hitpoints*/
     private Collection<TrackedVector<PosVector>> hitPoints = null;
 
-    /** the render timer. renderTime.current() will provide the current time for interpolation,
+    /** The render timer.
+     * gameTime.getRenderTime().current() will provide the current time for interpolation,
      * and renderTime.difference() provides the deltaTime */
-    private TrackedFloat renderTime;
+    private final GameTimer gameTimer;
 
     /** worldspace / localspace */
     private float scale;
@@ -75,10 +77,11 @@ public abstract class GameEntity implements MovingEntity {
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
-     * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()} return the position
+     * @param gameTimer       A timer that defines rendering, in order to let {@link MovingEntity#interpolatedPosition()} return the position
      *                        interpolated on current render time
      */
-    public GameEntity(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation, TrackedFloat renderTimer) {
+    public GameEntity(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
+                      Quaternionf initialRotation, GameTimer gameTimer) {
         this.position = new PosVector(initialPosition);
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
@@ -90,9 +93,9 @@ public abstract class GameEntity implements MovingEntity {
         this.velocity = new DirVector(initialVelocity);
         this.extraVelocity = new DirVector(initialVelocity);
         this.mass = mass;
-        this.renderTime = renderTimer;
+        this.gameTimer = gameTimer;
 
-        cachedTime = renderTimer.current();
+        cachedTime = gameTimer.getRenderTime().current();
         cachedPosition = initialPosition;
         cachedRotation = initialRotation;
 
@@ -233,10 +236,8 @@ public abstract class GameEntity implements MovingEntity {
         if (movement.isScalable()) movement.scale(timeScalar, interMovement);
         // object position when hitting
         final PosVector interPosition = position.add(interMovement, new PosVector());
-        // interpolated velocity when hitting
-        final DirVector interVelocity = new DirVector();
-        interVelocity.set(extraVelocity);
-//        velocity.add(velocity.to(extraVelocity, interVelocity).scale(timeScalar, interVelocity), interVelocity);
+        // 'interpolated' velocity when hitting
+        final DirVector interVelocity = new DirVector(extraVelocity);
 
         return new RigidBody(timeScalar, interPosition, interVelocity, globalHitPos,
                 contactNormal, rotationSpeedVector, interRotation, this);
@@ -399,7 +400,7 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     private void updateInterpolationCache() {
-        final float newTime = renderTime.current();
+        final float newTime = gameTimer.getRenderTime().current();
         if ((newTime > 0) && (cachedTime != newTime)) {
             cachedPosition = positionInterpolator.getInterpolated(cachedTime).toPosVector();
             cachedRotation = rotationInterpolator.getInterpolated(cachedTime);
@@ -418,7 +419,8 @@ public abstract class GameEntity implements MovingEntity {
         ShadowMatrix sm = new ShadowMatrix();
 
         Consumer<Shape> particleMapper = (shape) -> shape.getPlanes()
-                .map(p -> Particles.splitIntoParticles(p, sm, getPosition(), force))
+//                .parallel()
+                .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.MAGENTA))
                 .forEach(result::addAll);
 
         toLocalSpace(sm, () -> create(sm, particleMapper));

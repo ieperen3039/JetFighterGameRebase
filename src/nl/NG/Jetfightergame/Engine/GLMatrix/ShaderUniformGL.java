@@ -153,8 +153,6 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void multiplyAffine(Matrix4f postTransformation) {
-        // first apply combinedTransformation, then the viewTransformation
-//        postTransformation.mul(modelMatrix, modelMatrix);
         modelMatrix.mul(postTransformation);
     }
 

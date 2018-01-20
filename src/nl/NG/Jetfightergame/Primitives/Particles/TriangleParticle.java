@@ -82,15 +82,15 @@ public class TriangleParticle implements Particle {
     protected static Matrix4f getMapping(Vector3f a, Vector3f b, Vector3f c){
         // transpose because of the definition of Matrix4f constructor
         return new Matrix4f(
-                a.x - c.x, b.x - c.x, 0, c.x,
-                a.y - c.y, b.y - c.y, 0, c.y,
-                a.z - c.z, b.z - c.z, 0, c.z,
+                a.x - c.x, b.x - c.x, 0.00000001f, c.x,
+                a.y - c.y, b.y - c.y, 0.00000001f, c.y,
+                a.z - c.z, b.z - c.z, 0.00000001f, c.z, // must think of something to make 'det != 0'
                 0, 0, 0, 1
-        ).transpose();
+        ).transpose().assumeAffine();
     }
 
     public void draw(GL2 gl) {
-        gl.setMaterial(Material.GLOWING, color);
+        gl.setMaterial(Material.ROUGH, color);
         gl.pushMatrix();
         {
             gl.translate(x, y, z);
@@ -102,17 +102,17 @@ public class TriangleParticle implements Particle {
     }
 
     @Override
-    public void updateRender(float time) {
-        currentRotation += rotationSpeed * time;
-        x += movement.x() * time;
-        y += movement.y() * time;
-        z += movement.z() * time;
-        timeToLive -= time;
+    public void updateRender(float deltaTime) {
+        currentRotation += rotationSpeed * deltaTime;
+        x += movement.x() * deltaTime;
+        y += movement.y() * deltaTime;
+        z += movement.z() * deltaTime;
+        timeToLive -= deltaTime;
     }
 
     @Override
-    public boolean alive() {
-        return timeToLive > 0;
+    public boolean isOverdue() {
+        return timeToLive < 0;
     }
 
     @Override

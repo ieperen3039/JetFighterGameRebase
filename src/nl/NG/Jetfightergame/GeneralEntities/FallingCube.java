@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.GeneralEntities;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -33,7 +33,7 @@ public class FallingCube extends GameEntity {
      *                        return the interpolated position
      */
     public FallingCube(Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
-                       DirVector initialVelocity, Quaternionf initialRotation, TrackedFloat renderTimer) {
+                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer) {
         super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer);
     }
 

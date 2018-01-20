@@ -12,14 +12,14 @@ public interface Particle extends Renderable {
 
     /**
      * updates this particle (position, rotation) in the rendering loop
-     * @param time gametime since last rendering frame
+     * @param deltaTime gametime since last rendering frame
      */
-    void updateRender(float time);
+    void updateRender(float deltaTime);
 
     void draw(GL2 gl);
 
     /**
-     * @return whether this particle is still valid
+     * @return whether this particle is no longer valid
      */
-    boolean alive();
+    boolean isOverdue();
 }

@@ -27,7 +27,7 @@ public final class Settings {
     public static final short COLLISION_RESPONSE_LEVEL = 0;
     public static boolean GYRO_PHYSICS_MODEL = false;
     public static final int MAX_COLLISION_ITERATIONS = 200/TARGET_TPS;
-    public static boolean FIXED_DELTA_TIME = true;
+    public static boolean FIXED_DELTA_TIME = false;
 
     /** miscellaneous */
     // universal random to be used everywhere

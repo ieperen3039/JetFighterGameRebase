@@ -1,10 +1,8 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
@@ -20,6 +18,7 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,10 +31,8 @@ import static nl.NG.Jetfightergame.Engine.Settings.DEBUG;
  */
 public abstract class GameState implements Environment {
 
-    private AbstractJet playerJet;
-
     private static final int COLLISION_COUNT_AVERAGE = 5;
-    private Queue<Integer> avgCollision = new ArrayDeque<>(COLLISION_COUNT_AVERAGE);
+    private Queue<Integer> avgCollision = new ArrayBlockingQueue<>(COLLISION_COUNT_AVERAGE);
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) ->
             hud.printRoll(String.format("Collision count: %1.01f", avgCollision.stream().mapToInt(Integer::intValue).average().orElse(0)));
 
@@ -44,27 +41,18 @@ public abstract class GameState implements Environment {
     protected Collection<Particle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
 
-    private final GameTimer time;
-
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
-    /* TODO playerjet responsibillity
-     * Currently, the player is part of the world. It would be interesting if the playerJet is preserved along all
-     * different worlds and stages of the game, even stored in savefiles. If not for structure, then just for the
-     * idea that fits in the spirit of the game
-     */
-    public GameState(Controller input) {
-        if (Settings.FIXED_DELTA_TIME || Settings.SAVE_PLAYBACK) time = new StaticTimer(Settings.TARGET_TPS);
-        else time = new GameTimer();
+    private final GameTimer time;
 
-        playerJet = new PlayerJet(input, time.getRenderTime());
-
+    public GameState(GameTimer time) {
+        this.time = time;
         ScreenOverlay.addHudItem(collisionCounter);
     }
 
     private Extreme<Integer> collisionMax = new Extreme<>(true);
 
-    public abstract void buildScene();
+    public abstract void buildScene(PlayerJet player);
 
     @Override
     @SuppressWarnings("ConstantConditions")
@@ -209,16 +197,12 @@ public abstract class GameState implements Environment {
     @Override
     public void drawParticles(GL2 gl){
         particles.forEach(p -> p.draw(gl));
+        particles.removeIf(Particle::isOverdue);
     }
 
     @Override
     public void updateParticles() {
         particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
-    }
-
-    @Override
-    public AbstractJet getPlayer() {
-        return playerJet;
     }
 
     @Override

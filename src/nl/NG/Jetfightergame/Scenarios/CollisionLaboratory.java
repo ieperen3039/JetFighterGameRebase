@@ -1,9 +1,10 @@
 package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
@@ -30,12 +31,12 @@ public class CollisionLaboratory extends GameState {
     private final int nrOfCubes;
     private final float speeds;
 
-    public CollisionLaboratory(Controller input) {
-        this(input, LAB_SIZE, NR_OF_CUBES);
+    public CollisionLaboratory(GameTimer time) {
+        this(LAB_SIZE, NR_OF_CUBES, time);
     }
 
-    public CollisionLaboratory(Controller controller, int labSize, int nrOfCubes) {
-        super(controller);
+    public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time) {
+        super(time);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
@@ -44,7 +45,7 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    public void buildScene() {
+    public void buildScene(PlayerJet player) {
         Settings.SPECTATOR_MODE = true;
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
@@ -63,7 +64,7 @@ public class CollisionLaboratory extends GameState {
                     FallingCube cube = new FallingCube(
                             Material.SILVER, CUBEMASS, CUBESIZE,
                             pos.scale(0.8f, pos).toPosVector(),
-                            random, new Quaternionf().rotate(2, 1, 1), getTimer().getRenderTime()
+                            random, new Quaternionf().rotate(2, 1, 1), getTimer()
                     );
                     cube.addRandomRotation(0.2f);
                     dynamicEntities.add(cube);

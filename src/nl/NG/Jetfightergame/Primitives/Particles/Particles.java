@@ -19,22 +19,23 @@ import java.util.NoSuchElementException;
  * created on 12-1-2018.
  */
 public final class Particles {
-    private static float RANDOM_ROTATION = 1f;
+    private static final float RANDOM_ROTATION = 1f;
 
     /**
      * generate particles for the given plane
      * @param plane the plane to generate particles of
-     * @param sm a shadowmatrix to map to world-space
+     * @param ms a translation to map to world-space
      * @param entityPosition world-space position of the actual entity
      * @param launchSpeed speed in m/s of the resulting particles
+     * @param planeColor color of this piece
      * @return a collection of particles that covers the plane exactly once
      */
-    public static Collection<Particle> splitIntoParticles(Plane plane, MatrixStack sm, PosVector entityPosition, float launchSpeed) {
-        PosVector shapePosition = sm.getPosition(PosVector.zeroVector());
-        PosVector planeMiddle = sm.getPosition(plane.getMiddle());
+    public static Collection<Particle> splitIntoParticles(Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor) {
+
+        PosVector planeMiddle = ms.getPosition(plane.getMiddle());
         DirVector launchDir = entityPosition.to(planeMiddle, new DirVector());
 
-        return splitIntoParticles(plane, shapePosition, 0, launchDir, 0f, 50, launchSpeed);
+        return splitIntoParticles(plane, 1, launchDir, 0.2f, 50, launchSpeed, planeColor, ms);
     }
 
     /**
@@ -76,7 +77,6 @@ public final class Particles {
     /**
      * creates particles to fill the target plane with particles
      * @param targetPlane the plane to be broken
-     * @param worldPosition offset of the plane coordinates in world-space
      * @param splits the number of times this Plane is split into four. If this Plane is not a triangle,
      *               the resulting number of splits will be ((sidepoints - 3) * 2) as many
      * @param launchDir the direction these new particles should move to
@@ -84,20 +84,24 @@ public final class Particles {
      *               A jitter of 1 results in angles up to 45 degrees / (1/4pi) rads
      * @param deprecationTime maximum time that the resulting particles may live
      * @param particleSpeed average speed in m/s of the resulting particles
+     * @param planeColor color of this plane
+     * @param ms translation matrix to world-space
      * @return a set of particles that completely fills the plane, without overlap and in random directions
      */
-    public static Collection<Particle> splitIntoParticles(Plane targetPlane, PosVector worldPosition, int splits,
-                                                          DirVector launchDir, float jitter, int deprecationTime, float particleSpeed) {
+    public static Collection<Particle> splitIntoParticles(
+            Plane targetPlane, int splits, DirVector launchDir, float jitter,
+            int deprecationTime, float particleSpeed, Color4f planeColor, MatrixStack ms
+    ) {
 
-        Collection<PosVector[]> triangles = asTriangles(targetPlane, worldPosition);
+        Collection<PosVector[]> triangles = asTriangles(targetPlane, ms);
 
         Collection<PosVector[]> splittedTriangles = triangulate(triangles, splits);
 
-        return getParticles(splittedTriangles, launchDir, jitter, deprecationTime, particleSpeed);
+        return getParticles(splittedTriangles, launchDir, jitter, deprecationTime, particleSpeed, planeColor);
     }
 
     private static Collection<Particle> getParticles(Collection<PosVector[]> splittedTriangles, DirVector launchDir, float jitter,
-                                                     int deprecationTime, float speed) {
+                                                     int deprecationTime, float speed, Color4f particleColor) {
         Collection<Particle> particles = new ArrayList<>();
         for (PosVector[] p : splittedTriangles){
             DirVector movement = new DirVector();
@@ -108,12 +112,17 @@ public final class Particles {
                     .scale(speed, movement);
 
             particles.add(generateParticle(
-                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime, Color4f.WHITE)
+                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime, particleColor)
             );
         }
         return particles;
     }
 
+    /**
+     * splits the given triangles in smaller triangles
+     * @param splits number of iterations. the number of resulting triangles grows exponentially
+     * @return triangles in the same definition as the input triangles
+     */
     private static Collection<PosVector[]> triangulate(Collection<PosVector[]> triangles, int splits) {
         if (splits == 0) return triangles;
 
@@ -128,20 +137,19 @@ public final class Particles {
 
     /**
      * breaks the object up in triangles
-     * @param targetPlane
-     * @param planeReference
-     * @return
+     * @param ms translation matrix to world-space
+     * @return collection of these triangles in world-space
      */
-    private static Collection<PosVector[]> asTriangles(Plane targetPlane, PosVector planeReference) {
+    private static Collection<PosVector[]> asTriangles(Plane targetPlane, MatrixStack ms) {
         Collection<PosVector[]> triangles = new ArrayList<>();
         Iterator<PosVector> border = targetPlane.getBorderAsStream().iterator();
 
         // split into triangles and add those
         PosVector A, B, C;
         try {
-            A = border.next().add(planeReference, new PosVector());
-            B = border.next().add(planeReference, new PosVector());
-            C = border.next().add(planeReference, new PosVector());
+            A = ms.getPosition(border.next());
+            B = ms.getPosition(border.next());
+            C = ms.getPosition(border.next());
         } catch (NoSuchElementException ex) {
             // a plane without at least two edges can not be split
             throw new IllegalArgumentException("Plane with less than three vertices can not be split", ex);
@@ -152,7 +160,7 @@ public final class Particles {
         while (border.hasNext()) {
             A = B;
             B = C;
-            C = border.next().add(planeReference, new PosVector());
+            C = ms.getPosition(border.next());
             triangles.add(new PosVector[]{A, B, C});
         }
         return triangles;

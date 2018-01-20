@@ -29,6 +29,13 @@ public class CustomShape {
         this(PosVector.zeroVector());
     }
 
+    /**
+     * a shape that may be defined by the client code using methods of this class.
+     * When the shape is finished, call {@link #wrapUp()} to load it into the GPU.
+     * The returned shape should be re-used as a static mesh for any future calls to such shape.
+     * @param middle the middle of this object. More specifically, from this point,
+     *               all normal vectors point outward except maybe for those that have their normal explicitly defined.
+     */
     public CustomShape(PosVector middle) {
         this.middle = middle;
         faces = new ArrayList<>();
@@ -147,6 +154,17 @@ public class CustomShape {
             addFinalTriangle(A, B, C, normal);
         } else {
             normal.negate();
+            addFinalTriangle(C, B, A, normal);
+        }
+    }
+
+
+    public void addTriangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
+        DirVector currentNormal = Triangle.getNormalVector(A, B, C);
+
+        if (currentNormal.dot(normal) >= 0){
+            addFinalTriangle(A, B, C, normal);
+        } else {
             addFinalTriangle(C, B, A, normal);
         }
     }

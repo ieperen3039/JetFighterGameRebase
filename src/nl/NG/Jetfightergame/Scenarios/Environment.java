@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 
@@ -29,8 +28,6 @@ public interface Environment {
      * should be called every renderloop
      */
     void updateParticles();
-
-    AbstractJet getPlayer();
 
     GameTimer getTimer();
 

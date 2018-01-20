@@ -1,13 +1,12 @@
 package nl.NG.Jetfightergame.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Managers.Manager;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 
@@ -20,13 +19,15 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
  */
 public class EnvironmentManager implements Environment, Manager<EnvironmentManager.Worlds> {
 
+    private final PlayerJet player;
+    private final GameTimer time;
     private GameState instance;
-    private Controller input;
 
-    public EnvironmentManager(Controller input) {
-        this.input = input;
-        instance = new ExplosionLaboratory(input);
-        instance.buildScene();
+    public EnvironmentManager(PlayerJet player, GameTimer time) {
+        this.time = time;
+        instance = new ExplosionLaboratory(this.time);
+        this.player = player;
+        instance.buildScene(this.player);
     }
 
     public enum Worlds {
@@ -61,11 +62,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public AbstractJet getPlayer() {
-        return instance.getPlayer();
-    }
-
-    @Override
     public GameTimer getTimer() {
         return instance.getTimer();
     }
@@ -88,33 +84,33 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
         switch (implementation) {
             case CollisionLaboratory:
-                instance = new CollisionLaboratory(input);
+                instance = new CollisionLaboratory(time);
                 break;
             case PlayerJetLaboratory:
-                instance = new PlayerJetLaboratory(input);
+                instance = new PlayerJetLaboratory(time);
                 break;
             case ExplosionLaboratory:
-                instance = new ExplosionLaboratory(input);
+                instance = new ExplosionLaboratory(time);
                 break;
             default:
                 Toolbox.print("Environment not properly installed: " + implementation + " (did we forget a break statement?)");
-                instance = new MissionMenu(input);
+                instance = new MissionMenu(time);
         }
 
-        instance.buildScene();
+        instance.buildScene(player);
     }
 
     /**
      * temporary replacement for in-game menu
      */
     private class MissionMenu extends GameState {
-        public MissionMenu(Controller input) {
-            super(input);
+        public MissionMenu(GameTimer time) {
+            super(time);
         }
 
         @Override
-        public void buildScene() {
-            dynamicEntities.add(getPlayer());
+        public void buildScene(PlayerJet player) {
+            dynamicEntities.add(player);
         }
 
         @Override

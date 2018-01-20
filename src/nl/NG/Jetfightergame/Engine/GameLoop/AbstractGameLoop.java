@@ -6,8 +6,8 @@ import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
-import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -39,7 +39,7 @@ public abstract class AbstractGameLoop extends Thread {
         this.notifyDelay = notifyDelay;
         this.exceptionHandler = exceptionHandler;
         loopName = name;
-        avgTPS = new ArrayDeque<>(targetTps/2);
+        avgTPS = new ArrayBlockingQueue<>(targetTps/2);
         tickCounter = (hud) ->
                 hud.printRoll(String.format("%s: %1.01f", name, avgTPS.stream().mapToDouble(Float::doubleValue).average().orElse(0)));
     }

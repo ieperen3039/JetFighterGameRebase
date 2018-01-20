@@ -83,7 +83,7 @@ public interface MovingEntity extends Touchable {
     float getMass();
 
     /**
-     * @return a cpoy of the position of the center of mass of this object in wolrd-space
+     * @return a cooy of the position of the center of mass of this object in wolrd-space
      */
     PosVector getPosition();
 }

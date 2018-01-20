@@ -3,9 +3,9 @@ package nl.NG.Jetfightergame.FighterJets;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -30,11 +30,11 @@ public class TestJet extends AbstractJet {
     public static final float ROLL_POWER = (float) toRadians(140);
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.01f;
 
-    public TestJet(Controller input, TrackedFloat renderTimer) {
+    public TestJet(Controller input, GameTimer renderTimer) {
         this(PosVector.zeroVector(), input, 1f, new Quaternionf(), renderTimer);
     }
 
-    public TestJet(PosVector initialPosition, Controller input, float scale, Quaternionf initialRotation, TrackedFloat renderTimer) {
+    public TestJet(PosVector initialPosition, Controller input, float scale, Quaternionf initialRotation, GameTimer renderTimer) {
         super(input, initialPosition, initialRotation, scale,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT,
                 THROTTLE_POWER, BRAKE_POWER,
