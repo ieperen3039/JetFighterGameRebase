@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -90,13 +91,14 @@ public class TriangleParticleTest {
         combinedTransformation = TriangleParticle.getMapping(a, b, c);
     }
 
-    private void testTransform(PosVector a, PosVector b) {
+    private void testTransform(PosVector expected, PosVector input) {
         if (combinedTransformation == null) throw new RuntimeException("test did not set transformation");
 
-        b = new PosVector(transform(b));
+        PosVector result = new PosVector(transform(input));
 
-        System.out.println(a + " transformed to " + b);
-        assert a.equals(b): "Incorrect transformation:\n" + combinedTransformation;
+        System.out.println(expected + " transformed to " + input);
+        Float diff = expected.to(result, new DirVector()).length();
+        assert Toolbox.almostZero(diff): "Incorrect transformation:\n" + combinedTransformation;
     }
 
 

@@ -69,25 +69,24 @@ public class TriangleParticle implements Particle {
      * map this triangle to an arbitrary triangle T with vertices A, B and C using matrix transformations
      *
      * Solution:
-     * we find that to map Rc to Tc, we cannot use multiplication, but instead we must translate with Rc,
-     * giving us a mapping M(p) = A*p*Rc for any point in R for some transformation matrix A.
-     * some indices for A are found by calculating M(p) for p = Ra and Rb, but not all.
+     * we find that to map Rc to Tc, we cannot use multiplication, but instead we must translate with Tc,
+     * giving us a mapping M(p) = A*p*Tc for any point in R for some transformation matrix A.
+     * 6 indices for A are found by solving [A*Ra + Tc = Ta & A*Rb + Tc = Tb] for A, but not all.
      * The remaining indices describe transformations for when the base triangle has values in the n-th dimension
-     * (in our case, only the 3rd dimension). Yet our triangle does not have any values in the 3rd dimension,
-     * so we are fine with 0's.
-     * Multiplying C with our new A gives R.
+     * (in our case, only the 3rd dimension). Yet our triangle does not have any values in the n-th dimension,
+     * so these should be 0.
+     * We pre-apply our transformation with Rc to get our new A.
+     *
+     * @return transformation matrix that maps R [(1, 0, 0), (0, 1, 0), (0, 0, 0)] to a triangle with the given vertices.
      */
     protected static Matrix4f getMapping(Vector3f a, Vector3f b, Vector3f c){
-        // apply transformation M(p)
-        Matrix4f result = new Matrix4f(
-                a.x - c.x, b.x - c.x, 0, 0,
-                a.y - c.y, b.y - c.y, 0, 0,
-                a.z - c.y, b.z - c.z, 0, 0,
+        // transpose because of the definition of Matrix4f constructor
+        return new Matrix4f(
+                a.x - c.x, b.x - c.x, 0, c.x,
+                a.y - c.y, b.y - c.y, 0, c.y,
+                a.z - c.z, b.z - c.z, 0, c.z,
                 0, 0, 0, 1
         ).transpose();
-        // translate with point c
-        result.translate(c);
-        return result;
     }
 
     public void draw(GL2 gl) {

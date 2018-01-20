@@ -14,8 +14,6 @@ import java.util.Locale;
 
 public abstract class Vector extends Vector3f{
 
-    private static final float ROUNDINGERROR = 1E-6F;
-
     public Vector(Vector3fc source){
         super(source);
     }
@@ -25,10 +23,6 @@ public abstract class Vector extends Vector3f{
     }
 
     public Vector() {
-    }
-
-    public static boolean almostZero(float number) {
-        return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
     }
 
     public DirVector normalize(DirVector dest) {

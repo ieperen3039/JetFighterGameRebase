@@ -29,6 +29,8 @@ public class Toolbox {
     /** prevents spamming the chat */
     private static Set<String> callerBlacklist = new HashSet<>();
 
+    private static final float ROUNDINGERROR = 1E-6F;
+
     /**
      * prints the toString method of the given objects to System.out, preceded with calling method
      */
@@ -134,5 +136,9 @@ public class Toolbox {
         System.out.println();
         Toolbox.printFrom(2, "Ending JVM");
         System.exit(-1);
+    }
+
+    public static boolean almostZero(float number) {
+        return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
     }
 }

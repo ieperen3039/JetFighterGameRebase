@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
 import nl.NG.Jetfightergame.AbstractEntities.Collision;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
 import org.junit.Before;
 
 /**
@@ -47,7 +47,7 @@ public class PlaneTest {
                             expected);
 
             Float diff = expected.to(result, new DirVector()).length();
-            if (!Vector.almostZero(diff)) {
+            if (!Toolbox.almostZero(diff)) {
                 throw new AssertionError(
                         String.format("Testcase gave %s where %s was expected: difference is %f units",
                                 result, expected, diff)
