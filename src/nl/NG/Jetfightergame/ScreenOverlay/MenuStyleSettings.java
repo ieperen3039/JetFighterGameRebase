@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Vectors.Color4f;
  * @author Geert van Ieperen
  * created on 23-12-2017.
  */
-public class MenuStyleSettings {
+public final class MenuStyleSettings {
     public static final Color4f MENU_FILL_COLOR = new Color4f(0, 0, 0, 0.6f);
     public static final Color4f MENU_STROKE_COLOR = new Color4f(0.1f, 0.1f, 0.1f, 1.0f);
     public static final Color4f COLOR_DARK = new Color4f(0, 0, 0, 0.8f);

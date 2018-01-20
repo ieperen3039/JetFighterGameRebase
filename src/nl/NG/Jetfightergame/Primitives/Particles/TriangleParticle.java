@@ -61,7 +61,7 @@ public class TriangleParticle implements Particle {
         PosVector c2 = p.next();
         Toolbox.print("\n" + a + ":" + transform(a2), b + ":" + transform(b2), c + ":" + transform(c2));
 
-        Toolbox.exitJava();
+//        Toolbox.exitJava();
 
         this.movement = movement;
         this.angVec = angleVector;

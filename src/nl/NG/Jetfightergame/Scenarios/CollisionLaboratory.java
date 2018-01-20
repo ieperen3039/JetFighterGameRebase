@@ -20,10 +20,10 @@ import org.joml.Quaternionf;
  */
 public class CollisionLaboratory extends GameState {
 
-    private static final float CUBESIZE = 2f;
-    private static final float CUBEMASS = 5f;
-    private static final int LAB_SIZE = 20;
-    private static final int NR_OF_CUBES = 2;
+    private static final float CUBESIZE = 1f;
+    private static final float CUBEMASS = 2f;
+    private static final int LAB_SIZE = 10;
+    private static final int NR_OF_CUBES = 8;
     private static final float INIT_SPEED = 0;
 
     private final int labSize;
@@ -40,7 +40,7 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
 //        this.speeds = labSize/3;
-        getTimer().setEngineMultiplier(2f);
+//        getTimer().setGameTimeMultiplier(2f);
     }
 
     @Override
@@ -63,9 +63,9 @@ public class CollisionLaboratory extends GameState {
                     FallingCube cube = new FallingCube(
                             Material.SILVER, CUBEMASS, CUBESIZE,
                             pos.scale(0.8f, pos).toPosVector(),
-                            random, new Quaternionf(), getTimer().getRenderTime()
+                            random, new Quaternionf().rotate(2, 1, 1), getTimer().getRenderTime()
                     );
-                    cube.addRandomRotation(0.1f);
+                    cube.addRandomRotation(0.2f);
                     dynamicEntities.add(cube);
                     if (--remainingCubes <= 0) break cubing;
                 }
@@ -75,9 +75,10 @@ public class CollisionLaboratory extends GameState {
         lights.add(new Pair<>(PosVector.zeroVector(), Color4f.TRANSPARENT_GREY));
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-        int version = 1;
+        final int version = 3;
 
         switch (version){
             case 1:

@@ -13,7 +13,7 @@ public class GameTimer {
     /** multiplication of time as effect of in-game events. with playMultiplier = 2, the game goes twice as fast. */
     private float playMultiplier = 1f;
     /** multiplication of time by the engine. Main use is for pausing. with engineMultiplier = 2, the game goes twice as fast. */
-    private float engineMultiplier;
+    private float engineMultiplier = 0f;
 
     /** game-seconds since creating this gametimer */
     private float currentInGameTime;

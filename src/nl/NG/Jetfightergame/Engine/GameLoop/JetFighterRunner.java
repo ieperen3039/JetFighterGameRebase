@@ -39,6 +39,5 @@ public class JetFighterRunner extends AbstractGameLoop {
 
     @Override
     protected void cleanup() {
-
     }
 }
