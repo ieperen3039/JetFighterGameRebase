@@ -6,6 +6,8 @@ import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -28,13 +30,18 @@ public abstract class AbstractGameLoop extends Thread {
     private boolean isPaused = true;
     private final boolean notifyDelay;
     private Consumer<Exception> exceptionHandler;
-    private float realTPS = 0;
+
+    private Queue<Float> avgTPS;
+    private final Consumer<ScreenOverlay.Painter> tickCounter;
 
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
         this.targetTps = targetTps;
         this.notifyDelay = notifyDelay;
         this.exceptionHandler = exceptionHandler;
         loopName = name;
+        avgTPS = new ArrayDeque<>(targetTps/2);
+        tickCounter = (hud) ->
+                hud.printRoll(String.format("%s: %1.01f", name, avgTPS.stream().mapToDouble(Float::doubleValue).average().orElse(0)));
     }
 
     /**
@@ -62,7 +69,7 @@ public abstract class AbstractGameLoop extends Thread {
         Timer loopTimer = new Timer();
         float deltaTime = 0;
 
-        ScreenOverlay.addHudItem((hud) -> hud.printRoll(String.format("%s: %1.01f", loopName, realTPS)));
+        ScreenOverlay.addHudItem(tickCounter);
 
         try {
             pauseBlock.await();
@@ -88,8 +95,10 @@ public abstract class AbstractGameLoop extends Thread {
                 loopTimer.updateLoopTime();
 
                 // print Ticks per Second
-                realTPS = 1000f / loopTimer.getElapsedTime();
+                float realTPS = 1000f / loopTimer.getElapsedTime();
                 TPSMinimum.updateAndPrint(loopName, realTPS, "per second");
+                while (avgTPS.size() >= (targetTps / 2)) avgTPS.remove();
+                avgTPS.offer(realTPS);
 
                 // store the duration and set this as length of next update
                 deltaTime = loopTimer.getElapsedSeconds();

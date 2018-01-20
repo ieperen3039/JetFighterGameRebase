@@ -17,11 +17,17 @@ public final class Settings {
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
     public static boolean SPECTATOR_MODE = true;
 
+    /** engine settings */
+    public static short TARGET_TPS = 15;
+    // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
+    public static final float RENDER_DELAY = 2f/TARGET_TPS;
+    public static boolean SAVE_PLAYBACK = false;
+
     /** collision settings */
     public static final short COLLISION_RESPONSE_LEVEL = 0;
     public static boolean GYRO_PHYSICS_MODEL = false;
-    public static final int MAX_COLLISION_ITERATIONS = 50;
-    public static boolean FIXED_DELTA_TIME = false;
+    public static final int MAX_COLLISION_ITERATIONS = 200/TARGET_TPS;
+    public static boolean FIXED_DELTA_TIME = true;
 
     /** miscellaneous */
     // universal random to be used everywhere
@@ -34,10 +40,6 @@ public final class Settings {
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
 
-    /** engine settings */
-    public static short TARGET_TPS = 15;
-    // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
-    public static final float RENDER_DELAY = 1.5f/TARGET_TPS;
 
     /** controller settings */
     public static int THROTTLE_UP = GLFW.GLFW_KEY_W;

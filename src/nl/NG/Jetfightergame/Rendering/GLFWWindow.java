@@ -7,8 +7,14 @@ import org.joml.Vector2i;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLUtil;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
@@ -36,6 +42,11 @@ public class GLFWWindow {
     private int height;
     private boolean fullScreen = false;
     private boolean mouseIsCaptured;
+
+    // when #scheduleScreenshot is called, this applies to the next drawing loop.
+    private static boolean nextFrameSchedule = false;
+    private static boolean oldFrameSchedule = false;
+    private int screenRecordFrameNumber = 0;
 
     public GLFWWindow(String title) {
         this(title, 960, 720, true);
@@ -143,6 +154,35 @@ public class GLFWWindow {
         glfwPollEvents();
 
         clear();
+    }
+
+    public void printScreen(String filename) {
+        glReadBuffer(GL11.GL_FRONT);
+        int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
+        ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
+        glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
+        Toolbox.checkGLError();
+
+        File file = new File("ScreenShots/" + filename + ".png"); // The file to save to.
+        file.mkdirs();
+        String format = "PNG";
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int i = (x + (width * y)) * bpp;
+                int r = buffer.get(i) & 0xFF;
+                int g = buffer.get(i + 1) & 0xFF;
+                int b = buffer.get(i + 2) & 0xFF;
+                image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+            }
+        }
+
+        try {
+            ImageIO.write(image, format, file);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -329,5 +369,6 @@ public class GLFWWindow {
     public void setClearColor(Color4f color4f) {
         setClearColor(color4f.red, color4f.green, color4f.blue, color4f.alpha);
     }
+
 }
 

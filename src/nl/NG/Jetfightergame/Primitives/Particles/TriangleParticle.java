@@ -3,15 +3,12 @@ package nl.NG.Jetfightergame.Primitives.Particles;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-
-import java.util.Iterator;
 
 /**
  * @author Geert van Ieperen
@@ -55,22 +52,10 @@ public class TriangleParticle implements Particle {
 
         combinedTransformation = getMapping(a, b, c);
 
-        Iterator<PosVector> p = GeneralShapes.TRIANGLE.getPoints().iterator();
-        PosVector a2 = p.next();
-        PosVector b2 = p.next();
-        PosVector c2 = p.next();
-        Toolbox.print("\n" + a + ":" + transform(a2), b + ":" + transform(b2), c + ":" + transform(c2));
-
-//        Toolbox.exitJava();
-
         this.movement = movement;
         this.angVec = angleVector;
         this.rotationSpeed = rotationSpeed;
         this.timeToLive = timeToLive;
-    }
-
-    public Vector3f transform(Vector a) {
-        return a.mulPosition(combinedTransformation);
     }
 
     /**
@@ -92,14 +77,14 @@ public class TriangleParticle implements Particle {
      * so we are fine with 0's.
      * Multiplying C with our new A gives R.
      */
-    private Matrix4f getMapping(Vector3f a, Vector3f b, Vector3f c){
+    protected static Matrix4f getMapping(Vector3f a, Vector3f b, Vector3f c){
         // apply transformation M(p)
         Matrix4f result = new Matrix4f(
                 a.x - c.x, b.x - c.x, 0, 0,
                 a.y - c.y, b.y - c.y, 0, 0,
                 a.z - c.y, b.z - c.z, 0, 0,
                 0, 0, 0, 1
-        );
+        ).transpose();
         // translate with point c
         result.translate(c);
         return result;

@@ -127,6 +127,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 gameLoop.resetTPSCounter();
                 renderLoop.resetTPSCounter();
                 break;
+            case GLFW_KEY_PRINT_SCREEN:
+                window.printScreen("Screenshot_" + environment.hashCode());
         }
     }
 

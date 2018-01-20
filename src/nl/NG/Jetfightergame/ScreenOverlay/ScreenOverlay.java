@@ -39,8 +39,8 @@ public class ScreenOverlay {
     private static final ByteBuffer[] fontBuffer = new ByteBuffer[Font.values().length];
     private static Map<String, Integer> imageBuffer = new HashMap<>();
 
-    private final static Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
-    private final static Collection<Consumer<Painter>> hudDrawBuffer = new ArrayList<>();
+    private static final Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
+    private static final Collection<Consumer<Painter>> hudDrawBuffer = new ArrayList<>();
     private static BooleanSupplier menuMode;
 
     private static final Lock menuBufferLock = new ReentrantLock();
@@ -286,7 +286,7 @@ public class ScreenOverlay {
         }
 
         public void printRoll(String text){
-            int y = yPrintRoll + (PRINTROLLSIZE + 5) * printRollEntry;
+            int y = yPrintRoll + ((PRINTROLLSIZE + 5) * printRollEntry);
 
             text(xPrintRoll, y, PRINTROLLSIZE, Font.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
             printRollEntry++;
@@ -343,9 +343,19 @@ public class ScreenOverlay {
         Painter vanGogh = new Painter();
         // Draw the right drawhandlers
         if (isMenuMode()) {
-            menuDrawBuffer.forEach(m -> m.accept(vanGogh));
+            menuBufferLock.lock();
+            try {
+                menuDrawBuffer.forEach(m -> m.accept(vanGogh));
+            } finally {
+                menuBufferLock.unlock();
+            }
         } else {
-            hudDrawBuffer.forEach(m -> m.accept(vanGogh));
+            hudBufferLock.lock();
+            try {
+                hudDrawBuffer.forEach(m -> m.accept(vanGogh));
+            } finally {
+                hudBufferLock.unlock();
+            }
         }
 
         // End NanoVG frame

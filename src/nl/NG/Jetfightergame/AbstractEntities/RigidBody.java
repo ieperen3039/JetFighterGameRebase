@@ -1,7 +1,5 @@
-package nl.NG.Jetfightergame.AbstractEntities.Hitbox;
+package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

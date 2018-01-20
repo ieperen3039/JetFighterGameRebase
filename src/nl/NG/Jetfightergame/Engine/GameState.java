@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
@@ -34,6 +34,11 @@ public abstract class GameState implements Environment {
 
     private AbstractJet playerJet;
 
+    private static final int COLLISION_COUNT_AVERAGE = 5;
+    private Queue<Integer> avgCollision = new ArrayDeque<>(COLLISION_COUNT_AVERAGE);
+    private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) ->
+            hud.printRoll(String.format("Collision count: %1.01f", avgCollision.stream().mapToInt(Integer::intValue).average().orElse(0)));
+
     protected Collection<Touchable> staticEntities = new ArrayList<>();
     protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
     protected Collection<Particle> particles = new ArrayList<>();
@@ -42,8 +47,6 @@ public abstract class GameState implements Environment {
     private final GameTimer time;
 
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
-    private int totalCollisions;
-    private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) -> hud.printRoll("Collision count: " + totalCollisions);
 
     /* TODO playerjet responsibillity
      * Currently, the player is part of the world. It would be interesting if the playerJet is preserved along all
@@ -51,7 +54,7 @@ public abstract class GameState implements Environment {
      * idea that fits in the spirit of the game
      */
     public GameState(Controller input) {
-        if (Settings.FIXED_DELTA_TIME) time = new StaticTimer(Settings.TARGET_TPS);
+        if (Settings.FIXED_DELTA_TIME || Settings.SAVE_PLAYBACK) time = new StaticTimer(Settings.TARGET_TPS);
         else time = new GameTimer();
 
         playerJet = new PlayerJet(input, time.getRenderTime());
@@ -66,8 +69,10 @@ public abstract class GameState implements Environment {
     @Override
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop() {
-        float currentTime = time.getGameTime().current();
-        float deltaTime = time.getGameTime().difference();
+        final float currentTime = time.getGameTime().current();
+        final float deltaTime = time.getGameTime().difference();
+
+        if (deltaTime == 0) return;
 
         // update positions and apply physics
         dynamicEntities.parallelStream()
@@ -114,7 +119,9 @@ public abstract class GameState implements Environment {
 
             } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
-            totalCollisions = newCollisions;
+            while (avgCollision.size() >= COLLISION_COUNT_AVERAGE) avgCollision.remove();
+            avgCollision.offer(newCollisions);
+
             if (remainingLoops == 0) {
                 Toolbox.print(collisionPairs.size() + " collisions not resolved after " + newCollisions + " calculations");
             }
