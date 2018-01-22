@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
@@ -420,10 +421,14 @@ public abstract class GameEntity implements MovingEntity {
 
         Consumer<Shape> particleMapper = (shape) -> shape.getPlanes()
 //                .parallel()
-                .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.MAGENTA))
+                .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.GREY, getVelocity()))
                 .forEach(result::addAll);
 
+
         toLocalSpace(sm, () -> create(sm, particleMapper));
+        for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
+            toLocalSpace(sm, () -> Particles.createFireEffect(force, result, sm));
+        }
 
         return result;
     }

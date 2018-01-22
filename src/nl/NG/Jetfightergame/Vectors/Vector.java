@@ -6,6 +6,9 @@ import org.joml.Vector3fc;
 
 import java.util.Locale;
 
+import static java.lang.StrictMath.cos;
+import static java.lang.StrictMath.sin;
+
 /**
  * @author Geert van Ieperen
  * by local definition: z is up.
@@ -33,6 +36,7 @@ public abstract class Vector extends Vector3f{
     /**
      * create a vector that may point in any direction, might technically even be an O-vector (although chance is negligible)
      * @return a random vector with length < 1, with slightly more chance to point to the edges of a cube than to the axes
+     * @see #randomOrb() for a better random
      */
     public static DirVector random() {
         return new DirVector(
@@ -73,6 +77,22 @@ public abstract class Vector extends Vector3f{
 
     public void rotateAxis(Vector v, float angle, DirVector dest) {
         rotateAxis(angle, v.x, v.y, v.z, dest);
+    }
+
+    /**
+     * @return a vector with length < 1 that is universally distributed. Would form a solid sphere when created points
+     */
+    public static DirVector randomOrb() {
+        float phi = Settings.random.nextFloat() * 6.2832f;
+        float costheta = (Settings.random.nextFloat() * 2) - 1;
+
+        float theta = (float) Math.acos(costheta);
+        float r = (float) Math.cbrt(Settings.random.nextFloat());
+
+        float x = (float) (r * sin(theta) * cos(phi));
+        float y = (float) (r * sin(theta) * sin(phi));
+        float z = (float) (r * cos(theta));
+        return new DirVector(x, y, z);
     }
 }
 

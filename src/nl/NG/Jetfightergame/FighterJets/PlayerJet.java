@@ -53,8 +53,9 @@ public class PlayerJet extends AbstractJet {
         gl.popMatrix();
     }
 
-    public void teleport(PosVector newPosition){
+    public void set(PosVector newPosition, DirVector newVelocity){
         position.set(newPosition);
+        velocity.set(newVelocity);
     }
 
     @Override

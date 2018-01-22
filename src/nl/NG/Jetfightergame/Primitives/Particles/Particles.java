@@ -1,17 +1,21 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * A utility-class for particles
@@ -28,14 +32,43 @@ public final class Particles {
      * @param entityPosition world-space position of the actual entity
      * @param launchSpeed speed in m/s of the resulting particles
      * @param planeColor color of this piece
+     * @param startVelocity
      * @return a collection of particles that covers the plane exactly once
      */
-    public static Collection<Particle> splitIntoParticles(Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor) {
+    public static Collection<Particle> splitIntoParticles(Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor, Vector3fc startVelocity) {
 
         PosVector planeMiddle = ms.getPosition(plane.getMiddle());
         DirVector launchDir = entityPosition.to(planeMiddle, new DirVector());
+        launchDir.add(startVelocity);
 
-        return splitIntoParticles(plane, 1, launchDir, 0.2f, 50, launchSpeed, planeColor, ms);
+        final int deprecationTime = 3;
+        final float jitter = 0.4f;
+        return splitIntoParticles(plane, Settings.PARTICLE_SPLITS, launchDir, jitter, deprecationTime, launchSpeed, planeColor, ms);
+    }
+
+    /**
+     * create a fire-particle equivalent of this plane
+     * @param force average propagation speed of this fire in m/s
+     * @param sm a transformation matrix to map to world-space
+     * @param p target plane, is not changed
+     * @return particles that replace the given plane
+     */
+    public static Collection<Particle> generateFireParticles(float force, ShadowMatrix sm, Plane p) {
+        Collection<PosVector[]> triangles = asTriangles(p, sm);
+        Collection<PosVector[]> splittedTriangles = triangulate(triangles, 1);
+
+        Collection<Particle> particles = new ArrayList<>();
+        for (PosVector[] t : splittedTriangles){
+            Color4f fire = new Color4f(1, Settings.random.nextFloat(), 0);
+            float randFloat = Settings.random.nextFloat();
+            final DirVector random = DirVector.randomOrb();
+            particles.add(generateParticle(
+                    t[0], t[1], t[2], random.scale(force, random),
+                    DirVector.random(), 2 + (2 * randFloat),
+                    randFloat * randFloat * randFloat * 3, fire)
+            );
+        }
+        return particles;
     }
 
     /**
@@ -107,12 +140,13 @@ public final class Particles {
             DirVector movement = new DirVector();
             DirVector random = DirVector.random();
 
-            launchDir.normalize(movement)
-                    .add(random.scale(jitter, random), movement)
-                    .scale(speed, movement);
+            float randFloat = Settings.random.nextFloat();
+
+            launchDir.add(random.scale(jitter, random), movement)
+                    .scale(speed * (1 - randFloat), movement);
 
             particles.add(generateParticle(
-                    p[0], p[1], p[2], movement, Settings.random.nextFloat() * deprecationTime, particleColor)
+                    p[0], p[1], p[2], movement, randFloat * randFloat * randFloat * deprecationTime, particleColor)
             );
         }
         return particles;
@@ -126,13 +160,13 @@ public final class Particles {
     private static Collection<PosVector[]> triangulate(Collection<PosVector[]> triangles, int splits) {
         if (splits == 0) return triangles;
 
-        Collection<PosVector[]> splittedTriangles = new ArrayList<>();
         for (int i = 0; i < splits; i++) {
-            splittedTriangles.clear();
-            triangles.forEach((p) -> splittedTriangles.addAll((splitTriangle(p[0], p[1], p[2]))));
-            triangles = splittedTriangles;
+            triangles = triangles.stream()
+                    .map(p -> splitTriangle(p[0], p[1], p[2]))
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
         }
-        return splittedTriangles;
+        return triangles;
     }
 
     /**
@@ -183,5 +217,18 @@ public final class Particles {
         particles.add(new PosVector[]{AtoB, AtoC, BtoC});
 
         return particles;
+    }
+
+    /**
+     *
+     * @param force
+     * @param result
+     * @param sm
+     */
+    public static void createFireEffect(float force, Collection<Particle> result, ShadowMatrix sm) {
+        GeneralShapes.CUBE.getPlanes()
+//                .parallel()
+                .map(p -> generateFireParticles(force, sm, p))
+                .forEach(result::addAll);
     }
 }

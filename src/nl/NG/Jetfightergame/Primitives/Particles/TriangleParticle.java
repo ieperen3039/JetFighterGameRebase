@@ -90,7 +90,7 @@ public class TriangleParticle implements Particle {
     }
 
     public void draw(GL2 gl) {
-        gl.setMaterial(Material.ROUGH, color);
+        gl.setMaterial(Material.GLOWING, color);
         gl.pushMatrix();
         {
             gl.translate(x, y, z);

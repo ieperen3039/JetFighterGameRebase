@@ -27,7 +27,7 @@ public final class Settings {
     public static final short COLLISION_RESPONSE_LEVEL = 0;
     public static boolean GYRO_PHYSICS_MODEL = false;
     public static final int MAX_COLLISION_ITERATIONS = 200/TARGET_TPS;
-    public static boolean FIXED_DELTA_TIME = false;
+    public static boolean FIXED_DELTA_TIME = true;
 
     /** miscellaneous */
     // universal random to be used everywhere
@@ -35,6 +35,8 @@ public final class Settings {
     public static final boolean DEBUG = true;
     public static final boolean CULL_FACES = true;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
+    public static final int PARTICLE_SPLITS = 1;
+    public static final int FIRE_PARTICLE_DENSITY = 5; // particle count is 48 times as much
 
     /** final music settings */
     public static final float MAX_VOLUME = 6f;

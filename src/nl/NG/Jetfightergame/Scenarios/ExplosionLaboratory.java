@@ -25,12 +25,11 @@ public class ExplosionLaboratory extends GameState {
     @Override
     public void buildScene(PlayerJet player) {
         Settings.SPECTATOR_MODE = true;
-        player.teleport(PosVector.zeroVector());
+        player.set(PosVector.zeroVector(), new DirVector(10, 0, 0));
 //        PlayerJet target = new PlayerJet(new EmptyController(), getTimer().getRenderTime());
-        particles.addAll(player.explode(2f));
+        particles.addAll(player.explode(10f));
 
-        lights.add(new Pair<>(new PosVector(0, 0, 3), Color4f.BLUE));
-        lights.add(new Pair<>(new PosVector(3, 3, 3), Color4f.RED));
+        lights.add(new Pair<>(new PosVector(0, 0, 3), Color4f.GREY));
     }
 
     @Override
