@@ -23,12 +23,6 @@ public interface Environment {
 
     void drawParticles(GL2 gl);
 
-    /**
-     * update the position of the particles.
-     * should be called every renderloop
-     */
-    void updateParticles();
-
     GameTimer getTimer();
 
     int getNumberOfLights();

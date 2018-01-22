@@ -57,11 +57,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void updateParticles() {
-        instance.updateParticles();
-    }
-
-    @Override
     public GameTimer getTimer() {
         return instance.getTimer();
     }

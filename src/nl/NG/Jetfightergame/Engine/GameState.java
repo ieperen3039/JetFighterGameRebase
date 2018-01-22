@@ -196,13 +196,9 @@ public abstract class GameState implements Environment {
 
     @Override
     public void drawParticles(GL2 gl){
-        particles.forEach(p -> p.draw(gl));
-        particles.removeIf(Particle::isOverdue);
-    }
-
-    @Override
-    public void updateParticles() {
         particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
+        particles.removeIf(Particle::isOverdue);
+        particles.forEach(p -> p.draw(gl));
     }
 
     @Override

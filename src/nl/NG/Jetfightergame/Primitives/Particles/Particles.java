@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
  */
 public final class Particles {
     private static final float RANDOM_ROTATION = 1f;
+    private static final int FIRE_LINGER_TIME = 2;
+    private static final int METAL_LINGER_TIME = 3;
+    private static final int FIRE_PARTICLE_SPLITS = 2;
 
     /**
      * generate particles for the given plane
@@ -41,9 +44,8 @@ public final class Particles {
         DirVector launchDir = entityPosition.to(planeMiddle, new DirVector());
         launchDir.add(startVelocity);
 
-        final int deprecationTime = 3;
         final float jitter = 0.4f;
-        return splitIntoParticles(plane, Settings.PARTICLE_SPLITS, launchDir, jitter, deprecationTime, launchSpeed, planeColor, ms);
+        return splitIntoParticles(plane, Settings.PARTICLE_SPLITS, launchDir, jitter, METAL_LINGER_TIME, launchSpeed, planeColor, ms);
     }
 
     /**
@@ -55,7 +57,7 @@ public final class Particles {
      */
     public static Collection<Particle> generateFireParticles(float force, ShadowMatrix sm, Plane p) {
         Collection<PosVector[]> triangles = asTriangles(p, sm);
-        Collection<PosVector[]> splittedTriangles = triangulate(triangles, 1);
+        Collection<PosVector[]> splittedTriangles = triangulate(triangles, FIRE_PARTICLE_SPLITS);
 
         Collection<Particle> particles = new ArrayList<>();
         for (PosVector[] t : splittedTriangles){
@@ -63,9 +65,9 @@ public final class Particles {
             float randFloat = Settings.random.nextFloat();
             final DirVector random = DirVector.randomOrb();
             particles.add(generateParticle(
-                    t[0], t[1], t[2], random.scale(force, random),
+                    t[0], t[1], t[2], random.scale(2*force, random),
                     DirVector.random(), 2 + (2 * randFloat),
-                    randFloat * randFloat * randFloat * 3, fire)
+                    randFloat * randFloat * randFloat * FIRE_LINGER_TIME, fire)
             );
         }
         return particles;

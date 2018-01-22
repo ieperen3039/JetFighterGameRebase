@@ -88,8 +88,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
                 glCullFace(GL_BACK);
             }
 
-            if (!engine.isPaused()) gameState.updateParticles();
-
             // scene lighting
             gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.5f));
             gameState.setLights(gl);
@@ -102,12 +100,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
             // overlay with transparent objects
             // TODO transparent meshes?
 
+            // particles
             glDisable(GL_CULL_FACE);
             gameState.drawParticles(gl);
             Toolbox.checkGLError();
 
             shaderManager.unbind();
 
+            // HUD / menu
             ScreenOverlay.draw(window.getWidth(), window.getHeight());
 
             // update window
