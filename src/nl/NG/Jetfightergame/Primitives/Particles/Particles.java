@@ -53,9 +53,10 @@ public final class Particles {
      * @param force average propagation speed of this fire in m/s
      * @param sm a transformation matrix to map to world-space
      * @param p target plane, is not changed
+     * @param lingerTime
      * @return particles that replace the given plane
      */
-    public static Collection<Particle> generateFireParticles(float force, ShadowMatrix sm, Plane p) {
+    public static Collection<Particle> generateFireParticles(float force, ShadowMatrix sm, Plane p, float lingerTime) {
         Collection<PosVector[]> triangles = asTriangles(p, sm);
         Collection<PosVector[]> splittedTriangles = triangulate(triangles, FIRE_PARTICLE_SPLITS);
 
@@ -67,7 +68,7 @@ public final class Particles {
             particles.add(generateParticle(
                     t[0], t[1], t[2], random.scale(2*force, random),
                     DirVector.random(), 2 + (2 * randFloat),
-                    randFloat * randFloat * randFloat * FIRE_LINGER_TIME, fire)
+                    randFloat * randFloat * randFloat * lingerTime, fire)
             );
         }
         return particles;
@@ -222,15 +223,15 @@ public final class Particles {
     }
 
     /**
-     *
+     * create a small batch of fire-particles. For good explosions, call this repeatedly
      * @param force
-     * @param result
+     * @param collector
      * @param sm
      */
-    public static void createFireEffect(float force, Collection<Particle> result, ShadowMatrix sm) {
+    public static void createFireEffect(float force, Collection<Particle> collector, ShadowMatrix sm) {
         GeneralShapes.CUBE.getPlanes()
 //                .parallel()
-                .map(p -> generateFireParticles(force, sm, p))
-                .forEach(result::addAll);
+                .map(p -> generateFireParticles(force, sm, p, FIRE_LINGER_TIME))
+                .forEach(collector::addAll);
     }
 }

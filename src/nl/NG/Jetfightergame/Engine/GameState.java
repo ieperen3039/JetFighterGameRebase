@@ -20,11 +20,15 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.NG.Jetfightergame.Engine.Settings.DEBUG;
+import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL11.glDisable;
 
 /**
  * @author Geert van Ieperen
@@ -45,6 +49,7 @@ public abstract class GameState implements Environment {
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
     private final GameTimer time;
+    private ReentrantReadWriteLock entityModificationLock = new ReentrantReadWriteLock();
 
     public GameState(GameTimer time) {
         this.time = time;
@@ -64,8 +69,11 @@ public abstract class GameState implements Environment {
         if (deltaTime == 0) return;
 
         // update positions and apply physics
+        Lock readLock = entityModificationLock.readLock();
+        readLock.lock();
         dynamicEntities.parallelStream()
                 .forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
+        readLock.unlock();
 
         int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
         // check and handle collisions
@@ -106,6 +114,8 @@ public abstract class GameState implements Environment {
                 postCollisions
                         .forEach(r -> r.apply(deltaTime, currentTime));
 
+                removeDeadUnits(); // TODO remove based on hints
+
             } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
             while (avgCollision.size() >= COLLISION_COUNT_AVERAGE) avgCollision.remove();
@@ -116,10 +126,19 @@ public abstract class GameState implements Environment {
             }
         }
 
+        readLock.lock();
+        dynamicEntities.forEach(e -> e.update(currentTime));
+        readLock.unlock();
+    }
+
+    public void removeDeadUnits() {
+        Lock writeLock = entityModificationLock.writeLock();
+        writeLock.lock();
+
+        // check for dead units
         Iterator<MovingEntity> iterator = dynamicEntities.iterator();
         while (iterator.hasNext()) {
             MovingEntity entity = iterator.next();
-            entity.update(currentTime);
             if (entity instanceof MortalEntity) {
                 MortalEntity unit = (MortalEntity) entity;
                 if (unit.isDead()) {
@@ -128,6 +147,8 @@ public abstract class GameState implements Environment {
                 }
             }
         }
+
+        writeLock.unlock();
     }
 
     /**
@@ -165,6 +186,7 @@ public abstract class GameState implements Environment {
             staticEntities
                     .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
         });
+
         if (DEBUG) {
             final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
             if (nulls > 0) Toolbox.print("nulls found by intersecting pairs: " + nulls);
@@ -176,6 +198,9 @@ public abstract class GameState implements Environment {
 
     @Override
     public void setLights(GL2 gl) {
+        Lock writeLock = entityModificationLock.writeLock();
+        writeLock.lock();
+
         for (Pair<PosVector, Color4f> l : lights) {
             final PosVector pos = l.left;
             final Color4f color = l.right;
@@ -193,21 +218,34 @@ public abstract class GameState implements Environment {
                 gl.popMatrix();
             }
         }
+
+        writeLock.unlock();
     }
 
     @Override
     public void drawObjects(GL2 gl) {
 //        Toolbox.drawAxisFrame(gl);
+        Lock readLock = entityModificationLock.readLock();
+        readLock.lock();
 
         staticEntities.forEach(d -> d.draw(gl));
+
+        glDisable(GL_CULL_FACE); // TODO when new meshes are created or fixed, this should be removed
         dynamicEntities.forEach(d -> d.draw(gl));
+
+        readLock.unlock();
     }
 
     @Override
     public void drawParticles(GL2 gl){
+        Lock writeLock = entityModificationLock.writeLock();
+        writeLock.lock();
+
         particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
         particles.removeIf(Particle::isOverdue);
         particles.forEach(p -> p.draw(gl));
+
+        writeLock.unlock();
     }
 
     @Override
@@ -224,6 +262,7 @@ public abstract class GameState implements Environment {
      * (this method may be redundant)
      */
     public void cleanUp() {
+        entityModificationLock.writeLock().lock();
         ScreenOverlay.removeHudItem(collisionCounter);
         dynamicEntities.clear();
         staticEntities.clear();

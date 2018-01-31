@@ -1,12 +1,12 @@
 package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.FighterJets.PlayerJet;
+import nl.NG.Jetfightergame.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -27,12 +27,19 @@ public class ExplosionLaboratory extends GameState {
     @Override
     public void buildScene(PlayerJet player) {
         Settings.SPECTATOR_MODE = true;
+
         player.set(PosVector.zeroVector(), new DirVector(5, 0, 0), new Quaternionf());
-
         dynamicEntities.add(player);
-        dynamicEntities.add(new SimpleBullet(new PosVector(-20, 0, 0), new DirVector(20, 0, 0), new Quaternionf(), getTimer()));
+        for (int i = 0; i < 10; i++) {
+            final PosVector pos = new PosVector((5 * i) + 20, 0, 0);
+            final DirVector vel = new DirVector();
+            pos.negate(vel).add(DirVector.random(), vel);
+            dynamicEntities.add(
+                    new SimpleBullet(pos, vel.reducedTo(5, vel), new Quaternionf(), getTimer())
+            );
+        }
 
-        lights.add(new Pair<>(new PosVector(0, 0, 10), Color4f.YELLOW));
+        lights.add(new Pair<>(new PosVector(0, 0, 10), Color4f.RED));
     }
 
     @Override

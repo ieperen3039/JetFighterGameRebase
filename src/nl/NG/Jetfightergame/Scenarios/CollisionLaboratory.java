@@ -24,7 +24,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBESIZE = 1f;
     private static final float CUBEMASS = 2f;
     private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 2*2*2;
+    private static final int NR_OF_CUBES = 2;
     private static final float INIT_SPEED = LAB_SIZE/5f;
 
     private final int labSize;

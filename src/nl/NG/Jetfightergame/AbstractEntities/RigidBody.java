@@ -49,6 +49,26 @@ public class RigidBody {
 
     /**
      * representation of a moving body for the sake of collision detection
+     *
+     * @param timeScalar         timeScalar of the relevant collision of the host object
+     * @param massCenterPosition the global position of the center of mass at the moment of collision
+     * @param velocity           the global speed vector of this object
+     *                           This should contain the new velocity upon returning
+     * @param hitPosition        global position of the point on this object that caused the collision
+     * @param contactNormal      the normal of the plane that the point has hit. Must be normalized
+     * @param rotation           current rotation of this object (unlikely to be relevant)
+     * @param source             the calling entity
+     * @param rollSpeed
+     * @param pitchSpeed
+     * @param yawSpeed
+     */
+    public RigidBody(float timeScalar, PosVector massCenterPosition, DirVector velocity, PosVector hitPosition,
+                     DirVector contactNormal, Quaternionf rotation, float rollSpeed, float pitchSpeed, float yawSpeed, MovingEntity source) {
+        this(timeScalar, massCenterPosition, velocity, hitPosition, contactNormal, new Vector3f(-rollSpeed, -pitchSpeed, yawSpeed), rotation, source);
+    }
+
+    /**
+     * representation of a moving body for the sake of collision detection
      * @param timeScalar          timeScalar of the relevant collision of the host object
      * @param massCenterPosition  the global position of the center of mass at the moment of collision
      * @param velocity            the global speed vector of this object
@@ -126,17 +146,17 @@ public class RigidBody {
     }
 
     private void collisionResponseSimple() {
-        velocity.reflect(contactNormal);
+        if (velocity.dot(contactNormal) < 0) velocity.reflect(contactNormal);
         Vector3f angularVelChange  = contactNormal.cross(hitPosition, new Vector3f());
         invInertTensor.transform(angularVelChange);
         rotationSpeedVector.add(angularVelChange);
 
         // prevent objects from extreme spinning
-        rotationSpeedVector.mul(0.75f);
+        rotationSpeedVector.mul(0.8f);
     }
 
     public float rollSpeed(){
-        return rotationSpeedVector.x();
+        return -rotationSpeedVector.x();
     }
 
     public float yawSpeed(){
@@ -144,7 +164,7 @@ public class RigidBody {
     }
 
     public float pitchSpeed(){
-        return rotationSpeedVector.y();
+        return -rotationSpeedVector.y();
     }
 
     /** False in most cases

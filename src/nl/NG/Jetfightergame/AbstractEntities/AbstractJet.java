@@ -43,7 +43,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     protected Controller input;
     private DirVector forward;
-    private boolean isAlive = true;
+    protected boolean isAlive = true;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -59,9 +59,9 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param airResistanceCoefficient 0.5 * A * Cw. this is a factor that should be experimentally found
      * @param throttlePower force of the engines at full power in Newton
      * @param brakePower (not yet determined)
-     * @param yawAcc acceleration over the Z-axis when moving right at full power in rad/s
-     * @param pitchAcc acceleration over the Y-axis when pitching up at full power in rad/s
-     * @param rollAcc acceleration over the X-axis when rolling at full power in rad/s
+     * @param yawAcc acceleration over the Z-axis when moving right at full power in rad/ss
+     * @param pitchAcc acceleration over the Y-axis when pitching up at full power in rad/ss
+     * @param rollAcc acceleration over the X-axis when rolling at full power in rad/ss
      * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
      * @param renderTimer the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
      * @param yReduction reduces drifting/stalling in horizontal direction by this fraction
@@ -108,8 +108,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower));
         netForce.add(forward.reducedTo(thrust, new DirVector()), netForce);
 
-        // exponential reduction of speed (before rotational forces, as this is the result of momentum)
-        float preserveFraction = (float) (1 - StrictMath.pow(rotationReductionFactor, deltaTime));
+        float preserveFraction = (float) (StrictMath.pow(1-rotationReductionFactor, deltaTime));
         yawSpeed *= preserveFraction;
         pitchSpeed *= preserveFraction;
         rollSpeed *= preserveFraction;
@@ -146,7 +145,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     @Override
     public void impact(PosVector impact, float power) {
-        isAlive = false;
+//        isAlive = false;
     }
 
     public boolean isDead(){

@@ -1,5 +1,8 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.GeneralEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -9,7 +12,6 @@ import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
-import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -24,8 +26,11 @@ import java.util.stream.Collectors;
  */
 public class SimpleBullet extends AbstractProjectile {
 
+    private static final float MASS = 0.1f;
+    private static final float AIR_RESIST_COEFF = 0.01f;
+
     public SimpleBullet(PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation, GameTimer gameTimer) {
-        super(Material.SILVER, 100, 1, initialPosition, initialVelocity, initialRotation, gameTimer, 0.1f, 1000 / initialVelocity.length());
+        super(Material.SILVER, MASS, 1, initialPosition, initialVelocity, initialRotation, gameTimer, AIR_RESIST_COEFF, 1000 / initialVelocity.length());
     }
 
     @Override
@@ -50,7 +55,7 @@ public class SimpleBullet extends AbstractProjectile {
 
         return GeneralShapes.CUBE.getPlanes()
 //                .parallel()
-                .map(p -> Particles.splitIntoParticles(p, 2, DirVector.randomOrb(), 0, 2, 5f, Color4f.YELLOW, ms))
+                .map(p -> Particles.generateFireParticles(10f, ms, p, 0.5f))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
     }

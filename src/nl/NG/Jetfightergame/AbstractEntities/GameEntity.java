@@ -85,25 +85,19 @@ public abstract class GameEntity implements MovingEntity{
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
         this.extraRotation = new Quaternionf(initialRotation);
-
+        this.velocity = new DirVector(initialVelocity);
+        this.extraVelocity = new DirVector(initialVelocity);
 
         this.surfaceMaterial = surfaceMaterial;
         this.scale = scale;
-        this.velocity = new DirVector(initialVelocity);
-        this.extraVelocity = new DirVector(initialVelocity);
         this.mass = mass;
         this.gameTimer = gameTimer;
-
-        cachedTime = gameTimer.getRenderTime().current();
-        cachedPosition = initialPosition;
-        cachedRotation = initialRotation;
 
         yawSpeed = 0f;
         pitchSpeed = 0f;
         rollSpeed = 0f;
 
-        positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
-        rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
+        resetCache();
     }
 
     @Override
@@ -239,7 +233,8 @@ public abstract class GameEntity implements MovingEntity{
         final DirVector interVelocity = new DirVector(extraVelocity);
 
         return new RigidBody(timeScalar, interPosition, interVelocity, globalHitPos,
-                contactNormal, rotationSpeedVector, interRotation, this);
+                contactNormal, interRotation, rollSpeed, pitchSpeed, yawSpeed, this
+        );
     }
 
     @Override
@@ -263,8 +258,6 @@ public abstract class GameEntity implements MovingEntity{
 
         hitPoints = calculateHitpointMovement();
         nextCrash = new Extreme<>(false);
-
-//        Toolbox.print(bounceMovement, newState.timeScalar);
     }
 
     /**
@@ -428,4 +421,13 @@ public abstract class GameEntity implements MovingEntity{
      * @param power magnitude of the impact
      */
     public abstract void impact(PosVector impact, float power);
+
+    public void resetCache() {
+        cachedTime = gameTimer.getRenderTime().current();
+        cachedPosition = position;
+        cachedRotation = rotation;
+
+        positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
+        rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
+    }
 }

@@ -57,7 +57,8 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
         final float timeScalar = nextCrash.get().timeScalar * 0.99f; // 0.99f to prevent rounding errors.
 
         return new RigidBody(
-                timeScalar, globalHitPos, extraVelocity, rotation.nlerp(extraRotation, timeScalar), this
+//                timeScalar, globalHitPos, extraVelocity, rotation.nlerp(extraRotation, timeScalar), this
+                timeScalar, globalHitPos, extraVelocity, globalHitPos, nextCrash.get().normal, extraRotation, rollSpeed, pitchSpeed, yawSpeed, this
         );
     }
 
@@ -67,7 +68,6 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
         positionInterpolator.add(newState.hitPosition, currentTime);
         rotationInterpolator.add(newState.rotation, currentTime);
 
-        explode();
         timeToLive = 0;
     }
 
