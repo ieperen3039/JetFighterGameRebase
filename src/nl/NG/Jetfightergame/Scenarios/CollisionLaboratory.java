@@ -47,6 +47,8 @@ public class CollisionLaboratory extends GameState {
     @Override
     public void buildScene(PlayerJet player) {
         Settings.SPECTATOR_MODE = true;
+        player.set();
+
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 

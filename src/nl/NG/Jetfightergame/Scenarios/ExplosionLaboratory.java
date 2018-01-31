@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Vectors.Vector;
 import org.joml.Quaternionf;
 
 /**
@@ -28,14 +29,16 @@ public class ExplosionLaboratory extends GameState {
     public void buildScene(PlayerJet player) {
         Settings.SPECTATOR_MODE = true;
 
-        player.set(PosVector.zeroVector(), new DirVector(5, 0, 0), new Quaternionf());
+        player.set();
+
         dynamicEntities.add(player);
-        for (int i = 0; i < 10; i++) {
-            final PosVector pos = new PosVector((5 * i) + 20, 0, 0);
-            final DirVector vel = new DirVector();
+        for (int i = 0; i < 20; i++) {
+            final PosVector pos = Vector.random().toPosVector();
+            pos.mul((3 * i) + 20);
+            final DirVector vel = new DirVector(0, 1, 0);
             pos.negate(vel).add(DirVector.random(), vel);
             dynamicEntities.add(
-                    new SimpleBullet(pos, vel.reducedTo(5, vel), new Quaternionf(), getTimer())
+                    new SimpleBullet(pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer())
             );
         }
 

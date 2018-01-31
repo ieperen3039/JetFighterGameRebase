@@ -51,22 +51,6 @@ public class PlayerJet extends AbstractJet {
         ms.popMatrix();
     }
 
-    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation){
-        this.position = new PosVector(newPosition);
-        this.extraPosition = new PosVector(newPosition);
-        this.rotation = new Quaternionf(newRotation);
-        this.extraRotation = new Quaternionf(newRotation);
-        this.velocity = new DirVector(newVelocity);
-        this.extraVelocity = new DirVector(newVelocity);
-        
-        yawSpeed = 0f;
-        pitchSpeed = 0f;
-        rollSpeed = 0f;
-
-        isAlive = true;
-        super.resetCache();
-    }
-
     @Override
     protected void updateShape(float deltaTime) {
 
@@ -77,7 +61,4 @@ public class PlayerJet extends AbstractJet {
         return relativeInterpolatedDirection(new DirVector(3, 0, 1));
     }
 
-    public void set() {
-        set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
-    }
 }

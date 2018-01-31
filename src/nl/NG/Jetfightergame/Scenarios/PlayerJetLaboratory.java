@@ -47,7 +47,7 @@ public class PlayerJetLaboratory extends GameState {
             }
         }
 
-        lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE));
+        lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE.darken(0.7f)));
     }
 
     @Override

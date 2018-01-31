@@ -80,7 +80,6 @@ public abstract class GameState implements Environment {
         if ((deltaTime > 0f) && (remainingLoops != 0)) {
 
             int newCollisions = 0;
-            final Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
             List<Pair<Touchable, MovingEntity>> collisionPairs;
             List<RigidBody> postCollisions = new ArrayList<>();
 
@@ -89,6 +88,7 @@ public abstract class GameState implements Environment {
                  * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
                  * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
                  */
+                final Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
                 collisionPairs = closeTargets.stream()
                         // check for collisions
                         .filter(closeTarget -> checkCollisionPair(closeTarget.right, closeTarget.left, deltaTime))

@@ -168,6 +168,29 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     /**
+     * set the state of this plane to the given parameters. This also updates the interpolation cache,
+     * which may result in temporal visual glitches. Usage is preferably restricted to switching worlds
+     * @param newPosition
+     * @param newVelocity
+     * @param newRotation
+     */
+    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation){
+        this.position = new PosVector(newPosition);
+        this.extraPosition = new PosVector(newPosition);
+        this.rotation = new Quaternionf(newRotation);
+        this.extraRotation = new Quaternionf(newRotation);
+        this.velocity = new DirVector(newVelocity);
+        this.extraVelocity = new DirVector(newVelocity);
+
+        yawSpeed = 0f;
+        pitchSpeed = 0f;
+        rollSpeed = 0f;
+
+        isAlive = true;
+        resetCache();
+    }
+
+    /**
      * @return current position of the pilot's eyes in world-space
      */
     public abstract DirVector getPilotEyePosition();
@@ -194,5 +217,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         }
 
         return result;
+    }
+
+    /**
+     * sets this jet to the middle of the world
+     */
+    public void set() {
+        set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
     }
 }
