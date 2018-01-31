@@ -44,7 +44,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     private final GameTimer globalGameTimer;
     
-    private PlayerJet player;
+    private final PlayerJet player;
 
     /**
      * openWindow the game by creating a frame based on this engine

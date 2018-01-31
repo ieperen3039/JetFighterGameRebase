@@ -4,6 +4,8 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
+import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
@@ -41,21 +43,24 @@ public class PlayerJet extends AbstractJet {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.1f, renderTimer);
-        shape = ShapeFromMesh.ConceptBlueprint;
+                0.1f, renderTimer, 1f, 1f);
+        shape = ShapeFromMesh.CONCEPT_BLUEPRINT;
     }
 
     @Override
-    public void create(MatrixStack gl, Consumer<Shape> action) {
-        gl.pushMatrix();
-        gl.scale(-1, 1, 1);
+    public void create(MatrixStack ms, Consumer<Shape> action) {
+        ms.pushMatrix();
+        ms.scale(-1, 1, 1);
         action.accept(shape);
-        gl.popMatrix();
+        ms.popMatrix();
     }
 
-    public void set(PosVector newPosition, DirVector newVelocity){
+    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation){
         position.set(newPosition);
         velocity.set(newVelocity);
+
+        positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, newPosition);
+        rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, newRotation);
     }
 
     @Override

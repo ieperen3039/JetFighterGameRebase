@@ -25,14 +25,14 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     public EnvironmentManager(PlayerJet player, GameTimer time) {
         this.time = time;
-        instance = new ExplosionLaboratory(this.time);
+        instance = new PlayerJetLaboratory(this.time);
         this.player = player;
         instance.buildScene(this.player);
     }
 
     public enum Worlds {
-        CollisionLaboratory,
         PlayerJetLaboratory,
+        CollisionLaboratory,
         ExplosionLaboratory
     }
 

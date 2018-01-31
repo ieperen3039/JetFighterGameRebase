@@ -112,7 +112,7 @@ public class TriangleParticle implements Particle {
 
     @Override
     public boolean isOverdue() {
-        return timeToLive < 0;
+        return timeToLive <= 0;
     }
 
     @Override

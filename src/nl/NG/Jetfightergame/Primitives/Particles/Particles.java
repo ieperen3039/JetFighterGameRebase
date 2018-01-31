@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * created on 12-1-2018.
  */
 public final class Particles {
-    private static final float RANDOM_ROTATION = 1f;
+    private static final float RANDOM_ROTATION = 0.2f;
     private static final int FIRE_LINGER_TIME = 2;
     private static final int METAL_LINGER_TIME = 3;
     private static final int FIRE_PARTICLE_SPLITS = 2;

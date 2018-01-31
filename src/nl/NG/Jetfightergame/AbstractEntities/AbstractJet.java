@@ -2,19 +2,31 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
+import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
+import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.ShapeCreators.Shape;
+import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
  * @author Geert van Ieperen
  *         created on 30-10-2017.
  */
-public abstract class AbstractJet extends GameEntity {
+public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
+    /** arbitrary number. higher == more boom */
+    private static final float EXPLOSION_POWER = 10;
     protected final float liftFactor;
     protected final float airResistCoeff;
 
@@ -23,10 +35,15 @@ public abstract class AbstractJet extends GameEntity {
     protected final float yawAcc;
     protected final float pitchAcc;
     protected final float rollAcc;
+    protected final float yReduction;
+    protected final float zReduction;
+
+
     private final float rotationReductionFactor;
 
     protected Controller input;
     private DirVector forward;
+    private boolean isAlive = true;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -36,9 +53,9 @@ public abstract class AbstractJet extends GameEntity {
      * @param scale scale factor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param material the default material properties of the whole object.
      * @param mass the mass of the object in kilograms. this should refer to the weight of the base model in SpaceEngineers
-     *             multiplied by {@code scale}^3
+*             multiplied by {@code scale}^3
      * @param liftFactor arbitrary factor of the lift-effect of the wings in gravitational situations.
-     *                   This is applied only on the vector of external influences, thus not in zero-gravity.
+*                   This is applied only on the vector of external influences, thus not in zero-gravity.
      * @param airResistanceCoefficient 0.5 * A * Cw. this is a factor that should be experimentally found
      * @param throttlePower force of the engines at full power in Newton
      * @param brakePower (not yet determined)
@@ -47,11 +64,15 @@ public abstract class AbstractJet extends GameEntity {
      * @param rollAcc acceleration over the X-axis when rolling at full power in rad/s
      * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
      * @param renderTimer the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
+     * @param yReduction reduces drifting/stalling in horizontal direction by this fraction
+     * @param zReduction reduces drifting/stalling in vertical direction by this fraction
      */
-    public AbstractJet(Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
-                       Material material, float mass, float liftFactor, float airResistanceCoefficient,
-                       float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
-                       float rotationReductionFactor, GameTimer renderTimer) {
+    public AbstractJet(
+            Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
+            Material material, float mass, float liftFactor, float airResistanceCoefficient,
+            float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
+            float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction
+    ) {
         super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
 
         this.input = input;
@@ -63,63 +84,19 @@ public abstract class AbstractJet extends GameEntity {
         this.rollAcc = rollAcc;
         this.liftFactor = liftFactor;
         this.rotationReductionFactor = rotationReductionFactor;
+        this.yReduction = yReduction;
+        this.zReduction = zReduction;
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
     }
 
     @Override
-    public void applyPhysics(float deltaTime, DirVector netForce) {
-        if (Settings.GYRO_PHYSICS_MODEL){
-            gyroPhysics(deltaTime, netForce, velocity);
-        } else {
-            forwardVelocityPhysics(deltaTime, velocity.length(), netForce.dot(forward));
-        }
+    public void applyPhysics(DirVector netForce, float deltaTime) {
+        gyroPhysics(deltaTime, netForce, velocity);
     }
 
     /**
-     * A simple model where the rotation of the plane determins the movement of it.
-     * @param deltaTime timestamp in seconds
-     * @param speed movement of this plane (m/s)
-     * @param forwardForce
-     */
-    private void forwardVelocityPhysics(float deltaTime, float speed, float forwardForce) {
-
-        float airResistance = speed * speed * airResistCoeff;
-
-        // thrust forces
-        float throttle = input.throttle();
-        float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower * airResistance));
-        forwardForce += thrust;
-
-        // exponential reduction of speed (before rotational forces, as this is the result of momentum)
-        float preserveFraction = (float) (1 - StrictMath.pow(rotationReductionFactor, deltaTime));
-        yawSpeed *= preserveFraction;
-        pitchSpeed *= preserveFraction;
-        rollSpeed *= preserveFraction;
-
-        // rotational forces
-        float instYawAcc = (float) StrictMath.pow(yawAcc, deltaTime);
-        float instPitchAcc = (float) StrictMath.pow(pitchAcc, deltaTime);
-        float instRollAcc = (float) StrictMath.pow(rollAcc, deltaTime);
-        yawSpeed += input.yaw() * instYawAcc;
-        pitchSpeed += input.pitch() * instPitchAcc;
-        rollSpeed += input.roll() * instRollAcc;
-
-        // air-resistance
-        forwardForce -= airResistance * deltaTime;
-
-        // F = m * a ; a = dv/dt
-        // a = F/m ; dv = a * dt = F * (dt/m)
-        speed += forwardForce * (deltaTime/mass);
-        forward.reducedTo(speed, extraVelocity);
-
-        // collect extrapolated variables
-        position.add(forward.reducedTo(speed * deltaTime, new DirVector()), extraPosition);
-        rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
-    }
-
-    /**
-     * physics model where input absolutely determines the plane rotation, and force is applied directional
+     * physics model where input absolutely determines the plane rotation.
      * @param deltaTime timestamp in seconds
      * @param netForce vector of force in N
      * @param velocity movement vector with length in (m/s)
@@ -162,14 +139,18 @@ public abstract class AbstractJet extends GameEntity {
 
     public void update(float currentTime) {
         super.update(currentTime);
+
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
+    }
 
-        if (!Settings.GYRO_PHYSICS_MODEL && velocity.isScalable()) {
-            float angle = forward.dot(velocity.normalize(new DirVector()));
-//            Toolbox.print(angle, forward, velocity, forward.cross(velocity, new DirVector()));
-//            rotation.rotateAxis((float) Math.acos(angle), forward.cross(velocity, new DirVector()));
-        }
+    @Override
+    public void impact(PosVector impact, float power) {
+        isAlive = false;
+    }
+
+    public boolean isDead(){
+        return !isAlive;
     }
 
     /**
@@ -181,10 +162,9 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public String toString(){
-        return "Jet '" + this.getClass().getSimpleName() + "' {" +
+        return "Jet '" + this.getClass().getSimpleName() + "'{" +
                 "pos: " + position +
-                ", velocity: " + getVelocity() +
-                ", direction: " + getForward() +
+                ", velocity: " + velocity +
                 "}";
     }
 
@@ -192,4 +172,28 @@ public abstract class AbstractJet extends GameEntity {
      * @return current position of the pilot's eyes in world-space
      */
     public abstract DirVector getPilotEyePosition();
+
+    /**
+     * #BOOM
+     * This method does not remove this entity, only generate particles
+     * @return the generated particles resulting from this entity
+     */
+    public Collection<Particle> explode(){
+        float force = EXPLOSION_POWER;
+        Collection<Particle> result = new ArrayList<>();
+        ShadowMatrix sm = new ShadowMatrix();
+        Toolbox.print(getVelocity());
+
+        Consumer<Shape> particleMapper = (shape) -> shape.getPlanes()
+//                .parallel()
+                .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.GREY, getVelocity()))
+                .forEach(result::addAll);
+
+        toLocalSpace(sm, () -> create(sm, particleMapper));
+        for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
+            toLocalSpace(sm, () -> Particles.createFireEffect(force, result, sm));
+        }
+
+        return result;
+    }
 }

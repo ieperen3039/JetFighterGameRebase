@@ -18,15 +18,14 @@ public final class Settings {
     public static boolean SPECTATOR_MODE = true;
 
     /** engine settings */
-    public static short TARGET_TPS = 15;
+    public static short TARGET_TPS = 20;
     // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
     public static final float RENDER_DELAY = 2f/TARGET_TPS;
     public static boolean SAVE_PLAYBACK = false;
 
     /** collision settings */
     public static final short COLLISION_RESPONSE_LEVEL = 0;
-    public static boolean GYRO_PHYSICS_MODEL = false;
-    public static final int MAX_COLLISION_ITERATIONS = 200/TARGET_TPS;
+    public static final int MAX_COLLISION_ITERATIONS = 500/TARGET_TPS;
     public static boolean FIXED_DELTA_TIME = false;
 
     /** miscellaneous */
@@ -36,7 +35,7 @@ public final class Settings {
     public static final boolean CULL_FACES = true;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final int PARTICLE_SPLITS = 0;
-    public static final int FIRE_PARTICLE_DENSITY = 5; // actual particle count is much higher
+    public static final int FIRE_PARTICLE_DENSITY = 15; // actual particle count is much higher
 
     /** final music settings */
     public static final float MAX_VOLUME = 6f;

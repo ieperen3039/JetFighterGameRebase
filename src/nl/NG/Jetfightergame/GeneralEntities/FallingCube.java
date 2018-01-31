@@ -19,6 +19,7 @@ import java.util.function.Consumer;
  * created on 26-12-2017.
  */
 public class FallingCube extends GameEntity {
+
     /**
      * a cube that can be moved around, and has all physic properties
      *
@@ -52,7 +53,7 @@ public class FallingCube extends GameEntity {
     }
 
     @Override
-    public void applyPhysics(float deltaTime, DirVector netForce) {
+    public void applyPhysics(DirVector netForce, float deltaTime) {
         velocity.add(netForce.scale(deltaTime/mass, extraVelocity), extraVelocity);
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
@@ -61,6 +62,11 @@ public class FallingCube extends GameEntity {
     @Override
     public String toString() {
         return "FallingCube at " + position;
+    }
+
+    @Override
+    public void impact(PosVector impact, float power) {
+
     }
 
     @Override

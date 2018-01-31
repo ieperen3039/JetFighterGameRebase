@@ -25,7 +25,7 @@ public class RigidBody {
     public final Touchable source;
     public final float mass;
     public final DirVector velocity;
-    private Matrix3f invInertTensor;
+    private final Matrix3f invInertTensor;
 
     /**
      * represents a static body
@@ -94,6 +94,27 @@ public class RigidBody {
         this.rotationSpeedVector = new Vector3f();
         this.rotation = new Quaternionf();
         this.mass = Float.POSITIVE_INFINITY;
+        invInertTensor = new Matrix3f();
+    }
+
+    /**
+     * constructor for projectile objects
+     * @param timeScalar          timeScalar of the relevant collision of the host object
+     * @param globalHitPos        where this object hits the other in global space
+     * @param velocity            the global speed vector of this entity
+     * @param rotation            current rotation of this entity (unlikely to be relevant)
+     * @param source              the calling entity
+     */
+    public RigidBody(float timeScalar, PosVector globalHitPos, DirVector velocity, Quaternionf rotation, MovingEntity source) {
+        this.source = source;
+        this.timeScalar = timeScalar;
+        this.massCenterPosition = globalHitPos;
+        this.velocity = velocity;
+        this.hitPosition = massCenterPosition;
+        this.contactNormal = DirVector.zeroVector();
+        this.rotationSpeedVector = new Vector3f();
+        this.rotation = rotation;
+        this.mass = source.getMass();
         invInertTensor = new Matrix3f();
     }
 
@@ -263,7 +284,7 @@ public class RigidBody {
     }
 
     public void apply(float deltaTime, float currentTime) {
-        if ((source instanceof MovingEntity) && !Float.isInfinite(mass)){
+        if ((source instanceof MovingEntity)){
             ((MovingEntity) source).applyCollision(this, deltaTime, currentTime);
         }
     }
@@ -278,19 +299,25 @@ public class RigidBody {
     @SuppressWarnings("ConstantConditions")
     public static void process(RigidBody alpha, RigidBody beta) {
 
+        if (alpha.source instanceof AbstractProjectile) {
+            ((AbstractProjectile) alpha.source).hit(beta.source, alpha.hitPosition);
+        } else if (beta.source instanceof AbstractProjectile) {
+            ((AbstractProjectile) beta.source).hit(alpha.source, beta.hitPosition);
+        }
+
+        // the 'mass != 0' checks are no longer part of the implementation, but still handle the hypothetical situation well
         if (COLLISION_RESPONSE_LEVEL == 0) {
             if (alpha.contactNormal != null) alpha.collisionResponseSimple();
             if (beta.contactNormal != null) beta.collisionResponseSimple();
 
         } else if (COLLISION_RESPONSE_LEVEL == 1) {
-            if (!Float.isInfinite(alpha.mass)) alpha.collisionWithStaticResponse();
-            if (!Float.isInfinite(beta.mass)) beta.collisionWithStaticResponse();
+            if (!Float.isInfinite(alpha.mass) && (alpha.mass != 0)) alpha.collisionWithStaticResponse();
+            if (!Float.isInfinite(beta.mass) && (beta.mass != 0)) beta.collisionWithStaticResponse();
 
         } else if (COLLISION_RESPONSE_LEVEL == 2) {
-            if (Float.isInfinite(beta.mass)) alpha.collisionWithStaticResponse();
-            else if (Float.isInfinite(alpha.mass)) beta.collisionWithStaticResponse();
+            if ((Float.isInfinite(beta.mass) || (beta.mass == 0)) && (alpha.mass != 0)) alpha.collisionWithStaticResponse();
+            else if (Float.isInfinite(alpha.mass) || (alpha.mass == 0)) beta.collisionWithStaticResponse();
             else collisionResponse(alpha, beta);
-
         }
     }
 

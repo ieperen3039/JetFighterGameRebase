@@ -4,16 +4,12 @@ import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
-import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
-import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -27,9 +23,9 @@ import java.util.stream.Stream;
  * @author Geert van Ieperen
  *         created on 29-10-2017.
  */
-public abstract class GameEntity implements MovingEntity {
+public abstract class GameEntity implements MovingEntity{
 
-    private static final int INTERPOLATION_QUEUE_SIZE = 5;
+    protected static final int INTERPOLATION_QUEUE_SIZE = 5;
 
     /** worldspace position in m */
     protected PosVector position;
@@ -47,8 +43,8 @@ public abstract class GameEntity implements MovingEntity {
     /** expected velocity */
     protected DirVector extraVelocity;
 
-    private VectorInterpolator positionInterpolator;
-    private QuaternionInterpolator rotationInterpolator;
+    protected VectorInterpolator positionInterpolator;
+    protected QuaternionInterpolator rotationInterpolator;
 
     /** collision of this gametick, null if it doesn't hit */
     protected Extreme<Collision> nextCrash;
@@ -81,8 +77,10 @@ public abstract class GameEntity implements MovingEntity {
      * @param gameTimer       A timer that defines rendering, in order to let {@link MovingEntity#interpolatedPosition()} return the position
      *                        interpolated on current render time
      */
-    public GameEntity(Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-                      Quaternionf initialRotation, GameTimer gameTimer) {
+    public GameEntity(
+            Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
+            Quaternionf initialRotation, GameTimer gameTimer
+    ) {
         this.position = new PosVector(initialPosition);
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
@@ -115,7 +113,7 @@ public abstract class GameEntity implements MovingEntity {
 
         // nothing to do when no time is passed
         if (deltaTime != 0) {
-            applyPhysics(deltaTime, netForce);
+            applyPhysics(netForce, deltaTime);
         } else {
             extraRotation.set(rotation);
             extraPosition.set(position);
@@ -165,10 +163,10 @@ public abstract class GameEntity implements MovingEntity {
      * apply net force on this object and possibly read input. Should not change the current state
      * except for {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}.
      * The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity} are invalid.
-     * @param deltaTime time-difference, cannot be 0
      * @param netForce accumulated external forces on this object
+     * @param deltaTime time-difference, cannot be 0
      */
-    public abstract void applyPhysics(float deltaTime, DirVector netForce);
+    public abstract void applyPhysics(DirVector netForce, float deltaTime);
 
     @Override
     public void update(float currentTime) {
@@ -409,30 +407,6 @@ public abstract class GameEntity implements MovingEntity {
         }
     }
 
-    /**
-     * #BOOM
-     * This method does not remove this entity, only generate particles
-     * @param force arbitrary number. higher == more boom
-     * @return the generated particles resulting from this entity
-     */
-    public Collection<Particle> explode(float force){
-        Collection<Particle> result = new ArrayList<>();
-        ShadowMatrix sm = new ShadowMatrix();
-
-        Consumer<Shape> particleMapper = (shape) -> shape.getPlanes()
-//                .parallel()
-                .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.GREY, getVelocity()))
-                .forEach(result::addAll);
-
-
-        toLocalSpace(sm, () -> create(sm, particleMapper));
-        for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
-            toLocalSpace(sm, () -> Particles.createFireEffect(force, result, sm));
-        }
-
-        return result;
-    }
-
     @Override
     public float getMass() {
         return mass;
@@ -447,4 +421,11 @@ public abstract class GameEntity implements MovingEntity {
     public String toString(){
         return getClass().getSimpleName();
     }
+
+    /**
+     * react on collision from projectile, with regard to damage
+     * @param impact hitPosition of the incoming projectile
+     * @param power magnitude of the impact
+     */
+    public abstract void impact(PosVector impact, float power);
 }

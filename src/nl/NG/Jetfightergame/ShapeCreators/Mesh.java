@@ -114,6 +114,8 @@ public class Mesh implements Renderable {
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
+
+            registeredMeshes.offer(this);
         } finally {
             if (posBuffer != null) {
                 MemoryUtil.memFree(posBuffer);
@@ -122,8 +124,6 @@ public class Mesh implements Renderable {
                 MemoryUtil.memFree(normBuffer);
             }
         }
-
-        registeredMeshes.offer(this);
     }
 
     @Override

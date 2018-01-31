@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -11,6 +12,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 /**
  * @author Geert van Ieperen
@@ -25,11 +27,12 @@ public class ExplosionLaboratory extends GameState {
     @Override
     public void buildScene(PlayerJet player) {
         Settings.SPECTATOR_MODE = true;
-        player.set(PosVector.zeroVector(), new DirVector(10, 0, 0));
-//        PlayerJet target = new PlayerJet(new EmptyController(), getTimer().getRenderTime());
-        particles.addAll(player.explode(10f));
+        player.set(PosVector.zeroVector(), new DirVector(5, 0, 0), new Quaternionf());
 
-        lights.add(new Pair<>(new PosVector(0, 0, 3), Color4f.GREY));
+        dynamicEntities.add(player);
+        dynamicEntities.add(new SimpleBullet(new PosVector(-20, 0, 0), new DirVector(20, 0, 0), new Quaternionf(), getTimer()));
+
+        lights.add(new Pair<>(new PosVector(0, 0, 10), Color4f.YELLOW));
     }
 
     @Override

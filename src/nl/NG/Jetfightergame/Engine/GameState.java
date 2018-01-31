@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -115,7 +116,18 @@ public abstract class GameState implements Environment {
             }
         }
 
-        dynamicEntities.forEach(obj -> obj.update(currentTime));
+        Iterator<MovingEntity> iterator = dynamicEntities.iterator();
+        while (iterator.hasNext()) {
+            MovingEntity entity = iterator.next();
+            entity.update(currentTime);
+            if (entity instanceof MortalEntity) {
+                MortalEntity unit = (MortalEntity) entity;
+                if (unit.isDead()) {
+                    particles.addAll(unit.explode());
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     /**
@@ -137,29 +149,26 @@ public abstract class GameState implements Environment {
      * @return a collection of pairs of objects that are close to each other
      */
     private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
-        if (allEntityPairs == null) {
-            allEntityPairs = new ArrayList<>();
+        allEntityPairs = new ArrayList<>();
 
-            // Naive solution: return all n^2 options
-            // check all moving objects against (1: all other moving objects, 2: all static objects)
-            dynamicEntities.forEach(obj -> {
-                dynamicEntities.stream()
-                        // this makes sure that one object pair does not occur the other way around.
-                        .filter(other -> other.hashCode() >= obj.hashCode())
-                        // as hashcode does not guarantees an identifier, we can not assume equality.
-                        .filter(other -> !other.equals(obj))
-                        .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
-                        .distinct()
-                        .forEach(allEntityPairs::add);
-                staticEntities
-                        .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
-            });
-            if (DEBUG) {
-                final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
-                if (nulls > 0) Toolbox.print("nulls found by intersecting pairs: " + nulls);
-            }
+        // Naive solution: return all n^2 options
+        // check all moving objects against (1: all other moving objects, 2: all static objects)
+        dynamicEntities.forEach(obj -> {
+            dynamicEntities.stream()
+                    // this makes sure that one object pair does not occur the other way around.
+                    .filter(other -> other.hashCode() >= obj.hashCode())
+                    // as hashcode does not guarantees an identifier, we can not assume equality.
+                    .filter(other -> !other.equals(obj))
+                    .map(other -> new Pair<Touchable, MovingEntity>(other, obj))
+                    .distinct()
+                    .forEach(allEntityPairs::add);
+            staticEntities
+                    .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
+        });
+        if (DEBUG) {
+            final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
+            if (nulls > 0) Toolbox.print("nulls found by intersecting pairs: " + nulls);
         }
-
 
         collisionMax.updateAndPrint("Intersections", allEntityPairs.size(), "pairs");
         return allEntityPairs;

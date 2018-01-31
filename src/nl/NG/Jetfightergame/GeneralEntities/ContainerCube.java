@@ -19,13 +19,11 @@ import java.util.function.Consumer;
  */
 public class ContainerCube implements Touchable {
     public final int labSize;
-    private final Shape world;
+    private final Shape world = GeneralShapes.INVERSE_CUBE;
     private final Material material = Material.PLASTIC;
 
     public ContainerCube(int cubeSize) {
-        super();
         this.labSize = cubeSize;
-        world = GeneralShapes.INVERSE_CUBE;
     }
 
     @Override

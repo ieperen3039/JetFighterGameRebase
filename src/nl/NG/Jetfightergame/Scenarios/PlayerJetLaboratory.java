@@ -27,6 +27,7 @@ public class PlayerJetLaboratory extends GameState {
 
     @Override
     public void buildScene(PlayerJet player) {
+        player.set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
         dynamicEntities.add(player);
 //        staticEntities.add(new SimplexCave());
         staticEntities.add(new ContainerCube(CUBE_SIZE));

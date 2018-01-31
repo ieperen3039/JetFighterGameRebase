@@ -107,13 +107,13 @@ public class Toolbox {
         gl.pushMatrix();
         {
             gl.setMaterial(mat, Color4f.BLUE);
-            gl.draw(ShapeFromMesh.Arrow);
+            gl.draw(ShapeFromMesh.ARROW);
             gl.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
             gl.setMaterial(mat, Color4f.RED);
-            gl.draw(ShapeFromMesh.Arrow);
+            gl.draw(ShapeFromMesh.ARROW);
             gl.rotate((float) Math.toRadians(-90), 1f, 0f, 0f);
             gl.setMaterial(mat, Color4f.GREEN);
-            gl.draw(ShapeFromMesh.Arrow);
+            gl.draw(ShapeFromMesh.ARROW);
             gl.scale(0.2f);
             gl.setMaterial(Material.ROUGH, Color4f.WHITE);
             gl.draw(GeneralShapes.CUBE);
@@ -133,9 +133,10 @@ public class Toolbox {
      * call System.exit and tells who did it
      */
     public static void exitJava() {
+        if (!Settings.DEBUG) return;
         System.out.println();
-        Toolbox.printFrom(2, "Ending JVM");
-        System.exit(-1);
+        System.out.println("Ending JVM");
+        throw new RuntimeException();
     }
 
     public static boolean almostZero(float number) {
