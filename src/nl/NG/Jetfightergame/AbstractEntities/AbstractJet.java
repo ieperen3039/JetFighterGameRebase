@@ -114,9 +114,9 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         rollSpeed *= preserveFraction;
 
         // rotational forces
-        float instYawAcc = (float) StrictMath.pow(yawAcc, deltaTime);
-        float instPitchAcc = (float) StrictMath.pow(pitchAcc, deltaTime);
-        float instRollAcc = (float) StrictMath.pow(rollAcc, deltaTime);
+        float instYawAcc = yawAcc * deltaTime;
+        float instPitchAcc = pitchAcc * deltaTime;
+        float instRollAcc = rollAcc * deltaTime;
         yawSpeed += input.yaw() * instYawAcc;
         pitchSpeed += input.pitch() * instPitchAcc;
         rollSpeed += input.roll() * instRollAcc;

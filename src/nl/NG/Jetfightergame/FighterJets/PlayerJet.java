@@ -24,9 +24,9 @@ public class PlayerJet extends AbstractJet {
     public static final float BRAKE_POWER = 200f;
     public static final float MASS = 50f;
     public static final Material MATERIAL = Material.SILVER;
-    public static final float YAW_POWER = 0.01f;
-    public static final float PITCH_POWER = 0.02f;
-    public static final float ROLL_POWER = 0.02f;
+    public static final float YAW_POWER = 1f;
+    public static final float PITCH_POWER = 2f;
+    public static final float ROLL_POWER = 2f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.01f;
 
     private Shape shape;
