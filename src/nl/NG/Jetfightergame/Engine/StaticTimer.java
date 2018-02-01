@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 
 /**

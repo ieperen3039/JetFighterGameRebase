@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Engine.Updatable;
+import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Tools.Timer;
 
 import javax.sound.sampled.*;
 import java.io.BufferedInputStream;

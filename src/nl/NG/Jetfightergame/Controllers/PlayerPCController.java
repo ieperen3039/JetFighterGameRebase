@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 
-import static nl.NG.Jetfightergame.Engine.Settings.*;
+import static nl.NG.Jetfightergame.Settings.*;
 
 /**
  * @author Geert van Ieperen

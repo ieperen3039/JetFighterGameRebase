@@ -11,6 +11,7 @@ import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
-import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector2i;

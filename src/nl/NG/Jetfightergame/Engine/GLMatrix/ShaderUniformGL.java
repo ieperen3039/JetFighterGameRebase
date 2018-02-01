@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.Engine.GLMatrix;
 
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderProgram;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

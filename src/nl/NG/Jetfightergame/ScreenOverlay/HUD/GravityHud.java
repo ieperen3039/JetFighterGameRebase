@@ -10,9 +10,9 @@ import org.joml.Vector2i;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
-import static nl.NG.Jetfightergame.Engine.Settings.HUD_COLOR;
-import static nl.NG.Jetfightergame.Engine.Settings.HUD_STROKE_WIDTH;
 import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.LUCIDA_CONSOLE;
+import static nl.NG.Jetfightergame.Settings.HUD_COLOR;
+import static nl.NG.Jetfightergame.Settings.HUD_STROKE_WIDTH;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
 

@@ -150,4 +150,25 @@ public class Color4f {
     public Vector4f toVector4f() {
         return new Vector4f(red, green, blue, alpha);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if ((o == null) || (getClass() != o.getClass())) return false;
+
+        Color4f other = (Color4f) o;
+        if (other.red != red) return false;
+        if (other.green != green) return false;
+        if (other.blue != blue) return false;
+        return (other.alpha == alpha);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = ((red != +0.0f) ? Float.floatToIntBits(red) : 0);
+        result = (31 * result) + ((green != +0.0f) ? Float.floatToIntBits(green) : 0);
+        result = (31 * result) + ((blue != +0.0f) ? Float.floatToIntBits(blue) : 0);
+        result = (31 * result) + ((alpha != +0.0f) ? Float.floatToIntBits(alpha) : 0);
+        return result;
+    }
 }

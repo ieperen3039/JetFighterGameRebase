@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
-import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;

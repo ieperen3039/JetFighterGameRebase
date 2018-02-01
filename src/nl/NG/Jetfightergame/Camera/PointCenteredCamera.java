@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerDragListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerScrollListener;
-import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Vectors;
 
-import nl.NG.Jetfightergame.Engine.Settings;
+import nl.NG.Jetfightergame.Settings;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
