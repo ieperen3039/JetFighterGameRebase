@@ -4,9 +4,9 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.Settings;
-import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -45,9 +45,9 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    public void buildScene(PlayerJet player) {
+    public void buildScene(Player player) {
         Settings.SPECTATOR_MODE = true;
-        player.set();
+        player.jet().set();
 
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);

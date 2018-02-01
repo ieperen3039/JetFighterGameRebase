@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
-import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;

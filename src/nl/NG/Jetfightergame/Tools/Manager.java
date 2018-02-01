@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.Managers;
+package nl.NG.Jetfightergame.Tools;
 
 /**
  * A manager represents some implementation of some interface.

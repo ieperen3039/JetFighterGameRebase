@@ -1,12 +1,12 @@
 package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
-import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.Settings;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
@@ -37,6 +37,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
     private Color4f ambientLight;
     private Environment gameState;
+    private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
                               Camera camera, MusicProvider musicProvider, ControllerManager controllerManager) throws IOException, ShaderException {
@@ -71,13 +72,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
             GameTimer timer = gameState.getTimer();
             timer.updateRenderTime();
             activeCamera.updatePosition(timer.getRenderTime().difference());
-            int nrOfLights = gameState.getNumberOfLights();
+            frameNumber++;
 
             Toolbox.checkGLError();
 
             shaderManager.initShader(activeCamera, ambientLight);
             Toolbox.checkGLError();
 
+            int nrOfLights = gameState.getNumberOfLights();
             GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera, nrOfLights);
             Toolbox.checkGLError();
 
@@ -112,6 +114,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
             // update window
             window.update();
+
+            if (Settings.SAVE_PLAYBACK){
+                window.printScreen("session_"+ hashCode() + "/" + frameNumber);
+            }
 
             // update stop-condition
             if (window.shouldClose()) {

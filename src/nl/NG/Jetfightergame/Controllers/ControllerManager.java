@@ -1,9 +1,7 @@
-package nl.NG.Jetfightergame.Engine.Managers;
+package nl.NG.Jetfightergame.Controllers;
 
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
-import nl.NG.Jetfightergame.Controllers.PlayerPCControllerAbsolute;
-import nl.NG.Jetfightergame.Controllers.PlayerPCControllerRelative;
+import nl.NG.Jetfightergame.Tools.Manager;
 
 /**
  * @author Geert van Ieperen

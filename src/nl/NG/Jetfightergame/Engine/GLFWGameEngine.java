@@ -1,17 +1,17 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Camera.CameraManager;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.Managers.CameraManager;
-import nl.NG.Jetfightergame.Engine.Managers.ControllerManager;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Collection;
 
-import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.FollowingCamera;
-import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.PointCenteredCamera;
+import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.FollowingCamera;
+import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
 
 /**
  * @author Jorren Hendriks.

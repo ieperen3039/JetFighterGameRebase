@@ -6,7 +6,8 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
-import nl.NG.Jetfightergame.FighterJets.PlayerJet;
+import nl.NG.Jetfightergame.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
@@ -28,7 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.BooleanSupplier;
 
-import static nl.NG.Jetfightergame.Engine.Managers.CameraManager.CameraImpl.PointCenteredCamera;
+import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -44,7 +45,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     private final GameTimer globalGameTimer;
     
-    private final PlayerJet player;
+    private final Player player;
 
     /**
      * openWindow the game by creating a frame based on this engine
@@ -55,10 +56,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            if (Settings.FIXED_DELTA_TIME || Settings.SAVE_PLAYBACK) globalGameTimer = new StaticTimer(Settings.TARGET_TPS);
+            if (Settings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(Settings.TARGET_TPS);
             else globalGameTimer = new GameTimer();
 
-            player = new PlayerJet(playerInput, globalGameTimer);
+            player = new Player(playerInput, new BasicJet(playerInput, globalGameTimer));
 
             environment = new EnvironmentManager(player, globalGameTimer);
 
@@ -144,7 +145,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     @Override
     public AbstractJet getPlayer() {
-        return player;
+        return player.jet();
     }
 
     /**

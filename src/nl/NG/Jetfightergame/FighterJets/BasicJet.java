@@ -17,7 +17,7 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen
  *         created on 11-11-2017.
  */
-public class PlayerJet extends AbstractJet {
+public class BasicJet extends AbstractJet {
 
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 1000f;
@@ -31,11 +31,11 @@ public class PlayerJet extends AbstractJet {
 
     private Shape shape;
 
-    public PlayerJet(Controller input, GameTimer renderTimer) {
+    public BasicJet(Controller input, GameTimer renderTimer) {
         this(PosVector.zeroVector(), input, new Quaternionf(), renderTimer);
     }
 
-    public PlayerJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer) {
+    public BasicJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer) {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,

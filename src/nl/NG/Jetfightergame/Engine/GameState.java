@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.FighterJets.PlayerJet;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Scenarios.Environment;
@@ -58,7 +58,7 @@ public abstract class GameState implements Environment {
 
     private Extreme<Integer> collisionMax = new Extreme<>(true);
 
-    public abstract void buildScene(PlayerJet player);
+    public abstract void buildScene(Player player);
 
     @Override
     @SuppressWarnings("ConstantConditions")

@@ -3,9 +3,9 @@ package nl.NG.Jetfightergame.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.FighterJets.PlayerJet;
 import nl.NG.Jetfightergame.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.GeneralEntities.FallingCube;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -26,9 +26,9 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    public void buildScene(PlayerJet player) {
-        player.set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
-        dynamicEntities.add(player);
+    public void buildScene(Player player) {
+        player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
+        dynamicEntities.add(player.jet());
 //        staticEntities.add(new SimplexCave());
         staticEntities.add(new ContainerCube(CUBE_SIZE));
 
