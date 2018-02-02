@@ -4,21 +4,21 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
-import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
-import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * @author Geert van Ieperen
@@ -50,14 +50,13 @@ public class SimpleBullet extends AbstractProjectile {
 
     @Override
     public Collection<Particle> explode() {
-        ShadowMatrix ms = new ShadowMatrix();
-        ms.translate(getPosition());
+        List<Particle> result = new ArrayList<>(5);
 
-        return GeneralShapes.CUBE.getPlanes()
-//                .parallel()
-                .map(p -> Particles.generateFireParticles(10f, ms, p, 0.5f))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toList());
+        for (int i = 0; i < Settings.SPARK_PARTICLE_DENSITY; i++) {
+            result.add(FireParticle.randomParticle(getPosition(), 10, 1));
+        }
+
+        return result;
     }
 
     @Override

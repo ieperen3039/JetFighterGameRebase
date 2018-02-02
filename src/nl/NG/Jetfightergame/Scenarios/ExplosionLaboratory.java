@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Pair;
@@ -13,8 +12,6 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
-import org.joml.Quaternionf;
 
 /**
  * @author Geert van Ieperen
@@ -33,16 +30,28 @@ public class ExplosionLaboratory extends GameState {
         final AbstractJet playerJet = player.jet();
         playerJet.set();
 
+        new Thread(() -> {
+            try {
+                Thread.sleep(5000);
+                particles.addAll(playerJet.explode());
+                dynamicEntities.remove(playerJet);
+                Toolbox.print("BOOM");
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
         dynamicEntities.add(playerJet);
-        for (int i = 0; i < 20; i++) {
-            final PosVector pos = Vector.random().toPosVector();
-            pos.mul((3 * i) + 20);
-            final DirVector vel = new DirVector(0, 1, 0);
-            pos.negate(vel).add(DirVector.random(), vel);
-            dynamicEntities.add(
-                    new SimpleBullet(pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer())
-            );
-        }
+//        for (int i = 0; i < 20; i++) {
+//            final PosVector pos = Vector.random().toPosVector();
+//            pos.mul((3 * i) + 20);
+//            final DirVector vel = new DirVector(0, 1, 0);
+//            pos.negate(vel).add(DirVector.random(), vel);
+//            dynamicEntities.add(
+//                    new SimpleBullet(pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer())
+//            );
+//        }
 
         lights.add(new Pair<>(new PosVector(0, 0, 10), Color4f.RED));
     }

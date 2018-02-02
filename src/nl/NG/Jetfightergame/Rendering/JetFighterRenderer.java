@@ -20,6 +20,8 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -116,7 +118,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
             window.update();
 
             if (Settings.SAVE_PLAYBACK){
-                window.printScreen("session_"+ hashCode() + "/" + frameNumber);
+                SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
+                window.printScreen("session_"+ ft.format(new Date()) + "/" + frameNumber);
             }
 
             // update stop-condition

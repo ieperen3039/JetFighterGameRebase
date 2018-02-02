@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
@@ -213,7 +214,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         toLocalSpace(sm, () -> create(sm, particleMapper));
         for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
-            toLocalSpace(sm, () -> Particles.createFireEffect(force, result, sm));
+            result.add(FireParticle.randomParticle(getPosition(), force * 2, 2));
         }
 
         return result;

@@ -1,14 +1,13 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
 
 /**
  * @author Geert van Ieperen
  *         created on 1-11-2017.
  * a drawableTriangle that is
  */
-public interface Particle extends Renderable {
+public interface Particle {
 
     /**
      * updates this particle (position, rotation) in the rendering loop

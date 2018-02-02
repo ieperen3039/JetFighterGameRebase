@@ -35,7 +35,11 @@ public final class Settings {
     public static final boolean CULL_FACES = true;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final int PARTICLE_SPLITS = 0;
-    public static final int FIRE_PARTICLE_DENSITY = 15; // actual particle count is much higher
+
+    /** particle */
+    public static final int FIRE_PARTICLE_DENSITY = 1000; // actual particle count of plane explosion
+    public static final int SPARK_PARTICLE_DENSITY = 10;
+    public static final float FIRE_PARTICLE_SIZE = 0.3f;
 
     /** final music settings */
     public static final float MAX_VOLUME = 6f;

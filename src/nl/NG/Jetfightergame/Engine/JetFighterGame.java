@@ -25,9 +25,11 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.function.BooleanSupplier;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
@@ -53,11 +55,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
      */
     public JetFighterGame() throws Exception {
         super();
+
         Splash splash = new Splash();
         splash.run();
 
         try {
-            if (Settings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(Settings.TARGET_TPS);
+            if (Settings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(Settings.TARGET_FPS);
             else globalGameTimer = new GameTimer();
 
             player = new Player(playerInput, new BasicJet(playerInput, globalGameTimer));
@@ -140,7 +143,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 renderLoop.resetTPSCounter();
                 break;
             case GLFW_KEY_PRINT_SCREEN:
-                window.printScreen("Screenshot_" + environment.hashCode());
+                SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
+                if (window.printScreen("Screenshot_" + ft.format(new Date()))){
+                    Toolbox.print("Saved screenshot as \"Screenshot_" + ft.format(new Date()) + "\"");
+                }
         }
     }
 

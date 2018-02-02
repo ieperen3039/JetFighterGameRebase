@@ -156,7 +156,7 @@ public class GLFWWindow {
         clear();
     }
 
-    public void printScreen(String filename) {
+    public boolean printScreen(String filename) {
         glReadBuffer(GL11.GL_FRONT);
         int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
         ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
@@ -182,7 +182,9 @@ public class GLFWWindow {
             ImageIO.write(image, format, file);
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
     }
 
     /**

@@ -49,6 +49,7 @@ public final class Particles {
     }
 
     /**
+     * @deprecated {@link FireParticle}
      * create a fire-particle equivalent of this plane
      * @param force average propagation speed of this fire in m/s
      * @param sm a transformation matrix to map to world-space
@@ -223,6 +224,7 @@ public final class Particles {
     }
 
     /**
+     * @deprecated {@link FireParticle}
      * create a small batch of fire-particles. For good explosions, call this repeatedly
      * @param force
      * @param collector

@@ -114,9 +114,4 @@ public class TriangleParticle implements Particle {
     public boolean isOverdue() {
         return timeToLive <= 0;
     }
-
-    @Override
-    public void render(GL2.Painter lock) {
-
-    }
 }
