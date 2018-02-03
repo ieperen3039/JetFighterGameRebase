@@ -9,8 +9,6 @@ import org.joml.Quaternionf;
  * {@author Geert van Ieperen
  *         created on 7-11-2017.
  * an object that moves, and may be influenced by other objects.
- * These methods may not influence the state of this object, this should be done with methods in
- * {@link nl.NG.Jetfightergame.Engine.Updatable}
  */
 public interface MovingEntity extends Touchable {
 

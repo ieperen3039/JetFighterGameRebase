@@ -22,12 +22,13 @@ import java.util.function.Consumer;
 
 /**
  * @author Geert van Ieperen
- *         created on 30-10-2017.
+ * created on 30-10-2017.
  */
 public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /** arbitrary number. higher == more boom */
     private static final float EXPLOSION_POWER = 10;
+
     protected final float liftFactor;
     protected final float airResistCoeff;
 
@@ -39,41 +40,46 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     protected final float yReduction;
     protected final float zReduction;
 
-
     private final float rotationReductionFactor;
+
+    /** lose it all, and you're dead */
+    protected int hitPoints;
+    /** the number of hitpoints cannot exceed this number */
+    private final int maxHeath;
 
     protected Controller input;
     private DirVector forward;
-    protected boolean isAlive = true;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
-     * @param input controller input, either player or AI.
-     * @param initialPosition position of spawning (of the origin) in world coordinates
-     * @param initialRotation the initial rotation around the Z-axis of this object in radians
-     * @param scale scale factor applied to this object. the scale is in global space and executed in {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
-     * @param material the default material properties of the whole object.
-     * @param mass the mass of the object in kilograms. this should refer to the weight of the base model in SpaceEngineers
-*             multiplied by {@code scale}^3
-     * @param liftFactor arbitrary factor of the lift-effect of the wings in gravitational situations.
-*                   This is applied only on the vector of external influences, thus not in zero-gravity.
-     * @param airResistanceCoefficient 0.5 * A * Cw. this is a factor that should be experimentally found
-     * @param throttlePower force of the engines at full power in Newton
-     * @param brakePower (not yet determined)
-     * @param yawAcc acceleration over the Z-axis when moving right at full power in rad/ss
-     * @param pitchAcc acceleration over the Y-axis when pitching up at full power in rad/ss
-     * @param rollAcc acceleration over the X-axis when rolling at full power in rad/ss
-     * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
-     * @param renderTimer the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
-     * @param yReduction reduces drifting/stalling in horizontal direction by this fraction
-     * @param zReduction reduces drifting/stalling in vertical direction by this fraction
+     *
+     * @param input                    controller input, either player or AI.
+     * @param initialPosition          position of spawning (of the origin) in world coordinates
+     * @param initialRotation          the initial rotation around the Z-axis of this object in radians
+     * @param scale                    scale factor applied to this object. the scale is in global space and executed in
+     *                                 {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param material                 the default material properties of the whole object.
+     * @param mass                     the mass of the object in kilograms.
+     * @param liftFactor               arbitrary factor of the lift-effect of the wings in gravitational situations.
+     *                                 This is applied only on the vector of external influences, thus not in zero-gravity.
+     * @param airResistanceCoefficient 0.5 * A * Cw. This is a factor that should be experimentally found
+     * @param throttlePower            force of the engines at full power in Newton
+     * @param brakePower               (not yet determined)
+     * @param yawAcc                   acceleration over the Z-axis when moving right at full power in rad/ss
+     * @param pitchAcc                 acceleration over the Y-axis when pitching up at full power in rad/ss
+     * @param rollAcc                  acceleration over the X-axis when rolling at full power in rad/ss
+     * @param rotationReductionFactor  the fraction that the rotationspeed is reduced every second [0, 1]
+     * @param renderTimer              the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
+     * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
+     * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
+     * @param hitPoints                the amount of damage this plane can take before exploding
      */
     public AbstractJet(
             Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
-            float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction
-    ) {
+            float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
+            int hitPoints) {
         super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
 
         this.input = input;
@@ -87,6 +93,9 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         this.rotationReductionFactor = rotationReductionFactor;
         this.yReduction = yReduction;
         this.zReduction = zReduction;
+        this.hitPoints = hitPoints;
+        this.maxHeath = hitPoints;
+
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
     }
@@ -98,9 +107,10 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /**
      * physics model where input absolutely determines the plane rotation.
+     *
      * @param deltaTime timestamp in seconds
-     * @param netForce vector of force in N
-     * @param velocity movement vector with length in (m/s)
+     * @param netForce  vector of force in N
+     * @param velocity  movement vector with length in (m/s)
      */
     private void gyroPhysics(float deltaTime, DirVector netForce, DirVector velocity) {
 
@@ -109,7 +119,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower));
         netForce.add(forward.reducedTo(thrust, new DirVector()), netForce);
 
-        float preserveFraction = (float) (StrictMath.pow(1-rotationReductionFactor, deltaTime));
+        float preserveFraction = (float) (StrictMath.pow(1 - rotationReductionFactor, deltaTime));
         yawSpeed *= preserveFraction;
         pitchSpeed *= preserveFraction;
         rollSpeed *= preserveFraction;
@@ -130,7 +140,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        velocity.add(netForce.scale(deltaTime/mass, extraVelocity), extraVelocity);
+        velocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
@@ -146,11 +156,11 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     @Override
     public void impact(PosVector impact, float power) {
-//        isAlive = false;
+        hitPoints -= power + 1;
     }
 
-    public boolean isDead(){
-        return !isAlive;
+    public boolean isDead() {
+        return hitPoints > 0;
     }
 
     /**
@@ -161,7 +171,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "Jet '" + this.getClass().getSimpleName() + "'{" +
                 "pos: " + position +
                 ", velocity: " + velocity +
@@ -171,11 +181,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     /**
      * set the state of this plane to the given parameters. This also updates the interpolation cache,
      * which may result in temporal visual glitches. Usage is preferably restricted to switching worlds
-     * @param newPosition
-     * @param newVelocity
-     * @param newRotation
      */
-    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation){
+    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation) {
         this.position = new PosVector(newPosition);
         this.extraPosition = new PosVector(newPosition);
         this.rotation = new Quaternionf(newRotation);
@@ -187,7 +194,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         pitchSpeed = 0f;
         rollSpeed = 0f;
 
-        isAlive = true;
+        hitPoints = maxHeath;
         resetCache();
     }
 
@@ -198,10 +205,14 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /**
      * #BOOM
-     * This method does not remove this entity, only generate particles
+     * This method does not remove this entity, only generate particles. It does however set the number of hitpoints to 0,
+     * so it will be scheduled for removal, if necessary.
+     *
      * @return the generated particles resulting from this entity
      */
-    public Collection<Particle> explode(){
+    public Collection<Particle> explode() {
+        hitPoints = 0;
+
         float force = EXPLOSION_POWER;
         Collection<Particle> result = new ArrayList<>();
         ShadowMatrix sm = new ShadowMatrix();
@@ -213,6 +224,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
                 .forEach(result::addAll);
 
         toLocalSpace(sm, () -> create(sm, particleMapper));
+
         for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
             result.add(FireParticle.randomParticle(getPosition(), force * 2, 2));
         }

@@ -230,27 +230,43 @@ public class RigidBody {
      * @param vbi initial velocity of centre of mass on object b
      * @param wai initial angular velocity of object a
      * @param wbi initial angular velocity of object b
-     * @param normal normal to collision point, the line along which the impulse acts. Must be normalized
      * @param IIA inverse inertia tensor for body a in absolute coordinates
      * @param IIB inverse inertia tensor for body b in absolute coordinates
-     * @author 1998-2017 Richard, Steve or Todd
+     * @param normal normal to collision point, the line along which the impulse acts according to body b. Must be normalized
      */
     private static void collisionResponseAlt(float ma, float mb, Vector3f ra, Vector3f rb, Vector3f vai,
-                                             Vector3f vbi, Vector3f wai, Vector3f wbi, Vector3f normal, Matrix3f IIA, Matrix3f IIB) {
-        float upper = -2 * (vai.dot(normal));
-        final Vector3f dOmegaA = ra.cross(normal, new Vector3f());
-        Vector3f rotationA = dOmegaA.mul(IIA, new Vector3f()).cross(ra, new Vector3f());
-        final Vector3f dOmegaB = rb.cross(normal, new Vector3f());
-        Vector3f rotationB = dOmegaB.mul(IIB, new Vector3f()).cross(rb, new Vector3f());
+                                             Vector3f vbi, Vector3f wai, Vector3f wbi, Matrix3f IIA, Matrix3f IIB, Vector3f normal) {
+        final float upper = -2 * (vai.dot(normal));
+
+        final Vector3f dOmegaA = new Vector3f(ra);
+        dOmegaA.cross(normal);
+        dOmegaA.mul(IIA);
+        Vector3f rotationA = dOmegaA.cross(ra, new Vector3f());
+
+        final Vector3f dOmegaB = new Vector3f(rb);
+        dOmegaB.cross(normal);
+        dOmegaB.mul(IIB);
+
+        Vector3f rotationB = dOmegaB.cross(rb, new Vector3f());
+
         float rotFallOff = rotationA.add(rotationB, new Vector3f()).dot(normal);
 
-        float Jmod = upper / ((1 / ma) + (1 / mb) + rotFallOff);
-        Vector3f J = normal.mul(Jmod, new Vector3f());
+        final float lower = (1 / ma) + (1 / mb) + rotFallOff;
 
-        vai.sub(J.mul(1 / ma), vai);
-        vbi.sub(J.mul(1 / mb), vbi);
-        wai.sub(dOmegaA, wai);
-        wbi.sub(dOmegaB, wbi);
+        float impulseMagnitude = upper / lower;
+        Vector3f Jr = normal.mul(impulseMagnitude, new Vector3f());
+
+        // vai = vai - ((Jr / ma) * normal)
+        final Vector3f motionA = new Vector3f(Jr);
+        motionA.div(ma).mul(normal);
+        vai.sub(motionA, vai);
+
+        final Vector3f motionB = new Vector3f(Jr);
+        motionB.div(mb).mul(normal);
+        vbi.add(motionB, vbi);
+
+        wai.sub(dOmegaA.mul(Jr), wai);
+        wbi.add(dOmegaB.mul(Jr), wbi);
     }
 
     /**
@@ -263,18 +279,27 @@ public class RigidBody {
      * @param normal normal to collision point, the line along which the impulse acts. Must be normalized.
      */
     private static void collisionWithStaticResponseAlt(float mass, Matrix3f invertedInertiaTensor, Vector hitPos, DirVector velocity, Vector3f rotationVec, DirVector normal){
-        float upper = -2 * (velocity.dot(normal));
-        final Vector3f dOmega = hitPos.cross(normal, new Vector3f()).mul(invertedInertiaTensor, new Vector3f());
-        Vector3f rotationA = dOmega.cross(hitPos, new Vector3f());
-        float rotFallOff = rotationA.dot(normal);
 
-        float Jmod = upper / ((1 / mass)  + rotFallOff);
+        final float upper = -2 * (velocity.dot(normal));
 
-        Vector3f J = normal.mul(Jmod, new Vector3f());
-        // hitPos.cross(J) == rotationA
+        final Vector3f dOmega = new Vector3f(hitPos);
+        dOmega.cross(normal);
+        dOmega.mul(invertedInertiaTensor);
 
-        velocity.sub(J.mul(1 / mass), velocity);
-        rotationVec.sub(dOmega, rotationVec);
+        Vector3f rotation = dOmega.cross(hitPos, new Vector3f());
+        float rotFallOff = rotation.dot(normal);
+
+        final float lower = (1 / mass) + rotFallOff;
+
+        float impulseMagnitude = upper / lower;
+        Vector3f Jr = normal.mul(impulseMagnitude, new Vector3f());
+
+        // vai = vai - ((Jr / ma) * normal)
+        final Vector3f motionA = new Vector3f(Jr);
+        motionA.div(mass).mul(normal);
+        velocity.add(motionA, velocity);
+
+        rotationVec.add(dOmega.mul(Jr), rotationVec);
     }
 
 
@@ -288,7 +313,7 @@ public class RigidBody {
          * @param normal normal to collision point, the line along which the impulse acts. Must be normalized.
          */
     private static void collisionWithStaticResponse(float mass, Matrix3f invertedInertiaTensor, Vector hitPos, DirVector velocity, Vector3f rotationVec, DirVector normal){
-        Toolbox.printSpamless("0", hitPos, new PosVector(rotationVec), new DirVector(normal), "\n" + invertedInertiaTensor);
+        Toolbox.printSpamless("cwsr", hitPos, new PosVector(rotationVec), new DirVector(normal), "\n" + invertedInertiaTensor);
 
         Vector3f angularVelChange  = normal.cross(hitPos, new Vector3f()); // start calculating the change in angular rotation of a
         invertedInertiaTensor.transform(angularVelChange);
@@ -314,40 +339,51 @@ public class RigidBody {
      *
      * @param alpha one entity, may be static
      * @param beta another object, may be static
-     * @throws NullPointerException if both bodies have infinite mass
+     * @throws NullPointerException may be thrown if both bodies have infinite mass
      */
     @SuppressWarnings("ConstantConditions")
     public static void process(RigidBody alpha, RigidBody beta) {
 
         if (alpha.source instanceof AbstractProjectile) {
-            ((AbstractProjectile) alpha.source).hit(beta.source, alpha.hitPosition);
+            final AbstractProjectile projectile = (AbstractProjectile) alpha.source;
+            projectile.hit(beta.source, alpha.hitPosition);
+
         } else if (beta.source instanceof AbstractProjectile) {
-            ((AbstractProjectile) beta.source).hit(alpha.source, beta.hitPosition);
+            final AbstractProjectile projectile = (AbstractProjectile) beta.source;
+            projectile.hit(alpha.source, beta.hitPosition);
         }
 
-        // the 'mass != 0' checks are no longer part of the implementation, but still handle the hypothetical situation well
+        // check for zero-mass collisions (which are ignored)
+        if ((alpha.mass == 0) || (beta.mass == 0)) return;
+        // check for projectile collisions; if there is no dynamic collision, this is ignored
+        else if (COLLISION_RESPONSE_LEVEL < 2) {
+            if ((alpha.source instanceof AbstractProjectile) || (beta.source instanceof AbstractProjectile)) return;
+        }
+
         if (COLLISION_RESPONSE_LEVEL == 0) {
             if (alpha.contactNormal != null) alpha.collisionResponseSimple();
             if (beta.contactNormal != null) beta.collisionResponseSimple();
 
         } else if (COLLISION_RESPONSE_LEVEL == 1) {
-            if (!Float.isInfinite(alpha.mass) && (alpha.mass != 0)) alpha.collisionWithStaticResponse();
-            if (!Float.isInfinite(beta.mass) && (beta.mass != 0)) beta.collisionWithStaticResponse();
+            if (!Float.isInfinite(alpha.mass)) alpha.collisionWithStaticResponse();
+            if (!Float.isInfinite(beta.mass)) beta.collisionWithStaticResponse();
 
         } else if (COLLISION_RESPONSE_LEVEL == 2) {
-            if ((Float.isInfinite(beta.mass) || (beta.mass == 0)) && (alpha.mass != 0)) alpha.collisionWithStaticResponse();
-            else if (Float.isInfinite(alpha.mass) || (alpha.mass == 0)) beta.collisionWithStaticResponse();
-            else collisionResponse(alpha, beta);
-        }
+            if (Float.isInfinite(beta.mass)) alpha.collisionWithStaticResponse();
+            else if (Float.isInfinite(alpha.mass)) beta.collisionWithStaticResponse();
+            else dynamicCollisionResponse(alpha, beta);
+
+        } else throw new IllegalArgumentException("COLLISION_RESPONSE_LEVEL = " + COLLISION_RESPONSE_LEVEL);
     }
 
-    public static void collisionResponse(RigidBody alpha, RigidBody beta) {
+    public static void dynamicCollisionResponse(RigidBody alpha, RigidBody beta) {
         collisionResponseAlt(
                 alpha.mass, beta.mass,
                 alpha.vectorToHitPos(), beta.vectorToHitPos(),
                 alpha.velocity, beta.velocity,
                 alpha.rotationSpeedVector, beta.rotationSpeedVector,
-                alpha.contactNormal, alpha.invInertTensor, beta.invInertTensor
+                alpha.invInertTensor, beta.invInertTensor,
+                beta.contactNormal
         );
     }
 }
