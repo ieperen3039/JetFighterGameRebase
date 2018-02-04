@@ -30,17 +30,11 @@ public class ExplosionLaboratory extends GameState {
         final AbstractJet playerJet = player.jet();
         playerJet.set();
 
-        new Thread(() -> {
-            try {
-                Thread.sleep(5000);
-                particles.addAll(playerJet.explode());
-                dynamicEntities.remove(playerJet);
-                Toolbox.print("BOOM");
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }).start();
+        new Toolbox.DelayedAction(1000, () -> {
+            particles.addAll(playerJet.explode());
+            dynamicEntities.remove(playerJet);
+            Toolbox.print("BOOM");
+        });
 
         dynamicEntities.add(playerJet);
 //        for (int i = 0; i < 20; i++) {

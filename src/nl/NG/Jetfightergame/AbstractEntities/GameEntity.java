@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -219,8 +218,6 @@ public abstract class GameEntity implements MovingEntity{
         final DirVector contactNormal = nextCrash.get().normal;
         // fraction of deltaTime until collision
         final float timeScalar = nextCrash.get().timeScalar * 0.99f; // prevent rounding errors.
-        // current rotation speed of airplane
-        final Vector3f rotationSpeedVector = new Vector3f(rollSpeed, pitchSpeed, yawSpeed);
         // object rotation when hitting
         Quaternionf interRotation = new Quaternionf();
         rotation.nlerp(extraRotation, timeScalar, interRotation);

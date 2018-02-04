@@ -22,10 +22,10 @@ import org.joml.Quaternionf;
 public class CollisionLaboratory extends GameState {
 
     private static final float CUBESIZE = 1f;
-    private static final float CUBEMASS = 2f;
+    private static final float CUBEMASS = 10f;
     private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 1;
-    private static final float INIT_SPEED = LAB_SIZE/5f;
+    private static final int NR_OF_CUBES = 2;
+    private static final float INIT_SPEED = 0;
 
     private final int labSize;
     private final int nrOfCubes;
@@ -40,7 +40,7 @@ public class CollisionLaboratory extends GameState {
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
         this.speeds = INIT_SPEED;
-//        this.speeds = labSize/3;
+//        this.speeds = labSize/5;
 //        getTimer().setGameTimeMultiplier(2f);
     }
 
@@ -66,9 +66,9 @@ public class CollisionLaboratory extends GameState {
                     FallingCube cube = new FallingCube(
                             Material.SILVER, CUBEMASS, CUBESIZE,
                             pos.scale(0.8f, pos).toPosVector(),
-                            random, new Quaternionf().rotate(2, 0, 1), getTimer()
+                            random, new Quaternionf(), getTimer()
                     );
-                    cube.addRandomRotation(0.3f);
+                    cube.addRandomRotation(0.2f);
                     dynamicEntities.add(cube);
                     if (--remainingCubes <= 0) break cubing;
                 }
@@ -81,7 +81,7 @@ public class CollisionLaboratory extends GameState {
     @SuppressWarnings("ConstantConditions")
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-        final int version = 3;
+        final int version = 1;
 
         switch (version){
             case 1:

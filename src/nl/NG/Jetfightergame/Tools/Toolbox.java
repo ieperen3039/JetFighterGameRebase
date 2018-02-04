@@ -134,12 +134,38 @@ public class Toolbox {
      */
     public static void exitJava() {
         if (!Settings.DEBUG) return;
-        System.out.println();
-        System.out.println("Ending JVM");
-        throw new RuntimeException();
+        try {
+            System.out.println();
+            Toolbox.printFrom(2, "Ending JVM");
+            Thread.sleep(10);
+            System.err.println();
+        } finally {
+            throw new RuntimeException();
+        }
     }
 
     public static boolean almostZero(float number) {
         return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
+    }
+
+    public static class DelayedAction extends Thread {
+        private final long delay;
+
+        public DelayedAction(long delay, Runnable action) {
+            super(action);
+            this.delay = delay;
+            this.setDaemon(true);
+            start();
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(delay);
+                super.run();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
