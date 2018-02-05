@@ -1,14 +1,18 @@
 package nl.NG.Jetfightergame.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
+
+import java.util.Collection;
 
 /**
  * @author Geert van Ieperen
@@ -25,9 +29,19 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     public EnvironmentManager(Player player, GameTimer time) {
         this.time = time;
-        instance = new PlayerJetLaboratory(this.time);
         this.player = player;
+        instance = new PlayerJetLaboratory(time);
         instance.buildScene(player);
+    }
+
+    @Override
+    public void addEntity(GameEntity entity) {
+        instance.addEntity(entity);
+    }
+
+    @Override
+    public void addParticles(Collection<Particle> newParticles) {
+        instance.addParticles(newParticles);
     }
 
     public enum Worlds {
@@ -88,7 +102,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
                 instance = new ExplosionLaboratory(time);
                 break;
             default:
-                Toolbox.print("Environment not properly installed: " + implementation + " (did we forget a break statement?)");
+                Toolbox.print("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
                 instance = new MissionMenu(time);
         }
 

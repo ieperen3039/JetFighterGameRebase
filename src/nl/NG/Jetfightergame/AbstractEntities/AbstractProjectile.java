@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.Engine.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -16,14 +17,16 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
     private final float airResistCoeff;
 
     protected float timeToLive;
+    private final EntityManager particleDeposit;
 
     public AbstractProjectile(
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive
+            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, EntityManager particleDeposit
     ) {
         super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, gameTimer);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
+        this.particleDeposit = particleDeposit;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
@@ -31,6 +34,11 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
 
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
+        timeToLive -= deltaTime;
+        if (isDead()) {
+            particleDeposit.addParticles(this.explode());
+            return;
+        }
 
         netForce.add(forward.reducedTo(getThrust(forward), new DirVector()), netForce);
 
@@ -46,7 +54,6 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
 
-        timeToLive -= deltaTime;
     }
 
     @Override

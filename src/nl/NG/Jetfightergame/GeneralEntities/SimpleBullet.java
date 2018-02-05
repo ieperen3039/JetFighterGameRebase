@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.GeneralEntities;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Engine.EntityManager;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
@@ -29,8 +30,13 @@ public class SimpleBullet extends AbstractProjectile {
     private static final float MASS = 0.1f;
     private static final float AIR_RESIST_COEFF = 0.01f;
 
-    public SimpleBullet(PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation, GameTimer gameTimer) {
-        super(Material.SILVER, MASS, 1, initialPosition, initialVelocity, initialRotation, gameTimer, AIR_RESIST_COEFF, 1000 / initialVelocity.length());
+    public SimpleBullet(PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
+                        GameTimer gameTimer, EntityManager particleDeposit
+    ) {
+        super(
+                Material.SILVER, MASS, 1, initialPosition, initialVelocity, initialRotation, gameTimer, AIR_RESIST_COEFF,
+                1000 / initialVelocity.length(), particleDeposit
+        );
     }
 
     @Override

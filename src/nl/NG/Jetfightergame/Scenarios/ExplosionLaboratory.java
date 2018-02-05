@@ -19,6 +19,8 @@ import nl.NG.Jetfightergame.Vectors.PosVector;
  */
 public class ExplosionLaboratory extends GameState {
 
+    private Toolbox.DelayedAction action;
+
     public ExplosionLaboratory(GameTimer time) {
         super(time);
     }
@@ -30,10 +32,10 @@ public class ExplosionLaboratory extends GameState {
         final AbstractJet playerJet = player.jet();
         playerJet.set();
 
-        new Toolbox.DelayedAction(1000, () -> {
+        action = new Toolbox.DelayedAction(1000, () -> {
+            Toolbox.print("BOOM");
             particles.addAll(playerJet.explode());
             dynamicEntities.remove(playerJet);
-            Toolbox.print("BOOM");
         });
 
         dynamicEntities.add(playerJet);
@@ -54,6 +56,12 @@ public class ExplosionLaboratory extends GameState {
     public void drawObjects(GL2 gl) {
         Toolbox.drawAxisFrame(gl);
         super.drawObjects(gl);
+    }
+
+    @Override
+    public void cleanUp() {
+        action.cancel();
+        super.cleanUp();
     }
 
     @Override

@@ -63,7 +63,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             if (Settings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(Settings.TARGET_FPS);
             else globalGameTimer = new GameTimer();
 
-            player = new Player(playerInput, new BasicJet(playerInput, globalGameTimer));
+            player = new Player(playerInput, new BasicJet(playerInput, globalGameTimer, environment));
 
             environment = new EnvironmentManager(player, globalGameTimer);
 

@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.EntityManager;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
 import nl.NG.Jetfightergame.Engine.GLMatrix.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -37,15 +38,17 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     protected final float yawAcc;
     protected final float pitchAcc;
     protected final float rollAcc;
-    protected final float yReduction;
-    protected final float zReduction;
+    protected final float yPreservation;
+    protected final float zPreservation;
 
-    private final float rotationReductionFactor;
+    private final float rotationPreserveFactor;
 
     /** lose it all, and you're dead */
     protected int hitPoints;
     /** the number of hitpoints cannot exceed this number */
     private final int maxHeath;
+    /** particles and new entities should be passed to this object */
+    private final EntityManager entityDeposit;
 
     protected Controller input;
     private DirVector forward;
@@ -73,13 +76,15 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
      * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
      * @param hitPoints                the amount of damage this plane can take before exploding
+     * @param entityDeposit            the class that allows new entities and particles to be added to the environment
      */
     public AbstractJet(
             Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
-            int hitPoints) {
+            int hitPoints, EntityManager entityDeposit
+    ) {
         super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
 
         this.input = input;
@@ -90,11 +95,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         this.pitchAcc = pitchAcc;
         this.rollAcc = rollAcc;
         this.liftFactor = liftFactor;
-        this.rotationReductionFactor = rotationReductionFactor;
-        this.yReduction = yReduction;
-        this.zReduction = zReduction;
+        this.rotationPreserveFactor = 1 - rotationReductionFactor;
+        this.yPreservation = 1 - yReduction;
+        this.zPreservation = 1 - zReduction;
         this.hitPoints = hitPoints;
         this.maxHeath = hitPoints;
+        this.entityDeposit = entityDeposit;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
@@ -119,10 +125,15 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower));
         netForce.add(forward.reducedTo(thrust, new DirVector()), netForce);
 
-        float preserveFraction = (float) (StrictMath.pow(1 - rotationReductionFactor, deltaTime));
-        yawSpeed *= preserveFraction;
-        pitchSpeed *= preserveFraction;
-        rollSpeed *= preserveFraction;
+
+        float yPreserveFraction = instantPreserveFraction(yPreservation, deltaTime);
+        float zPreserveFraction = instantPreserveFraction(zPreservation, deltaTime);
+        extraVelocity.set(extraVelocity.x(), extraVelocity.y() * yPreserveFraction, extraVelocity.z() * zPreserveFraction);
+
+        float rotationPreserveFraction = instantPreserveFraction(rotationPreserveFactor, deltaTime);
+        yawSpeed *= rotationPreserveFraction;
+        pitchSpeed *= rotationPreserveFraction;
+        rollSpeed *= rotationPreserveFraction;
 
         // rotational forces
         float instYawAcc = yawAcc * deltaTime;
@@ -140,7 +151,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        velocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
+        extraVelocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
@@ -157,6 +168,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     @Override
     public void impact(PosVector impact, float power) {
         hitPoints -= power + 1;
+        if (isDead()) entityDeposit.addParticles(this.explode());
     }
 
     public boolean isDead() {
@@ -230,6 +242,10 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         }
 
         return result;
+    }
+
+    private static float instantPreserveFraction(float rotationPreserveFactor, float deltaTime) {
+        return (float) (StrictMath.pow(rotationPreserveFactor, deltaTime));
     }
 
     /**

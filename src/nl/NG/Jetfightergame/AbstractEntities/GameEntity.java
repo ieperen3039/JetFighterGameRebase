@@ -65,16 +65,14 @@ public abstract class GameEntity implements MovingEntity{
 
     /**
      * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
-     *
-     * @param surfaceMaterial material properties
+     *  @param surfaceMaterial material properties
      * @param mass the mass of the object in kilograms.
      * @param scale           scalefactor applied to this object. the scale is in global space and executed in
-     *                        {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
+ *                        {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param gameTimer       A timer that defines rendering, in order to let {@link MovingEntity#interpolatedPosition()} return the position
-     *                        interpolated on current render time
      */
     public GameEntity(
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,

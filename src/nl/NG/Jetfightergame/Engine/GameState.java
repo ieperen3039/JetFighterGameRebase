@@ -1,9 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
@@ -136,7 +133,6 @@ public abstract class GameState implements Environment {
             if (entity instanceof MortalEntity) {
                 MortalEntity unit = (MortalEntity) entity;
                 if (unit.isDead()) {
-                    particles.addAll(unit.explode());
                     iterator.remove();
                 }
             }
@@ -148,10 +144,12 @@ public abstract class GameState implements Environment {
     /**
      * @return false iff neither hits the other
      */
-    public boolean checkCollisionPair(MovingEntity moving, Touchable either, float deltaTime) {
-        return moving.checkCollisionWith(either, deltaTime) || (
-                        (either instanceof MovingEntity) && ((MovingEntity) either).checkCollisionWith(moving, deltaTime)
-        );
+    @SuppressWarnings("SimplifiableIfStatement")
+    private boolean checkCollisionPair(MovingEntity moving, Touchable either, float deltaTime) {
+        if ((moving instanceof MortalEntity) && ((MortalEntity) moving).isDead()) return false;
+        if ((either instanceof MortalEntity) && ((MortalEntity) either).isDead()) return false;
+        if (moving.checkCollisionWith(either, deltaTime)) return true;
+        return (either instanceof MovingEntity) && ((MovingEntity) either).checkCollisionWith(moving, deltaTime);
     }
 
     protected abstract DirVector entityNetforce(MovingEntity entity);
@@ -172,6 +170,7 @@ public abstract class GameState implements Environment {
         dynamicEntities.forEach(obj -> {
             dynamicEntities.stream()
                     // this makes sure that one object pair does not occur the other way around.
+                    // It compares in a random, yet consistent way
                     .filter(other -> other.hashCode() >= obj.hashCode())
                     // as hashcode does not guarantees an identifier, we can not assume equality.
                     .filter(other -> !other.equals(obj))
@@ -253,6 +252,20 @@ public abstract class GameState implements Environment {
     @Override
     public int getNumberOfLights() {
         return lights.size();
+    }
+
+    @Override
+    public void addEntity(GameEntity entity) {
+        writeLock.lock();
+        dynamicEntities.add(entity);
+        writeLock.unlock();
+    }
+
+    @Override
+    public void addParticles(Collection<Particle> newParticles) {
+        writeLock.lock();
+        particles.addAll(newParticles);
+        writeLock.unlock();
     }
 
     /**
