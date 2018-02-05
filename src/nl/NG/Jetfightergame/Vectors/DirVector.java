@@ -78,7 +78,7 @@ public class DirVector extends Vector {
     }
 
     /**
-     * sets the length of this vector to {@code newLength}
+     * sets the length of this vector to {@code newLength},
      * also accepts negative length (result will point to the other side)
      * @param newLength the new length of this vector
      * @param dest the target where the result will be stored in

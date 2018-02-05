@@ -119,16 +119,16 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param velocity  movement vector with length in (m/s)
      */
     private void gyroPhysics(float deltaTime, DirVector netForce, DirVector velocity) {
+        DirVector temp = new DirVector();
 
         // thrust forces
         float throttle = input.throttle();
         float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower));
-        netForce.add(forward.reducedTo(thrust, new DirVector()), netForce);
+        netForce.add(forward.reducedTo(thrust, temp), netForce);
 
-
-        float yPreserveFraction = instantPreserveFraction(yPreservation, deltaTime);
-        float zPreserveFraction = instantPreserveFraction(zPreservation, deltaTime);
-        extraVelocity.set(extraVelocity.x(), extraVelocity.y() * yPreserveFraction, extraVelocity.z() * zPreserveFraction);
+        float yPres = instantPreserveFraction(yPreservation, deltaTime);
+        float zPres = instantPreserveFraction(zPreservation, deltaTime);
+        extraVelocity.set(extraVelocity.x(), extraVelocity.y() * yPres, extraVelocity.z() * zPres);
 
         float rotationPreserveFraction = instantPreserveFraction(rotationPreserveFactor, deltaTime);
         yawSpeed *= rotationPreserveFraction;
@@ -147,14 +147,14 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         DirVector airResistance = new DirVector();
         float speed = velocity.length();
         velocity.reducedTo(speed * speed * airResistCoeff * -1, airResistance);
-        velocity.add(airResistance.scale(deltaTime, airResistance));
+        extraVelocity.add(airResistance.scale(deltaTime, temp));
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        extraVelocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
+        extraVelocity.add(netForce.scale(deltaTime / mass, temp), extraVelocity);
 
         // collect extrapolated variables
-        position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
+        position.add(extraVelocity.scale(deltaTime, temp), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }
 
@@ -172,7 +172,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     public boolean isDead() {
-        return hitPoints > 0;
+        return hitPoints <= 0;
     }
 
     /**

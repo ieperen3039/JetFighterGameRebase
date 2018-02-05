@@ -102,14 +102,12 @@ public abstract class GameEntity implements MovingEntity{
 
         nextCrash = new Extreme<>(false);
 
+        extraPosition.set(position);
+        extraRotation.set(rotation);
+        extraVelocity.set(velocity);
+
         // nothing to do when no time is passed
-        if (deltaTime != 0) {
-            applyPhysics(netForce, deltaTime);
-        } else {
-            extraRotation.set(rotation);
-            extraPosition.set(position);
-            extraVelocity.set(velocity);
-        }
+        if (deltaTime != 0) applyPhysics(netForce, deltaTime);
 
         updateShape(deltaTime);
 
