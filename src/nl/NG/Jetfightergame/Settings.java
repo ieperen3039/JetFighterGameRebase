@@ -24,7 +24,7 @@ public final class Settings {
     public static boolean SAVE_PLAYBACK = false;
 
     /** collision settings */
-    public static final short COLLISION_RESPONSE_LEVEL = 2;
+    public static final short COLLISION_RESPONSE_LEVEL = 0;
     public static final int MAX_COLLISION_ITERATIONS = 500/TARGET_TPS;
     public static boolean FIXED_DELTA_TIME = false;
 

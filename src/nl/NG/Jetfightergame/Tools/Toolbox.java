@@ -148,8 +148,13 @@ public class Toolbox {
         return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
     }
 
+    /**
+     * runs the specified action after the given delay.
+     * This may be cancelled, upon which this thread will not do anything after the delay ends.
+     */
     public static class DelayedAction extends Thread {
         private final long delay;
+        private boolean cancelled = false;
 
         public DelayedAction(long delay, Runnable action) {
             super(action);
@@ -158,11 +163,15 @@ public class Toolbox {
             start();
         }
 
+        public void cancel(){
+            cancelled = true;
+        }
+
         @Override
         public void run() {
             try {
                 Thread.sleep(delay);
-                super.run();
+                if (!cancelled) super.run();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

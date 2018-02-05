@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.Scenarios.Environment;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
+import nl.NG.Jetfightergame.Tools.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -20,7 +21,6 @@ import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 
 import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -38,9 +38,9 @@ import static org.lwjgl.opengl.GL11.glDisable;
 public abstract class GameState implements Environment {
 
     private static final int COLLISION_COUNT_AVERAGE = 5;
-    private Queue<Integer> avgCollision = new ArrayBlockingQueue<>(COLLISION_COUNT_AVERAGE);
+    private AveragingQueue avgCollision = new AveragingQueue(COLLISION_COUNT_AVERAGE);
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) ->
-            hud.printRoll(String.format("Collision count: %1.01f", avgCollision.stream().mapToInt(Integer::intValue).average().orElse(0)));
+            hud.printRoll(String.format("Collision count: %1.01f", avgCollision.average()));
 
     protected Collection<Touchable> staticEntities = new ArrayList<>();
     protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
@@ -50,7 +50,12 @@ public abstract class GameState implements Environment {
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
     private final GameTimer time;
+
     private ReentrantReadWriteLock entityModificationLock = new ReentrantReadWriteLock();
+    /** used when a list is iterated, but all items stay in this list */
+    private Lock readLock = entityModificationLock.readLock();
+    /** used when items in a list are removed, added or any combination of these */
+    private Lock writeLock = entityModificationLock.writeLock();
 
     public GameState(GameTimer time) {
         this.time = time;
@@ -70,7 +75,6 @@ public abstract class GameState implements Environment {
         if (deltaTime == 0) return;
 
         // update positions and apply physics
-        Lock readLock = entityModificationLock.readLock();
         readLock.lock();
         dynamicEntities.parallelStream()
                 .forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
@@ -115,31 +119,20 @@ public abstract class GameState implements Environment {
                 postCollisions
                         .forEach(r -> r.apply(deltaTime, currentTime));
 
-                removeDeadUnits(); // TODO remove based on hints
-
             } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
-            while (avgCollision.size() >= COLLISION_COUNT_AVERAGE) avgCollision.remove();
-            avgCollision.offer(newCollisions);
+            avgCollision.add(newCollisions);
 
             if (remainingLoops == 0) {
                 Toolbox.print(collisionPairs.size() + " collisions not resolved after " + newCollisions + " calculations");
             }
         }
 
-        readLock.lock();
-        dynamicEntities.forEach(e -> e.update(currentTime));
-        readLock.unlock();
-    }
-
-    public void removeDeadUnits() {
-        Lock writeLock = entityModificationLock.writeLock();
         writeLock.lock();
-
-        // check for dead units
         Iterator<MovingEntity> iterator = dynamicEntities.iterator();
         while (iterator.hasNext()) {
             MovingEntity entity = iterator.next();
+            entity.update(currentTime);
             if (entity instanceof MortalEntity) {
                 MortalEntity unit = (MortalEntity) entity;
                 if (unit.isDead()) {
@@ -148,8 +141,8 @@ public abstract class GameState implements Environment {
                 }
             }
         }
-
         writeLock.unlock();
+
     }
 
     /**
@@ -173,6 +166,7 @@ public abstract class GameState implements Environment {
     private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
         allEntityPairs = new ArrayList<>();
 
+        readLock.lock();
         // Naive solution: return all n^2 options
         // check all moving objects against (1: all other moving objects, 2: all static objects)
         dynamicEntities.forEach(obj -> {
@@ -187,6 +181,7 @@ public abstract class GameState implements Environment {
             staticEntities
                     .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
         });
+        readLock.unlock();
 
         if (DEBUG) {
             final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
@@ -199,8 +194,7 @@ public abstract class GameState implements Environment {
 
     @Override
     public void setLights(GL2 gl) {
-        Lock writeLock = entityModificationLock.writeLock();
-        writeLock.lock();
+        readLock.lock();
 
         for (Pair<PosVector, Color4f> l : lights) {
             final PosVector pos = l.left;
@@ -220,13 +214,12 @@ public abstract class GameState implements Environment {
             }
         }
 
-        writeLock.unlock();
+        readLock.unlock();
     }
 
     @Override
     public void drawObjects(GL2 gl) {
 //        Toolbox.drawAxisFrame(gl);
-        Lock readLock = entityModificationLock.readLock();
         readLock.lock();
 
         staticEntities.forEach(d -> d.draw(gl));
@@ -239,14 +232,17 @@ public abstract class GameState implements Environment {
 
     @Override
     public void drawParticles(GL2 gl){
-        Lock writeLock = entityModificationLock.writeLock();
-        writeLock.lock();
-
+        readLock.lock();
         particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
-        particles.removeIf(Particle::isOverdue);
-        particles.forEach(p -> p.draw(gl));
+        readLock.unlock();
 
+        writeLock.lock();
+        particles.removeIf(Particle::isOverdue);
         writeLock.unlock();
+
+        readLock.lock();
+        particles.forEach(p -> p.draw(gl));
+        readLock.unlock();
     }
 
     @Override
@@ -263,13 +259,18 @@ public abstract class GameState implements Environment {
      * (this method may be redundant)
      */
     public void cleanUp() {
-        entityModificationLock.writeLock().lock();
-        ScreenOverlay.removeHudItem(collisionCounter);
-        dynamicEntities.clear();
-        staticEntities.clear();
-        lights.clear();
-        particles.clear();
-        if (allEntityPairs != null) allEntityPairs.clear();
-        System.gc();
+        try {
+            writeLock.lockInterruptibly();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            ScreenOverlay.removeHudItem(collisionCounter);
+            dynamicEntities.clear();
+            staticEntities.clear();
+            lights.clear();
+            particles.clear();
+            if (allEntityPairs != null) allEntityPairs.clear();
+            System.gc();
+        }
     }
 }

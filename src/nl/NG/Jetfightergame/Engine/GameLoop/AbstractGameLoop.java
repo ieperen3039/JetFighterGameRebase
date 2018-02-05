@@ -2,12 +2,11 @@ package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Tools.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
@@ -31,7 +30,7 @@ public abstract class AbstractGameLoop extends Thread {
     private final boolean notifyDelay;
     private Consumer<Exception> exceptionHandler;
 
-    private Queue<Float> avgTPS;
+    private AveragingQueue avgTPS;
     private final Consumer<ScreenOverlay.Painter> tickCounter;
 
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
@@ -39,9 +38,9 @@ public abstract class AbstractGameLoop extends Thread {
         this.notifyDelay = notifyDelay;
         this.exceptionHandler = exceptionHandler;
         loopName = name;
-        avgTPS = new ArrayBlockingQueue<>(targetTps/2);
+        avgTPS = new AveragingQueue(targetTps/2);
         tickCounter = (hud) ->
-                hud.printRoll(String.format("%s: %1.01f", name, avgTPS.stream().mapToDouble(Float::doubleValue).average().orElse(0)));
+                hud.printRoll(String.format("%s: %1.01f", name, avgTPS.average()));
     }
 
     /**
@@ -97,8 +96,7 @@ public abstract class AbstractGameLoop extends Thread {
                 // print Ticks per Second
                 float realTPS = 1000f / loopTimer.getElapsedTime();
                 TPSMinimum.updateAndPrint(loopName, realTPS, "per second");
-                while (avgTPS.size() >= (targetTps / 2)) avgTPS.remove();
-                avgTPS.offer(realTPS);
+                avgTPS.add(realTPS);
 
                 // store the duration and set this as length of next update
                 deltaTime = loopTimer.getElapsedSeconds();

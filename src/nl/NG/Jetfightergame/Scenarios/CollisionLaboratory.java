@@ -24,7 +24,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBESIZE = 1f;
     private static final float CUBEMASS = 10f;
     private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 2;
+    private static final int NR_OF_CUBES = 8;
     private static final float INIT_SPEED = 0;
 
     private final int labSize;
@@ -81,7 +81,7 @@ public class CollisionLaboratory extends GameState {
     @SuppressWarnings("ConstantConditions")
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-        final int version = 1;
+        final int version = 3;
 
         switch (version){
             case 1:
