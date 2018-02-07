@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ShapeCreators;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.Renderable;
 import nl.NG.Jetfightergame.Tools.Pair;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
 import nl.NG.Jetfightergame.Vectors.Vector;
@@ -145,6 +146,7 @@ public class Mesh implements Renderable {
     public static void cleanAll() {
         while (!registeredMeshes.isEmpty()){
             registeredMeshes.peek().dispose();
+            Toolbox.checkGLError();
         }
     }
 

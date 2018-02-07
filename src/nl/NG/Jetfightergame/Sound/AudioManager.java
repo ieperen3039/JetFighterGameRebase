@@ -20,24 +20,20 @@ import static org.lwjgl.openal.EXTEfx.ALC_MAX_AUXILIARY_SENDS;
  */
 public class AudioManager {
 
+    // default device
+    private static final long device = ALC10.alcOpenDevice((ByteBuffer) null);
+
+    /**
+     * set up openAL environment
+     */
     public AudioManager() {
-        // Initialize OpenAL and clear the error bit.
-
-        // default device
-        long device = ALC10.alcOpenDevice((ByteBuffer)null);
-
         // Create a handle for the device capabilities
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
         IntBuffer contextAttribList = BufferUtils.createIntBuffer(16);
-        contextAttribList.put(ALC_REFRESH);
-        contextAttribList.put(60);
-        contextAttribList.put(ALC_SYNC);
-        contextAttribList.put(ALC_FALSE);
-        contextAttribList.put(ALC_MAX_AUXILIARY_SENDS);
-        contextAttribList.put(2);
-        contextAttribList.put(0);
-        contextAttribList.flip();
+        // default attributes
+        int[] attributes = new int[]{ALC_REFRESH, 60, ALC_SYNC, ALC_FALSE, ALC_MAX_AUXILIARY_SENDS, 2, 0};
+        contextAttribList.put(attributes);
 
         // create the context with the provided attributes
         long newContext = ALC10.alcCreateContext(device, contextAttribList);
@@ -87,4 +83,8 @@ public class AudioManager {
         AL10.alListenerfv(AL10.AL_ORIENTATION, orientation);
     }
 
+    public static void closeDevices() {
+        ALC10.alcCloseDevice(device);
+        checkALError();
+    }
 }

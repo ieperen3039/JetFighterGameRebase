@@ -76,6 +76,7 @@ public class AudioFile {
     public static void cleanAll() {
         while (!registeredSoundfiles.isEmpty()){
             registeredSoundfiles.peek().dispose();
+            Toolbox.checkALError();
         }
     }
 

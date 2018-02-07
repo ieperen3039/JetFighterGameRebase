@@ -41,7 +41,7 @@ public abstract class GLFWGameEngine {
      * create a thread for everyone who wants one, open the main window and start the game
      * Rendering must happen in the main thread.
      */
-    public void startGame(){
+    public void root(){
         window.open();
 
         secondaryGameLoops().forEach(Thread::start);

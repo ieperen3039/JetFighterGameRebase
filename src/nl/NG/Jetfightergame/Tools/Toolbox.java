@@ -11,10 +11,8 @@ import org.joml.Vector4f;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.lwjgl.openal.AL10.AL_NO_ERROR;
-import static org.lwjgl.openal.AL10.alGetError;
-import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
-import static org.lwjgl.opengl.GL11.glGetError;
+import static org.lwjgl.openal.AL10.*;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Created by Geert van Ieperen on 31-1-2017.
@@ -127,7 +125,7 @@ public class Toolbox {
         if (!Settings.DEBUG) return;
         int error;
         while ((error = glGetError()) != GL_NO_ERROR) {
-            printFrom(2, ": glError " + error);
+            printFrom(2, "glError " + error + ": " + glGetString(error));
         }
     }
 
@@ -136,7 +134,7 @@ public class Toolbox {
         if (!Settings.DEBUG) return;
         int error;
         while ((error = alGetError()) != AL_NO_ERROR) {
-            printFrom(2, ": alError " + error);
+            printFrom(2, "alError " + error + ": " + alGetString(error));
         }
     }
 

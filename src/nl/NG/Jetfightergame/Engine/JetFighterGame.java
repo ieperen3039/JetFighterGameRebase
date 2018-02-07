@@ -15,6 +15,7 @@ import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
+import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.AudioManager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -114,12 +115,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     public static void main(String args[]) throws Exception {
-        new JetFighterGame().startGame();
+        new JetFighterGame().root();
     }
 
     @Override
     public void cleanUp() {
         Mesh.cleanAll();
+        AudioFile.cleanAll();
+        AudioManager.closeDevices();
         KeyTracker.getInstance().removeKeyListener(this);
     }
 
