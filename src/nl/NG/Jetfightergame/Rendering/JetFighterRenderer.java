@@ -15,7 +15,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Sound.MusicProvider;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
@@ -42,7 +41,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
-                              Camera camera, MusicProvider musicProvider, ControllerManager controllerManager) throws IOException, ShaderException {
+                              Camera camera, ControllerManager controllerManager) throws IOException, ShaderException {
         super("Rendering loop", Settings.TARGET_FPS, false, (ex) -> engine.exitGame());
 
         this.gameState = gameState;
@@ -50,7 +49,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.activeCamera = camera;
         this.engine = engine;
 
-        // TODO allow toggle shader
         shaderManager = new ShaderManager();
 
         ambientLight = Color4f.LIGHT_GREY;
@@ -64,7 +62,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
             }
         };
 
-        new JetFighterMenu(window::getWidth, window::getHeight, musicProvider, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
+        new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
         new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera);
     }
 

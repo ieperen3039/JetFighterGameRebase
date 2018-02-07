@@ -3,7 +3,9 @@ package nl.NG.Jetfightergame.Vectors;
 import nl.NG.Jetfightergame.Settings;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.lwjgl.BufferUtils;
 
+import java.nio.FloatBuffer;
 import java.util.Locale;
 
 import static java.lang.StrictMath.cos;
@@ -93,6 +95,10 @@ public abstract class Vector extends Vector3f{
         float y = (float) (r * sin(theta) * sin(phi));
         float z = (float) (r * cos(theta));
         return new DirVector(x, y, z);
+    }
+
+    public FloatBuffer toFloatBuffer() {
+        return BufferUtils.createFloatBuffer(3).put(new float[]{x, y, z});
     }
 }
 

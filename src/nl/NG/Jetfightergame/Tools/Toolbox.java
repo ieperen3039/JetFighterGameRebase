@@ -11,6 +11,8 @@ import org.joml.Vector4f;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.lwjgl.openal.AL10.AL_NO_ERROR;
+import static org.lwjgl.openal.AL10.alGetError;
 import static org.lwjgl.opengl.GL11.GL_NO_ERROR;
 import static org.lwjgl.opengl.GL11.glGetError;
 
@@ -126,6 +128,15 @@ public class Toolbox {
         int error;
         while ((error = glGetError()) != GL_NO_ERROR) {
             printFrom(2, ": glError " + error);
+        }
+    }
+
+
+    public static void checkALError() {
+        if (!Settings.DEBUG) return;
+        int error;
+        while ((error = alGetError()) != AL_NO_ERROR) {
+            printFrom(2, ": alError " + error);
         }
     }
 

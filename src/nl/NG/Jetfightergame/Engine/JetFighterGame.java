@@ -15,8 +15,7 @@ import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
-import nl.NG.Jetfightergame.Sound.MusicProvider;
-import nl.NG.Jetfightergame.Tools.Timer;
+import nl.NG.Jetfightergame.Sound.AudioManager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -45,6 +44,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     protected AbstractGameLoop renderLoop;
     protected AbstractGameLoop gameLoop;
     private Collection<AbstractGameLoop> otherLoops = new ArrayList<>();
+    protected AudioManager soundEngine;
 
     private final GameTimer globalGameTimer;
     
@@ -76,13 +76,15 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             gameLoop = new JetFighterRunner(environment, e -> this.exitGame());
             otherLoops.add(gameLoop);
 
-            MusicProvider musicProvider = new MusicProvider(new Timer());
+//            MusicProvider musicProvider = new MusicProvider(new Timer());
+            soundEngine = new AudioManager();
 
             ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
 
             renderLoop = new JetFighterRenderer(
-                    this, environment, window, camera, musicProvider, playerInput
+                    this, environment, window, camera, playerInput
             );
+
 
             camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
 

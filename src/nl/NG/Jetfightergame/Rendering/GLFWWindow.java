@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
+import nl.NG.Jetfightergame.Engine.GLException;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -43,11 +44,6 @@ public class GLFWWindow {
     private boolean fullScreen = false;
     private boolean mouseIsCaptured;
 
-    // when #scheduleScreenshot is called, this applies to the next drawing loop.
-    private static boolean nextFrameSchedule = false;
-    private static boolean oldFrameSchedule = false;
-    private int screenRecordFrameNumber = 0;
-
     public GLFWWindow(String title) {
         this(title, 960, 720, true);
     }
@@ -66,7 +62,7 @@ public class GLFWWindow {
 
         // Initialize GLFW
         if (!glfwInit()) {
-            throw new IllegalStateException("Unable to initialize GLFW");
+            throw new GLException("Unable to initialize GLFW");
         }
 
         // Configure window

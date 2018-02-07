@@ -24,9 +24,7 @@ public class MenuButton extends MenuClickable {
     /**
      * create a button that executes a click
      * @param text the text displayed on the button, will also be used to name in case of error
-     * @param width
-     * @param height
-     * @param click
+     * @param click action that is executed when clicking on this button
      */
     public MenuButton(String text, int width, int height, Runnable click) {
         super(width, height);
@@ -38,7 +36,7 @@ public class MenuButton extends MenuClickable {
     public void draw(ScreenOverlay.Painter hud) {
         hud.roundedRectangle(x, y, width, height, INDENT);
 
-        hud.text(x + width /2, y + TEXT_SIZE_LARGE + INTERNAL_MARGIN,
+        hud.text(x + (width / 2), y + TEXT_SIZE_LARGE + INTERNAL_MARGIN,
                 TEXT_SIZE_LARGE, ORBITRON_MEDIUM, NVG_ALIGN_CENTER, TEXT_COLOR,
                 text
         );
@@ -49,7 +47,8 @@ public class MenuButton extends MenuClickable {
         try {
             click.run();
         } catch (Exception ex){
-            throw new RuntimeException("Error occurred in button \"" + text + "\"", ex);
+            System.err.println("Error occurred in button \"" + text + "\":");
+            ex.printStackTrace();
         }
     }
 }

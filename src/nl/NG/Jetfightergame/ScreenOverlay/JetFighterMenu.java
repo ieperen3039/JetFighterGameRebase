@@ -38,7 +38,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable[] controlsMenu;
     private UIElement[] creditScreen;
 
-    public JetFighterMenu(Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier, MusicProvider musicProvider,
+    public JetFighterMenu(Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier,
                           Runnable startGame, Runnable exitGame, ControllerManager input,
                           ShaderManager shaderManager, EnvironmentManager worlds) {
         super(widthSupplier, heightSupplier);
@@ -46,10 +46,10 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
         {
             MenuClickable graphics = graphicsMenu(shaderManager);
-            MenuClickable audio = audioMenu(musicProvider);
+//            MenuClickable audio = audioMenu(musicProvider);
             MenuClickable controls = controlMenu(input);
             MenuClickable backOptions = new MenuButton("Back", () -> switchContentTo(mainMenu));
-            optionMenu = new MenuClickable[]{graphics, audio, controls, backOptions};
+            optionMenu = new MenuClickable[]{graphics, controls, backOptions};
         }
         MenuClickable credits = new MenuButton("Credits", () -> switchContentTo(creditScreen));
         {

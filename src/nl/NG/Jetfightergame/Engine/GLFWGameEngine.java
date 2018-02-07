@@ -59,6 +59,7 @@ public abstract class GLFWGameEngine {
             secondaryGameLoops().forEach(Thread::interrupt);
         } finally {
             Toolbox.checkGLError();
+            Toolbox.checkALError();
             this.cleanUp();
             window.cleanup();
         }

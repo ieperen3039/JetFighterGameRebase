@@ -178,7 +178,7 @@ public class ShapeFromMesh implements Shape {
                 return Files.readAllLines(Paths.get(fileName));
             } catch (IOException e) {
                 e.printStackTrace();
-                System.err.println("Could not read mesh! Continuing game without model...");
+                System.err.println("Could not read mesh '" + fileName + "'. Continuing game without model.");
                 return new ArrayList<>();
             }
         }

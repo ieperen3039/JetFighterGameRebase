@@ -17,12 +17,14 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
 /**
  * @author Jorren
  */
-public class Resource {
+public final class Resource {
 
-    public static String load(String fileName) throws IOException {
+    public static String loadText(String fileName) throws IOException {
         String result;
-        try (InputStream in = new FileInputStream(fileName);
-             Scanner scanner = new Scanner(in, "UTF-8")) {
+        try (
+                InputStream in = new FileInputStream(fileName);
+                Scanner scanner = new Scanner(in, "UTF-8")
+        ) {
             result = scanner.useDelimiter("\\A").next();
         } catch(FileNotFoundException e) {
             throw new IOException("Resource not found: " + fileName);
@@ -39,20 +41,6 @@ public class Resource {
             }
         }
         return list;
-    }
-
-    public static int[] listIntToArray(List<Integer> list) {
-        int[] result = list.stream().mapToInt((Integer v) -> v).toArray();
-        return result;
-    }
-
-    public static float[] listToArray(List<Float> list) {
-        int size = list != null ? list.size() : 0;
-        float[] floatArr = new float[size];
-        for (int i = 0; i < size; i++) {
-            floatArr[i] = list.get(i);
-        }
-        return floatArr;
     }
 
     public static ByteBuffer toByteBuffer(String resource, int bufferSize) throws IOException {
@@ -92,4 +80,16 @@ public class Resource {
         return newBuffer;
     }
 
+    /**
+     * signals that one of the resources/files could not be loaded
+     */
+    public class ResourceException extends IOException{
+        public ResourceException(String message) {
+            super(message);
+        }
+
+        public ResourceException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
 }

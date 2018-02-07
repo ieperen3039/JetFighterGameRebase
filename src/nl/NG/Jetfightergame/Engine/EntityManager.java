@@ -22,4 +22,11 @@ public interface EntityManager {
      * @param newParticles some particles
      */
     void addParticles(Collection<Particle> newParticles);
+
+//    /**
+//     * adds the sound effect to the sound engine.
+//     * Properties of the source should still be managed by the calling method
+//     * @param sound a new sound instance
+//     */
+//    void addSoundEffect(AudioSource sound);
 }

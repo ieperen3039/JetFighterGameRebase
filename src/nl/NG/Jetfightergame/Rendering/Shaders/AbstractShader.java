@@ -37,10 +37,10 @@ public abstract class AbstractShader implements ShaderProgram {
         }
 
         if (vertexPath != null)
-            vertexShaderId = createShader(Resource.load(vertexPath), GL_VERTEX_SHADER);
+            vertexShaderId = createShader(Resource.loadText(vertexPath), GL_VERTEX_SHADER);
 
         if (fragmentPath != null)
-            fragmentShaderId = createShader(Resource.load(fragmentPath), GL_FRAGMENT_SHADER);
+            fragmentShaderId = createShader(Resource.loadText(fragmentPath), GL_FRAGMENT_SHADER);
 
         link();
 

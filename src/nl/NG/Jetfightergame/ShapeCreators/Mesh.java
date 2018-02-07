@@ -23,12 +23,12 @@ import static org.lwjgl.opengl.GL30.*;
  *         created on 17-11-2017.
  */
 public class Mesh implements Renderable {
+    private static Queue<Mesh> registeredMeshes = new ArrayDeque<>();
 
     private int vaoId;
     private int vertexCount;
     private int posVboID;
     private int normVboID;
-    private static Queue<Mesh> registeredMeshes = new ArrayDeque<>();
 
     /**
      * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.

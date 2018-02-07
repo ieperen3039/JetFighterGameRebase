@@ -25,14 +25,15 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
      */
     public T getInterpolated(float timeStamp){
         updateTime(timeStamp);
-//        if (nextTimeStamp() == null) throw new IllegalStateException("interpolator has less than two entries");
 
         double firstTime = activeTime;
         T firstElt = activeElement;
         double secondTime = nextTimeStamp();
         T secondElt = nextElement();
 
-        if (firstElt == null) firstElt = secondElt;
+        if (firstElt == null) {
+            firstElt = secondElt;
+        }
 
         Float fraction = (float) ((timeStamp - firstTime) / (secondTime - firstTime));
         if (fraction.isNaN()) return firstElt;
