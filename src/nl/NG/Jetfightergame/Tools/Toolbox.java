@@ -139,7 +139,7 @@ public class Toolbox {
         int error;
         while ((error = alGetError()) != AL_NO_ERROR) {
             printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
-            if (error == AL_INVALID_OPERATION) break; // check method is called outside the AL context
+            if (error == AL_INVALID_OPERATION) break; // check for when method is called outside the AL context
         }
     }
 

@@ -80,14 +80,19 @@ public class SoundEngine {
         checkALError();
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         new SoundEngine();
         checkALError();
-        AudioFile expl = Sounds.explosion;
-        AudioSource src = new AudioSource(expl, PosVector.zeroVector(), 1f, 1f);
-        Thread.sleep(3000);
-
-        src.dispose();
-        closeDevices();
+        try {
+            AudioFile expl = Sounds.explosion;
+            AudioSource src = new AudioSource(expl, PosVector.zeroVector(), 1f, 1f);
+            Thread.sleep(3000);
+            src.dispose();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            checkALError();
+            closeDevices();
+        }
     }
 }

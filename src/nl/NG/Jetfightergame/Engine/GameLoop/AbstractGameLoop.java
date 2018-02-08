@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Engine.GameLoop;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;
-import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
@@ -19,11 +18,9 @@ import java.util.function.Consumer;
  * also usable for rendering
  */
 public abstract class AbstractGameLoop extends Thread {
-
-    private final Extreme<Float> TPSMinimum = new Extreme<>(0f, false);
     private final String loopName;
 
-    private int targetTps;
+    private float targetDeltaMillis;
     private CountDownLatch pauseBlock = new CountDownLatch(0);
     private boolean shouldStop;
     private boolean isPaused = true;
@@ -31,16 +28,19 @@ public abstract class AbstractGameLoop extends Thread {
     private Consumer<Exception> exceptionHandler;
 
     private AveragingQueue avgTPS;
+    private AveragingQueue avgPoss;
     private final Consumer<ScreenOverlay.Painter> tickCounter;
+    private final Consumer<ScreenOverlay.Painter> possessionCounter;
 
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
-        this.targetTps = targetTps;
+        this.targetDeltaMillis = 1000f/targetTps;
         this.notifyDelay = notifyDelay;
         this.exceptionHandler = exceptionHandler;
         loopName = name;
         avgTPS = new AveragingQueue(targetTps/2);
-        tickCounter = (hud) ->
-                hud.printRoll(String.format("%s: %1.01f", name, avgTPS.average()));
+        avgPoss = new AveragingQueue(targetTps/10);
+        tickCounter = (hud) -> hud.printRoll(String.format("%s TPS: %1.01f", name, avgTPS.average()));
+        possessionCounter = (hud) -> hud.printRoll(String.format("%s POSS: %2.0f%%", name, 100* avgPoss.average()));
     }
 
     /**
@@ -60,8 +60,7 @@ public abstract class AbstractGameLoop extends Thread {
     protected abstract void cleanup();
 
     /**
-     * start the loop, running until {@link #stopLoop()} is called
-     * wrap-up must end up in a finally bock
+     * start the loop, running until {@link #stopLoop()} is called.
      */
     public void run() {
         Toolbox.print(loopName + " enabled");
@@ -69,6 +68,7 @@ public abstract class AbstractGameLoop extends Thread {
         float deltaTime = 0;
 
         ScreenOverlay.addHudItem(tickCounter);
+        ScreenOverlay.addHudItem(possessionCounter);
 
         try {
             pauseBlock.await();
@@ -83,23 +83,24 @@ public abstract class AbstractGameLoop extends Thread {
 
                 if (Thread.interrupted()) break;
 
-                long remainingTime = (1000 / targetTps) - loopTimer.getTimeSinceLastUpdate();
+                // number of milliseconds remaining in this loop
+                float remainingTime = targetDeltaMillis - loopTimer.getTimeSinceLastUpdate();
                 if (Settings.DEBUG && notifyDelay && (remainingTime < 0))
-                    System.err.println(loopName + " can't keep up! Running " + -remainingTime + " milliseconds behind");
+                    System.err.printf("%s can't keep up! Running %1.01f milliseconds behind%n", loopName, -remainingTime);
 
                 // sleep at least one millisecond
-                long correctedTime = Math.max(remainingTime, 1);
+                long correctedTime = (long) Math.max(remainingTime, 1f);
                 Thread.sleep(correctedTime);
 
-                loopTimer.updateLoopTime();
-
-                // print Ticks per Second
-                float realTPS = 1000f / loopTimer.getElapsedTime();
-                TPSMinimum.updateAndPrint(loopName, realTPS, "per second");
-                avgTPS.add(realTPS);
-
                 // store the duration and set this as length of next update
+                loopTimer.updateLoopTime();
                 deltaTime = loopTimer.getElapsedSeconds();
+
+                // update Ticks per Second
+                float realTPS = 1000f / loopTimer.getElapsedTime();
+                avgTPS.add(realTPS);
+                avgPoss.add(-(remainingTime - targetDeltaMillis) / targetDeltaMillis);
+
                 // wait if the game is paused
                 isPaused = true;
                 pauseBlock.await();
@@ -110,6 +111,8 @@ public abstract class AbstractGameLoop extends Thread {
             ex.printStackTrace();
             exceptionHandler.accept(ex);
         } finally {
+            ScreenOverlay.removeHudItem(tickCounter);
+            ScreenOverlay.removeHudItem(possessionCounter);
             cleanup();
         }
 
@@ -136,11 +139,11 @@ public abstract class AbstractGameLoop extends Thread {
         return isPaused && (pauseBlock.getCount() > 0);
     }
 
+    /** @deprecated */
     public void resetTPSCounter(){
-        TPSMinimum.reset();
     }
 
     public void setTPS(int TPS) {
-        this.targetTps = TPS;
+        this.targetDeltaMillis = 1000f/TPS;
     }
 }
