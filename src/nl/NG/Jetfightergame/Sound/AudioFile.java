@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Sound;
 
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.lwjgl.openal.AL10;
 
@@ -29,10 +30,11 @@ public class AudioFile {
      * inverses an action of {@link #dispose()}
      */
     public void load() {
+        Toolbox.checkALError();
         // only load if this is not done yet
         if (dataID != -1) return;
 
-        dataID = AudioManager.getBuffer();
+        int bufferID = AL10.alGenBuffers();
         Toolbox.checkALError();
 
         // load soundfile to audiostream
@@ -41,13 +43,15 @@ public class AudioFile {
             waveFile = WaveData.create(filePath);
 
         } catch (IOException | UnsupportedAudioFileException e) {
-            e.printStackTrace();
             System.err.println("Could not load sound file '" + filePath + "'. Continuing without this sound");
+            if (Settings.DEBUG) e.printStackTrace();
             return;
         }
 
+        this.dataID = bufferID;
+
         // load audio into soundcard
-        AL10.alBufferData(dataID, waveFile.format, waveFile.data, waveFile.samplerate);
+        AL10.alBufferData(bufferID, waveFile.format, waveFile.data, waveFile.samplerate);
         waveFile.dispose();
         Toolbox.checkALError();
 

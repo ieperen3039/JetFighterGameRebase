@@ -125,8 +125,12 @@ public class Toolbox {
         if (!Settings.DEBUG) return;
         int error;
         while ((error = glGetError()) != GL_NO_ERROR) {
-            printFrom(2, "glError " + error + ": " + glGetString(error));
+            printFrom(2, "glError " + asHex(error) + ": " + glGetString(error));
         }
+    }
+
+    public static String asHex(int error) {
+        return "0x" + Integer.toHexString(error).toUpperCase();
     }
 
 
@@ -134,7 +138,8 @@ public class Toolbox {
         if (!Settings.DEBUG) return;
         int error;
         while ((error = alGetError()) != AL_NO_ERROR) {
-            printFrom(2, "alError " + error + ": " + alGetString(error));
+            printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
+            if (error == AL_INVALID_OPERATION) break; // check method is called outside the AL context
         }
     }
 

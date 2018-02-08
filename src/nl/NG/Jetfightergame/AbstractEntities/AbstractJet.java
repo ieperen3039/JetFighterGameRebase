@@ -11,6 +11,8 @@ import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Shaders.Material;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
+import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;
@@ -240,6 +242,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
             result.add(FireParticle.randomParticle(getPosition(), force * 2, 2));
         }
+
+        new AudioSource(Sounds.explosion, getPosition(), 1f, 1f);
 
         return result;
     }

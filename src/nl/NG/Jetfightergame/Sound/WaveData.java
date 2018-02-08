@@ -39,9 +39,7 @@ import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
@@ -93,13 +91,61 @@ public class WaveData {
     /**
      * Creates a WaveData container from the specified filename
      *
-     * @param filepath path to file (relative, and in classpath)
+     * @param file
      * @return WaveData containing data, or null if a failure occured
      */
     public static WaveData create(String filepath) throws IOException, UnsupportedAudioFileException {
-        return create(
-                AudioSystem.getAudioInputStream(
-                        new BufferedInputStream(WaveData.class.getClassLoader().getResourceAsStream(filepath))));
+        final File sample = new File(filepath);
+        try (final AudioInputStream ais = AudioSystem.getAudioInputStream(sample)) {
+            return create(ais);
+        }
+    }
+
+    /**
+     *
+     * @param sourceBytes a bytestream of audio
+     * @param audioFormat
+     * @return
+     * @throws UnsupportedAudioFileException
+     * @throws IllegalArgumentException
+     * @throws Exception
+     */
+    public static byte[] getAudioDataBytes(byte[] sourceBytes, AudioFormat audioFormat) throws UnsupportedAudioFileException, IllegalArgumentException, Exception {
+        if (sourceBytes == null || sourceBytes.length == 0 || audioFormat == null) {
+            throw new IllegalArgumentException("Illegal Argument passed to this method");
+        }
+
+        try (final ByteArrayInputStream bais = new ByteArrayInputStream(sourceBytes);
+             final AudioInputStream sourceAIS = AudioSystem.getAudioInputStream(bais)
+        ) {
+
+            AudioFormat sourceFormat = sourceAIS.getFormat();
+            AudioFormat convertFormat = new AudioFormat(
+                    AudioFormat.Encoding.PCM_SIGNED,
+                    sourceFormat.getSampleRate(),
+                    16,
+                    sourceFormat.getChannels(),
+                    sourceFormat.getChannels() * 2,
+                    sourceFormat.getSampleRate(),
+                    false
+            );
+
+            try (final AudioInputStream convert1AIS = AudioSystem.getAudioInputStream(convertFormat, sourceAIS);
+                 final AudioInputStream convert2AIS = AudioSystem.getAudioInputStream(audioFormat, convert1AIS);
+                 final ByteArrayOutputStream baos = new ByteArrayOutputStream()
+            ) {
+
+                byte[] buffer = new byte[8192];
+                while (true) {
+                    int readCount = convert2AIS.read(buffer, 0, buffer.length);
+                    if (readCount == -1) {
+                        break;
+                    }
+                    baos.write(buffer, 0, readCount);
+                }
+                return baos.toByteArray();
+            }
+        }
     }
 
     /**
@@ -109,9 +155,9 @@ public class WaveData {
      * @return WaveData containing data, or null if a failure occured
      */
     public static WaveData create(byte[] buffer) throws IOException, UnsupportedAudioFileException {
-        return create(
-                AudioSystem.getAudioInputStream(
-                        new BufferedInputStream(new ByteArrayInputStream(buffer))));
+        final AudioInputStream ain = AudioSystem.getAudioInputStream(
+                new BufferedInputStream(new ByteArrayInputStream(buffer)));
+        return create(ain);
     }
 
     /**

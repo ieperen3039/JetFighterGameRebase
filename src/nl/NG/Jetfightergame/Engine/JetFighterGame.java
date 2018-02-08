@@ -16,7 +16,7 @@ import nl.NG.Jetfightergame.ShapeCreators.Mesh;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
-import nl.NG.Jetfightergame.Sound.AudioManager;
+import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.DirVector;
 import nl.NG.Jetfightergame.Vectors.PosVector;
@@ -45,7 +45,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     protected AbstractGameLoop renderLoop;
     protected AbstractGameLoop gameLoop;
     private Collection<AbstractGameLoop> otherLoops = new ArrayList<>();
-    protected AudioManager soundEngine;
+    protected SoundEngine soundEngine;
 
     private final GameTimer globalGameTimer;
     
@@ -78,7 +78,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             otherLoops.add(gameLoop);
 
 //            MusicProvider musicProvider = new MusicProvider(new Timer());
-            soundEngine = new AudioManager();
+            soundEngine = new SoundEngine();
 
             ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
 
@@ -122,7 +122,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     public void cleanUp() {
         Mesh.cleanAll();
         AudioFile.cleanAll();
-        AudioManager.closeDevices();
+        SoundEngine.closeDevices();
         KeyTracker.getInstance().removeKeyListener(this);
     }
 

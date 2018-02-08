@@ -18,7 +18,7 @@ import static org.lwjgl.openal.EXTEfx.ALC_MAX_AUXILIARY_SENDS;
  * @author Geert van Ieperen
  * created on 5-2-2018.
  */
-public class AudioManager {
+public class SoundEngine {
 
     // default device
     private static final long device = ALC10.alcOpenDevice((ByteBuffer) null);
@@ -26,7 +26,7 @@ public class AudioManager {
     /**
      * set up openAL environment
      */
-    public AudioManager() {
+    public SoundEngine() {
         // Create a handle for the device capabilities
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
@@ -50,15 +50,6 @@ public class AudioManager {
     }
 
     /**
-     * @return the id of a newly generated buffer
-     */
-    static int getBuffer() {
-        IntBuffer source = BufferUtils.createIntBuffer(1);
-        AL10.alGenSources(source);
-        return source.get(0);
-    }
-
-    /**
      * set the speed of sound to the specified value
      * @param value speed in m/s
      */
@@ -76,6 +67,7 @@ public class AudioManager {
         AL10.alListener3f(AL10.AL_VELOCITY, vel.x(), vel.y(), vel.z());
     }
 
+    // TODO requires more research
     private void setListenerOrientation(DirVector forward, DirVector up) {
         float[] asArray = {forward.x(), forward.y(), forward.z(), up.x(), up.y(), up.z()};
         FloatBuffer orientation = FloatBuffer.wrap(asArray);
@@ -86,5 +78,16 @@ public class AudioManager {
     public static void closeDevices() {
         ALC10.alcCloseDevice(device);
         checkALError();
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        new SoundEngine();
+        checkALError();
+        AudioFile expl = Sounds.explosion;
+        AudioSource src = new AudioSource(expl, PosVector.zeroVector(), 1f, 1f);
+        Thread.sleep(3000);
+
+        src.dispose();
+        closeDevices();
     }
 }

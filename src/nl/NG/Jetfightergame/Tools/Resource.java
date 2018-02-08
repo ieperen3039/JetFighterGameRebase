@@ -80,6 +80,11 @@ public final class Resource {
         return newBuffer;
     }
 
+    public static BufferedInputStream getInputStream(String filename) throws FileNotFoundException {
+        final InputStream fileInputStream = new FileInputStream(filename);
+        return new BufferedInputStream(fileInputStream);
+    }
+
     /**
      * signals that one of the resources/files could not be loaded
      */

@@ -20,11 +20,12 @@ public class AudioSource {
     protected int sourceID;
 
     public AudioSource(AudioFile data, PosVector sourcePos, float pitch, float gain) {
-        sourceID = AudioManager.getBuffer();
+
+        sourceID = AL10.alGenSources();
         Toolbox.checkALError();
 
         int dataID = data.getID();
-        if (dataID == -1) throw new java.lang.NullPointerException("soundfile " + data + " has not been loaded");
+        if (dataID == -1) throw new java.lang.NullPointerException("audio file " + data + " has not been loaded");
         alSourcei(sourceID, AL10.AL_BUFFER, dataID);
         alSourcef(sourceID, AL10.AL_PITCH, pitch);
         alSourcef(sourceID, AL10.AL_GAIN, gain);
