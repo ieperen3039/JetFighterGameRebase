@@ -40,7 +40,7 @@ public abstract class AbstractGameLoop extends Thread {
         avgTPS = new AveragingQueue(targetTps/2);
         avgPoss = new AveragingQueue(targetTps/10);
         tickCounter = (hud) -> hud.printRoll(String.format("%s TPS: %1.01f", name, avgTPS.average()));
-        possessionCounter = (hud) -> hud.printRoll(String.format("%s POSS: %2.0f%%", name, 100* avgPoss.average()));
+        possessionCounter = (hud) -> hud.printRoll(String.format("%s POSS: %3d%%", name, (int) (100* avgPoss.average())));
     }
 
     /**
@@ -86,7 +86,7 @@ public abstract class AbstractGameLoop extends Thread {
                 // number of milliseconds remaining in this loop
                 float remainingTime = targetDeltaMillis - loopTimer.getTimeSinceLastUpdate();
                 if (Settings.DEBUG && notifyDelay && (remainingTime < 0))
-                    System.err.printf("%s can't keep up! Running %1.01f milliseconds behind%n", loopName, -remainingTime);
+                    System.err.printf("%s can't keep up! Running %d milliseconds behind%n", loopName, (int) -remainingTime);
 
                 // sleep at least one millisecond
                 long correctedTime = (long) Math.max(remainingTime, 1f);

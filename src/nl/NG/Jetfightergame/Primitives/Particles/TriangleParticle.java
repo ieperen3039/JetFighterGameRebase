@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import nl.NG.Jetfightergame.Vectors.DirVector;

@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Vectors.Color4f;

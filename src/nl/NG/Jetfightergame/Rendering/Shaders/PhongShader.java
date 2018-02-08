@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Vectors.Color4f;
 import org.joml.Vector3f;
 

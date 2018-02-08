@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.GeneralEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.GridMesh;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;

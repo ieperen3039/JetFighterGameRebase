@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.GeneralEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.RigidBody;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
 import nl.NG.Jetfightergame.Engine.GLMatrix.MatrixStack;
-import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
 import nl.NG.Jetfightergame.Vectors.Color4f;
@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 public class ContainerCube implements Touchable {
     public final int labSize;
     private final Shape world = GeneralShapes.INVERSE_CUBE;
-    private final Material material = Material.PLASTIC;
+    private final Material material = Material.ROUGH;
 
     public ContainerCube(int cubeSize) {
         this.labSize = cubeSize;

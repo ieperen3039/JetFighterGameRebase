@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Rendering.Shaders;
+package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Vectors.Color4f;
 
@@ -44,11 +44,11 @@ public enum Material {
     ),
 
     /**
-     * regular material properties.
+     * regular non-shiny material properties.
      */
     PLASTIC(
             new float[]{1f, 1f, 1f, 1},
-            new float[]{0.8f, 0.8f, 0.8f, 1},
+            new float[]{0.5f, 0.5f, 0.5f, 1},
             2
     ),
 

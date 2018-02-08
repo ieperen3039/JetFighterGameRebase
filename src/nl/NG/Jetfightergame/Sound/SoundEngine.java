@@ -77,7 +77,6 @@ public class SoundEngine {
 
     public static void closeDevices() {
         ALC10.alcCloseDevice(device);
-        checkALError();
     }
 
     public static void main(String[] args) {

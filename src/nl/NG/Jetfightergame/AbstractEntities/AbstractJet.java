@@ -8,7 +8,7 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
-import nl.NG.Jetfightergame.Rendering.Shaders.Material;
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreators.Shape;
 import nl.NG.Jetfightergame.Sound.AudioSource;
@@ -130,7 +130,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         float yPres = instantPreserveFraction(yPreservation, deltaTime);
         float zPres = instantPreserveFraction(zPreservation, deltaTime);
-        extraVelocity.set(extraVelocity.x(), extraVelocity.y() * yPres, extraVelocity.z() * zPres);
+
+        // transform velocity to local, reduce drifting, then transform back to global space
+        Quaternionf turnBack = rotation.invert(new Quaternionf());
+        extraVelocity.rotate(turnBack);
+        extraVelocity.mul(1f, yPres, zPres);
+        extraVelocity.rotate(rotation);
 
         float rotationPreserveFraction = instantPreserveFraction(rotationPreserveFactor, deltaTime);
         yawSpeed *= rotationPreserveFraction;
