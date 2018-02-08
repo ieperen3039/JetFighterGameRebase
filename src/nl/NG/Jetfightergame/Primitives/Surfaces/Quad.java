@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 /** TODO: allow quads in meshes and optimize CustomShape accordingly
  * @author Geert van Ieperen

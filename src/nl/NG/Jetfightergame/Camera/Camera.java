@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
  * @author Geert van Ieperen

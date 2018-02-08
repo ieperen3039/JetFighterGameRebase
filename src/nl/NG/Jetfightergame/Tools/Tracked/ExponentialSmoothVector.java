@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Tools.Tracked;
 
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 import static java.lang.StrictMath.pow;
 

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
-import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 /**
  * Materials that can be used for the robots.

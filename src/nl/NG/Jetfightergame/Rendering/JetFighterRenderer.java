@@ -2,21 +2,21 @@ package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
-import nl.NG.Jetfightergame.Engine.GLMatrix.ShaderUniformGL;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Tools.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
-import nl.NG.Jetfightergame.Scenarios.Environment;
-import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;
+import nl.NG.Jetfightergame.Assets.Scenarios.Environment;
+import nl.NG.Jetfightergame.Assets.Scenarios.EnvironmentManager;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

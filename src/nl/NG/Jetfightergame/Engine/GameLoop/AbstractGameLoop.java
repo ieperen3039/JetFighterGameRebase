@@ -139,10 +139,6 @@ public abstract class AbstractGameLoop extends Thread {
         return isPaused && (pauseBlock.getCount() > 0);
     }
 
-    /** @deprecated */
-    public void resetTPSCounter(){
-    }
-
     public void setTPS(int TPS) {
         this.targetDeltaMillis = 1000f/TPS;
     }

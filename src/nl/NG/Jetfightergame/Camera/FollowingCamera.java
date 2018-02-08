@@ -3,8 +3,8 @@ package nl.NG.Jetfightergame.Camera;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
  * Implementation of a camera with a position and orientation.

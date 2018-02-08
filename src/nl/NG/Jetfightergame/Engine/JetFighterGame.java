@@ -6,20 +6,20 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
-import nl.NG.Jetfightergame.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
-import nl.NG.Jetfightergame.Scenarios.EnvironmentManager;
+import nl.NG.Jetfightergame.Assets.Scenarios.EnvironmentManager;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.ShapeCreators.Mesh;
-import nl.NG.Jetfightergame.ShapeCreators.ShapeDefinitions.GeneralShapes;
-import nl.NG.Jetfightergame.ShapeCreators.ShapeFromMesh;
+import nl.NG.Jetfightergame.ShapeCreation.Mesh;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -142,10 +142,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             case GLFW_KEY_F11:
                 Toolbox.print("Switching fullscreen");
                 window.toggleFullScreen();
-                break;
-            case GLFW_KEY_EQUAL:
-                gameLoop.resetTPSCounter();
-                renderLoop.resetTPSCounter();
                 break;
             case GLFW_KEY_PRINT_SCREEN:
                 SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");

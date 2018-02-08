@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame;
 
-import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Random;

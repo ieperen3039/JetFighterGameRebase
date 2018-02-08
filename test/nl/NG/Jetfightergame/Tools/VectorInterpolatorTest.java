@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Vectors.PosVector;
-import nl.NG.Jetfightergame.Vectors.Vector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.junit.Before;
 import org.junit.Test;
 

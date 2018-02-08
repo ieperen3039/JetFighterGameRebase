@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.Engine.GLMatrix.GL2;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 
 /**
  * @author Geert van Ieperen

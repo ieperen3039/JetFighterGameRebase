@@ -3,8 +3,8 @@ package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Vectors.Color4f;
-import nl.NG.Jetfightergame.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import org.joml.Vector2i;
 
 import java.util.function.Consumer;

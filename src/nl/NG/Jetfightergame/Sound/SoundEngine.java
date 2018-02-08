@@ -1,8 +1,9 @@
 package nl.NG.Jetfightergame.Sound;
 
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GLException;
-import nl.NG.Jetfightergame.Vectors.DirVector;
-import nl.NG.Jetfightergame.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
 

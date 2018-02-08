@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Resource;
-import nl.NG.Jetfightergame.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
 import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
