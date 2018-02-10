@@ -1,5 +1,10 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Sound.WaveData;
+import org.lwjgl.openal.AL10;
+
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
@@ -17,7 +22,7 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
 /**
  * @author Jorren
  */
-public final class Resource {
+public final class Resources {
 
     public static String loadText(String fileName) throws IOException {
         String result;
@@ -83,6 +88,31 @@ public final class Resource {
     public static BufferedInputStream getInputStream(String filename) throws FileNotFoundException {
         final InputStream fileInputStream = new FileInputStream(filename);
         return new BufferedInputStream(fileInputStream);
+    }
+
+    /**
+     * load the data as if it is a .wav file
+     * @return true iff it was loaded properly
+     * @param dataID
+     * @param audioData
+     */
+    public static boolean loadWaveData(int dataID, File audioData) {
+        // load soundfile to audiostream
+        WaveData waveFile;
+        try {
+            waveFile = WaveData.create(audioData);
+
+        } catch (IOException | UnsupportedAudioFileException e) {
+            System.err.println("Could not load sound file '" + audioData + "'. Continuing without this sound");
+            if (Settings.DEBUG) e.printStackTrace();
+            return false;
+        }
+
+        // load audio into soundcard
+        AL10.alBufferData(dataID, waveFile.format, waveFile.data, waveFile.samplerate);
+        waveFile.dispose();
+        Toolbox.checkALError();
+        return true;
     }
 
     /**

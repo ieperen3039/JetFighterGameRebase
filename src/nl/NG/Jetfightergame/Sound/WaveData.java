@@ -91,11 +91,11 @@ public class WaveData {
     /**
      * Creates a WaveData container from the specified filename
      *
+     * @param sample
      * @param file
      * @return WaveData containing data, or null if a failure occured
      */
-    public static WaveData create(String filepath) throws IOException, UnsupportedAudioFileException {
-        final File sample = new File(filepath);
+    public static WaveData create(File sample) throws IOException, UnsupportedAudioFileException {
         try (final AudioInputStream ais = AudioSystem.getAudioInputStream(sample)) {
             return create(ais);
         }

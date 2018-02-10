@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Tools.Directory;
+import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.lwjgl.openal.AL10;
 
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
+import java.io.File;
 import java.nio.IntBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -18,10 +18,10 @@ public class AudioFile {
     private static Queue<AudioFile> registeredSoundfiles = new ArrayDeque<>();
 
     private int dataID = -1;
-    private final String filePath;
+    private final File audioData;
 
-    public AudioFile(String filePath) {
-        this.filePath = filePath;
+    public AudioFile(Directory dir, String filePath) {
+        audioData = dir.getFile(filePath);
         load(); // TODO maybe don't load all soundfiles right away?
     }
 
@@ -31,32 +31,19 @@ public class AudioFile {
      */
     public void load() {
         Toolbox.checkALError();
+
         // only load if this is not done yet
-        if (dataID != -1) return;
+        if (dataID >= 0) return;
 
-        int bufferID = AL10.alGenBuffers();
+        this.dataID = AL10.alGenBuffers();
         Toolbox.checkALError();
 
-        // load soundfile to audiostream
-        WaveData waveFile;
-        try {
-            waveFile = WaveData.create(filePath);
-
-        } catch (IOException | UnsupportedAudioFileException e) {
-            System.err.println("Could not load sound file '" + filePath + "'. Continuing without this sound");
-            if (Settings.DEBUG) e.printStackTrace();
-            return;
+        // register for cleanup, unless it failed to load
+        if (Resources.loadWaveData(dataID, audioData)) {
+            registeredSoundfiles.add(this);
+        } else {
+            dataID = -2;
         }
-
-        this.dataID = bufferID;
-
-        // load audio into soundcard
-        AL10.alBufferData(bufferID, waveFile.format, waveFile.data, waveFile.samplerate);
-        waveFile.dispose();
-        Toolbox.checkALError();
-
-        // register to allow deleting
-        registeredSoundfiles.add(this);
     }
 
     public int getID(){
@@ -86,6 +73,6 @@ public class AudioFile {
 
     @Override
     public String toString() {
-        return filePath;
+        return audioData.getPath();
     }
 }

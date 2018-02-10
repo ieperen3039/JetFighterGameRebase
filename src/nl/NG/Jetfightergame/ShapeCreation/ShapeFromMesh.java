@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.ShapeCreation;
 
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
-import nl.NG.Jetfightergame.Assets.Shapes.NGRobotSecondShapes;
+import nl.NG.Jetfightergame.Tools.Directory;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,10 +24,10 @@ import java.util.stream.Stream;
  */
 public class ShapeFromMesh implements Shape {
 
-    public static final ShapeFromMesh CONCEPT_BLUEPRINT = new ShapeFromMesh("res/models/ConceptBlueprint.obj");
+    public static final ShapeFromMesh CONCEPT_BLUEPRINT = new ShapeFromMesh("ConceptBlueprint.obj");
 
     /** an arrow along the Z-axis, 1 long */
-    public static final ShapeFromMesh ARROW = new ShapeFromMesh("res/models/arrow.obj");
+    public static final ShapeFromMesh ARROW = new ShapeFromMesh("arrow.obj");
 
     /**
      * every point of this mesh exactly once
@@ -44,26 +43,25 @@ public class ShapeFromMesh implements Shape {
     /**
      * a void method that allows pre-initialisation
      */
-    public static void initAll(){
-        NGRobotSecondShapes.initAll();
-    }
+    public static void initAll(){ }
 
     /**
      * @param fileName path to the .obj file
      *
      */
     private ShapeFromMesh(String fileName) {
-        this(fileName, PosVector.zeroVector(), new int[]{3, 1, 2}, 1f);
+        this(Directory.meshes, fileName, PosVector.zeroVector(), new int[]{3, 1, 2}, 1f);
     }
 
     /**
-     * @param fileName path to the .obj file
+     * @param dir      directory of the meshes of this game
+     * @param fileName path from the directory main to the .obj file
      * @param offSet   offset of the gravity middle in this mesh as {@code GM * -1}
      * @param XYZ      determines the definition of the axes. maps {forward, right, up} for X=1, Y=2, Z=3.
      * @param scale    the scale standard applied to this object, to let it correspond to its contract
      */
-    private ShapeFromMesh(String fileName, PosVector offSet, int[] XYZ, float scale) {
-        this(new MeshParameters(fileName, offSet, XYZ, scale), fileName);
+    private ShapeFromMesh(Directory dir, String fileName, PosVector offSet, int[] XYZ, float scale) {
+        this(new MeshParameters(dir, fileName, offSet, XYZ, scale), fileName);
     }
 
     private ShapeFromMesh(MeshParameters par, String name) {
@@ -133,11 +131,11 @@ public class ShapeFromMesh implements Shape {
         private List<DirVector> normals;
         private List<Mesh.Face> faces;
 
-        private MeshParameters(String fileName, PosVector offSet, int[] XYZ, float scale) {
+        private MeshParameters(Directory dir, String fileName, PosVector offSet, int[] XYZ, float scale) {
             vertices = new ArrayList<>();
             normals = new ArrayList<>();
             faces = new ArrayList<>();
-            List<String> lines = openMesh(fileName);
+            List<String> lines = openMesh(dir, fileName);
 
             for (String line : lines) {
                 String[] tokens = line.split("\\s+");
@@ -173,9 +171,9 @@ public class ShapeFromMesh implements Shape {
 
         }
 
-        private static List<String> openMesh(String fileName) {
+        private static List<String> openMesh(Directory dir, String fileName) {
             try {
-                return Files.readAllLines(Paths.get(fileName));
+                return Files.readAllLines(dir.getPath(fileName));
             } catch (IOException e) {
                 e.printStackTrace();
                 System.err.println("Could not read mesh '" + fileName + "'. Continuing game without model.");

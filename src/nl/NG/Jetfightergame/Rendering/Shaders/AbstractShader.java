@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Tools.Resource;
+import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Matrix3f;
@@ -38,10 +38,10 @@ public abstract class AbstractShader implements ShaderProgram {
         }
 
         if (vertexPath != null)
-            vertexShaderId = createShader(Resource.loadText(vertexPath), GL_VERTEX_SHADER);
+            vertexShaderId = createShader(Resources.loadText(vertexPath), GL_VERTEX_SHADER);
 
         if (fragmentPath != null)
-            fragmentShaderId = createShader(Resource.loadText(fragmentPath), GL_FRAGMENT_SHADER);
+            fragmentShaderId = createShader(Resources.loadText(fragmentPath), GL_FRAGMENT_SHADER);
 
         link();
 

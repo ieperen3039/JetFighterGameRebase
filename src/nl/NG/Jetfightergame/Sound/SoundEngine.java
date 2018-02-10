@@ -18,6 +18,7 @@ import static org.lwjgl.openal.EXTEfx.ALC_MAX_AUXILIARY_SENDS;
 /**
  * @author Geert van Ieperen
  * created on 5-2-2018.
+ * This software is using the J-Ogg library available from http://www.j-ogg.de and copyrighted by Tor-Einar Jarnbjo.
  */
 public class SoundEngine {
 
@@ -43,8 +44,12 @@ public class SoundEngine {
             throw new GLException("Failed to make OpenAL context current");
         }
 
-        AL.createCapabilities(deviceCaps);
+        final ALCapabilities alCaps = AL.createCapabilities(deviceCaps);
         checkALError();
+
+        if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open AL 11");
+        if (!alCaps.OpenAL10) System.err.println("Warning: Sound system does not support Open AL 11");
+        if (!alCaps.AL_EXT_vorbis) System.err.println("Warning: Sound system does not support Vorbis OGG");
 
         setListenerPosition(PosVector.zeroVector(), DirVector.zeroVector());
         setListenerOrientation(DirVector.xVector(), DirVector.yVector());
@@ -84,8 +89,8 @@ public class SoundEngine {
         new SoundEngine();
         checkALError();
         try {
-            AudioFile expl = Sounds.explosion;
-            AudioSource src = new AudioSource(expl, PosVector.zeroVector(), 1f, 1f);
+            AudioFile audioData = Sounds.pulsePower;
+            AudioSource src = new AudioSource(audioData, PosVector.zeroVector(), 1f, 1f);
             Thread.sleep(3000);
             src.dispose();
         } catch (Exception e) {

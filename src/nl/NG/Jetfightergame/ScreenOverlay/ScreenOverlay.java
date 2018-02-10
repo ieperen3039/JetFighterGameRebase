@@ -1,7 +1,8 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
-import nl.NG.Jetfightergame.Tools.Resource;
+import nl.NG.Jetfightergame.Tools.Directory;
+import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
 import org.lwjgl.nanovg.NVGColor;
@@ -19,6 +20,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.*;
+import static nl.NG.Jetfightergame.Tools.Directory.fonts;
 import static org.lwjgl.nanovg.NanoVG.*;
 import static org.lwjgl.nanovg.NanoVGGL3.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -51,18 +53,18 @@ public class ScreenOverlay {
     }
 
     public enum Font {
-        ORBITRON_REGULAR("res/fonts/Orbitron/Orbitron-Regular.ttf"),
-        ORBITRON_MEDIUM("res/fonts/Orbitron/Orbitron-Medium.ttf"),
-        ORBITRON_BOLD("res/fonts/Orbitron/Orbitron-Bold.ttf"),
-        ORBITRON_BLACK("res/fonts/Orbitron/Orbitron-Black.ttf"),
-        LUCIDA_CONSOLE("res/fonts/LucidaConsole/lucon.ttf");
+        ORBITRON_REGULAR(fonts, "Orbitron/Orbitron-Regular.ttf"),
+        ORBITRON_MEDIUM(fonts, "Orbitron/Orbitron-Medium.ttf"),
+        ORBITRON_BOLD(fonts, "Orbitron/Orbitron-Bold.ttf"),
+        ORBITRON_BLACK(fonts, "Orbitron/Orbitron-Black.ttf"),
+        LUCIDA_CONSOLE(fonts, "LucidaConsole/lucon.ttf");
 
         public final String name;
         public final String source;
 
-        Font(String source) {
-            this.name = toString();
-            this.source = source;
+        Font(Directory dir, String file) {
+            this.name = toString().toLowerCase();
+            this.source = dir.pathOf(file);
         }
     }
 
@@ -87,7 +89,7 @@ public class ScreenOverlay {
         Font[] fonts = Font.values();
 
         for (int i = 0; i < fonts.length; i++) {
-            fontBuffer[i] = Resource.toByteBuffer(fonts[i].source, 96 * 1024);
+            fontBuffer[i] = Resources.toByteBuffer(fonts[i].source, 96 * 1024);
             if (nvgCreateFontMem(vg, fonts[i].name, fontBuffer[i], 1) == -1) {
                 throw new IOException("Could not create font " + fonts[i].name);
             }
@@ -329,7 +331,7 @@ public class ScreenOverlay {
             if (imageBuffer.containsKey(filename)) {
                 return imageBuffer.get(filename);
             }
-            ByteBuffer image = Resource.toByteBuffer(filename, 1);
+            ByteBuffer image = Resources.toByteBuffer(filename, 1);
             int img = nvgCreateImageMem(vg, imageFlags, image);
             imageBuffer.put(filename, img);
             return img;

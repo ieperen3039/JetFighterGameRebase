@@ -21,11 +21,13 @@ public class AudioSource {
 
     public AudioSource(AudioFile data, PosVector sourcePos, float pitch, float gain) {
 
+        int dataID = data.getID();
+        if (dataID == -1) throw new java.lang.NullPointerException("audio file " + data + " has not been loaded");
+        if (dataID == -2) return; // data could not be loaded, and this has already been reported
+
         sourceID = AL10.alGenSources();
         Toolbox.checkALError();
 
-        int dataID = data.getID();
-        if (dataID == -1) throw new java.lang.NullPointerException("audio file " + data + " has not been loaded");
         alSourcei(sourceID, AL10.AL_BUFFER, dataID);
         alSourcef(sourceID, AL10.AL_PITCH, pitch);
         alSourcef(sourceID, AL10.AL_GAIN, gain);

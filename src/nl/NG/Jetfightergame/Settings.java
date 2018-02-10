@@ -45,7 +45,6 @@ public final class Settings {
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
 
-
     /** controller settings */
     public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
     public static int THROTTLE_DOWN = GLFW.GLFW_KEY_S;
@@ -70,4 +69,8 @@ public final class Settings {
     public static final int MAX_POINT_LIGHTS = 10;
     public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
     public static final int HUD_STROKE_WIDTH = 0;
+
+    /** data path settings */
+    public static final String AUDIO_DATA_PATH = "res/sounds/";
+    public static final String MUSIC_DATA_PATH = "res/music/";
 }
