@@ -58,11 +58,11 @@ public class ShaderUniformGL implements GL2 {
     private Matrix4f getProjection(float windowWidth, float windowHeight, Camera camera) {
         Matrix4f vpMatrix = new Matrix4f();
 
-        // Set the perspective.
+        // Set the projection.
         float aspectRatio = windowWidth / windowHeight;
         vpMatrix.setPerspective(Settings.FOV, aspectRatio, Settings.Z_NEAR, Settings.Z_FAR);
 
-        // Update the view
+        // set the view
         vpMatrix.lookAt(
                 camera.getEye(),
                 camera.getFocus(),
@@ -160,6 +160,14 @@ public class ShaderUniformGL implements GL2 {
     public void popAll() {
         modelMatrix = new Matrix4f();
         matrixStack = new Stack<>();
+    }
+
+    @Override
+    public Vector2f getPositionOnScreen(PosVector vertex){
+        Vector3f pos = new Vector3f(vertex);
+        modelMatrix.transformPosition(pos);
+        viewProjectionMatrix.transformProject(pos);
+        return new Vector2f(pos.x(), pos.y());
     }
 
     @Override

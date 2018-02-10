@@ -47,7 +47,7 @@ public abstract class AbstractGameLoop extends Thread {
      * invoked (targetTps) times per second
      * @param deltaTime real-time difference since last loop
      */
-    protected abstract void update(float deltaTime) throws InterruptedException;
+    protected abstract void update(float deltaTime);
 
     /**
      * commands the engine to finish the current loop, and then quit
