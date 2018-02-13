@@ -14,5 +14,8 @@ public final class Sounds {
     public static final AudioFile pulsePower = new AudioFile(music, "Pulse Power.ogg");
 
     /** @see AudioFile#cleanAll() */
-    public static void initAll(){}
+    public static void initAll(){
+        explosion.load();
+        pulsePower.load();
+    }
 }

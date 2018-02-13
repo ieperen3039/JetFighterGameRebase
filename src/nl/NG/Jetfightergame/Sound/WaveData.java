@@ -194,9 +194,9 @@ public class WaveData {
 
         //read data into buffer
         byte[] buf =
-                new byte[audioformat.getChannels()
+                new byte[(audioformat.getChannels()
                         * (int) ais.getFrameLength()
-                        * audioformat.getSampleSizeInBits()
+                        * audioformat.getSampleSizeInBits())
                         / 8];
         int read = 0, total = 0;
         while ((read = ais.read(buf, total, buf.length - total)) != -1
@@ -207,9 +207,6 @@ public class WaveData {
 
         //insert data into bytebuffer
         ByteBuffer buffer = convertAudioBytes(buf, audioformat.getSampleSizeInBits() == 16);
-/*		ByteBuffer buffer = ByteBuffer.allocateDirect(buf.length);
-		buffer.put(buf);
-		buffer.rewind();*/
 
         //create our result
         WaveData wavedata =

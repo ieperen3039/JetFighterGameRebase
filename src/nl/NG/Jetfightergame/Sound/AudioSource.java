@@ -6,8 +6,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.lwjgl.openal.AL10;
 
-import java.nio.IntBuffer;
-
 import static org.lwjgl.openal.AL10.alSourcef;
 import static org.lwjgl.openal.AL10.alSourcei;
 
@@ -47,7 +45,7 @@ public class AudioSource {
      * remove this source from the soundcard
      */
     public void dispose(){
-        AL10.alDeleteSources(IntBuffer.wrap(new int[]{sourceID}));
+        AL10.alDeleteSources(sourceID);
     }
 
     protected static void alSourceVec(int source, int mode, Vector p) {

@@ -19,10 +19,24 @@ public class AudioFile {
 
     private int dataID = -1;
     private final File audioData;
+    private final FileType type;
 
+    /**
+     * create an unloaded audio file handle
+     * @param dir
+     * @param filePath
+     */
     public AudioFile(Directory dir, String filePath) {
         audioData = dir.getFile(filePath);
-        load(); // TODO maybe don't load all soundfiles right away?
+
+        if (filePath.endsWith(".ogg")){
+            type = FileType.ogg;
+        } else if (filePath.endsWith(".wav")){
+            type = FileType.wave;
+        } else {
+            System.err.println("Filetype of '" + filePath + "' is not supported.");
+            type = null;
+        }
     }
 
     /**
@@ -38,8 +52,18 @@ public class AudioFile {
         this.dataID = AL10.alGenBuffers();
         Toolbox.checkALError();
 
+        boolean success = false;
+        switch (type){
+            case wave:
+                success = Resources.loadWaveData(dataID, audioData);
+                break;
+            case ogg:
+                success = Resources.loadOggData(dataID, audioData);
+                break;
+        }
+
         // register for cleanup, unless it failed to load
-        if (Resources.loadWaveData(dataID, audioData)) {
+        if (success) {
             registeredSoundfiles.add(this);
         } else {
             dataID = -2;
@@ -74,5 +98,9 @@ public class AudioFile {
     @Override
     public String toString() {
         return audioData.getPath();
+    }
+
+    private enum FileType {
+        wave, ogg
     }
 }

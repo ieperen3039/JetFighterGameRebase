@@ -2,6 +2,8 @@ package nl.NG.Jetfightergame.Sound;
 
 import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GLException;
+import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.lwjgl.BufferUtils;
@@ -34,7 +36,13 @@ public class SoundEngine {
 
         IntBuffer contextAttribList = BufferUtils.createIntBuffer(16);
         // default attributes
-        int[] attributes = new int[]{ALC_REFRESH, 60, ALC_SYNC, ALC_FALSE, ALC_MAX_AUXILIARY_SENDS, 2, 0};
+        int[] attributes = new int[]{
+                ALC_REFRESH,                60,
+                ALC_SYNC,                   ALC_FALSE,
+                ALC_MAX_AUXILIARY_SENDS,    2,
+                0
+        };
+
         contextAttribList.put(attributes);
 
         // create the context with the provided attributes
@@ -47,9 +55,11 @@ public class SoundEngine {
         final ALCapabilities alCaps = AL.createCapabilities(deviceCaps);
         checkALError();
 
-        if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open AL 11");
-        if (!alCaps.OpenAL10) System.err.println("Warning: Sound system does not support Open AL 11");
-        if (!alCaps.AL_EXT_vorbis) System.err.println("Warning: Sound system does not support Vorbis OGG");
+        if (Settings.DEBUG) {
+            if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open AL 10");
+            if (!alCaps.OpenAL10) System.err.println("Warning: Sound system does not support Open AL 10");
+            if (!alCaps.AL_EXT_vorbis) System.err.println("Warning: Sound system does not support Vorbis OGG");
+        }
 
         setListenerPosition(PosVector.zeroVector(), DirVector.zeroVector());
         setListenerOrientation(DirVector.xVector(), DirVector.yVector());
@@ -88,10 +98,14 @@ public class SoundEngine {
     public static void main(String[] args) {
         new SoundEngine();
         checkALError();
+        Sounds.initAll();
+        checkALError();
+
         try {
+            Toolbox.print("Playing sound... Do you hear it?");
             AudioFile audioData = Sounds.pulsePower;
             AudioSource src = new AudioSource(audioData, PosVector.zeroVector(), 1f, 1f);
-            Thread.sleep(3000);
+            Thread.sleep(5000);
             src.dispose();
         } catch (Exception e) {
             e.printStackTrace();

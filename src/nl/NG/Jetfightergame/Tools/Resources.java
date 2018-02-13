@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Sound.OggData;
 import nl.NG.Jetfightergame.Sound.WaveData;
 import org.lwjgl.openal.AL10;
 
@@ -31,7 +32,7 @@ public final class Resources {
                 Scanner scanner = new Scanner(in, "UTF-8")
         ) {
             result = scanner.useDelimiter("\\A").next();
-        } catch(FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             throw new IOException("Resource not found: " + fileName);
         }
         return result;
@@ -53,10 +54,7 @@ public final class Resources {
 
         Path path = Paths.get(resource);
         if (Files.isReadable(path)) {
-            try (SeekableByteChannel fc = Files.newByteChannel(path)) {
-                buffer = createByteBuffer((int) fc.size() + 1);
-                while (fc.read(buffer) != -1);
-            }
+            buffer = toByteBuffer(path);
         } else {
             try (InputStream source = new FileInputStream(resource);
                  ReadableByteChannel rbc = Channels.newChannel(source)) {
@@ -78,6 +76,15 @@ public final class Resources {
         return buffer;
     }
 
+    private static ByteBuffer toByteBuffer(Path path) throws IOException {
+        ByteBuffer buffer;
+        try (SeekableByteChannel fc = Files.newByteChannel(path)) {
+            buffer = createByteBuffer((int) fc.size() + 1);
+            while (fc.read(buffer) != -1) ;
+        }
+        return buffer;
+    }
+
     private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
         ByteBuffer newBuffer = createByteBuffer(newCapacity);
         buffer.flip();
@@ -92,18 +99,20 @@ public final class Resources {
 
     /**
      * load the data as if it is a .wav file
-     * @return true iff it was loaded properly
+     *
      * @param dataID
      * @param audioData
+     * @return true iff it was loaded properly
      */
     public static boolean loadWaveData(int dataID, File audioData) {
         // load soundfile to audiostream
         WaveData waveFile;
         try {
             waveFile = WaveData.create(audioData);
+            Toolbox.checkALError();
 
         } catch (IOException | UnsupportedAudioFileException e) {
-            System.err.println("Could not load sound file '" + audioData + "'. Continuing without this sound");
+            System.err.println("Could not load wave file '" + audioData + "'. Continuing without this sound");
             if (Settings.DEBUG) e.printStackTrace();
             return false;
         }
@@ -111,20 +120,28 @@ public final class Resources {
         // load audio into soundcard
         AL10.alBufferData(dataID, waveFile.format, waveFile.data, waveFile.samplerate);
         waveFile.dispose();
+
         Toolbox.checkALError();
         return true;
     }
 
-    /**
-     * signals that one of the resources/files could not be loaded
-     */
-    public class ResourceException extends IOException{
-        public ResourceException(String message) {
-            super(message);
+    public static boolean loadOggData(int dataID, File audioData) {
+        OggData oggFile;
+
+        try {
+            oggFile = OggData.create(audioData.getPath());
+            Toolbox.checkALError();
+
+        } catch (IOException e) {
+            System.err.println("Could not load ogg file '" + audioData + "'. Continuing without this sound");
+            if (Settings.DEBUG) e.printStackTrace();
+            return false;
         }
 
-        public ResourceException(String message, Throwable cause) {
-            super(message, cause);
-        }
+        AL10.alBufferData(dataID, oggFile.format, oggFile.data, oggFile.samplerate);
+        oggFile.dispose();
+
+        Toolbox.checkALError();
+        return true;
     }
 }

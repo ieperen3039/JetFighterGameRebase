@@ -15,6 +15,7 @@ import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
+import static nl.NG.Jetfightergame.Tools.Directory.shaders;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
@@ -29,19 +30,31 @@ public abstract class AbstractShader implements ShaderProgram {
     private int vertexShaderId;
     private int fragmentShaderId;
 
+    /**
+     * create a shader and manages the interaction of its uniforms
+     * @param vertexPath the vertex shader file in the shader directory
+     * @param fragmentPath the fragment shader file in the shader directory
+     * @throws ShaderException if a new shader could not be created by some opengl reason
+     * @throws IOException if the defined files could not be found
+     * (the file is searched for in the shader folder itself, and should exclude any first slash)
+     */
     public AbstractShader(String vertexPath, String fragmentPath) throws ShaderException, IOException {
         uniforms = new HashMap<>();
 
         programId = glCreateProgram();
         if (programId == 0) {
-            throw new ShaderException("Could not create Shader");
+            throw new ShaderException("OpenGL error: Could not create Shader");
         }
 
-        if (vertexPath != null)
-            vertexShaderId = createShader(Resources.loadText(vertexPath), GL_VERTEX_SHADER);
+        if (vertexPath != null) {
+            final String shaderCode = Resources.loadText(shaders.pathOf(vertexPath));
+            vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER);
+        }
 
-        if (fragmentPath != null)
-            fragmentShaderId = createShader(Resources.loadText(fragmentPath), GL_FRAGMENT_SHADER);
+        if (fragmentPath != null) {
+            final String shaderCode = Resources.loadText(shaders.pathOf(fragmentPath));
+            fragmentShaderId = createShader(shaderCode, GL_FRAGMENT_SHADER);
+        }
 
         link();
 

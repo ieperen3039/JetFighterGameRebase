@@ -16,10 +16,7 @@ import static nl.NG.Jetfightergame.Settings.MAX_POINT_LIGHTS;
 public class PhongShader extends AbstractShader {
 
     public PhongShader() throws ShaderException, IOException {
-        super(
-                "res/shaders/Phong/vertex.vert", 
-                "res/shaders/Phong/fragment.frag"
-        );
+        super("Phong/vertex.vert", "Phong/fragment.frag");
 
         // Create the Material uniform
         createUniform("material.ambient");
