@@ -74,7 +74,7 @@ public class MatrixStackTest {
     @Test
     public void MatrixGetPositionTest() throws IOException {
         new GLFWWindow("test");
-        ms = new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera(), 0);
+        ms = new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera());
 
         testTRSInstance(ms);
     }
@@ -82,9 +82,9 @@ public class MatrixStackTest {
     @Test
     public void MatrixGetIdentityTest() throws IOException {
         new GLFWWindow("test");
-        ms = new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera(), 0);
+        ms = new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera());
 
-        identityTest(ms, new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera(), 0));
+        identityTest(ms, new ShaderUniformGL(new GouraudShader(), 1, 1, new SimpleKeyCamera()));
     }
 
     private void testTRSInstance(MatrixStack ms) {

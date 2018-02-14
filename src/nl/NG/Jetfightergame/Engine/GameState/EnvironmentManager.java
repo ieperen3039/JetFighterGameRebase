@@ -1,14 +1,17 @@
-package nl.NG.Jetfightergame.Assets.Scenarios;
+package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
+import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
+import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
+import nl.NG.Jetfightergame.Assets.Scenarios.Process592;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Manager;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
@@ -25,13 +28,12 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     private final Player player;
     private final GameTimer time;
-    private GameState instance;
+    private Environment instance;
 
     public EnvironmentManager(Player player, GameTimer time) {
         this.time = time;
         this.player = player;
-        instance = new PlayerJetLaboratory(time);
-        instance.buildScene(player);
+        instance = new Process592(player, this::switchTo);
     }
 
     @Override
@@ -47,7 +49,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     public enum Worlds {
         PlayerJetLaboratory,
         CollisionLaboratory,
-        ExplosionLaboratory
+        ExplosionLaboratory,
+        MainMenu
     }
 
     @Override
@@ -76,8 +79,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public int getNumberOfLights() {
-        return instance.getNumberOfLights();
+    public void cleanUp() {
+        instance.cleanUp();
     }
 
 
@@ -93,32 +96,29 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
         switch (implementation) {
             case CollisionLaboratory:
-                instance = new CollisionLaboratory(time);
+                instance = new CollisionLaboratory(time, player);
                 break;
             case PlayerJetLaboratory:
-                instance = new PlayerJetLaboratory(time);
+                instance = new PlayerJetLaboratory(time, player);
                 break;
             case ExplosionLaboratory:
-                instance = new ExplosionLaboratory(time);
+                instance = new ExplosionLaboratory(time, player);
+                break;
+            case MainMenu:
+                instance = new Process592(player, this::switchTo);
                 break;
             default:
                 Toolbox.print("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
-                instance = new MissionMenu(time);
+                instance = new Void();
         }
-
-        instance.buildScene(player);
     }
 
     /**
-     * temporary replacement for in-game menu
+     * public void
      */
-    private class MissionMenu extends GameState {
-        public MissionMenu(GameTimer time) {
+    private class Void extends GameState {
+        public Void() {
             super(time);
-        }
-
-        @Override
-        public void buildScene(Player player) {
             dynamicEntities.add(player.jet());
         }
 

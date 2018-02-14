@@ -12,8 +12,8 @@ public enum Directory {
     music("res/music/"),
     soundEffects("res/sounds/"),
     fonts("res/fonts/"),
-    shaders("res/shaders"),
-    meshes("res/models");
+    shaders("res/shaders/"),
+    meshes("res/models/");
 
 
     private final String path;
@@ -28,6 +28,10 @@ public enum Directory {
 
     public Path getPath(String fileName) {
         return Paths.get(pathOf(fileName));
+    }
+
+    public boolean exists(String fileName){
+        return getFile(fileName).exists();
     }
 
     public String pathOf(String fileName) {

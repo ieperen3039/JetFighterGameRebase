@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
-import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -21,12 +21,9 @@ public class PlayerJetLaboratory extends GameState {
 
     private static final int LAB_SIZE = 100;
 
-    public PlayerJetLaboratory(GameTimer time) {
+    public PlayerJetLaboratory(GameTimer time, Player player) {
         super(time);
-    }
 
-    @Override
-    public void buildScene(Player player) {
         player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
         dynamicEntities.add(player.jet());
 //        staticEntities.add(new SimplexCave());

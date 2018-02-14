@@ -25,6 +25,7 @@ import static org.lwjgl.opengl.GL30.*;
  */
 public class Mesh implements Renderable {
     private static Queue<Mesh> registeredMeshes = new ArrayDeque<>();
+    public static Mesh EMPTY_MESH = new EmptyMesh();
 
     private int vaoId;
     private int vertexCount;
@@ -163,6 +164,9 @@ public class Mesh implements Renderable {
         registeredMeshes.remove(this);
     }
 
+    /** allows for an empty mesh */
+    private Mesh(){}
+
     /**
      * a record class to describe a plane by indices
      * {@link #Face(int, int, int, int)}
@@ -198,5 +202,18 @@ public class Mesh implements Renderable {
         public String toString() {
             return "(" + A.toString() + B.toString() + C.toString() + ")";
         }
+    }
+
+    /**
+     * an error replacement
+     */
+    private static class EmptyMesh extends Mesh {
+        public EmptyMesh() {
+            super();
+        }
+        @Override
+        public void render(GL2.Painter lock) {}
+        @Override
+        public void dispose() {}
     }
 }

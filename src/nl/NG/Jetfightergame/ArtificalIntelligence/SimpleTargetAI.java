@@ -1,15 +1,15 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
-import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.GameState.GameState;
 
 /**
  * @author Geert van Ieperen
  * created on 9-2-2018.
  */
-public class DogeBallAI extends AI {
+public class SimpleTargetAI extends AI {
     private GameState game;
 
-    public DogeBallAI(String name, int targetTps, GameState game) {
+    public SimpleTargetAI(String name, int targetTps, GameState game) {
         super(name, targetTps);
         this.game = game;
     }

@@ -15,7 +15,7 @@ public final class Settings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static boolean SPECTATOR_MODE = true;
+    public static boolean SPECTATOR_MODE = false;
 
     /** engine settings */
     public static short TARGET_TPS = 20;

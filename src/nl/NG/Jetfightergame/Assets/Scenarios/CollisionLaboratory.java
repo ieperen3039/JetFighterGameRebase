@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Engine.GameState;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.ContainerCube;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
+import nl.NG.Jetfightergame.Engine.GameState.GameState;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
@@ -28,24 +28,16 @@ public class CollisionLaboratory extends GameState {
     private static final float INIT_SPEED = 0;
 
     private final int labSize;
-    private final int nrOfCubes;
-    private final float speeds;
 
-    public CollisionLaboratory(GameTimer time) {
-        this(LAB_SIZE, NR_OF_CUBES, time);
+    public CollisionLaboratory(GameTimer time, Player player) {
+        this(LAB_SIZE, NR_OF_CUBES, time, player);
     }
 
-    public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time) {
+    public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time, Player player) {
         super(time);
         this.labSize = labSize;
-        this.nrOfCubes = nrOfCubes;
-        this.speeds = INIT_SPEED;
-//        this.speeds = labSize/5;
-//        getTimer().setGameTimeMultiplier(2f);
-    }
+        float speeds = INIT_SPEED;//labSize/5;
 
-    @Override
-    public void buildScene(Player player) {
         Settings.SPECTATOR_MODE = true;
         player.jet().set();
 
@@ -54,7 +46,7 @@ public class CollisionLaboratory extends GameState {
 
         staticEntities.add(new ContainerCube(labSize));
 
-        int remainingCubes = this.nrOfCubes;
+        int remainingCubes = nrOfCubes;
 
         cubing:
         for (int x = 0; x < gridSize; x++) {

@@ -1,8 +1,7 @@
-package nl.NG.Jetfightergame.Assets.Scenarios;
+package nl.NG.Jetfightergame.Engine.GameState;
 
-import nl.NG.Jetfightergame.Engine.EntityManager;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 
 /**
  * @author Geert van Ieperen
@@ -26,5 +25,5 @@ public interface Environment extends EntityManager {
 
     GameTimer getTimer();
 
-    int getNumberOfLights();
+    void cleanUp();
 }

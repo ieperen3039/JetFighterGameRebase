@@ -2,11 +2,11 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Engine.GameState;
+import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -21,12 +21,9 @@ public class ExplosionLaboratory extends GameState {
 
     private Toolbox.DelayedAction action;
 
-    public ExplosionLaboratory(GameTimer time) {
+    public ExplosionLaboratory(GameTimer time, Player player) {
         super(time);
-    }
 
-    @Override
-    public void buildScene(Player player) {
         Settings.SPECTATOR_MODE = true;
 
         final AbstractJet playerJet = player.jet();
