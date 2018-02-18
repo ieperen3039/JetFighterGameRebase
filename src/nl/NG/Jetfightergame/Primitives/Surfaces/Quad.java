@@ -16,6 +16,9 @@ public class Quad extends Plane {
     private static PosVector tempAlpha = new PosVector();
     private static PosVector tempBeta = new PosVector();
 
+    /**
+     * the vectors must be supplied in counterclockwise ordering
+     */
     public Quad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
         super(new PosVector[]{A, B, C, D}, normal);
 

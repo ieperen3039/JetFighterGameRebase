@@ -13,6 +13,7 @@ import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.Collection;
@@ -44,6 +45,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     @Override
     public void addParticles(Collection<Particle> newParticles) {
         instance.addParticles(newParticles);
+    }
+
+    @Override
+    public Color4f fogColor(){
+        return instance.fogColor();
     }
 
     public enum Worlds {
@@ -125,6 +131,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         @Override
         protected DirVector entityNetforce(MovingEntity entity) {
             return DirVector.zeroVector();
+        }
+
+        @Override
+        public Color4f fogColor(){
+            return new Color4f(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
 }

@@ -73,6 +73,18 @@ public class Color4f {
     }
 
     /**
+     * create a new color based on another color with new intensity. if (intensity == source.alpha), then (this.equals(source))
+     * @param source a source color, of which the red green and blue values are taken
+     * @param intensity the new alpha value
+     */
+    public Color4f(Color4f source, float intensity) {
+        red = source.red;
+        green = source.green;
+        blue = source.blue;
+        alpha = intensity;
+    }
+
+    /**
      * flat add this color with the given other color
      * @param other another color
      * @return each color aspect added to the other, with alpha inverse multiplied

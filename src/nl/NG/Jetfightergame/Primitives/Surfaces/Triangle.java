@@ -17,6 +17,9 @@ public class Triangle extends Plane {
     private PosVector tempBeta = new PosVector();
     private PosVector cross = new PosVector();
 
+    /**
+     * the vectors must be supplied in counterclockwise ordering
+     */
     public Triangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
         super(new PosVector[]{A, B, C}, normal);
 

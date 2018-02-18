@@ -1,8 +1,9 @@
 package nl.NG.Jetfightergame.ShapeCreation;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.Tools.MatrixStack.Renderable;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Tools.MatrixStack.Renderable;
+import nl.NG.Jetfightergame.Tools.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -16,9 +17,10 @@ import java.util.stream.Stream;
  */
 public interface Shape extends Renderable {
 
-    /** returns all planes of this object */
+    /** returns all planes of this object in no specific order */
     Stream<? extends Plane> getPlanes();
 
+    /** @return the points of this plane in no specific order */
     Collection<PosVector> getPoints();
 
     /**
@@ -40,5 +42,20 @@ public interface Shape extends Renderable {
                 // return the shortest vector
                 .min(Collision::compareTo)
                 .orElse(null);
+    }
+
+    /**
+     * given a ray, determines if this ray hit this shape. Note that this method assumes local vectors,
+     * thus the parameters must be transformed to local space using for instance {@link ShadowMatrix#mapToLocal(PosVector)}
+     * @param position the local begin point of the ray
+     * @param direction the local direction in which the ray progresses. Does not have to be normalized
+     * @return true iff this shape intersects this ray
+     */
+    default boolean isHitByRay(PosVector position, DirVector direction){
+        return getPlanes()
+                // find the vector that hits the planes
+                .map((plane) -> plane.intersectWithRay(position, direction))
+                // return whether at least one hit
+                .findAny().orElse(false);
     }
 }

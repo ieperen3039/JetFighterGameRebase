@@ -263,4 +263,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     public void set() {
         set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
     }
+
+    /**
+     * set the position of the jet
+     * @see #set(PosVector, DirVector, Quaternionf)
+     */
+    public void set(PosVector posVector) {
+        set(posVector, velocity, rotation);
+    }
 }

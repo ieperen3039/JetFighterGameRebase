@@ -58,7 +58,7 @@ public class SoundEngine {
         if (Settings.DEBUG) {
             if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open AL 10");
             if (!alCaps.OpenAL10) System.err.println("Warning: Sound system does not support Open AL 10");
-            if (!alCaps.AL_EXT_vorbis) System.err.println("Warning: Sound system does not support Vorbis OGG");
+//            if (!alCaps.) System.err.println("Warning: Sound system does not support ...");
         }
 
         setListenerPosition(PosVector.zeroVector(), DirVector.zeroVector());

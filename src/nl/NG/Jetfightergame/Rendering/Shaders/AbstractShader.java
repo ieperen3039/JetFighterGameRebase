@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Resources;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -202,11 +201,6 @@ public abstract class AbstractShader implements ShaderProgram {
         setUniform(uniformName + ".color", color.toVector3f());
         setUniform(uniformName + ".mPosition", mPosition);
         setUniform(uniformName + ".intensity", color.alpha);
-    }
-
-    protected void setUniform(String uniformName, Color4f color) {
-        setUniform(uniformName, color.toVector3f().div(color.alpha));
-        Toolbox.checkGLError();
     }
 
     /**

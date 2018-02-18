@@ -51,4 +51,9 @@ public class PlayerJetLaboratory extends GameState {
     protected DirVector entityNetforce(MovingEntity entity) {
         return DirVector.zeroVector();
     }
+
+    @Override
+    public Color4f fogColor(){
+        return new Color4f(0.8f, 0.8f, 0.8f, 0f);
+    }
 }

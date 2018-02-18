@@ -36,13 +36,18 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
     private ShaderManager shaderManager;
 
-    private Color4f ambientLight;
     private Environment gameState;
     private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
                               Camera camera, ControllerManager controllerManager) throws IOException, ShaderException {
-        super("Rendering loop", Settings.TARGET_FPS, false, (ex) -> engine.exitGame());
+        super(
+                "Rendering loop", Settings.TARGET_FPS, false,
+                (ex) -> {
+                    window.close();
+                    engine.exitGame();
+                }
+        );
 
         this.gameState = gameState;
         this.window = window;
@@ -50,9 +55,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.engine = engine;
 
         shaderManager = new ShaderManager();
-
-        ambientLight = Color4f.LIGHT_GREY;
-        window.setClearColor(ambientLight);
 
         final Runnable cameraMode = () -> {
             if (Settings.SPECTATOR_MODE) {
@@ -68,68 +70,65 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
     @Override
     protected void update(float realDeltaTime) {
-        try {
-            GameTimer timer = gameState.getTimer();
-            timer.updateRenderTime();
-            activeCamera.updatePosition(timer.getRenderTime().difference());
-            frameNumber++;
+        GameTimer timer = gameState.getTimer();
+        timer.updateRenderTime();
+        activeCamera.updatePosition(timer.getRenderTime().difference());
+        frameNumber++;
 
-            Toolbox.checkGLError();
+        Toolbox.checkGLError();
 
-            shaderManager.initShader(activeCamera, ambientLight);
-            Toolbox.checkGLError();
+        Color4f ambientLight = gameState.fogColor();
+        float fog = Math.min(Settings.Z_FAR, (1f /ambientLight.alpha)); // also considers div/0
+        ambientLight = new Color4f(ambientLight, 1f);
+        window.setClearColor(ambientLight);
+        shaderManager.initShader(activeCamera, ambientLight, fog);
+        Toolbox.checkGLError();
 
-            GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
-            Toolbox.checkGLError();
+        GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
+        Toolbox.checkGLError();
 
-
-            if (Settings.CULL_FACES) {
-                // Cull backfaces
-                glEnable(GL_CULL_FACE);
-                glCullFace(GL_BACK);
-            }
-
-            // scene lighting
-            gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.5f));
-            gameState.setLights(gl);
-            Toolbox.checkGLError();
-
-            // first draw the non-transparent objects
-            gameState.drawObjects(gl);
-            Toolbox.checkGLError();
-
-            // overlay with transparent objects
-            // TODO transparent meshes?
-
-            // particles
-            glDisable(GL_CULL_FACE);
-            gameState.drawParticles(gl);
-            Toolbox.checkGLError();
-
-            shaderManager.unbind();
-
-            // HUD / menu
-            ScreenOverlay.draw(window.getWidth(), window.getHeight());
-
-            // update window
-            window.update();
-
-            if (Settings.SAVE_PLAYBACK){
-                SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
-                window.printScreen("session_"+ ft.format(new Date()) + "/" + frameNumber);
-            }
-
-            // update stop-condition
-            if (window.shouldClose()) {
-                engine.exitGame();
-            }
-            Toolbox.checkGLError();
-
-        } catch (Exception ex){ // this catch clause seems to be redundant
-            window.close();
-            engine.exitGame();
-            throw ex;
+        if (Settings.CULL_FACES) {
+            // Cull backfaces
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
         }
+
+        // scene lighting
+        gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.8f));
+        gameState.setLights(gl);
+        Toolbox.checkGLError();
+
+        // first draw the non-transparent objects
+        gameState.drawObjects(gl);
+        Toolbox.checkGLError();
+
+        // overlay with transparent objects
+        // TODO transparent meshes?
+
+        // particles
+        glDisable(GL_CULL_FACE);
+        gameState.drawParticles(gl);
+        Toolbox.checkGLError();
+
+        shaderManager.unbind();
+
+        // HUD / menu
+        ScreenOverlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen);
+
+        // update window
+        window.update();
+
+        if (Settings.SAVE_PLAYBACK) {
+            SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");
+            window.printScreen("session_" + ft.format(new Date()) + "/" + frameNumber);
+        }
+
+        // update stop-condition
+        if (window.shouldClose()) {
+            engine.exitGame();
+        }
+        Toolbox.checkGLError();
+
     }
 
     @Override

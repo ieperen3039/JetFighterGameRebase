@@ -35,6 +35,10 @@ public abstract class Plane {
     private PosVector relativePosition = new PosVector();
     private PosVector middle = null;
 
+    /**
+     * @param vertices the vertices in counterclockwise order
+     * @param normal the normal vector in opposite direction of how it is visible
+     */
     public Plane(PosVector[] vertices, DirVector normal) {
         this.normal = normal;
         this.boundary = vertices;
@@ -148,7 +152,7 @@ public abstract class Plane {
 
     /**
      * @see #getVertices()
-     * @return a stream of the vertices of this object
+     * @return a stream of the vertices of this object in counterclockwise order
      */
     public Stream<PosVector> getBorderAsStream() {
         return Arrays.stream(boundary);

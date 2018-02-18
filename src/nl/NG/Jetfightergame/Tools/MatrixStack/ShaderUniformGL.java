@@ -46,9 +46,6 @@ public class ShaderUniformGL implements GL2 {
         modelMatrix = new Matrix4f();
         viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
 
-        modelMatrix.assumeAffine();
-        viewProjectionMatrix.assumePerspective();
-
         for (int i = 0; i < Settings.MAX_POINT_LIGHTS; i++) {
             shader.setPointLight(i, new Vector3f(), Color4f.INVISIBLE);
         }

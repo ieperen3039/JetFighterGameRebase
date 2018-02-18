@@ -13,4 +13,8 @@ public interface SmoothTracked<T> {
      * @param deltaTime the time since the last updatePosition, to allow speed and acceleration
      */
     void updateFluent(T target, float deltaTime);
+
+    T current();
+
+    T previous();
 }

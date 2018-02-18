@@ -31,7 +31,15 @@ public class GouraudShader extends AbstractShader {
     }
 
     public void setAmbientLight(Color4f ambientLight) {
-        setUniform("ambientLight", ambientLight);
+        setUniform("ambientLight", ambientLight.toVector3f());
+    }
+
+    /**
+     * set the maximum vision radius to the specified range. Fog will become thicker and take the color of ambientlight
+     * inversely to the range.
+     */
+    public void setFog(float range){
+//        setUniform("fogThickness", value);
     }
 
     public void setCameraPosition(Vector3f mPosition){

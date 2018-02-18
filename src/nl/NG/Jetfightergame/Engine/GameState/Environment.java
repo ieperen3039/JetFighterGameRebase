@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 /**
  * @author Geert van Ieperen
@@ -26,4 +27,10 @@ public interface Environment extends EntityManager {
     GameTimer getTimer();
 
     void cleanUp();
+
+    /**
+     * light of the background, alpha determines the thickness of the fog
+     * @return the background-color
+     */
+    Color4f fogColor();
 }
