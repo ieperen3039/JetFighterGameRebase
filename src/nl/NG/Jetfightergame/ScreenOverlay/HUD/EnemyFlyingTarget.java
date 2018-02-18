@@ -31,6 +31,8 @@ public class EnemyFlyingTarget extends MovingTarget {
     @Override
     protected void draw(ScreenOverlay.Painter hud) {
         Vector2i pos = entityPosition(hud);
+        if (pos == null) return;
+
         int size = iconSize();
         final int halfSize = size / 2;
         hud.rectangle(pos.x() - halfSize, pos.y() - halfSize, size, size, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);

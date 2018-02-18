@@ -7,11 +7,15 @@ import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author Geert van Ieperen
@@ -20,6 +24,7 @@ import org.joml.Quaternionf;
 public class PlayerJetLaboratory extends GameState {
 
     private static final int LAB_SIZE = 100;
+    private Collection<HUDTargetable> cubeTargets = new ArrayList<>();
 
     public PlayerJetLaboratory(GameTimer time, Player player) {
         super(player, time);
@@ -35,16 +40,25 @@ public class PlayerJetLaboratory extends GameState {
             for (int y = -1; y < 2; y += 2) {
                 // etc.
                 for (int z = -1; z < 2; z += 2) {
-                    dynamicEntities.add(new FallingCube(
+                    final FallingCube cube = new FallingCube(
                             Material.SILVER, 500, 10,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new DirVector(), new Quaternionf(), getTimer()
-                    ));
+                    );
+
+                    dynamicEntities.add(cube);
+                    cubeTargets.add(getHUDTarget(cube));
                 }
             }
         }
 
         lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE.darken(0.7f)));
+    }
+
+    @Override
+    public void cleanUp() {
+        super.cleanUp();
+        cubeTargets.forEach(HUDTargetable::dispose);
     }
 
     @Override

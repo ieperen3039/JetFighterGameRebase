@@ -162,12 +162,13 @@ public class ShaderUniformGL implements GL2 {
     public Vector2f getPositionOnScreen(PosVector vertex){
         Vector4f pos = new Vector4f(vertex, 1.0f);
         viewProjectionMatrix.transformProject(pos);
-        return new Vector2f(pos.x(), pos.y());
+        if (pos.z() > 1) return null;
+        else return new Vector2f(pos.x(), pos.y());
     }
 
     @Override
     public String toString() {
-        return "ShaderUniformGL{\n" +
+        return "ShaderUniformGL {\n" +
                 "modelMatrix=" + modelMatrix +
                 ", viewProjectionMatrix=" + viewProjectionMatrix +
                 ", normalMatrix=" + normalMatrix +

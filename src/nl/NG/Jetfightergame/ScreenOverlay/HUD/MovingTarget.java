@@ -33,14 +33,17 @@ public abstract class MovingTarget implements HUDTargetable {
         ScreenOverlay.addHudItem(visual);
     }
 
+    /**
+     * @return the coordinate of this vertex on the screen, or null if this vertex is behind the player
+     */
     protected Vector2i entityPosition(ScreenOverlay.Painter hud){
         return hud.positionOnScreen(subject.interpolatedPosition());
     }
 
     protected int iconSize(){
         float dist = distance();
-        if (dist < 5) return HUDStyleSettings.ICON_BIG;
-        else if (dist < 20) return HUDStyleSettings.ICON_MED;
+        if (dist < 25) return HUDStyleSettings.ICON_BIG;
+        else if (dist < 100) return HUDStyleSettings.ICON_MED;
         else return HUDStyleSettings.ICON_SMALL;
     }
 

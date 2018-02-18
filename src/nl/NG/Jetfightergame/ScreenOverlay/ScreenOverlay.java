@@ -190,6 +190,7 @@ public final class ScreenOverlay {
          */
         public Vector2i positionOnScreen(PosVector worldPosition){
             final Vector2f relativePosition = mapper.apply(worldPosition);
+            if (relativePosition == null) return null;
             
             relativePosition.add(1f, -1f).mul(0.5f, -0.5f);
 

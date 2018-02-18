@@ -58,10 +58,10 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     public enum Worlds {
+        MainMenu,
         PlayerJetLaboratory,
         CollisionLaboratory,
-        ExplosionLaboratory,
-        MainMenu
+        ExplosionLaboratory
     }
 
     @Override

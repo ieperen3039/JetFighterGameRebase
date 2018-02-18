@@ -28,7 +28,7 @@ public interface GL2 extends MatrixStack {
      * maps the local vertex to its position on screen
      * @param vertex a position vector in local space
      * @return the position as ([-1, 1], [-1, 1]) on the view. Note that these coordinates may fall out of the given range
-     * if it is not in the player's FOV, yet a vertex inside this range may be behind the player as well.
+     * if it is not in the player's FOV. returns null if this vertex is behind the player.
      */
     Vector2f getPositionOnScreen(PosVector vertex);
 
