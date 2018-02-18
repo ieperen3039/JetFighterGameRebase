@@ -1,7 +1,8 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 
 import java.util.Collection;
 
@@ -15,13 +16,21 @@ public interface EntityManager {
      * adds an moving entity to the game's collision detection and rendering
      * @param entity the new entity
      */
-    void addEntity(GameEntity entity);
+    void addEntity(MovingEntity entity);
 
     /**
      * adds a collection of particles to the world
      * @param newParticles some particles
      */
     void addParticles(Collection<Particle> newParticles);
+
+    /**
+     * connects this entity to be visible on the hud, be it friend or foe.
+     * @param entity the entity to be added
+     * @return the object, for the calling class to manage and delete.
+     * Be aware that this must be deleted, or both the calling class and this target will not be cleaned.
+     */
+    HUDTargetable getHUDTarget(MovingEntity entity);
 
 //    /**
 //     * adds the sound effect to the sound engine.

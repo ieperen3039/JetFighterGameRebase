@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame;
 
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Random;
@@ -67,8 +66,6 @@ public final class Settings {
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 3;
     public static final int MAX_POINT_LIGHTS = 10;
-    public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
-    public static final int HUD_STROKE_WIDTH = 0;
 
     /** data path settings */
     public static final String AUDIO_DATA_PATH = "res/sounds/";

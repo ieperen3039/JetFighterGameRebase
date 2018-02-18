@@ -4,6 +4,8 @@ import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Vector2f;
 import org.joml.Vector2i;
 import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
@@ -18,6 +20,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.*;
 import static nl.NG.Jetfightergame.Tools.Directory.fonts;
@@ -30,7 +33,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  * @author Jorren
  * semi-singleton design to assist debug output to HUD
  */
-public class ScreenOverlay {
+public final class ScreenOverlay {
 
     private static long vg;
     private static NVGColor color;
@@ -75,11 +78,6 @@ public class ScreenOverlay {
      * @param menuMode
      */
     public static void initialize(BooleanSupplier menuMode) throws IOException {
-        new ScreenOverlay(menuMode);
-    }
-
-
-    private ScreenOverlay(BooleanSupplier menuMode) throws IOException {
         ScreenOverlay.menuMode = menuMode;
 
         vg = GLFWWindow.antialiasing() ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
@@ -170,6 +168,35 @@ public class ScreenOverlay {
         private final int yPrintRoll = PRINTROLLSIZE + 5;
         private final int xPrintRoll = 5;
         private int printRollEntry = 0;
+
+        private final int windowWidth;
+        private final int windowHeight;
+        private final Function<PosVector, Vector2f> mapper;
+
+        /**
+         * @param windowWidth width of this hud display iteration
+         * @param windowHeight height of ''
+         * @param mapper maps a world-space vector to relative position ([-1, 1], [-1, 1]) in the view.
+         */
+        public Painter(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper) {
+            this.windowWidth = windowWidth;
+            this.windowHeight = windowHeight;
+            this.mapper = mapper;
+        }
+
+        /**
+         * @param worldPosition a position in world-space
+         * @return the coordinates of this position as where they appear on the screen, possibly outside the borders.
+         */
+        public Vector2i positionOnScreen(PosVector worldPosition){
+            final Vector2f relativePosition = mapper.apply(worldPosition);
+            
+            relativePosition.add(1f, -1f).mul(0.5f, -0.5f);
+
+            int x = (int) (relativePosition.x() * windowWidth);
+            int y = (int) (relativePosition.y() * windowHeight);
+            return new Vector2i(x, y);
+        }
 
         /**
          * Get an instance of NVGColor with the correct values. All color values are floating point numbers supposed to be
@@ -338,11 +365,11 @@ public class ScreenOverlay {
         }
     }
 
-    public synchronized static void draw(int windowWidth, int windowHeight) {
+    public static synchronized void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
 
-        Painter vanGogh = new Painter();
+        Painter vanGogh = new Painter(windowWidth, windowHeight, mapper);
         // Draw the right drawhandlers
         if (isMenuMode()) {
             menuBufferLock.lock();

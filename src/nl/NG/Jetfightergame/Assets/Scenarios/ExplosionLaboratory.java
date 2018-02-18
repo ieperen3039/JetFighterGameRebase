@@ -22,7 +22,7 @@ public class ExplosionLaboratory extends GameState {
     private Toolbox.DelayedAction action;
 
     public ExplosionLaboratory(GameTimer time, Player player) {
-        super(time);
+        super(player, time);
 
         Settings.SPECTATOR_MODE = true;
 

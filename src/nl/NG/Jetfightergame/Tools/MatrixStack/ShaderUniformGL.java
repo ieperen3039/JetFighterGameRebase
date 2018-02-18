@@ -160,8 +160,7 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public Vector2f getPositionOnScreen(PosVector vertex){
-        Vector3f pos = new Vector3f(vertex);
-        modelMatrix.transformPosition(pos);
+        Vector4f pos = new Vector4f(vertex, 1.0f);
         viewProjectionMatrix.transformProject(pos);
         return new Vector2f(pos.x(), pos.y());
     }

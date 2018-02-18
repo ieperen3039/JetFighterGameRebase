@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
 import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
@@ -9,6 +8,7 @@ import nl.NG.Jetfightergame.Assets.Scenarios.Process592;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
@@ -38,13 +38,18 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void addEntity(GameEntity entity) {
+    public void addEntity(MovingEntity entity) {
         instance.addEntity(entity);
     }
 
     @Override
     public void addParticles(Collection<Particle> newParticles) {
         instance.addParticles(newParticles);
+    }
+
+    @Override
+    public HUDTargetable getHUDTarget(MovingEntity entity) {
+        return instance.getHUDTarget(entity);
     }
 
     @Override
@@ -120,11 +125,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     /**
-     * public void
+     * private void... :D
      */
     private class Void extends GameState {
         public Void() {
-            super(time);
+            super(EnvironmentManager.this.player, time);
             dynamicEntities.add(player.jet());
         }
 
@@ -133,7 +138,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
             return DirVector.zeroVector();
         }
 
-        @Override
+        @Override // DAAAARKNEEEESSSSS
         public Color4f fogColor(){
             return new Color4f(0.0f, 0.0f, 0.0f, 0.0f);
         }

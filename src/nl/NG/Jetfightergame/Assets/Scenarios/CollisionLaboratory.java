@@ -25,7 +25,6 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBEMASS = 10f;
     private static final int LAB_SIZE = 10;
     private static final int NR_OF_CUBES = 8;
-    private static final float INIT_SPEED = 0;
 
     private final int labSize;
 
@@ -34,9 +33,9 @@ public class CollisionLaboratory extends GameState {
     }
 
     public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time, Player player) {
-        super(time);
+        super(player, time);
         this.labSize = labSize;
-        float speeds = INIT_SPEED;//labSize/5;
+        float speeds = labSize/5;
 
         Settings.SPECTATOR_MODE = true;
         player.jet().set();
@@ -52,28 +51,37 @@ public class CollisionLaboratory extends GameState {
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 for (int z = 0; z < gridSize; z++) {
-                    final PosVector pos = new PosVector(-labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace));
-                    DirVector random = Vector.random();
-                    random.scale(speeds, random);
-                    FallingCube cube = new FallingCube(
-                            Material.SILVER, CUBEMASS, CUBESIZE,
-                            pos.scale(0.8f, pos).toPosVector(),
-                            random, new Quaternionf(), getTimer()
-                    );
-                    cube.addRandomRotation(0.2f);
-                    dynamicEntities.add(cube);
+                    makeCube(labSize, speeds, interSpace, x, y, z);
+
                     if (--remainingCubes <= 0) break cubing;
                 }
             }
         }
 
-        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.TRANSPARENT_GREY));
+        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.7f)));
+    }
+
+    private void makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
+        final PosVector pos = new PosVector(
+                -labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace)
+        );
+
+        DirVector random = Vector.random();
+        random.scale(speeds, random);
+
+        FallingCube cube = new FallingCube(
+                Material.SILVER, CUBEMASS, CUBESIZE,
+                pos.scale(0.8f, pos).toPosVector(),
+                random, new Quaternionf(), getTimer()
+        );
+        cube.addRandomRotation(0.2f);
+        dynamicEntities.add(cube);
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
     protected DirVector entityNetforce(MovingEntity entity) {
-        final int version = 3;
+        final int version = 0;
 
         switch (version){
             case 1:

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState.Environment;
 import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager.Worlds;
@@ -9,6 +9,8 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -166,7 +168,7 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public void addEntity(GameEntity entity) {
+    public void addEntity(MovingEntity entity) {
         // maybe a bit pessimistic
         throw new UnsupportedOperationException();
     }
@@ -174,6 +176,11 @@ public class Process592 implements Environment {
     @Override
     public void addParticles(Collection<Particle> newParticles) {
         particles.addAll(newParticles);
+    }
+
+    @Override
+    public HUDTargetable getHUDTarget(MovingEntity entity) {
+        return new EnemyFlyingTarget(entity, PosVector::zeroVector);
     }
 
     /**

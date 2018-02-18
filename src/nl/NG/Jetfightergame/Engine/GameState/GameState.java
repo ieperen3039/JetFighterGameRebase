@@ -1,14 +1,16 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;
@@ -46,18 +48,21 @@ public abstract class GameState implements Environment {
     protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
     protected Collection<Particle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
+    protected final Player player;
 
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
     private final GameTimer time;
 
+    // TODO a lock for every list separately, possibly by defining a "ConcurrentArrayList"
     private ReentrantReadWriteLock entityModificationLock = new ReentrantReadWriteLock();
     /** used when a list is iterated, but all items stay in this list */
     private Lock readLock = entityModificationLock.readLock();
     /** used when items in a list are removed, added or any combination of these */
     private Lock writeLock = entityModificationLock.writeLock();
 
-    public GameState(GameTimer time) {
+    public GameState(Player player, GameTimer time) {
+        this.player = player;
         this.time = time;
         ScreenOverlay.addHudItem(collisionCounter);
     }
@@ -221,12 +226,13 @@ public abstract class GameState implements Environment {
     public void drawObjects(GL2 gl) {
 //        Toolbox.drawAxisFrame(gl);
         readLock.lock();
-
         staticEntities.forEach(d -> d.draw(gl));
+        readLock.unlock();
 
+        // we unlock-lock here to prevent starvation
+        readLock.lock();
         glDisable(GL_CULL_FACE); // TODO when new meshes are created or fixed, this should be removed
         dynamicEntities.forEach(d -> d.draw(gl));
-
         readLock.unlock();
     }
 
@@ -251,7 +257,7 @@ public abstract class GameState implements Environment {
     }
 
     @Override
-    public void addEntity(GameEntity entity) {
+    public void addEntity(MovingEntity entity) {
         writeLock.lock();
         dynamicEntities.add(entity);
         writeLock.unlock();
@@ -264,8 +270,13 @@ public abstract class GameState implements Environment {
         writeLock.unlock();
     }
 
+    @Override
+    public HUDTargetable getHUDTarget(MovingEntity entity) {
+        return new EnemyFlyingTarget(entity, () -> player.jet().interpolatedPosition());
+    }
+
     /**
-     * (this method may be redundant)
+     * (this method may be reduced to accessing the lock)
      */
     public void cleanUp() {
         try {

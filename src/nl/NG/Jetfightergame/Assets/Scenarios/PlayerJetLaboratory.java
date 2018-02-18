@@ -22,7 +22,7 @@ public class PlayerJetLaboratory extends GameState {
     private static final int LAB_SIZE = 100;
 
     public PlayerJetLaboratory(GameTimer time, Player player) {
-        super(time);
+        super(player, time);
 
         player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
         dynamicEntities.add(player.jet());

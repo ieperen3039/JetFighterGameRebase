@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -10,9 +11,9 @@ import org.joml.Vector2i;
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
+import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_COLOR;
+import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_STROKE_WIDTH;
 import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.LUCIDA_CONSOLE;
-import static nl.NG.Jetfightergame.Settings.HUD_COLOR;
-import static nl.NG.Jetfightergame.Settings.HUD_STROKE_WIDTH;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
 
@@ -21,11 +22,6 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
  * created on 24-12-2017.
  */
 public class GravityHud {
-
-    private static final int BORESIGHT_SIZE = 50;
-    private static final float ALTVEL_BAR_SIZE = 0.6f;
-    private static final int TICKSIZE = 15;
-    private static final int HUD_TEXT_SIZE = 30;
 
     public final Consumer<ScreenOverlay.Painter> display;
 
@@ -36,7 +32,7 @@ public class GravityHud {
             final int height = windowHeight.getAsInt();
             final int xMid = width / 2;
             final int yMid = height / 2;
-            final float barMargin = (1 - ALTVEL_BAR_SIZE) / 2;
+            final float barMargin = (1 - HUDStyleSettings.ALTVEL_BAR_SIZE) / 2;
             final float inverseBarMargin = 1 - barMargin;
             final DirVector lookDirection = camera.vectorToFocus();
 
@@ -52,13 +48,13 @@ public class GravityHud {
 
                 float[] velocityTicks = ticks(currentVelocity, 25, 100);
                 for (float tick : velocityTicks) {
-                    int yPos = (int) (((-1 * tick * (ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
-                    hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosVelocityBar, yPos, xPosVelocityBar + TICKSIZE, yPos);
+                    int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
+                    hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosVelocityBar, yPos, xPosVelocityBar + HUDStyleSettings.TICKSIZE, yPos);
                 }
 
                 hud.text(
-                        xPosVelocityBar - (10 + HUD_TEXT_SIZE), yMid,
-                        HUD_TEXT_SIZE, LUCIDA_CONSOLE, NVG_ALIGN_RIGHT, HUD_COLOR,
+                        xPosVelocityBar - (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
+                        HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_RIGHT, HUD_COLOR,
                         Integer.toString((int) currentVelocity)
                 );
             }
@@ -74,13 +70,13 @@ public class GravityHud {
 
                 float[] heightTicks = ticks(currentAltitude, 25, 100);
                 for (float tick : heightTicks) {
-                    int yPos = (int) (((-1 * tick * (ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
-                    hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosAltitudeBar, yPos, xPosAltitudeBar + TICKSIZE, yPos);
+                    int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
+                    hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosAltitudeBar, yPos, xPosAltitudeBar + HUDStyleSettings.TICKSIZE, yPos);
                 }
 
                 hud.text(
-                        xPosAltitudeBar + (10 + HUD_TEXT_SIZE), yMid,
-                        HUD_TEXT_SIZE, LUCIDA_CONSOLE, NVG_ALIGN_LEFT, HUD_COLOR,
+                        xPosAltitudeBar + (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
+                        HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_LEFT, HUD_COLOR,
                         Integer.toString((int) currentAltitude)
                 );
             }
@@ -91,9 +87,9 @@ public class GravityHud {
                 int BSY = dir.y() + yMid;
                 hud.line(
                         HUD_STROKE_WIDTH, HUD_COLOR,
-                        BSX - BORESIGHT_SIZE, BSY + BORESIGHT_SIZE,
+                        BSX - HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE,
                         BSX, BSY,
-                        BSX + BORESIGHT_SIZE, BSY + BORESIGHT_SIZE
+                        BSX + HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE
                 );
             }
 
