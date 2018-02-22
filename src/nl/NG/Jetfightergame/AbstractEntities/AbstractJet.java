@@ -1,6 +1,8 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Assets.Sounds;
+import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
+import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -29,7 +31,9 @@ import java.util.function.Consumer;
  */
 public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
-    /** arbitrary number. higher == more boom */
+    /**
+     * arbitrary number. higher == more boom
+     */
     private static final float EXPLOSION_POWER = 10;
 
     protected final float liftFactor;
@@ -43,13 +47,22 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     protected final float yPreservation;
     protected final float zPreservation;
 
+    protected final MachineGun gunAlpha;
+    protected final SpecialWeapon gunBeta;
+
     private final float rotationPreserveFactor;
 
-    /** lose it all, and you're dead */
+    /**
+     * lose it all, and you're dead
+     */
     protected int hitPoints;
-    /** the number of hitpoints cannot exceed this number */
+    /**
+     * the number of hitpoints cannot exceed this number
+     */
     private final int maxHeath;
-    /** particles and new entities should be passed to this object */
+    /**
+     * particles and new entities should be passed to this object
+     */
     private final EntityManager entityDeposit;
 
     protected Controller input;
@@ -60,7 +73,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      *
      * @param input                    controller input, either player or AI.
      * @param initialPosition          position of spawning (of the origin) in world coordinates
-     * @param initialRotation          the initial rotation around the Z-axis of this object in radians
+     * @param initialRotation          the initial rotation of spawning
      * @param scale                    scale factor applied to this object. the scale is in global space and executed in
      *                                 {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param material                 the default material properties of the whole object.
@@ -69,7 +82,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      *                                 This is applied only on the vector of external influences, thus not in zero-gravity.
      * @param airResistanceCoefficient 0.5 * A * Cw. This is a factor that should be experimentally found
      * @param throttlePower            force of the engines at full power in Newton
-     * @param brakePower               (not yet determined)
+     * @param brakePower               air resistance is multiplied with this value when braking
      * @param yawAcc                   acceleration over the Z-axis when moving right at full power in rad/ss
      * @param pitchAcc                 acceleration over the Y-axis when pitching up at full power in rad/ss
      * @param rollAcc                  acceleration over the X-axis when rolling at full power in rad/ss
@@ -77,6 +90,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param renderTimer              the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
      * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
      * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
+     * @param gunAlpha                 the primary firing method
+     * @param gunBeta                  the secondary gun. If this gun can be switched, this should be a GunManager.
      * @param hitPoints                the amount of damage this plane can take before exploding
      * @param entityDeposit            the class that allows new entities and particles to be added to the environment
      */
@@ -85,7 +100,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
-            int hitPoints, EntityManager entityDeposit
+            MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, EntityManager entityDeposit
     ) {
         super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
 
@@ -100,6 +115,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         this.rotationPreserveFactor = 1 - rotationReductionFactor;
         this.yPreservation = 1 - yReduction;
         this.zPreservation = 1 - zReduction;
+        this.gunAlpha = gunAlpha;
+        this.gunBeta = gunBeta;
         this.hitPoints = hitPoints;
         this.maxHeath = hitPoints;
         this.entityDeposit = entityDeposit;
@@ -111,6 +128,22 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
         gyroPhysics(deltaTime, netForce, velocity);
+
+        final PosVector gunMount = new PosVector(position);
+        gunMount.add(relativeStateDirection(new DirVector(5, 0, -1)));
+        final PosVector gunMount2 = new PosVector(extraPosition);
+        gunMount2.add(relativeStateDirection(new DirVector(5, 0, -1)));
+
+        State interpolator = new State(gunMount, gunMount2, rotation, extraRotation, velocity, forward);
+
+        final Collection<AbstractProjectile> bullets;
+        final Collection<AbstractProjectile> rockets;
+
+        bullets = gunAlpha.update(deltaTime, input.primaryFire(), interpolator, entityDeposit);
+        rockets = gunBeta.update(deltaTime, input.secondaryFire(), interpolator, entityDeposit);
+
+        new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(bullets));
+        new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(rockets));
     }
 
     /**
@@ -125,7 +158,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         // thrust forces
         float throttle = input.throttle();
-        float thrust = ((throttle > 0) ? (throttle * throttlePower) : (throttle * brakePower));
+        float thrust = (throttle > 0) ? (throttle * throttlePower) : 0;
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         float yPres = instantPreserveFraction(yPreservation, deltaTime);
@@ -153,7 +186,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         // air-resistance
         DirVector airResistance = new DirVector();
         float speed = velocity.length();
-        velocity.reducedTo(speed * speed * airResistCoeff * -1, airResistance);
+        float brake = (throttle < 0) ? (throttle * brakePower) : 0;
+        velocity.reducedTo(speed * speed * airResistCoeff * -1 * (1 + brake), airResistance);
         extraVelocity.add(airResistance.scale(deltaTime, temp));
 
         // F = m * a ; a = dv/dt
@@ -166,6 +200,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     public void update(float currentTime) {
+
         super.update(currentTime);
 
         // obtain current x-axis in worldspace
@@ -266,6 +301,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /**
      * set the position of the jet
+     *
      * @see #set(PosVector, DirVector, Quaternionf)
      */
     public void set(PosVector posVector) {

@@ -1,6 +1,8 @@
 package nl.NG.Jetfightergame.Assets.FighterJets;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
+import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -29,18 +31,20 @@ public class BasicJet extends AbstractJet {
     public static final float PITCH_POWER = 2f;
     public static final float ROLL_POWER = 2f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.01f;
+    private static final MachineGun GUN = new MachineGun(0.5f);
 
     private Shape shape;
 
     public BasicJet(Controller input, GameTimer renderTimer, EntityManager entityDeposit) {
-        this(PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit);
+        this(PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(5));
     }
 
-    public BasicJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer, EntityManager entityDeposit) {
+    public BasicJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,
+                    EntityManager entityDeposit, SpecialWeapon specialWeapon) {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.8f, renderTimer, 0.3f, 0.3f, INTERPOLATION_QUEUE_SIZE, entityDeposit);
+                0.8f, renderTimer, 0.3f, 0.3f, GUN, specialWeapon, INTERPOLATION_QUEUE_SIZE, entityDeposit);
         shape = ShapeFromMesh.CONCEPT_BLUEPRINT;
     }
 

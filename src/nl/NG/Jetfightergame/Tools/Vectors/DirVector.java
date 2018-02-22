@@ -107,4 +107,22 @@ public class DirVector extends Vector {
         dest.set(this.x + (0.5f * (that.x - this.x)), this.y + (0.5f * (that.y - this.y)), this.z + (0.5f * (that.z - this.z)));
         return dest;
     }
+
+    /**
+     * interpolates or extrapolates this vector to the given vector linearly
+     * @param that a target vector
+     * @param scalar [0, 1] for interpolation, otherwise it is extrapolation. 0 returns {@code this}, 1 returns {@code that}
+     * @return a new vector with the interpolated value
+     */
+    public DirVector interpolateTo(Vector that, float scalar){
+        final float x = this.x + ((this.x - that.x) * scalar);
+        final float y = this.y + ((this.y - that.y) * scalar);
+        final float z = this.z + ((this.z - that.z) * scalar);
+        return new DirVector(x, y, z);
+    }
+
+    @Override
+    public DirVector toDirVector() {
+        return this;
+    }
 }

@@ -259,8 +259,8 @@ public class CustomShape {
      * @see CustomShape#addBezierStrip
      */
     public Pair<List<PosVector>, List<PosVector>> addBezierStrip(PosVector start, PosVector M, PosVector end, int slices) {
-        PosVector B = start.middleTo(M, new PosVector());
-        PosVector C = end.middleTo(M, new PosVector());
+        PosVector B = start.middleTo(M);
+        PosVector C = end.middleTo(M);
         return addBezierStrip(start, start.mirrorY(new PosVector()), B, B.mirrorY(new PosVector()), C, C.mirrorY(new PosVector()), end, end.mirrorY(new PosVector()), slices);
     }
 

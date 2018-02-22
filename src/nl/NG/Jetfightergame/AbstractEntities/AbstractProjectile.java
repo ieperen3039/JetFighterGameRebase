@@ -73,8 +73,8 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
     @Override
     public void applyCollision(RigidBody newState, float deltaTime, float currentTime) {
         // add final state before this projectile is gone
-        positionInterpolator.add(newState.hitPosition, currentTime);
-        rotationInterpolator.add(newState.rotation, currentTime);
+        addPositionPoint(newState.hitPosition, currentTime);
+        addRotationPoint(newState.rotation, currentTime);
 
         timeToLive = 0;
     }
@@ -101,7 +101,7 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
      * @param extraPosition the place to store the new position
      * @param extraRotation the place to store the new rotation
      * @param extraVelocity the place to store the new velocity
-     * @param forward vector pointing along the x-axis of the plane in world-space
+     * @param forward vector pointing along the x-axis of the projectile in world-space
      * @param deltaTime time difference
      */
     protected abstract void adjustOrientation(

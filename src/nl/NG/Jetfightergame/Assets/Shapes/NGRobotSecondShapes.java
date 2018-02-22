@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Direction;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -122,10 +122,9 @@ public class NGRobotSecondShapes {
         frame.addQuad(F, G);
         frame.addQuad(G, A);
 
-        PosVector headMiddle = B.middleTo(C, new PosVector()).middleTo(A.middleTo(D, new PosVector()), new PosVector());
+        PosVector headMiddle = B.middleTo(C).middleTo(A.middleTo(D));
         PosVector noseMiddle = new PosVector();
-        headMiddle.to(B.middleTo(C, new PosVector()), new DirVector()).scale(1.2f, new DirVector())
-                .add(headMiddle, noseMiddle);
+        headMiddle.interpolateTo(B.middleTo(C), 1.2f);
 
         Pair<List<PosVector>, List<PosVector>> noseStrip = frame.addBezierStrip(B, noseMiddle, C, 10);
         frame.addPlaneToBezierStrip(B, noseStrip, true);
@@ -325,7 +324,7 @@ public class NGRobotSecondShapes {
         PosVector SSS = S.add(Direction.FORWARD.vector(torsoShoulderWingThick), new PosVector());
         PosVector SST = T.add(Direction.FORWARD.vector(torsoShoulderWingThick), new PosVector());
         PosVector SSO = O.add(Direction.DOWNFORWARD.vector(torsoShoulderWingThick), new PosVector());
-        PosVector SSSubS = S.middleTo(P, new PosVector()).add(Direction.FORWARD.vector(torsoShoulderWingThick), new PosVector());
+        PosVector SSSubS = S.middleTo(P).add(Direction.FORWARD.vector(torsoShoulderWingThick), new PosVector());
 
         // sides
         torso.addMirrorQuad(G, H, V, U);

@@ -23,13 +23,16 @@ public class ExplosionLaboratory extends GameState {
 
     public ExplosionLaboratory(GameTimer time, Player player) {
         super(player, time);
+    }
 
+    @Override
+    public void buildScene() {
         Settings.SPECTATOR_MODE = true;
 
         final AbstractJet playerJet = player.jet();
         playerJet.set();
 
-        action = new Toolbox.DelayedAction(1000, () -> {
+        action = new Toolbox.DelayedAction(2000, () -> {
             Toolbox.print("BOOM");
             particles.addAll(playerJet.explode());
             dynamicEntities.remove(playerJet);

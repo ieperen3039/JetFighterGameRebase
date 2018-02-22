@@ -13,7 +13,8 @@ public enum Directory {
     soundEffects("res/sounds/"),
     fonts("res/fonts/"),
     shaders("res/shaders/"),
-    meshes("res/models/");
+    meshes("res/models/"),
+    pictures("res/pictures/");
 
 
     private final String path;

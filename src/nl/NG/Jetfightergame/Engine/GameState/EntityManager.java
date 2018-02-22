@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 
@@ -18,6 +19,12 @@ public interface EntityManager {
      */
     void addEntity(MovingEntity entity);
 
+    default void addEntities(Collection<? extends MovingEntity> entities){
+        for (MovingEntity entity : entities) {
+            addEntity(entity);
+        }
+    }
+
     /**
      * adds a collection of particles to the world
      * @param newParticles some particles
@@ -31,6 +38,8 @@ public interface EntityManager {
      * Be aware that this must be deleted, or both the calling class and this target will not be cleaned.
      */
     HUDTargetable getHUDTarget(MovingEntity entity);
+
+    GameTimer getTimer();
 
 //    /**
 //     * adds the sound effect to the sound engine.

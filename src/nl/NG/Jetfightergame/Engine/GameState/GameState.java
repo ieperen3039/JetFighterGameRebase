@@ -48,6 +48,8 @@ public abstract class GameState implements Environment {
     protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
     protected Collection<Particle> particles = new ArrayList<>();
     protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
+    private Collection<MovingEntity> newEntities = new ArrayList<>();
+
     protected final Player player;
 
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
@@ -82,6 +84,11 @@ public abstract class GameState implements Environment {
         dynamicEntities.parallelStream()
                 .forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
         readLock.unlock();
+
+        writeLock.lock();
+        dynamicEntities.addAll(newEntities);
+        newEntities.clear();
+        writeLock.unlock();
 
         int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
         // check and handle collisions
@@ -258,9 +265,12 @@ public abstract class GameState implements Environment {
 
     @Override
     public void addEntity(MovingEntity entity) {
-        writeLock.lock();
-        dynamicEntities.add(entity);
-        writeLock.unlock();
+        newEntities.add(entity);
+    }
+
+    @Override
+    public void addEntities(Collection<? extends MovingEntity> entities) {
+        newEntities.addAll(entities);
     }
 
     @Override

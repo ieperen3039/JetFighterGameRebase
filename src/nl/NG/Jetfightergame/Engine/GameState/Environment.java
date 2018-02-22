@@ -1,10 +1,11 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 /**
+ * an environment where the player can fly in.
+ * Note that the constructor is not allowed to assume its parameters to be initialized
  * @author Geert van Ieperen
  * created on 8-1-2018.
  */
@@ -24,8 +25,10 @@ public interface Environment extends EntityManager {
 
     void drawParticles(GL2 gl);
 
-    GameTimer getTimer();
-
+    /**
+     * allows this object to be cleaned.
+     * after calling this method, this object should not be used.
+     */
     void cleanUp();
 
     /**
@@ -33,4 +36,9 @@ public interface Environment extends EntityManager {
      * @return the background-color
      */
     Color4f fogColor();
+
+    /**
+     * initialize the scene
+     */
+    void buildScene();
 }

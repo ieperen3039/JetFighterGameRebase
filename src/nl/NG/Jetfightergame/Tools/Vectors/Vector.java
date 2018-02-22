@@ -69,6 +69,14 @@ public abstract class Vector extends Vector3f{
         return super.toString();
     }
 
+    /**
+     * interpolates or extrapolates this vector to the given vector linearly
+     * @param that a target vector
+     * @param scalar [0, 1] for interpolation, otherwise it is extrapolation. 0 returns {@code this}, 1 returns {@code that}
+     * @return a new vector with the interpolated value
+     */
+    public abstract Vector interpolateTo(Vector that, float scalar);
+
     public PosVector toPosVector() {
         return new PosVector(x, y, z);
     }

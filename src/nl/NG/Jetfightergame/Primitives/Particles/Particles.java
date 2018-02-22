@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Tools.MatrixStack.ShadowMatrix;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Tools.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -211,9 +211,9 @@ public final class Particles {
     private static Collection<PosVector[]> splitTriangle(PosVector A, PosVector B, PosVector C){
         Collection<PosVector[]> particles = new ArrayList<>();
 
-        final PosVector AtoB = A.middleTo(B, new PosVector());
-        final PosVector AtoC = A.middleTo(C, new PosVector());
-        final PosVector BtoC = B.middleTo(C, new PosVector());
+        final PosVector AtoB = A.middleTo(B);
+        final PosVector AtoC = A.middleTo(C);
+        final PosVector BtoC = B.middleTo(C);
 
         particles.add(new PosVector[]{A, AtoB, AtoC});
         particles.add(new PosVector[]{B, BtoC, AtoB});

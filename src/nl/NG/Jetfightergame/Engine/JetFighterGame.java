@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
@@ -17,6 +18,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Mesh;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
+import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -24,7 +26,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,12 +65,13 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             if (Settings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(Settings.TARGET_FPS);
             else globalGameTimer = new GameTimer();
 
-            player = new Player(playerInput, new BasicJet(playerInput, globalGameTimer, environment));
-
-            environment = new EnvironmentManager(player, globalGameTimer);
-
             KeyTracker keyTracker = KeyTracker.getInstance();
             keyTracker.addKeyListener(this);
+
+            player = new Player(playerInput);
+            environment = new EnvironmentManager(player, globalGameTimer);
+
+            player.setJet(new BasicJet(playerInput, globalGameTimer, environment));
 
             final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
             MouseTracker.getInstance().setMenuModeDecision(inGame);
@@ -79,8 +81,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
 //            MusicProvider musicProvider = new MusicProvider(new Timer());
             soundEngine = new SoundEngine();
+            Sounds.initAll();
 
             ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
+
+            environment.init();
 
             renderLoop = new JetFighterRenderer(
                     this, environment, window, camera, playerInput
@@ -145,8 +150,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 break;
             case GLFW_KEY_PRINT_SCREEN:
                 SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
-                if (window.printScreen("Screenshot_" + ft.format(new Date()))){
-                    Toolbox.print("Saved screenshot as \"Screenshot_" + ft.format(new Date()) + "\"");
+                final String name = "Screenshot_" + ft.format(new Date());
+
+                if (window.printScreen(name)){
+                    Toolbox.print("Saved screenshot as \"" + name + "\"");
                 }
         }
     }
@@ -161,16 +168,16 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
      */
     private class Splash extends Frame implements Runnable {
         Splash() {
-            // TODO better splash image
-            final String path = "res/Pictures/SplashImage.png";
 
-            setTitle("Loading Jet Fighter");
+            setTitle("Loading " + Settings.GAME_NAME);
+            // TODO better splash image
+            final String image = "SplashImage.png";
 
             try {
-                final BufferedImage splashImage = ImageIO.read(new File(path));
+                final BufferedImage splashImage = ImageIO.read(Directory.pictures.getFile(image));
                 setImage(this, splashImage);
             } catch (Exception e) {
-                System.err.println("Could not find splash image!");
+                System.err.println("Could not load splash image " + Directory.pictures.getFile(image));
                 e.printStackTrace();
                 setSize(new Dimension(500, 300));
             }

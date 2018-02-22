@@ -59,9 +59,10 @@ public interface Controller {
 
     /**
      *
-     * @return whether primary fire should be activated
+     * @return whether secondary fire should be activated
      */
     boolean secondaryFire();
+
 
     /**
      * a controller that does nothing

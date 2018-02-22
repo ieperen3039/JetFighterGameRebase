@@ -43,6 +43,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
+    public void addEntities(Collection<? extends MovingEntity> entities) {
+        instance.addEntities(entities);
+    }
+
+    @Override
     public void addParticles(Collection<Particle> newParticles) {
         instance.addParticles(newParticles);
     }
@@ -55,6 +60,15 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     @Override
     public Color4f fogColor(){
         return instance.fogColor();
+    }
+
+    public void init() {
+        instance.buildScene();
+    }
+
+    @Override
+    public void buildScene() {
+        init();
     }
 
     public enum Worlds {
@@ -122,6 +136,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
                 Toolbox.print("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
                 instance = new Void();
         }
+
+        instance.buildScene();
     }
 
     /**
@@ -130,7 +146,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     private class Void extends GameState {
         public Void() {
             super(EnvironmentManager.this.player, time);
-            dynamicEntities.add(player.jet());
         }
 
         @Override
@@ -138,9 +153,14 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
             return DirVector.zeroVector();
         }
 
-        @Override // DAAAARKNEEEESSSSS
+        @Override
         public Color4f fogColor(){
             return new Color4f(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+
+        @Override
+        public void buildScene() {
+            dynamicEntities.add(player.jet());
         }
     }
 }

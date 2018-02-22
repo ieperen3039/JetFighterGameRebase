@@ -61,6 +61,7 @@ public class SimpleBullet extends AbstractProjectile {
         for (int i = 0; i < Settings.SPARK_PARTICLE_DENSITY; i++) {
             result.add(FireParticle.randomParticle(getPosition(), 10, 1));
         }
+        timeToLive = 0;
 
         return result;
     }

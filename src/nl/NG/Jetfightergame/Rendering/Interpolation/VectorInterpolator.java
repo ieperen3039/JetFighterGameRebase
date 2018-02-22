@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Rendering.Interpolation;
 
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
-import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 /**
@@ -15,11 +13,8 @@ public class VectorInterpolator extends LinearInterpolator<Vector> {
     }
 
     protected Vector interpolate(Vector firstElt, Vector secondElt, float fraction) {
-        DirVector difference = firstElt.to(secondElt, new DirVector());
+        Vector dest = firstElt.interpolateTo(secondElt, fraction);
 
-        Vector dest = new PosVector();
-        firstElt.add(difference.scale(fraction, difference), dest);
-        
         if (!dest.isScalable()) dest.set(firstElt);
         return dest;
     }

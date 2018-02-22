@@ -4,33 +4,59 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
 import nl.NG.Jetfightergame.Tools.Manager;
 
 /**
+ * a controller decorator that manages the current controller for the player, implementing overriding control.
  * @author Geert van Ieperen
  * created on 22-12-2017.
  */
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
-    private Controller instance = new PlayerPCControllerAbsolute();
+    private Controller playerControl = new PlayerPCControllerAbsolute();
+    private Controller override = new EmptyController();
+
+    private Controller instance = playerControl;
+
+    /**
+     * all control types available for the player. This logically excludes AI.
+     */
+    public enum ControllerImpl {
+        MouseAbsolute, MouseRelative
+    }
 
     @Override
     public ControllerImpl[] implementations() {
         return ControllerImpl.values();
     }
 
-    public enum ControllerImpl {
-        MouseAbsolute, MouseRelative
+    /**
+     * set the implementation of the override, but doesn't enables it.
+     * @param override the new override implementation
+     */
+    public void setOverride(Controller override) {
+        if (override instanceof TrackerListener) {
+            ((TrackerListener) override).cleanUp();
+        }
+        this.override = override;
+    }
+
+    /**
+     * @param enable if true, the player has control.
+     *               if false, the override will have the control.
+     */
+    public void setPlayerControl(boolean enable){
+        instance = enable ? playerControl : override;
     }
 
     public void switchTo(ControllerImpl type){
-        if (instance instanceof TrackerListener) {
-            ((TrackerListener) instance).cleanUp();
+        if (playerControl instanceof TrackerListener) {
+            ((TrackerListener) playerControl).cleanUp();
         }
 
         switch (type){
             case MouseAbsolute:
-                instance = new PlayerPCControllerAbsolute();
+                playerControl = new PlayerPCControllerAbsolute();
                 break;
             case MouseRelative:
-                instance = new PlayerPCControllerRelative();
+                playerControl = new PlayerPCControllerRelative();
                 break;
             default:
                 throw new UnsupportedOperationException("unknown enum: " + type);

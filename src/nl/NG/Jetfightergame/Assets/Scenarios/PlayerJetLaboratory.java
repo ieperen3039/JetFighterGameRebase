@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -28,7 +27,10 @@ public class PlayerJetLaboratory extends GameState {
 
     public PlayerJetLaboratory(GameTimer time, Player player) {
         super(player, time);
+    }
 
+    @Override
+    public void buildScene() {
         player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
         dynamicEntities.add(player.jet());
 //        staticEntities.add(new SimplexCave());
@@ -51,8 +53,6 @@ public class PlayerJetLaboratory extends GameState {
                 }
             }
         }
-
-        lights.add(new Pair<>(new PosVector(4, 3, 6), Color4f.WHITE.darken(0.7f)));
     }
 
     @Override

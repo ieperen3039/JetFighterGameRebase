@@ -17,7 +17,7 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
     private Lock changeGuard;
 
     /** timestamps in seconds. Private, as semaphore must be handled */
-    private Queue<Double> timeStamps; //TODO possible copy on write
+    private Queue<Double> timeStamps;
     private Queue<T> elements;
 
     /**
@@ -41,7 +41,7 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
     public T getActive(double timeStamp) {
         updateTime(timeStamp);
         // if (activeTimeStamp < timeStamp), there is no element available
-        return nextTimeStamp() < timeStamp ? null : nextElement();
+        return (nextTimeStamp() < timeStamp) ? null : nextElement();
     }
 
     @Override
@@ -55,7 +55,7 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
      * @param timeStamp the time until where the state of the queue should be updated.
      */
     protected void updateTime(double timeStamp) {
-        while (timeStamps.size() > 1 && timeStamp > nextTimeStamp()) {
+        while ((timeStamps.size() > 1) && (timeStamp > nextTimeStamp())) {
             progress();
         }
     }

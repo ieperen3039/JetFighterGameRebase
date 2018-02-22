@@ -27,6 +27,8 @@ public class CollisionLaboratory extends GameState {
     private static final int NR_OF_CUBES = 8;
 
     private final int labSize;
+    private final int nrOfCubes;
+    private final float speeds;
 
     public CollisionLaboratory(GameTimer time, Player player) {
         this(LAB_SIZE, NR_OF_CUBES, time, player);
@@ -35,8 +37,12 @@ public class CollisionLaboratory extends GameState {
     public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time, Player player) {
         super(player, time);
         this.labSize = labSize;
-        float speeds = labSize/5;
+        this.nrOfCubes = nrOfCubes;
+        speeds = labSize / 5f;
+    }
 
+    @Override
+    public void buildScene() {
         Settings.SPECTATOR_MODE = true;
         player.jet().set();
 

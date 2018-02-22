@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.lwjgl.openal.AL10;
 
 import java.io.File;
-import java.nio.IntBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
@@ -79,7 +78,7 @@ public class AudioFile {
      * @see #load()
      */
     public void dispose(){
-        AL10.alDeleteBuffers(IntBuffer.wrap(new int[]{dataID}));
+        AL10.alDeleteBuffers(dataID);
         dataID = -1;
         registeredSoundfiles.remove(this);
     }

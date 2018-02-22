@@ -2,15 +2,16 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Tools.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Tools.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -44,8 +45,8 @@ public abstract class GameEntity implements MovingEntity{
     /** expected velocity */
     protected DirVector extraVelocity;
 
-    protected VectorInterpolator positionInterpolator;
-    protected QuaternionInterpolator rotationInterpolator;
+    private VectorInterpolator positionInterpolator;
+    private QuaternionInterpolator rotationInterpolator;
 
     /** collision of this gametick, null if it doesn't hit */
     protected Extreme<Collision> nextCrash;
@@ -167,11 +168,12 @@ public abstract class GameEntity implements MovingEntity{
         positionInterpolator.add(new PosVector(position), currentTime);
         rotationInterpolator.add(new Quaternionf(rotation), currentTime);
 
-        if ((position.x() == Float.NaN) || (position.y() == Float.NaN) || (position.z() == Float.NaN))
-            throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
-        if ((rotation.x() == Float.NaN) || (rotation.y() == Float.NaN) || (rotation.z() == Float.NaN))
-            throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
-
+        if (Settings.DEBUG) {
+            if ((position.x() == Float.NaN) || (position.y() == Float.NaN) || (position.z() == Float.NaN))
+                throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
+            if ((rotation.x() == Float.NaN) || (rotation.y() == Float.NaN) || (rotation.z() == Float.NaN))
+                throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
+        }
     }
 
     @Override
@@ -395,6 +397,14 @@ public abstract class GameEntity implements MovingEntity{
         }
     }
 
+    protected void addPositionPoint(PosVector hitPosition, float currentTime){
+        positionInterpolator.add(hitPosition, currentTime);
+    }
+
+    protected void addRotationPoint(Quaternionf rotation, float currentTime){
+        rotationInterpolator.add(rotation, currentTime);
+    }
+
     @Override
     public float getMass() {
         return mass;
@@ -424,5 +434,39 @@ public abstract class GameEntity implements MovingEntity{
 
         positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
         rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
+    }
+
+    public static class State {
+        private final PosVector firstPos;
+        private final PosVector secondPos;
+        private final Quaternionf firstRot;
+        private final Quaternionf secondRot;
+        private final DirVector velocity;
+        private final DirVector forward;
+
+        public State(PosVector firstPos, PosVector secondPos, Quaternionf firstRot, Quaternionf secondRot, DirVector velocity, DirVector forward) {
+            this.firstPos = firstPos;
+            this.secondPos = secondPos;
+            this.firstRot = firstRot;
+            this.secondRot = secondRot;
+            this.velocity = velocity;
+            this.forward = forward;
+        }
+
+        public PosVector position(float timeFraction){
+            return firstPos.interpolateTo(secondPos, timeFraction);
+        }
+
+        public Quaternionf rotation(float timeFraction){
+            return firstRot.nlerp(secondRot, timeFraction);
+        }
+
+        public DirVector velocity(){
+            return new DirVector(velocity);
+        }
+
+        public DirVector forward() {
+            return new DirVector(forward);
+        }
     }
 }

@@ -67,13 +67,13 @@ public class InputDelegate {
 
             MouseButton eventButton;
             switch (button){
-                case GLFW_MOUSE_BUTTON_1:
+                case GLFW_MOUSE_BUTTON_LEFT:
                     eventButton = MouseButton.BUTTON_LEFT;
                     break;
-                case GLFW_MOUSE_BUTTON_2:
+                case GLFW_MOUSE_BUTTON_MIDDLE:
                     eventButton = MouseButton.BUTTON_MIDDLE;
                     break;
-                case GLFW_MOUSE_BUTTON_3:
+                case GLFW_MOUSE_BUTTON_RIGHT:
                     eventButton = MouseButton.BUTTON_RIGHT;
                     break;
                 default:

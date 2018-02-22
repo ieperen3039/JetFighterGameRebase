@@ -47,21 +47,25 @@ public class Process592 implements Environment {
     /** how much the player rolls left */
     private float theta = 0;
 
-    private float phiFactor = 10f;
-    private float thetaFactor = -20f;
+    private static final float phiFactor = 10f;
+    private static final float thetaFactor = -20f;
 
     private MenuPanel[] currentItems;
     private int selection;
 
     /**
      * @param player the player
-     * @param worldSelector Consumer of worlds
+     * @param worldSelector Consumer of worlds. Must be available and implemented
      */
     public Process592(Player player, Consumer<Worlds> worldSelector) {
         this.player = player;
-        player.jet().set();
         particles = new ArrayList<>();
         currentItems = worldSelectionMenu(worldSelector);
+    }
+
+    @Override
+    public void buildScene() {
+        player.jet().set();
     }
 
     @Override

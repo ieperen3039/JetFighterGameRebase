@@ -20,10 +20,17 @@ public class Player implements MortalEntity {
 
     private AbstractJet jet;
 
-    public Player(ControllerManager input, AbstractJet jet) {
+    public Player(ControllerManager input) {
         this.input = input;
-        this.jet = jet;
         health = 100;
+    }
+
+    public void setJet(AbstractJet jet) {
+        this.jet = jet;
+    }
+
+    public void setControlEnable(boolean enabled){
+        input.setPlayerControl(enabled);
     }
 
     public void switchController(ControllerManager.ControllerImpl type) {

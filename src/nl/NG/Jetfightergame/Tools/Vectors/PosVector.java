@@ -76,11 +76,18 @@ public class PosVector extends Vector {
 
     /**
      * @return vector to the middle of this vector and given vector
-     * equals (this + (1/2)*(that - this))
+     * equals (this + (1/2)*(that - this)), or (this.interpolateTo(that, 0.5f))
      */
-    public PosVector middleTo(Vector that, PosVector dest) {
-        dest.set(this.x + 0.5f * (that.x - this.x), this.y + 0.5f * (that.y - this.y), this.z + 0.5f * (that.z - this.z));
-        return dest;
+    public PosVector middleTo(Vector that) {
+        return interpolateTo(that, 0.5f);
+    }
+
+    @Override
+    public PosVector interpolateTo(Vector that, float scalar){
+        final float x = this.x + ((that.x - this.x) * scalar);
+        final float y = this.y + ((that.y - this.y) * scalar);
+        final float z = this.z + ((that.z - this.z) * scalar);
+        return new PosVector(x, y, z);
     }
 
     @Override

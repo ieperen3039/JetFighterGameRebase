@@ -18,8 +18,8 @@ public abstract class PlayerPCController implements TrackerMoveListener, Tracker
     private MouseTracker mouse;
     protected int currentRoll;
     protected int currentPitch;
-    private boolean stickyButtonLeft;
-    private boolean stickyButtonRight;
+    private boolean stickyButtonLeft = false;
+    private boolean stickyButtonRight = false;
 
     protected PlayerPCController() {
         keyboard = KeyTracker.getInstance();
@@ -51,20 +51,20 @@ public abstract class PlayerPCController implements TrackerMoveListener, Tracker
 
     @Override
     public boolean primaryFire() {
-        if (stickyButtonRight) {
-            stickyButtonRight = false;
-            return true;
-        }
-        return mouse.rightButton();
-    }
-
-    @Override
-    public boolean secondaryFire() {
         if (stickyButtonLeft) {
             stickyButtonLeft = false;
             return true;
         }
         return mouse.leftButton();
+    }
+
+    @Override
+    public boolean secondaryFire() {
+        if (stickyButtonRight) {
+            stickyButtonRight = false;
+            return true;
+        }
+        return mouse.rightButton();
     }
 
     @Override
