@@ -391,8 +391,8 @@ public abstract class GameEntity implements MovingEntity{
     private void updateInterpolationCache() {
         final float newTime = gameTimer.getRenderTime().current();
         if ((newTime > 0) && (cachedTime != newTime)) {
-            cachedPosition = positionInterpolator.getInterpolated(cachedTime).toPosVector();
-            cachedRotation = rotationInterpolator.getInterpolated(cachedTime);
+            cachedPosition = positionInterpolator.getInterpolated(newTime).toPosVector();
+            cachedRotation = rotationInterpolator.getInterpolated(newTime);
             cachedTime = newTime;
         }
     }

@@ -13,9 +13,6 @@ public class VectorInterpolator extends LinearInterpolator<Vector> {
     }
 
     protected Vector interpolate(Vector firstElt, Vector secondElt, float fraction) {
-        Vector dest = firstElt.interpolateTo(secondElt, fraction);
-
-        if (!dest.isScalable()) dest.set(firstElt);
-        return dest;
+        return firstElt.interpolateTo(secondElt, fraction);
     }
 }

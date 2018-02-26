@@ -24,14 +24,14 @@ public class BasicJet extends AbstractJet {
 
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 1000f;
-    public static final float BRAKE_POWER = 200f;
+    public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
     public static final float MASS = 50f;
     public static final Material MATERIAL = Material.SILVER;
     public static final float YAW_POWER = 1f;
     public static final float PITCH_POWER = 2f;
     public static final float ROLL_POWER = 2f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.01f;
-    private static final MachineGun GUN = new MachineGun(0.5f);
+    private static final MachineGun GUN = new MachineGun(0.1f);
 
     private Shape shape;
 

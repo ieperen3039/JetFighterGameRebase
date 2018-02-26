@@ -142,8 +142,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         bullets = gunAlpha.update(deltaTime, input.primaryFire(), interpolator, entityDeposit);
         rockets = gunBeta.update(deltaTime, input.secondaryFire(), interpolator, entityDeposit);
 
-        new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(bullets));
-        new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(rockets));
+        if (!bullets.isEmpty()) new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(bullets));
+        if (!rockets.isEmpty()) new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(rockets));
     }
 
     /**
@@ -186,8 +186,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         // air-resistance
         DirVector airResistance = new DirVector();
         float speed = velocity.length();
-        float brake = (throttle < 0) ? (throttle * brakePower) : 0;
-        velocity.reducedTo(speed * speed * airResistCoeff * -1 * (1 + brake), airResistance);
+        float brake = (throttle < 0) ? (-throttle * brakePower) : 0;
+        velocity.reducedTo(speed * speed * (airResistCoeff * brake) * -1, airResistance);
         extraVelocity.add(airResistance.scale(deltaTime, temp));
 
         // F = m * a ; a = dv/dt
