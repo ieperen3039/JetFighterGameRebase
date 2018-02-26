@@ -74,6 +74,8 @@ public abstract class GLFWGameEngine {
 
     /** tells the renderloop to stop, renderloop must call back to clean up others */
     public void exitGame(){
+        try { Thread.sleep(10); } catch (InterruptedException ignored) {} // wait for possible error-printing
+
         System.out.println();
         Toolbox.printFrom(2, "Stopping game...");
 

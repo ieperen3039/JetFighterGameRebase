@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -11,9 +11,11 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  * Implementation of a camera with a position and orientation.
  */
 public class FollowingCamera implements Camera {
+    /** camera settings */
     private static final DirVector eyeRelative = new DirVector(-10, 0, 4);
-    private static final DirVector focusRelative = eyeRelative.add(new DirVector(10, 0, 0), new DirVector());
-    private static final float CAMERA_ORIENT = 0.95f; // speed of camera orientation
+    private static final DirVector focusRelative = eyeRelative.add(new DirVector(20, 0, 0), new DirVector());
+    public static final float CAMERA_CATCHUP = 0.95f; // speed of camera positioning
+    private static final float CAMERA_ORIENT = 0.99f; // speed of camera orientation
 
     /**
      * The position of the camera.
@@ -24,14 +26,14 @@ public class FollowingCamera implements Camera {
     private final GameEntity target;
 
     public FollowingCamera(GameEntity target) {
-        this(jetPosition(eyeRelative, target).toPosVector(), target);
+        this(jetPosition(eyeRelative, target).toPosVector(), target, jetPosition(DirVector.zVector(), target).toDirVector());
     }
 
-    public FollowingCamera(PosVector eye, GameEntity playerJet) {
+    public FollowingCamera(PosVector eye, GameEntity playerJet, DirVector up) {
         this(
-                new ExponentialSmoothVector<>(eye, 1- Settings.CAMERA_CATCHUP),
+                new ExponentialSmoothVector<>(eye, 1- CAMERA_CATCHUP),
                 new ExponentialSmoothVector<>(jetPosition(focusRelative, playerJet).toPosVector(), 1- CAMERA_ORIENT),
-                new ExponentialSmoothVector<>(jetPosition(DirVector.zVector(), playerJet).toDirVector(), 1- CAMERA_ORIENT),
+                new ExponentialSmoothVector<>(up, 1- CAMERA_ORIENT),
                 playerJet
         );
     }
@@ -49,6 +51,9 @@ public class FollowingCamera implements Camera {
      * @return a new vector with the position translated to world-space
      */
     private static PosVector jetPosition(DirVector relativePosition, GameEntity target){
+        if ((target instanceof MortalEntity) && ((MortalEntity) target).isDead()){
+            return target.getPosition();
+        }
         final DirVector relative = target.relativeInterpolatedDirection(relativePosition);
         return target.interpolatedPosition().add(relative, new PosVector());
     }
@@ -73,7 +78,7 @@ public class FollowingCamera implements Camera {
 
     @Override
     public DirVector vectorToFocus(){
-        return eye.current().to(target.getPosition(), new DirVector());
+        return getEye().to(getFocus(), new DirVector());
     }
 
     @Override

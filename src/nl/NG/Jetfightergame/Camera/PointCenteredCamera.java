@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerDragListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerScrollListener;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
@@ -19,22 +18,24 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 public class PointCenteredCamera implements Camera, TrackerMoveListener, TrackerScrollListener, TrackerDragListener {
 
     private static final float ZOOM_SPEED = -0.1f;
-    public static float PHI_MIN = (-(float) Math.PI / 2f) + 0.01f;
-    public static float PHI_MAX = ((float) Math.PI / 2f) - 0.01f;
+    private static final float THETA_MIN = 0.01f;
+    private static final float THETA_MAX = ((float) Math.PI) - 0.01f;
+    private static final float PHI_MAX = (float) (2 * Math.PI);
     // Ratio of distance in pixels dragged and radial change of camera.
-    public static float DRAG_PIXEL_TO_RADIAN = 0.025f;
+    private static final float DRAG_PIXEL_TO_RADIAN = -0.025f;
 
-    /**
-     * The position of the camera.
-     */
-    public final TrackedVector<PosVector> eye;
     /**
      * The point to which the camera is looking.
      */
     public final PosVector focus;
+
+    /** we follow the ISO convention. Phi gives rotation, theta the height */
     private float theta;
     private float phi;
     private float vDist = 10f;
+
+    /** cached eye position */
+    private PosVector eye;
 
     public PointCenteredCamera() {
         this(PosVector.zeroVector(), 0, 0);
@@ -42,14 +43,13 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     public PointCenteredCamera(PosVector eye, PosVector focus){
         DirVector focToEye = focus.to(eye, new DirVector());
-        DirVector cameraDir = focToEye.normalize(new DirVector());
 
         vDist = focToEye.length();
-        phi = getPhi(cameraDir);
-        theta = getTheta(cameraDir, phi);
+        phi = getPhi(focToEye);
+        theta = getTheta(focToEye, vDist);
 
         this.focus = focus;
-        this.eye = new TrackedVector<>(getEyePosition());
+        this.eye = eye;
 
         registerListener();
     }
@@ -59,17 +59,16 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
      * @return phi
      */
     private static float getPhi(Vector eye) {
-        return (float) Math.asin(eye.z());
+        return (float) Math.atan2(eye.y(), eye.x());
     }
 
     /**
      * @param eye normalized vector to eye
-     * @param phi
+     * @param vDist distance to origin
      * @return theta
      */
-    private static float getTheta(Vector eye, float phi) {
-        int i = Settings.INVERT_CAMERA_ROTATION ? 1 : -1;
-        return (float) (Math.acos(eye.x()/Math.cos(phi)) * i);
+    private static float getTheta(Vector eye, float vDist) {
+        return (float) Math.acos(eye.z() / vDist);
     }
 
     public PointCenteredCamera(PosVector focus, float theta, float phi) {
@@ -77,8 +76,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         this.theta = theta;
         this.phi = phi;
 
-        this.eye = new TrackedVector<>(getEyePosition());
-
+        updatePosition(0);
         registerListener();
     }
 
@@ -95,15 +93,14 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
      */
     @Override
     public void updatePosition(float deltaTime) {
-        eye.update(getEyePosition());
+        eye = getEyePosition();
     }
 
     private PosVector getEyePosition() {
-        int i = Settings.INVERT_CAMERA_ROTATION ? 1 : -1;
 
-        double eyeX = vDist * Math.cos(theta * i) * Math.cos(phi);
-        double eyeY = vDist * Math.sin(theta * i) * Math.cos(phi);
-        double eyeZ = vDist * Math.sin(phi);
+        double eyeX = vDist * Math.sin(theta) * Math.cos(phi);
+        double eyeY = vDist * Math.sin(theta) * Math.sin(phi);
+        double eyeZ = vDist * Math.cos(theta);
 
         final PosVector eye = new PosVector((float) eyeX, (float) eyeY, (float) eyeZ);
         return eye.add(focus, eye);
@@ -117,10 +114,13 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public void mouseDragged(int deltaX, int deltaY) {
-        theta -= deltaX * DRAG_PIXEL_TO_RADIAN;
-        phi = Math.max(PHI_MIN,
-                Math.min(PHI_MAX,
-                        phi + (deltaY * DRAG_PIXEL_TO_RADIAN)));
+        int s = Settings.INVERT_CAMERA_ROTATION ? -1 : 1;
+
+        theta += deltaY * DRAG_PIXEL_TO_RADIAN * s;
+        phi += deltaX * DRAG_PIXEL_TO_RADIAN * s;
+
+        theta = Math.max(THETA_MIN, Math.min(THETA_MAX, theta));
+        phi = phi % PHI_MAX;
     }
 
     @Override
@@ -130,12 +130,12 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public DirVector vectorToFocus(){
-        return eye.current().to(focus, new DirVector());
+        return eye.to(focus, new DirVector());
     }
 
     @Override
     public PosVector getEye() {
-        return getEyePosition();
+        return eye;
     }
 
     @Override

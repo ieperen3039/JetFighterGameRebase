@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Sound;
 
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -28,9 +29,10 @@ public class AudioSource {
 
         alSourcei(sourceID, AL10.AL_BUFFER, dataID);
         alSourcef(sourceID, AL10.AL_PITCH, pitch);
-        alSourcef(sourceID, AL10.AL_GAIN, gain);
         alSourceVec(sourceID, AL10.AL_POSITION, sourcePos);
         alSourceVec(sourceID, AL10.AL_VELOCITY, DirVector.zeroVector());
+
+        setGain(gain);
 
         Toolbox.checkALError();
 
@@ -50,5 +52,9 @@ public class AudioSource {
 
     protected static void alSourceVec(int source, int mode, Vector p) {
         AL10.alSource3f(source, mode, p.x(), p.y(), p.z());
+    }
+
+    protected void setGain(float newValue){
+        alSourcef(sourceID, AL10.AL_GAIN, newValue * Settings.SOUND_MASTER_GAIN);
     }
 }

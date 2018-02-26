@@ -14,10 +14,10 @@ public final class Settings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static boolean SPECTATOR_MODE = false;
+    public static final short TARGET_TPS = 10;
+    public static final short TARGET_FPS = 60;
 
     /** engine settings */
-    public static short TARGET_TPS = 20;
     // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
     public static final float RENDER_DELAY = 2f/TARGET_TPS;
     public static boolean SAVE_PLAYBACK = false;
@@ -41,6 +41,7 @@ public final class Settings {
     public static final float FIRE_PARTICLE_SIZE = 0.3f;
 
     /** final music settings */
+    public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
 
@@ -53,21 +54,15 @@ public final class Settings {
     public static float PITCH_MODIFIER = -0.05f;
     public static float ROLL_MODIFIER = 0.05f;
 
-    /** camera settings */
-    public static final float CAMERA_CATCHUP = 0.9f;
     public static float FOV = (float) Math.toRadians(60);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
     public static float Z_FAR = 2000.0f;
-    public static Boolean INVERT_CAMERA_ROTATION = true;
+    public static Boolean INVERT_CAMERA_ROTATION = false;
 
     /** visual settings */
-    public static short TARGET_FPS = 60;
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 3;
     public static final int MAX_POINT_LIGHTS = 10;
-
-    /** data path settings */
-    public static final String AUDIO_DATA_PATH = "res/sounds/";
-    public static final String MUSIC_DATA_PATH = "res/music/";
+    public static boolean SPECTATOR_MODE = false;
 }
