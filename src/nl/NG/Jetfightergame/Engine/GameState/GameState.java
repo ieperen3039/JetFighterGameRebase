@@ -104,7 +104,7 @@ public abstract class GameState implements Environment {
                  * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
                  */
                 final Collection<Pair<Touchable, MovingEntity>> closeTargets = getIntersectingPairs();
-                collisionPairs = closeTargets.stream()
+                collisionPairs = closeTargets.parallelStream()
                         // check for collisions
                         .filter(closeTarget -> checkCollisionPair(closeTarget.right, closeTarget.left, deltaTime))
                         .collect(Collectors.toList());
@@ -115,7 +115,7 @@ public abstract class GameState implements Environment {
                 Map<Touchable, RigidBody> finalCollisions = new HashMap<>();
 
                 // process the final collisions in pairs
-                postCollisions = collisionPairs.stream()
+                postCollisions = collisionPairs.parallelStream()
                         .flatMap(p -> {
                             RigidBody left = p.left.getRigidBody(finalCollisions, deltaTime);
                             RigidBody right = p.right.getRigidBody(finalCollisions, deltaTime);
@@ -126,7 +126,7 @@ public abstract class GameState implements Environment {
                         .collect(Collectors.toList());
 
                 // apply the collisions to the objects
-                postCollisions
+                postCollisions.parallelStream()
                         .forEach(r -> r.apply(deltaTime, currentTime));
 
             } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());

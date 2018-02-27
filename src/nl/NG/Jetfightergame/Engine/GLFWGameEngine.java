@@ -11,7 +11,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Collection;
 
-import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.FollowingCamera;
+import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.MountedCamera;
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
 
 /**
@@ -121,7 +121,7 @@ public abstract class GLFWGameEngine {
     public void setPlayMode() {
         currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
-        camera.switchTo(FollowingCamera);
+        camera.switchTo(MountedCamera);
         secondaryGameLoops().forEach(AbstractGameLoop::unPause);
     }
 

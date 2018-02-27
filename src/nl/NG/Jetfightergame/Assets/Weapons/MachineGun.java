@@ -20,7 +20,7 @@ public class MachineGun extends AbstractWeapon {
     @Override
     protected AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityManager entityDeposit) {
         DirVector vel = source.velocity();
-        vel.add(source.forward().mul(20));
+        vel.add(source.forward().mul(30));
         final PosVector pos = source.position(spawnTime);
         final Quaternionf rot = source.rotation(spawnTime);
         return new SimpleBullet(pos, vel, rot, entityDeposit.getTimer(), entityDeposit);

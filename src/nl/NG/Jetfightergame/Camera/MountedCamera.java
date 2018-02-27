@@ -1,6 +1,8 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
+import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -11,19 +13,25 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 public class MountedCamera implements Camera {
 
     private final AbstractJet target;
+    private final SmoothTracked<DirVector> eye;
 
     public MountedCamera(AbstractJet target) {
         this.target = target;
+        this.eye = new ExponentialSmoothVector<>(getFocus(target), 0.002f);
     }
 
-    @Override
-    public DirVector vectorToFocus() {
+    private DirVector getFocus(AbstractJet target) {
         return target.relativeInterpolatedDirection(DirVector.xVector());
     }
 
     @Override
-    public void updatePosition(float deltaTime) {
+    public DirVector vectorToFocus() {
+        return eye.current();
+    }
 
+    @Override
+    public void updatePosition(float deltaTime) {
+        eye.updateFluent(getFocus(target), deltaTime);
     }
 
     @Override

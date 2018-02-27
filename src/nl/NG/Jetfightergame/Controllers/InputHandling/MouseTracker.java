@@ -38,6 +38,7 @@ public class MouseTracker {
     private boolean leftMouse = false;
     private boolean rightMouse = false;
     private boolean middleMouse = false;
+    private boolean menuClick = false;
 
     private TrackedInteger mouseDragX, mouseDragY;
 
@@ -104,7 +105,7 @@ public class MouseTracker {
     }
 
     public boolean leftButton() {
-        return leftMouse;
+        return inPlayMode.getAsBoolean() ? leftMouse : menuClick;
     }
 
     public boolean rightButton() {
@@ -119,24 +120,24 @@ public class MouseTracker {
         // prepare calling the method
         final Consumer<TrackerClickListener> notify = l -> l.clickEvent(e.x, e.y);
 
-        switch (e.button) {
-            case BUTTON_LEFT:
-                leftMouse = true;
-                if (!inPlayMode.getAsBoolean()) {
-                    // call if button is left and in menu-mode
-                    menuClickListeners.forEach(notify);
-                }
-                break;
-            case BUTTON_MIDDLE:
-                middleMouse = true;
-                break;
-            case BUTTON_RIGHT:
-                rightMouse = true;
-                break;
-        }
         if (inPlayMode.getAsBoolean()) {
-            // call if in game-mode
+            switch (e.button) {
+                case BUTTON_LEFT:
+                    leftMouse = true;
+                    break;
+                case BUTTON_MIDDLE:
+                    middleMouse = true;
+                    break;
+                case BUTTON_RIGHT:
+                    rightMouse = true;
+                    break;
+            }
             inGameClickListeners.forEach(notify);
+
+        } else if (e.button == MouseButton.BUTTON_LEFT) {
+            menuClick = true;
+            // call if button is left and in menu-mode
+            menuClickListeners.forEach(notify);
         }
     }
 
@@ -144,6 +145,7 @@ public class MouseTracker {
         switch (e.button){
             case BUTTON_LEFT:
                 leftMouse = false;
+                menuClick = false;
                 break;
             case BUTTON_MIDDLE:
                 middleMouse = false;
