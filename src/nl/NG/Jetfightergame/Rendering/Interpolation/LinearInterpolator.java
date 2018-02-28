@@ -12,7 +12,7 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
 
     /**
      * @param capacity the initial expected maximum number of entries
-     * @param initialItem
+     * @param initialItem this item will initially be placed in the queue twice.
      */
     public LinearInterpolator(int capacity, T initialItem) {
         super(capacity);
@@ -52,5 +52,11 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
         activeTime = nextTimeStamp();
         activeElement = nextElement();
         super.progress();
+    }
+
+    @Override
+    public String toString() {
+        final String backend = super.toString();
+        return backend.replaceFirst("\n", "\n" + String.format("%1.04f", activeTime) + " > " + activeElement + "\n");
     }
 }

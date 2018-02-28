@@ -11,19 +11,19 @@ public enum Material {
      * standard material for non-metals
      */
     ROUGH(
-            new float[]{0.9f, 0.9f, 0.9f, 1},
-            new float[]{0.1f, 0.1f, 0.1f, 0.1f},
-            new float[]{0.5f, 0.5f, 0.5f, 1},
-            1f
+            new Color4f(0.9f, 0.9f, 0.9f, 1),
+            new Color4f(0.1f, 0.1f, 0.1f, 0.1f),
+            new Color4f(0.5f, 0.5f, 0.5f, 1),
+            0.2f
     ),
 
     /**
      * material for glowing materials like light-sources
      */
     GLOWING(
-            new float[]{1f, 1f, 1f, 1f},
-            new float[]{0f, 0f, 0f, 1f},
-            new float[]{0f, 0f, 0f, 0f},
+            Color4f.WHITE,
+            Color4f.BLACK,
+            Color4f.INVISIBLE,
             100f
     ),
 
@@ -31,9 +31,9 @@ public enum Material {
      * Gold material properties.
      */
     GOLD(
-            new float[]{0.82f, 0.76f, 0, 1},
-            new float[]{0.95f, 0.92f, 0.5f, 1},
-            new float[]{1f, 1f, 1f, 1f},
+            new Color4f(0.82f, 0.76f, 0, 1),
+            new Color4f(0.95f, 0.92f, 0.5f, 1),
+            Color4f.WHITE,
             75
     ),
 
@@ -41,9 +41,9 @@ public enum Material {
      * Gray material that shines blueish
      */
     SILVER(
-            new float[]{0.75f, 0.75f, 0.75f, 1},
-            new float[]{0.90f, 0.90f, 1.0f, 1},
-            new float[]{1f, 1f, 1f, 1f},
+            new Color4f(0.75f, 0.75f, 0.75f, 1),
+            new Color4f(0.90f, 0.90f, 1.0f, 1),
+            Color4f.WHITE,
             50
     ),
 
@@ -51,19 +51,26 @@ public enum Material {
      * regular non-shiny material properties.
      */
     PLASTIC(
-            new float[]{1f, 1f, 1f, 1},
-            new float[]{0.5f, 0.5f, 0.5f, 1},
-            new float[]{0f, 0f, 0f, 0f},
+            Color4f.WHITE,
+            Color4f.GREY,
+            Color4f.BLACK,
             2
+    ),
+    
+    CYBERGLASSMETAL(
+            Color4f.GREY,
+            Color4f.WHITE,
+            Color4f.MAGENTA,
+            20
     ),
 
     /**
      * Rough, brown material
      */
     WOOD(
-            new float[]{0.5f, 0.27f, 0.14f, 1},
-            new float[]{0.02f, 0.04f, 0.06f, 1},
-            new float[]{0.75f, 0.375f, 0.20f, 1},
+            new Color4f(0.5f, 0.27f, 0.14f, 1),
+            new Color4f(0.02f, 0.04f, 0.06f, 1),
+            new Color4f(0.75f, 0.375f, 0.20f, 1),
             0.5f
     );
 
@@ -84,10 +91,10 @@ public enum Material {
      */
     public final float shininess;
 
-    Material(float[] diffuse, float[] specular, float[] lineColor, float shininess) {
-        this.diffuse = new Color4f(diffuse);
-        this.specular = new Color4f(specular);
-        this.lineColor = new Color4f(lineColor);
+    Material(Color4f diffuse, Color4f specular, Color4f lineColor, float shininess) {
+        this.diffuse = diffuse;
+        this.specular = specular;
+        this.lineColor = lineColor;
         this.shininess = shininess;
     }
 }

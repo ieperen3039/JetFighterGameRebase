@@ -17,10 +17,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
+import java.nio.FloatBuffer;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.GL_SMOOTH_LINE_WIDTH_RANGE;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
@@ -29,7 +31,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  * A window which initializes GLFW and manages it.
  */
 public class GLFWWindow {
-    private static final boolean GL_DEBUG_MESSAGES = true;
+    private static final boolean GL_DEBUG_MESSAGES = false;
     private final long primaryMonitor;
 
     private final String title;
@@ -101,6 +103,11 @@ public class GLFWWindow {
         // Support transparencies
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        final FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(2);
+        glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, floatBuffer);
+        Settings.HIGHLIGHT_LINE_WIDTH = Math.max(floatBuffer.get(), Settings.HIGHLIGHT_LINE_WIDTH);
+        Settings.HIGHLIGHT_LINE_WIDTH = Math.min(floatBuffer.get(), Settings.HIGHLIGHT_LINE_WIDTH);
 
         if (Settings.DEBUG && GL_DEBUG_MESSAGES) {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);

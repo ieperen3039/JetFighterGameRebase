@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Tools;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -80,4 +81,20 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
         return elements.peek();
     }
 
+    @Override
+    public String toString() {
+        Iterator<Double> times = timeStamps.iterator();
+        Iterator elts = elements.iterator();
+
+        StringBuilder s = new StringBuilder();
+        s.append("TimedArray:");
+        while (times.hasNext()){
+            s.append("\n");
+            s.append(String.format("%1.04f", times.next()));
+            s.append(" > ");
+            s.append(elts.next());
+        }
+
+        return s.toString();
+    }
 }

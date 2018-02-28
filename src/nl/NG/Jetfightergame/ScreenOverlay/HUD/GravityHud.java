@@ -22,8 +22,8 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
  */
 public class GravityHud {
 
-    private static final float FPV_SENSITIVITY = 50f;
-    private static final float BS_SENSITIVITY = 100f;
+    private static final float FPV_SENSITIVITY = 1000f;
+    private static final float BS_SENSITIVITY = 500f;
     public final Consumer<ScreenOverlay.Painter> display;
 
     public GravityHud(IntSupplier windowWidth, IntSupplier windowHeight, final AbstractJet target, Camera camera) {
@@ -106,7 +106,6 @@ public class GravityHud {
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX + 25, FPVY, FPVX + 10, FPVY);
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX, FPVY - 25, FPVX, FPVY - 10);
             }
-
         };
     }
 

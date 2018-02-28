@@ -126,8 +126,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-        forwardInterpolator = new VectorInterpolator(10, forward);
-        velocityInterpolator = new VectorInterpolator(10, DirVector.zeroVector());
+        forwardInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
+        velocityInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
     }
 
     @Override
@@ -191,7 +191,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         // air-resistance
         DirVector airResistance = new DirVector();
         float speed = velocity.length();
-        float brake = (throttle < 0) ? (-throttle * brakePower) : 0;
+        float brake = (throttle < 0) ? (-throttle * brakePower) : 1;
         velocity.reducedTo(speed * speed * (airResistCoeff * brake) * -1, airResistance);
         extraVelocity.add(airResistance.scale(deltaTime, temp));
 
@@ -209,8 +209,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-        forwardInterpolator.add(forward, currentTime);
-        velocityInterpolator.add(velocity, currentTime);
+        forwardInterpolator.add(new DirVector(forward), currentTime);
+        velocityInterpolator.add(new DirVector(velocity), currentTime);
     }
 
     @Override
@@ -231,11 +231,11 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     public DirVector interpolatedForward(){
-        return forwardInterpolator.getActive(renderTime()).toDirVector();
+        return forwardInterpolator.getInterpolated(renderTime()).toDirVector();
     }
 
     public DirVector interpolatedVelocity(){
-        return velocityInterpolator.getActive(renderTime()).toDirVector();
+         return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
     }
 
     @Override

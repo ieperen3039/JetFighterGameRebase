@@ -27,8 +27,6 @@ import java.util.stream.Stream;
  */
 public abstract class GameEntity implements MovingEntity{
 
-    protected static final int INTERPOLATION_QUEUE_SIZE = 5;
-
     /** worldspace position in m */
     protected PosVector position;
     /** worldspace movement in m/s */
@@ -418,8 +416,8 @@ public abstract class GameEntity implements MovingEntity{
     public abstract void impact(PosVector impact, float power);
 
     public void resetCache() {
-        positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
-        rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
+        positionInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, position);
+        rotationInterpolator = new QuaternionInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, rotation);
     }
 
     public static class State {

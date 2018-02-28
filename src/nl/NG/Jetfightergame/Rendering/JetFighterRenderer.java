@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -84,7 +83,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         shaderManager.initShader(activeCamera, ambientLight, fog);
         Toolbox.checkGLError();
 
-        GL2 gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
+        ShaderUniformGL gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
         Toolbox.checkGLError();
 
         if (Settings.CULL_FACES) {
@@ -104,6 +103,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         // overlay with transparent objects
         // TODO transparent meshes?
+
+        gl.setFill(false);
+        gameState.drawObjects(gl);
+        Toolbox.checkGLError();
+        gl.setFill(true);
 
         // particles
         glDisable(GL_CULL_FACE);

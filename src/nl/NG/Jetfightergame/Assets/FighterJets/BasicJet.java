@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
@@ -30,7 +31,7 @@ public class BasicJet extends AbstractJet {
     public static final float YAW_POWER = 1f;
     public static final float PITCH_POWER = 2f;
     public static final float ROLL_POWER = 2f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.01f;
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.005f;
     private static final MachineGun GUN = new MachineGun(0.1f);
 
     private Shape shape;
@@ -44,7 +45,7 @@ public class BasicJet extends AbstractJet {
         super(input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.8f, renderTimer, 0.3f, 0.3f, GUN, specialWeapon, INTERPOLATION_QUEUE_SIZE, entityDeposit);
+                0.8f, renderTimer, 0.3f, 0.3f, GUN, specialWeapon, Settings.INTERPOLATION_QUEUE_SIZE, entityDeposit);
         shape = ShapeFromMesh.CONCEPT_BLUEPRINT;
     }
 

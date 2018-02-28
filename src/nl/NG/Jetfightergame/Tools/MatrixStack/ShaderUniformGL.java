@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -28,6 +29,7 @@ public class ShaderUniformGL implements GL2 {
 
     private ShaderProgram currentShader;
     private int nextLightIndex = 0;
+    private boolean wireframeRendering = false;
 
     /**
      *
@@ -42,6 +44,14 @@ public class ShaderUniformGL implements GL2 {
         matrixStack = new Stack<>();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, windowWidth, windowHeight);
+        Toolbox.checkGLError();
+        glEnable(GL_LINE_SMOOTH);
+        Toolbox.checkGLError();
+//
+        glLineWidth(Settings.HIGHLIGHT_LINE_WIDTH); // throws errors with any other value than 1f
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        Toolbox.checkGLError();
 
         modelMatrix = new Matrix4f();
         viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
@@ -89,11 +99,28 @@ public class ShaderUniformGL implements GL2 {
         currentShader.setPointLight(nextLightIndex++, mPosition, lightColor);
     }
 
+    public void setFill(boolean doFill){
+        if (doFill) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            wireframeRendering = false;
+        } else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            wireframeRendering = true;
+        }
+    }
+
     @Override
     public void setMaterial(Material material, Color4f color){
-        Color4f diffuse = material.diffuse.multiply(color);
-        Color4f specular = material.specular.multiply(color);
+        Color4f diffuse;
+        Color4f specular = material.specular.overlay(color);
         float reflectance = material.shininess;
+
+        if (wireframeRendering){
+            diffuse = material.lineColor.overlay(color);
+        } else {
+            diffuse = material.diffuse.multiply(color);
+        }
+
         currentShader.setMaterial(diffuse, specular, reflectance);
     }
 

@@ -115,9 +115,9 @@ public class DirVector extends Vector {
      * @return a new vector with the interpolated value
      */
     public DirVector interpolateTo(Vector that, float scalar){
-        final float x = this.x + ((this.x - that.x) * scalar);
-        final float y = this.y + ((this.y - that.y) * scalar);
-        final float z = this.z + ((this.z - that.z) * scalar);
+        final float x = this.x + ((that.x - this.x) * scalar);
+        final float y = this.y + ((that.y - this.y) * scalar);
+        final float z = this.z + ((that.z - this.z) * scalar);
         return new DirVector(x, y, z);
     }
 

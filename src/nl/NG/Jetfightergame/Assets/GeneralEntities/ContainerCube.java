@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.Assets.GeneralEntities;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.util.function.Consumer;
@@ -19,8 +19,8 @@ import java.util.function.Consumer;
  */
 public class ContainerCube implements Touchable {
     public final int labSize;
-    private final Shape world = GeneralShapes.INVERSE_CUBE;
-    private final Material material = Material.ROUGH;
+    private final Shape world = GeneralShapes.makeInverseCube(3);
+    private final Material material = Material.CYBERGLASSMETAL;
 
     public ContainerCube(int cubeSize) {
         this.labSize = cubeSize;
@@ -28,7 +28,7 @@ public class ContainerCube implements Touchable {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(material, Color4f.ORANGE);
+        gl.setMaterial(material, new Color4f(0.1f, 0.1f, 0.1f, 1f));
     }
 
     @Override
