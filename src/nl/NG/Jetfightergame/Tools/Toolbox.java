@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
+import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector4f;
 
@@ -34,8 +34,8 @@ public class Toolbox {
     /**
      * prints the toString method of the given objects to System.out, preceded with calling method
      */
-    public static synchronized void print(Object... x) {
-        printFrom(2, x);
+    public static synchronized void print(Object... o) {
+        printFrom(2, o);
     }
 
     /**
@@ -43,9 +43,9 @@ public class Toolbox {
      * caller specified by the given call depth
      * @param level 0 = this method, 1 = the calling method (yourself)
      */
-    public static synchronized void printFrom(int level, Object... x) {
+    public static synchronized void printFrom(int level, Object... o) {
         String source = getCallingMethod(level);
-        System.out.println(source + ": " + getValues(x));
+        System.out.println(source + ": " + getValues(o));
     }
 
     private static String getValues(Object[] x) {
@@ -66,11 +66,11 @@ public class Toolbox {
      * Every unique callside will only be allowed to print once.
      * For recursive calls, every level will be regarded as a new level, thus print once for every unique depth
      * @param identifier
-     * @param x
+     * @param o
      */
-    public static synchronized void printSpamless(String identifier, Object... x){
+    public static synchronized void printSpamless(String identifier, Object... o){
         if (!callerBlacklist.contains(identifier)) {
-            System.out.println(Toolbox.getCallingMethod(1) + ": " + getValues(x));
+            System.out.println(Toolbox.getCallingMethod(1) + ": " + getValues(o));
             callerBlacklist.add(identifier);
         }
     }

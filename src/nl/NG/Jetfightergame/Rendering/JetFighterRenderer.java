@@ -65,7 +65,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         };
 
         new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
-        new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera);
+        new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera).activate();
     }
 
     @Override

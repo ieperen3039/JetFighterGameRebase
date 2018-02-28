@@ -14,9 +14,9 @@ public final class HUDStyleSettings {
 
     public static final int TEXT_SIZE = 14;
 
-    public static final Color4f HUD_COLOR = new Color4f(0.1f, 0.9f, 0.1f, 0.9f);
-    public static final int HUD_STROKE_WIDTH = 2;
-    public static final int BORESIGHT_SIZE = 50;
+    public static final Color4f HUD_COLOR = new Color4f(0.2f, 1f, 0.2f, 0.9f);
+    public static final int HUD_STROKE_WIDTH = 3;
+    public static final int BORESIGHT_SIZE = 30;
     public static final float ALTVEL_BAR_SIZE = 0.6f;
 
     public static final int TICKSIZE = 15;

@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -125,12 +124,7 @@ public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderP
     }
 
     @Override
-    public void setMaterial(Material mat) {
-        instance.setMaterial(mat);
-    }
-
-    @Override
-    public void setMaterial(Material material, Color4f color) {
-        instance.setMaterial(material, color);
+    public void setMaterial(Color4f diffuse, Color4f specular, float reflectance) {
+        instance.setMaterial(diffuse, specular, reflectance);
     }
 }

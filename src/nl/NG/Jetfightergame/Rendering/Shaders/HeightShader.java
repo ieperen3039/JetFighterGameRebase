@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector3f;
 
@@ -27,7 +26,7 @@ public class HeightShader extends AbstractShader {
     }
 
     @Override
-    public void setMaterial(Material material, Color4f color) {
+    public void setMaterial(Color4f diffuse, Color4f specular, float reflectance) {
 
     }
 }

@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
-import org.joml.Vector2i;
 
 import java.util.function.Consumer;
 import java.util.function.IntSupplier;
@@ -23,6 +22,8 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
  */
 public class GravityHud {
 
+    private static final float FPV_SENSITIVITY = 50f;
+    private static final float BS_SENSITIVITY = 100f;
     public final Consumer<ScreenOverlay.Painter> display;
 
     public GravityHud(IntSupplier windowWidth, IntSupplier windowHeight, final AbstractJet target, Camera camera) {
@@ -34,7 +35,8 @@ public class GravityHud {
             final int yMid = height / 2;
             final float barMargin = (1 - HUDStyleSettings.ALTVEL_BAR_SIZE) / 2;
             final float inverseBarMargin = 1 - barMargin;
-            final DirVector lookDirection = camera.vectorToFocus();
+            final DirVector lookDirection = new DirVector(camera.vectorToFocus());
+            lookDirection.normalize();
 
             { // velocity bar
                 final int xPosVelocityBar = (int) (width * barMargin);
@@ -44,7 +46,7 @@ public class GravityHud {
                         xPosVelocityBar, (int) (height * inverseBarMargin)
                 );
 
-                final float currentVelocity = target.getVelocity().length() * 10f;
+                final float currentVelocity = target.interpolatedVelocity().length();
 
                 float[] velocityTicks = ticks(currentVelocity, 25, 100);
                 for (float tick : velocityTicks) {
@@ -82,9 +84,10 @@ public class GravityHud {
             }
 
             { // boresight / direction
-                Vector2i dir = project(target.getForward(), lookDirection);
-                int BSX = dir.x() + xMid;
-                int BSY = dir.y() + yMid;
+                DirVector dir = project(target.interpolatedForward(), lookDirection);
+
+                int BSX = (int) (BS_SENSITIVITY * dir.x()) + xMid;
+                int BSY = (int) (BS_SENSITIVITY * dir.y()) + yMid;
                 hud.line(
                         HUD_STROKE_WIDTH, HUD_COLOR,
                         BSX - HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE,
@@ -94,9 +97,10 @@ public class GravityHud {
             }
 
             { // Flight Path Vector
-                Vector2i dir = project(target.getVelocity(), lookDirection);
-                int FPVX = dir.x() + xMid;
-                int FPVY = dir.y() + yMid;
+                DirVector dir = project(target.interpolatedVelocity(), lookDirection);
+
+                int FPVX = (int) (FPV_SENSITIVITY * dir.x()) + xMid;
+                int FPVY = (int) (FPV_SENSITIVITY * dir.y()) + yMid;
                 hud.circle(FPVX, FPVY, 10, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX - 25, FPVY, FPVX - 10, FPVY);
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX + 25, FPVY, FPVX + 10, FPVY);
@@ -142,13 +146,17 @@ public class GravityHud {
 
     /**
      * maps a direction to 2D space by projecting it on the YZ-plane.
-     * @param vector a direction vector of any length
+     * @param vector a relative position in world-space of any length
+     * @param lookDirection normalized direction of the camera in world-space
      * @return the normalized projection of the vector in the YZ-plane
      */
-    public static Vector2i project(DirVector vector, DirVector lookDirection){
+    public static DirVector project(DirVector vector, DirVector lookDirection){
+        if (!vector.isScalable()) return DirVector.zeroVector();
+
         DirVector proj = new DirVector();
-        vector.reducedTo(1, proj);
+        vector.normalize(proj);
+
         proj.sub(lookDirection.reducedTo(proj.dot(lookDirection), new DirVector()), proj);
-        return new Vector2i((int) proj.y(), (int) proj.z());
+        return proj;
     }
 }

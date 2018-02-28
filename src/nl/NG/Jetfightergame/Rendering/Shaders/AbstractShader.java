@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Matrix3f;
@@ -176,7 +175,7 @@ public abstract class AbstractShader implements ShaderProgram {
         glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
     }
 
-    protected void setUniform4f(String uniformName, float[] value){
+    protected void setUniform(String uniformName, float[] value){
         glUniform4f(uniforms.get(uniformName), value[0], value[1], value[2], value[3]);
     }
 
@@ -186,7 +185,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * @param uniformName The name of the uniform.
      * @param value The new value of the uniform.
      */
-    protected void setUniform4f(String uniformName, Vector4f value) {
+    protected void setUniform(String uniformName, Vector4f value) {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
     }
 
@@ -233,6 +232,10 @@ public abstract class AbstractShader implements ShaderProgram {
         setUniform(uniformName, value ? 1 : 0);
     }
 
+    protected void setUniform(String uniformName, Color4f color) {
+        glUniform4f(uniforms.get(uniformName), color.red, color.green, color.blue, color.alpha);
+    }
+
     @Override
     public void setProjectionMatrix(Matrix4f viewProjectionMatrix) {
         setUniform("viewProjectionMatrix", viewProjectionMatrix);
@@ -246,11 +249,6 @@ public abstract class AbstractShader implements ShaderProgram {
     @Override
     public void setNormalMatrix(Matrix3f normalMatrix){
         setUniform("normalMatrix", normalMatrix);
-    }
-
-    @Override
-    public void setMaterial(Material mat){
-        setMaterial(mat, Color4f.WHITE);
     }
 
 }

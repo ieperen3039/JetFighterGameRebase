@@ -84,6 +84,10 @@ public class Color4f {
         alpha = intensity;
     }
 
+    public Color4f(float[] values) {
+        this(values[0], values[1], values[2], values[3]);
+    }
+
     /**
      * flat add this color with the given other color
      * @param other another color
@@ -102,13 +106,28 @@ public class Color4f {
     /**
      * adds color as combined light, using inverse multiplication
      * @param other another color
-     * @return inverse multiplication of every color aspect including alpha
+     * @return a lighter mix of these colors, using
+     * inverse multiplication of every color aspect including alpha
      */
     public Color4f overlay(Color4f other){
         return new Color4f(
                 inverseMul(red, other.red),
                 inverseMul(green, other.green),
                 inverseMul(blue, other.blue),
+                inverseMul(alpha, other.alpha)
+        );
+    }
+
+    /**
+     * multiply this color with the given color. Alpha values are inverse multiplied
+     * @param other another color
+     * @return a darker mix of the color
+     */
+    public Color4f multiply(Color4f other){
+        return new Color4f(
+                red * other.red,
+                green * other.green,
+                blue * other.blue,
                 inverseMul(alpha, other.alpha)
         );
     }

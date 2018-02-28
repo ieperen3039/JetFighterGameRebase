@@ -91,7 +91,10 @@ public class ShaderUniformGL implements GL2 {
 
     @Override
     public void setMaterial(Material material, Color4f color){
-        currentShader.setMaterial(material, color);
+        Color4f diffuse = material.diffuse.multiply(color);
+        Color4f specular = material.specular.multiply(color);
+        float reflectance = material.shininess;
+        currentShader.setMaterial(diffuse, specular, reflectance);
     }
 
     @Override

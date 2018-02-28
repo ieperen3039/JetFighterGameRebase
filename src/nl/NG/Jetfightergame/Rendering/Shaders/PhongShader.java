@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector3f;
 
@@ -71,11 +70,10 @@ public class PhongShader extends AbstractShader {
     }
 
     @Override
-    public void setMaterial(Material material, Color4f color) {
-        float[] materialColor = material.mixWith(color);
-        setUniform4f("material.ambient", materialColor);
-        setUniform4f("material.diffuse", materialColor);
-        setUniform4f("material.specular", material.specular);
-        setUniform("material.reflectance", material.shininess);
+    public void setMaterial(Color4f diffuse, Color4f specular, float reflectance) {
+        setUniform("material.ambient", diffuse);
+        setUniform("material.diffuse", diffuse);
+        setUniform("material.specular", specular);
+        setUniform("material.reflectance", reflectance);
     }
 }

@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
+import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -46,11 +47,10 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     protected final float rollAcc;
     protected final float yPreservation;
     protected final float zPreservation;
+    protected final float rotationPreserveFactor;
 
     protected final MachineGun gunAlpha;
     protected final SpecialWeapon gunBeta;
-
-    private final float rotationPreserveFactor;
 
     /**
      * lose it all, and you're dead
@@ -67,6 +67,9 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     protected Controller input;
     private DirVector forward;
+
+    private VectorInterpolator forwardInterpolator;
+    private VectorInterpolator velocityInterpolator;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -123,6 +126,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
+        forwardInterpolator = new VectorInterpolator(10, forward);
+        velocityInterpolator = new VectorInterpolator(10, DirVector.zeroVector());
     }
 
     @Override
@@ -200,11 +205,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     public void update(float currentTime) {
-
         super.update(currentTime);
 
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
+        forwardInterpolator.add(forward, currentTime);
+        velocityInterpolator.add(velocity, currentTime);
     }
 
     @Override
@@ -222,6 +228,14 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      */
     public DirVector getForward() {
         return forward;
+    }
+
+    public DirVector interpolatedForward(){
+        return forwardInterpolator.getActive(renderTime()).toDirVector();
+    }
+
+    public DirVector interpolatedVelocity(){
+        return velocityInterpolator.getActive(renderTime()).toDirVector();
     }
 
     @Override

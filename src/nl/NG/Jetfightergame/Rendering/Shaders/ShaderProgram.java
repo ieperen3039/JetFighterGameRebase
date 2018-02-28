@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -47,8 +46,5 @@ public interface ShaderProgram {
     void setModelMatrix(Matrix4f modelMatrix);
 
     void setNormalMatrix(Matrix3f normalMatrix);
-
-    void setMaterial(Material mat);
-
-    void setMaterial(Material material, Color4f color);
+    void setMaterial(Color4f diffuse, Color4f specular, float reflectance);
 }

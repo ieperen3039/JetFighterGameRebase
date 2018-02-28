@@ -62,9 +62,6 @@ public abstract class GameEntity implements MovingEntity{
     private float scale;
     private Material surfaceMaterial;
     protected final float mass;
-    private float cachedTime;
-    private PosVector cachedPosition;
-    private Quaternionf cachedRotation;
 
     /**
      * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
@@ -378,23 +375,16 @@ public abstract class GameEntity implements MovingEntity{
 
     @Override
     public PosVector interpolatedPosition() {
-        updateInterpolationCache();
-        return cachedPosition;
+        return positionInterpolator.getInterpolated(renderTime()).toPosVector();
     }
 
     @Override
     public Quaternionf interpolatedRotation() {
-        updateInterpolationCache();
-        return cachedRotation;
+        return rotationInterpolator.getInterpolated(renderTime());
     }
 
-    private void updateInterpolationCache() {
-        final float newTime = gameTimer.getRenderTime().current();
-        if ((newTime > 0) && (cachedTime != newTime)) {
-            cachedPosition = positionInterpolator.getInterpolated(newTime).toPosVector();
-            cachedRotation = rotationInterpolator.getInterpolated(newTime);
-            cachedTime = newTime;
-        }
+    protected Float renderTime() {
+        return gameTimer.getRenderTime().current();
     }
 
     protected void addPositionPoint(PosVector hitPosition, float currentTime){
@@ -428,10 +418,6 @@ public abstract class GameEntity implements MovingEntity{
     public abstract void impact(PosVector impact, float power);
 
     public void resetCache() {
-        cachedTime = gameTimer.getRenderTime().current();
-        cachedPosition = position;
-        cachedRotation = rotation;
-
         positionInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, position);
         rotationInterpolator = new QuaternionInterpolator(INTERPOLATION_QUEUE_SIZE, rotation);
     }

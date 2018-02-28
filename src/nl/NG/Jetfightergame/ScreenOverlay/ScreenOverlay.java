@@ -169,8 +169,8 @@ public final class ScreenOverlay {
         private final int xPrintRoll = 5;
         private int printRollEntry = 0;
 
-        private final int windowWidth;
-        private final int windowHeight;
+        public final int windowWidth;
+        public final int windowHeight;
         private final Function<PosVector, Vector2f> mapper;
 
         /**

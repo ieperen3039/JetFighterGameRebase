@@ -12,8 +12,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
 
     private Controller playerControl = new PlayerPCControllerAbsolute();
     private Controller override = new EmptyController();
-
-    private Controller instance = playerControl;
+    private boolean playerHasControl = true;
 
     /**
      * all control types available for the player. This logically excludes AI.
@@ -43,7 +42,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
      *               if false, the override will have the control.
      */
     public void setPlayerControl(boolean enable){
-        instance = enable ? playerControl : override;
+        playerHasControl = enable;
     }
 
     public void switchTo(ControllerImpl type){
@@ -63,33 +62,37 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
         }
     }
 
+    private Controller instance(){
+        return playerHasControl ? playerControl : override;
+    }
+
     @Override
     public float throttle() {
-        return instance.throttle();
+        return instance().throttle();
     }
 
     @Override
     public float pitch() {
-        return instance.pitch();
+        return instance().pitch();
     }
 
     @Override
     public float yaw() {
-        return instance.yaw();
+        return instance().yaw();
     }
 
     @Override
     public float roll() {
-        return instance.roll();
+        return instance().roll();
     }
 
     @Override
     public boolean primaryFire() {
-        return instance.primaryFire();
+        return instance().primaryFire();
     }
 
     @Override
     public boolean secondaryFire() {
-        return instance.secondaryFire();
+        return instance().secondaryFire();
     }
 }
