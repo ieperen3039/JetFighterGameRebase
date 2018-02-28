@@ -93,7 +93,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         }
 
         // scene lighting
-        gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.8f));
+        gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.5f));
         gameState.setLights(gl);
         Toolbox.checkGLError();
 

@@ -197,7 +197,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * @param color the light color with its intensity as alpha value
      */
     protected void setPointLightUniform(String uniformName, Vector3f mPosition, Color4f color) {
-        setUniform(uniformName + ".color", color.toVector3f());
+        setUniform(uniformName + ".color", color.rawVector3f());
         setUniform(uniformName + ".mPosition", mPosition);
         setUniform(uniformName + ".intensity", color.alpha);
     }

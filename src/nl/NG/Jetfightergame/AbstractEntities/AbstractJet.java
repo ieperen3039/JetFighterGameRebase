@@ -135,9 +135,9 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         gyroPhysics(deltaTime, netForce, velocity);
 
         final PosVector gunMount = new PosVector(position);
-        gunMount.add(relativeStateDirection(new DirVector(5, 0, -1)));
+        gunMount.add(relativeStateDirection(new DirVector(10, 0, -2)));
         final PosVector gunMount2 = new PosVector(extraPosition);
-        gunMount2.add(relativeStateDirection(new DirVector(5, 0, -1)));
+        gunMount2.add(relativeStateDirection(new DirVector(10, 0, -2)));
 
         State interpolator = new State(gunMount, gunMount2, rotation, extraRotation, velocity, forward);
 
@@ -147,8 +147,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         bullets = gunAlpha.update(deltaTime, input.primaryFire(), interpolator, entityDeposit);
         rockets = gunBeta.update(deltaTime, input.secondaryFire(), interpolator, entityDeposit);
 
-        if (!bullets.isEmpty()) new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(bullets));
-        if (!rockets.isEmpty()) new Toolbox.DelayedAction(500, () -> entityDeposit.addEntities(rockets));
+        if (!bullets.isEmpty()) entityDeposit.addEntities(bullets);
+        if (!rockets.isEmpty()) entityDeposit.addEntities(rockets);
     }
 
     /**

@@ -14,7 +14,7 @@ public enum Material {
             new Color4f(0.9f, 0.9f, 0.9f, 1),
             new Color4f(0.1f, 0.1f, 0.1f, 0.1f),
             new Color4f(0.5f, 0.5f, 0.5f, 1),
-            0.2f
+            1f
     ),
 
     /**

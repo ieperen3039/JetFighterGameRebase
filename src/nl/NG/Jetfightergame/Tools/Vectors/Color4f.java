@@ -202,4 +202,11 @@ public class Color4f {
         result = (31 * result) + ((alpha != +0.0f) ? Float.floatToIntBits(alpha) : 0);
         return result;
     }
+
+    /**
+     * @return the red, green and blue value of this color, ignoring alpha
+     */
+    public Vector3f rawVector3f() {
+        return new Vector3f(red, green, blue);
+    }
 }

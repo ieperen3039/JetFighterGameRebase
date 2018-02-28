@@ -19,16 +19,21 @@ import java.util.function.Consumer;
  */
 public class ContainerCube implements Touchable {
     public final int labSize;
-    private final Shape world = GeneralShapes.makeInverseCube(3);
-    private final Material material = Material.CYBERGLASSMETAL;
+    private final Shape world = GeneralShapes.makeInverseCube(0);
+    private final Material material;
 
     public ContainerCube(int cubeSize) {
+        this(cubeSize, Material.ROUGH);
+    }
+
+    public ContainerCube(int cubeSize, Material material) {
         this.labSize = cubeSize;
+        this.material = material;
     }
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(material, new Color4f(0.1f, 0.1f, 0.1f, 1f));
+        gl.setMaterial(material, Color4f.ORANGE);
     }
 
     @Override

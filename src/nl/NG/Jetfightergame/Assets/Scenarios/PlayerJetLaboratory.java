@@ -22,7 +22,7 @@ import java.util.Collection;
  */
 public class PlayerJetLaboratory extends GameState {
 
-    private static final int LAB_SIZE = 200;
+    private static final int LAB_SIZE = 500;
     private Collection<HUDTargetable> cubeTargets = new ArrayList<>();
 
     public PlayerJetLaboratory(GameTimer time, Player player) {

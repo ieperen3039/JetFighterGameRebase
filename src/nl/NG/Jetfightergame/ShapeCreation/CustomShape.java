@@ -80,8 +80,8 @@ public class CustomShape {
     }
 
     /**
-     * defines a quad in rotational order
-     * the vectors do not have to be clockwise
+     * defines a quad in rotational order.
+     * The vectors do not have to be given clockwise
      *
      * @param A      (0, 0)
      * @param B      (0, 1)

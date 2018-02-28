@@ -46,5 +46,6 @@ public interface ShaderProgram {
     void setModelMatrix(Matrix4f modelMatrix);
 
     void setNormalMatrix(Matrix3f normalMatrix);
+
     void setMaterial(Color4f diffuse, Color4f specular, float reflectance);
 }

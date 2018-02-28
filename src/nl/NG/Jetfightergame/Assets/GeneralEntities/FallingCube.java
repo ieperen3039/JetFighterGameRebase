@@ -2,12 +2,12 @@ package nl.NG.Jetfightergame.Assets.GeneralEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -61,7 +61,7 @@ public class FallingCube extends GameEntity {
 
     @Override
     public String toString() {
-        return "FallingCube at " + position;
+        return "FallingCube";
     }
 
     @Override
