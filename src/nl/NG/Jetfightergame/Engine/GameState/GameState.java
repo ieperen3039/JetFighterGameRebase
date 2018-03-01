@@ -13,18 +13,13 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Tools.AveragingQueue;
-import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.*;
 import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Tools.Pair;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,24 +39,17 @@ public abstract class GameState implements Environment {
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) ->
             hud.printRoll(String.format("Collision count: %1.01f", avgCollision.average()));
 
-    protected Collection<Touchable> staticEntities = new ArrayList<>();
-    protected Collection<MovingEntity> dynamicEntities = new ArrayList<>();
-    protected Collection<Particle> particles = new ArrayList<>();
-    protected Collection<Pair<PosVector, Color4f>> lights = new ArrayList<>();
-    private Collection<MovingEntity> newEntities = new ArrayList<>();
+    protected Collection<Touchable> staticEntities = new ConcurrentArrayList<>();
+    protected Collection<MovingEntity> dynamicEntities = new ConcurrentArrayList<>();
+    protected Collection<Particle> particles = new ConcurrentArrayList<>();
+    protected Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
+    private Collection<MovingEntity> newEntities = new ConcurrentArrayList<>();
 
     protected final Player player;
 
     private Collection<Pair<Touchable, MovingEntity>> allEntityPairs = null;
 
     private final GameTimer time;
-
-    // TODO a lock for every list separately, possibly by defining a "ConcurrentArrayList"
-    private ReentrantReadWriteLock entityModificationLock = new ReentrantReadWriteLock();
-    /** used when a list is iterated, but all items stay in this list */
-    private Lock readLock = entityModificationLock.readLock();
-    /** used when items in a list are removed, added or any combination of these */
-    private Lock writeLock = entityModificationLock.writeLock();
 
     public GameState(Player player, GameTimer time) {
         this.player = player;
@@ -80,15 +68,10 @@ public abstract class GameState implements Environment {
         if (deltaTime == 0) return;
 
         // update positions and apply physics
-        readLock.lock();
         dynamicEntities.parallelStream()
                 .forEach((entity) -> entity.preUpdate(deltaTime, entityNetforce(entity)));
-        readLock.unlock();
-
-        writeLock.lock();
         dynamicEntities.addAll(newEntities);
         newEntities.clear();
-        writeLock.unlock();
 
         int remainingLoops = Settings.MAX_COLLISION_ITERATIONS;
         // check and handle collisions
@@ -138,20 +121,9 @@ public abstract class GameState implements Environment {
             }
         }
 
-        writeLock.lock();
-        Iterator<MovingEntity> iterator = dynamicEntities.iterator();
-        while (iterator.hasNext()) {
-            MovingEntity entity = iterator.next();
-            entity.update(currentTime);
-            if (entity instanceof MortalEntity) {
-                MortalEntity unit = (MortalEntity) entity;
-                if (unit.isDead()) {
-                    iterator.remove();
-                }
-            }
-        }
-        writeLock.unlock();
-
+        // in general zero or more
+        dynamicEntities.forEach(e -> e.update(currentTime));
+        dynamicEntities.removeIf(entity -> (entity instanceof MortalEntity) && ((MortalEntity) entity).isDead());
     }
 
     /**
@@ -167,7 +139,8 @@ public abstract class GameState implements Environment {
 
     protected abstract DirVector entityNetforce(MovingEntity entity);
 
-    /** TODO efficient implementation, Possibly move to dedicated class
+    /**
+     * TODO efficient implementation, Possibly move to dedicated class
      * generate a list (possibly empty) of all objects that may have collided.
      * this may include (parts of) the ground, but not an object with itself.
      * one pair should not occur the other way around
@@ -175,13 +148,12 @@ public abstract class GameState implements Environment {
      * @return a collection of pairs of objects that are close to each other
      */
     private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
-        allEntityPairs = new ArrayList<>();
+        allEntityPairs = new ConcurrentArrayList<>();
 
-        readLock.lock();
         // Naive solution: return all n^2 options
         // check all moving objects against (1: all other moving objects, 2: all static objects)
-        dynamicEntities.forEach(obj -> {
-            dynamicEntities.stream()
+        for (MovingEntity obj : dynamicEntities) {
+            dynamicEntities.parallelStream()
                     // this makes sure that one object pair does not occur the other way around.
                     // It compares in a random, yet consistent way
                     .filter(other -> other.hashCode() >= obj.hashCode())
@@ -192,8 +164,7 @@ public abstract class GameState implements Environment {
                     .forEach(allEntityPairs::add);
             staticEntities
                     .forEach(other -> allEntityPairs.add(new Pair<>(other, obj)));
-        });
-        readLock.unlock();
+        }
 
         if (DEBUG) {
             final long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
@@ -206,15 +177,13 @@ public abstract class GameState implements Environment {
 
     @Override
     public void setLights(GL2 gl) {
-        readLock.lock();
-
         for (Pair<PosVector, Color4f> l : lights) {
             final PosVector pos = l.left;
             final Color4f color = l.right;
 
             gl.setLight(pos, color);
 
-            if (Settings.SHOW_LIGHT_POSITIONS){
+            if (Settings.SHOW_LIGHT_POSITIONS) {
                 gl.setMaterial(Material.GLOWING, color);
                 gl.pushMatrix();
                 {
@@ -225,37 +194,21 @@ public abstract class GameState implements Environment {
                 gl.popMatrix();
             }
         }
-
-        readLock.unlock();
     }
 
     @Override
     public void drawObjects(GL2 gl) {
 //        Toolbox.drawAxisFrame(gl);
-        readLock.lock();
         staticEntities.forEach(d -> d.draw(gl));
-        readLock.unlock();
-
-        // we unlock-lock here to prevent starvation
-        readLock.lock();
         glDisable(GL_CULL_FACE); // TODO when new meshes are created or fixed, this should be removed
         dynamicEntities.forEach(d -> d.draw(gl));
-        readLock.unlock();
     }
 
     @Override
-    public void drawParticles(GL2 gl){
-        readLock.lock();
+    public void drawParticles(GL2 gl) {
         particles.forEach(p -> p.updateRender(time.getRenderTime().difference()));
-        readLock.unlock();
-
-        writeLock.lock();
         particles.removeIf(Particle::isOverdue);
-        writeLock.unlock();
-
-        readLock.lock();
         particles.forEach(p -> p.draw(gl));
-        readLock.unlock();
     }
 
     @Override
@@ -275,9 +228,7 @@ public abstract class GameState implements Environment {
 
     @Override
     public void addParticles(Collection<Particle> newParticles) {
-        writeLock.lock();
         particles.addAll(newParticles);
-        writeLock.unlock();
     }
 
     @Override
@@ -289,18 +240,12 @@ public abstract class GameState implements Environment {
      * (this method may be reduced to accessing the lock)
      */
     public void cleanUp() {
-        try {
-            writeLock.lockInterruptibly();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            ScreenOverlay.removeHudItem(collisionCounter);
-            dynamicEntities.clear();
-            staticEntities.clear();
-            lights.clear();
-            particles.clear();
-            if (allEntityPairs != null) allEntityPairs.clear();
-            System.gc();
-        }
+        dynamicEntities.clear();
+        staticEntities.clear();
+        lights.clear();
+        particles.clear();
+        ScreenOverlay.removeHudItem(collisionCounter);
+        if (allEntityPairs != null) allEntityPairs.clear();
+        System.gc();
     }
 }
