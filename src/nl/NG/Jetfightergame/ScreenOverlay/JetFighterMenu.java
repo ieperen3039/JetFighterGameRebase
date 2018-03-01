@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Sound.MusicProvider;
 
 import java.util.function.Supplier;
 
@@ -34,7 +33,6 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable[] mainMenu;
     private MenuClickable[] optionMenu;
     private MenuClickable[] graphicsMenu;
-    private MenuClickable[] audioMenu;
     private MenuClickable[] controlsMenu;
     private UIElement[] creditScreen;
 
@@ -42,11 +40,11 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
                           Runnable startGame, Runnable exitGame, ControllerManager input,
                           ShaderManager shaderManager, EnvironmentManager worlds) {
         super(widthSupplier, heightSupplier);
+
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
         {
             MenuClickable graphics = graphicsMenu(shaderManager);
-//            MenuClickable audio = audioMenu(musicProvider);
             MenuClickable controls = controlMenu(input);
             MenuClickable backOptions = new MenuButton("Back", () -> switchContentTo(mainMenu));
             optionMenu = new MenuClickable[]{graphics, controls, backOptions};
@@ -74,18 +72,6 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
             controlsMenu = new MenuClickable[]{invertX, controllerType, backControls};
         }
         return controls;
-    }
-
-    private MenuClickable audioMenu(MusicProvider musicProvider) {
-        MenuClickable audio = new MenuButton("Audio", () -> switchContentTo(audioMenu));
-        {
-            MenuClickable master = new MenuSlider("Volume", (i) -> musicProvider.setBaseVolume((i < 0.05f) ? 0.05f : i));
-            MenuToggle toggleAudio = new MenuToggle("Music", (i) -> musicProvider.toggle());
-            toggleAudio.setValue(musicProvider.isOn());
-            MenuClickable backAudio = new MenuButton("Back", () -> switchContentTo(optionMenu));
-            audioMenu = new MenuClickable[]{master, toggleAudio, backAudio};
-        }
-        return audio;
     }
 
     private MenuClickable graphicsMenu(ShaderManager shaders) {
