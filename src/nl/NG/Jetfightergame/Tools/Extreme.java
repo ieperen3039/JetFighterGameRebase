@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.Tools;
 
 /**
+ * a synchornized class that tracks the maximum or minimum of a given item
  * @author Geert van Ieperen
  *         created on 8-11-2017.
- * a synchornized class that tracks the maximum or minimum of a given item
  */
 public class Extreme<T extends Comparable<T>> {
     private final boolean max;

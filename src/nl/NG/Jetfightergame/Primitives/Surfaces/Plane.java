@@ -77,16 +77,19 @@ public abstract class Plane {
      * @param linePosition a position vector on the line in local space
      * @param direction    the direction vector of the line in local space
      * @param endPoint     the endpoint of this vector, defined as {@code linePosition.add(direction)}
+     *                     if this vector is null, an infinite line is assumed
      * @return {@code null} if it does not hit with direction scalar < 1
      */
     public Collision getCollisionWith(PosVector linePosition, DirVector direction, PosVector endPoint) {
+        final boolean isInfinite = (endPoint == null);
+
         if (hasWrongDirection(direction)) return null;
 
-        if (asideHitbox(linePosition, endPoint)) return null;
+        if (!isInfinite && asideHitbox(linePosition, endPoint)) return null;
 
         float scalar = hitScalar(linePosition, direction);
 
-        if (scalar > 1.0f) return null;
+        if (!isInfinite && (scalar > 1.0f)) return null;
 
         DirVector hitDir = direction.scale(scalar, new DirVector());
         PosVector hitPos = linePosition.add(hitDir, new PosVector());

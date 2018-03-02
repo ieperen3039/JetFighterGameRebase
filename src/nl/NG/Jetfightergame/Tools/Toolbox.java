@@ -2,9 +2,9 @@ package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector4f;
 

@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
@@ -9,12 +10,14 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.*;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -247,8 +250,38 @@ public abstract class GameState implements Environment {
     }
 
     /**
-     * (this method may be reduced to accessing the lock)
+     * casts a ray into the world and returns where it hits anything.
+     * @param source a point in world-space
+     * @param direction a direction in world-space
+     * @return the collision caused by this ray
      */
+    public Collision rayTrace(PosVector source, DirVector direction){
+        ShadowMatrix sm = new ShadowMatrix();
+        PosVector sink = source.add(direction, new PosVector());
+
+        Extreme<Collision> firstHit = new Extreme<>(false);
+
+        final Consumer<Shape> tracer = shape -> {
+            PosVector alpha = sm.mapToLocal(source);
+            PosVector beta = sm.mapToLocal(sink);
+            final DirVector alphaToBeta = alpha.to(beta, new DirVector());
+
+            // search hitpoint, add it when found
+            Collision newCrash = shape.getCollision(alpha, alphaToBeta, null);
+            if (newCrash != null) {
+                newCrash.convertToGlobal(sm);
+                firstHit.check(newCrash);
+            }
+        };
+
+        dynamicEntities.parallelStream()
+                .forEach(entity -> entity.toLocalSpace(sm, () -> entity.create(sm, tracer)));
+        staticEntities.parallelStream()
+                .forEach(entity -> entity.toLocalSpace(sm, () -> entity.create(sm, tracer)));
+
+        return firstHit.get();
+    }
+
     public void cleanUp() {
         dynamicEntities.clear();
         staticEntities.clear();

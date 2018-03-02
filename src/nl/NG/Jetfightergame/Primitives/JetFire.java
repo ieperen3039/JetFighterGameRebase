@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Primitives;
 
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Tools.MatrixStack.Renderable;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.Renderable;
 import nl.NG.Jetfightergame.Tools.Updatable;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;

@@ -5,9 +5,9 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.util.function.Consumer;

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools.MatrixStack;
+package nl.NG.Jetfightergame.Rendering.MatrixStack;
 
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -22,8 +22,7 @@ public class ShadowMatrix implements MatrixStack {
     public ShadowMatrix() {
         matrixStack = new Stack<>();
         matrix = new Matrix4f();
-        matrix.assumeAffine();
-        inverseMatrix = new Matrix4f();
+        inverseMatrix = null;
     }
 
     @Override

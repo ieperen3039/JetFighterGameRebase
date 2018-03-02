@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ShapeCreation;
 
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Collection;

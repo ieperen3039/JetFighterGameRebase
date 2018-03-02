@@ -22,10 +22,10 @@ public class EnemyFlyingTarget extends MovingTarget {
      * create a targeting wrapper for the HUD to target entities.
      *
      * @param subject the entity aimed at
-     * @param camera  the camera of the player
+     * @param cameraPosition  the position of the camera
      */
-    public EnemyFlyingTarget(MovingEntity subject, Supplier<PosVector> camera) {
-        super(subject, camera);
+    public EnemyFlyingTarget(MovingEntity subject, Supplier<PosVector> cameraPosition) {
+        super(subject, cameraPosition);
     }
 
     @Override

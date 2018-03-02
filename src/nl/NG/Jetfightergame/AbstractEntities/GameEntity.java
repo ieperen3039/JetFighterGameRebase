@@ -6,12 +6,12 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Tools.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Tools.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -19,7 +19,6 @@ import org.joml.Quaternionf;
 
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * @author Geert van Ieperen
@@ -262,23 +261,24 @@ public abstract class GameEntity implements MovingEntity{
      */
     private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other, float deltaTime) {
 
-        Stream.Builder<Collision> collisions = Stream.builder();
+        Extreme<Collision> firstHit = new Extreme<>(false);
         // copy previous, because we may want to temporarily override it.
         final PosVector previous = new PosVector(point.previous());
         final PosVector current = point.current();
 
         // collect the collisions
-        final ShadowMatrix identity = new ShadowMatrix();
+        final ShadowMatrix sm = new ShadowMatrix();
         final Consumer<Shape> addCollisions = shape -> {
             // map point to local space
-            PosVector startPoint = identity.mapToLocal(previous);
-            PosVector endPoint = identity.mapToLocal(current);
+            PosVector startPoint = sm.mapToLocal(previous);
+            PosVector endPoint = sm.mapToLocal(current);
             DirVector direction = startPoint.to(endPoint, new DirVector());
+
             // search hitpoint, add it when found
             Collision newCrash = shape.getCollision(startPoint, direction, endPoint);
             if (newCrash != null) {
-                newCrash.convertToGlobal(identity);
-                collisions.add(newCrash);
+                newCrash.convertToGlobal(sm);
+                firstHit.check(newCrash);
             }
         };
 
@@ -290,16 +290,12 @@ public abstract class GameEntity implements MovingEntity{
             final DirVector velocity = moving.getVelocity();
             if (velocity.isScalable()) previous.add(velocity.scale(deltaTime, velocity));
 
-            moving.toLocalSpace(identity, () -> moving.create(identity, addCollisions), true);
+            moving.toLocalSpace(sm, () -> moving.create(sm, addCollisions), true);
         } else {
-            other.toLocalSpace(identity, () -> other.create(identity, addCollisions));
+            other.toLocalSpace(sm, () -> other.create(sm, addCollisions));
         }
 
-        // iterate over all collisions
-        return collisions.build()
-                // select the smallest
-                .min(Collision::compareTo)
-                .orElse(null);
+        return firstHit.get();
     }
 
     private List<TrackedVector<PosVector>> calculateHitpointMovement() {

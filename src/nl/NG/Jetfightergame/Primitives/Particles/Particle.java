@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Primitives.Particles;
 
-import nl.NG.Jetfightergame.Tools.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 
 /**
  * @author Geert van Ieperen
