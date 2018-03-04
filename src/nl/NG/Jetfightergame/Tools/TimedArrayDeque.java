@@ -56,19 +56,20 @@ public class TimedArrayDeque<T> implements TimedQueue<T> {
      * @param timeStamp the time until where the state of the queue should be updated.
      */
     protected void updateTime(double timeStamp) {
+        changeGuard.lock();
+
         while ((timeStamps.size() > 1) && (timeStamp > nextTimeStamp())) {
             progress();
         }
+        changeGuard.unlock();
     }
 
     /**
-     * executes upon removing the head of the queues
+     * unsafe progression of the queue
      */
     protected void progress() {
-        changeGuard.lock();
         timeStamps.remove();
         elements.remove();
-        changeGuard.unlock();
     }
 
     /** returns the next queued timestamp in seconds or null if there is none */

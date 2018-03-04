@@ -104,10 +104,12 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // overlay with transparent objects
         // TODO transparent meshes?
 
-        gl.setFill(false);
-        gameState.drawObjects(gl);
-        Toolbox.checkGLError();
-        gl.setFill(true);
+        if (Settings.HIGHLIGHT_LINE_WIDTH > 0){
+            gl.setFill(false);
+            gameState.drawObjects(gl);
+            Toolbox.checkGLError();
+            gl.setFill(true);
+        }
 
         // particles
         glDisable(GL_CULL_FACE);

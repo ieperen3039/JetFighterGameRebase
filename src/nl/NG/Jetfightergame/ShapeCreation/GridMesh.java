@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -109,7 +110,7 @@ public class GridMesh implements Shape {
      * @return index of this coordinate
      */
     private int index(int x, int y){
-        return x * xSize + 1 + y;
+        return (x * xSize) + 1 + y;
     }
 
     @Override
@@ -148,17 +149,21 @@ public class GridMesh implements Shape {
         int leastY = (int) Math.floor(Math.min(linePosition.y(), endPoint.y()));
         int mostY = (int) Math.ceil(Math.max(linePosition.y(), endPoint.y()));
 
-        Collision currLeast = null;
+        Extreme<Collision> least = new Extreme<>(false);
 
         // for all planes in the region of the target line, and planes are coordinated by their minimum coord
-        for(int x = leastX; x <= mostX + 1; x++){
-            for(int y = leastY; x <= mostY + 1; y++){
-                currLeast = getCollision(linePosition, direction, endPoint, currLeast, alphaGrid[x][y]);
-                currLeast = getCollision(linePosition, direction, endPoint, currLeast, betaGrid[x][y]);
+        for(int x = leastX; x <= (mostX + 1); x++){
+            for(int y = leastY; x <= (mostY + 1); y++){
+
+                Triangle target = alphaGrid[x][y];
+                least.check(target.getCollisionWith(linePosition, direction, endPoint));
+
+                target = betaGrid[x][y];
+                least.check(target.getCollisionWith(linePosition, direction, endPoint));
             }
         }
 
-        return currLeast;
+        return least.get();
     }
 
     @Override
@@ -166,19 +171,4 @@ public class GridMesh implements Shape {
         mesh.render(lock);
     }
 
-    /**
-     * given linepiece parameters, determines which collision is earlier: the currentleast or the one caused by
-     * the line that hits the target.
-     * @param target a triangle that may or may not be hit by the line
-     * @return the earliest collision of currLeast and the new collision
-     */
-    private Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint, Collision currentLeast, Triangle target) {
-        Collision hit = target.getCollisionWith(linePosition, direction, endPoint);
-        if (hit != null) {
-            if ((currentLeast == null) || (hit.compareTo(currentLeast) < 0)) {
-                currentLeast = hit;
-            }
-        }
-        return currentLeast;
-    }
 }

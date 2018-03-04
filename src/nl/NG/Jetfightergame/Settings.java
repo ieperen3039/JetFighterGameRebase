@@ -37,17 +37,17 @@ public final class Settings {
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final int PARTICLE_SPLITS = 0;
 
-    /** particle */
+    /** particles */
     public static final int FIRE_PARTICLE_DENSITY = 1000; // actual particle count of plane explosion
     public static final int SPARK_PARTICLE_DENSITY = 10;
     public static final float FIRE_PARTICLE_SIZE = 0.3f;
 
-    /** final music settings */
+    /** sound */
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
 
-    /** controller settings */
+    /** controllers */
     public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
     public static int THROTTLE_DOWN = GLFW.GLFW_KEY_S;
     public static int YAW_UP = GLFW.GLFW_KEY_A;
@@ -56,15 +56,15 @@ public final class Settings {
     public static float PITCH_MODIFIER = -0.05f;
     public static float ROLL_MODIFIER = 0.05f;
 
+    /** visual settings */
     public static float FOV = (float) Math.toRadians(60);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
     public static float Z_FAR = 2000.0f;
     public static Boolean INVERT_CAMERA_ROTATION = false;
-
-    /** visual settings */
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 3;
     public static final int MAX_POINT_LIGHTS = 10;
     public static boolean SPECTATOR_MODE = false;
+
 }
