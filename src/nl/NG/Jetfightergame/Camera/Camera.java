@@ -9,13 +9,25 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public interface Camera {
 
+    /**
+     * a direction vector of the eye of the camera to the focus of the camera.
+     * @return {@link #getEye()}.to({@link #getFocus()})
+     * The length of this vector may differ by implementation
+     */
     DirVector vectorToFocus();
 
+    /**
+     * updates the state of this camera according to the given passed time.
+     * @param deltaTime the number of seconds passed since last update. This may be real-time or in-game time
+     */
     void updatePosition(float deltaTime);
 
+    /** the position of the camera itself */
     PosVector getEye();
 
+    /** the point in space where the camera looks to */
     PosVector getFocus();
 
+    /** the direction of up, the length of this vector is undetermined. */
     DirVector getUpVector();
 }

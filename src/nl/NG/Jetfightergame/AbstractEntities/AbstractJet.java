@@ -163,7 +163,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         // thrust forces
         float throttle = input.throttle();
-        float thrust = (throttle > 0) ? (throttle * throttlePower) : 0;
+        final float baseThrust = 10_000 / airResistCoeff;
+        float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         float yPres = instantPreserveFraction(yPreservation, deltaTime);
