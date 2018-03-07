@@ -2,90 +2,73 @@ package nl.NG.Jetfightergame.ShapeCreation;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
-import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.Primitives.Surfaces.Quad;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Collections;
 import java.util.stream.Stream;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * @author Geert van Ieperen
  *         created on 13-11-2017.
  */
 public class GridMesh implements Shape {
-    private final Triangle[][] alphaGrid;
-    private final Triangle[][] betaGrid;
+
+    private final Quad[][] planeGrid;
+    private final Mesh graphicalGrid;
 
     private final int xSize;
     private final int ySize;
-    private final Mesh mesh;
 
+    /** the absolute minimum of all vectors */
+    private final Vector3fc minimumTranspose;
+    /** the multiplier to normalize a vector to the grid */
+    private final Vector3fc normalizingScalar;
+
+    /**
+     * creates a mesh based on the vector-grid defined as grid[x][y]. The vectors of this grid should be strictly separated:
+     * (a - 0.5) < grid[a][b].x < (a + 0.5) && (b - 0.5) < grid[a][b].y < (b + 0.5)
+     * @param grid a matrix of vectors that form a heightmap-like grid.
+     */
     public GridMesh(PosVector[][] grid) {
         xSize = grid.length - 1;
         ySize = grid[0].length - 1;
 
-        alphaGrid = new Triangle[xSize][ySize];
-        betaGrid = new Triangle[xSize][ySize];
+        // the absolute minimum of all vectors
+        minimumTranspose = new Vector3f(grid[0][0]).add(-1f, -1f, 0).mul(1, 1, 0).toImmutable();
+        // the absolute maximum of all vectors
+        final Vector3f maxVector = new Vector3f(grid[xSize][ySize]).add(1f, 1f, 0);
+        normalizingScalar = new Vector3f(1, 1, 1).div(maxVector.mul(xSize, ySize, 0)).toImmutable();
 
-        List<Mesh.Face> faces = new ArrayList<>(2 * xSize * ySize);
-        List<DirVector> normals = new ArrayList<>(2 * xSize * ySize);
+        planeGrid = new Quad[xSize][ySize];
+        CustomShape frame = new CustomShape(new PosVector(0, 0, Float.NEGATIVE_INFINITY));
 
-
-        // transform grid to a list
-        List<PosVector> vertices = Arrays.stream(grid)
-                .flatMap(Arrays::stream)
-                // collect into an array list of appropriate length
-                .collect(Collectors.toCollection(
-                        () -> new ArrayList<>(grid.length * grid[0].length)
-                ));
-
-        // iterate y-first
         for (int x = 0; x < xSize; x++) {
             for (int y = 0; y < ySize; y++) {
-                createAndSetTriangles(x, y, grid, faces, normals);
+                final PosVector A = grid[x][y];
+                final PosVector B = grid[x + 1][y];
+                final PosVector C = grid[x + 1][y + 1];
+                final PosVector D = grid[x][y + 1];
+
+                frame.addQuad(A, B, C, D, DirVector.zVector());
+                planeGrid[x][y] = new Quad(A, B, C, D, DirVector.zVector());
             }
         }
 
-
-        mesh = new Mesh(vertices, normals, faces);
+        this.graphicalGrid = frame.asMesh();
 
         Toolbox.print("created Grid [ " + xSize + " x " + ySize + " ]");
-    }
-
-    /**
-     * add triangles to {@code alphaGrid} and {@code betaGrid}
-     * @param x lowest x coordinate of these two triangles
-     * @param y lowest y coordinate of these two triangles
-     * @param grid a grid of positionVectors, defining a surface
-     */
-    private void createAndSetTriangles(int x, int y, PosVector[][] grid, List<Mesh.Face> faces, List<DirVector> normals) {
-        final PosVector A = grid[x][y];
-        final PosVector B = grid[x + 1][y];
-        final PosVector C = grid[x][y + 1];
-        final PosVector D = grid[x + 1][y + 1];
-
-        final int Ai = index(x, y);
-        final int Bi = index(x + 1, y);
-        final int Ci = index(x, y + 1);
-        final int Di = index(x + 1, y + 1);
-
-        final DirVector alphaNormal = Plane.getNormalVector(A, B, C);
-        alphaGrid[x][y] = new Triangle(A, B, C, alphaNormal);
-        normals.add(alphaNormal);
-        faces.add(new Mesh.Face(Ai, Bi, Ci, normals.size() - 1));
-
-        final DirVector betaNormal = Plane.getNormalVector(C, B, D);
-        betaGrid[x][y] = new Triangle(C, B, D, betaNormal);
-        normals.add(betaNormal);
-        faces.add(new Mesh.Face(Di, Bi, Ci, normals.size() - 1));
     }
 
     public GridMesh(float[][] heightMap, float xStep, float yStep) {
@@ -105,34 +88,15 @@ public class GridMesh implements Shape {
         return map;
     }
 
-    /**
-     * numbers a grid (x, y) y-first
-     * @return index of this coordinate
-     */
-    private int index(int x, int y){
-        return (x * xSize) + 1 + y;
-    }
-
     @Override
     public Stream<? extends Plane> getPlanes() {
-        Stream.Builder<Plane> result = Stream.builder();
-        for (int x = 0; x < xSize; x++){
-            for (int y = 0; y < ySize; y++){
-                result.add(alphaGrid[x][y]);
-                result.add(betaGrid[x][y]);
-            }
-        }
-        return result.build();
+        return Arrays.stream(planeGrid).flatMap(Arrays::stream);
     }
 
     @Override
     public Collection<PosVector> getPoints() {
-        Collection<PosVector> list = new ArrayList<>();
-        getPlanes()
-                .flatMap(Plane::getBorderAsStream)
-                .distinct()
-                .forEach(list::add);
-        return list;
+        //noinspection AssignmentOrReturnOfFieldWithMutableType,unchecked
+        return Collections.EMPTY_LIST;
     }
 
     /**
@@ -144,31 +108,37 @@ public class GridMesh implements Shape {
      * otherwise, it provides a collision object about the first collision with this shape
      */
     public Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint) {
-        int leastX = (int) Math.floor(Math.min(linePosition.x(), endPoint.x()));
-        int mostX = (int) Math.ceil(Math.max(linePosition.x(), endPoint.x()));
-        int leastY = (int) Math.floor(Math.min(linePosition.y(), endPoint.y()));
-        int mostY = (int) Math.ceil(Math.max(linePosition.y(), endPoint.y()));
 
-        Extreme<Collision> least = new Extreme<>(false);
+        Vector3f mappedSource = linePosition.sub(minimumTranspose, new Vector3f()).mul(normalizingScalar);
+        Vector3f mappedDest = endPoint.sub(minimumTranspose, new Vector3f()).mul(normalizingScalar);
+
+        int leastX = (int) Math.floor(min(mappedSource.x(), mappedDest.x()));
+        int mostX = (int) Math.ceil(max(mappedSource.x(), mappedDest.x()));
+        int leastY = (int) Math.floor(min(mappedSource.y(), mappedDest.y()));
+        int mostY = (int) Math.ceil(max(mappedSource.y(), mappedDest.y()));
+
+        leastX = max(0, leastX - 1);
+        leastY = max(0, leastY - 1);
+        mostX = min(xSize, mostX + 1);
+        mostY = min(ySize, mostY + 1);
+
+        Extreme<Collision> firstCrash = new Extreme<>(false);
 
         // for all planes in the region of the target line, and planes are coordinated by their minimum coord
-        for(int x = leastX; x <= (mostX + 1); x++){
-            for(int y = leastY; x <= (mostY + 1); y++){
+        for(int x = leastX; x < mostX; x++){
+            for(int y = leastY; x < mostY; y++){
 
-                Triangle target = alphaGrid[x][y];
-                least.check(target.getCollisionWith(linePosition, direction, endPoint));
-
-                target = betaGrid[x][y];
-                least.check(target.getCollisionWith(linePosition, direction, endPoint));
+                Quad target = planeGrid[x][y];
+                firstCrash.check(target.getCollisionWith(linePosition, direction, endPoint));
             }
         }
 
-        return least.get();
+        return firstCrash.get();
     }
 
     @Override
     public void render(GL2.Painter lock) {
-        mesh.render(lock);
+        graphicalGrid.render(lock);
     }
 
 }

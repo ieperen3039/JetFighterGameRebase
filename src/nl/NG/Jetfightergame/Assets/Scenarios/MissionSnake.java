@@ -13,6 +13,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
+import org.joml.Vector3f;
 
 /**
  * @author Geert van Ieperen
@@ -20,17 +21,18 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
  */
 public class MissionSnake extends GameState {
 
-    private static final float PILLAR_MIDDLE = 25f;
-    private static final float PILLAR_RING = 30f;
-    private static final float PILLAR_BASE = 40f;
-    private static final float PILLAR_BASE_HEIGHT = 20;
-    private static final float LEVEL_HEIGHT = 100f;
-    private static final int LEVEL_SQUARE_COUNT = 20;
-    private static final float LEVEL_SQUARE_SIZE = 50f;
+    private static final float LEVEL_SQUARE_SIZE = 20f;
+    private static final float LEVEL_HEIGHT = LEVEL_SQUARE_SIZE;
+    private static final float PILLAR_BASE_SIZE = 5f;
+    private static final float PILLAR_BASE_HEIGHT = PILLAR_BASE_SIZE;
+    private static final float PILLAR_MIDDLE_SIZE = 2f;
+    private static final float PILLAR_RING_SIZE = (PILLAR_BASE_SIZE + (2 * PILLAR_MIDDLE_SIZE)) / 3;
 
-    private static final PosVector VEC_GROUND = new PosVector(PILLAR_BASE, PILLAR_BASE, 0);
-    private static final PosVector VEC_RING = new PosVector(PILLAR_RING, PILLAR_RING, PILLAR_BASE_HEIGHT / 2);
-    private static final PosVector VEC_MIDDLE = new PosVector(PILLAR_MIDDLE, PILLAR_MIDDLE, PILLAR_BASE_HEIGHT);
+    private static final int LEVEL_SQUARE_DIM = 5;
+
+    private static final PosVector VEC_GROUND = new PosVector(PILLAR_BASE_SIZE, PILLAR_BASE_SIZE, 0);
+    private static final PosVector VEC_BOTTOM = new PosVector(PILLAR_RING_SIZE, PILLAR_RING_SIZE, PILLAR_BASE_HEIGHT / 2);
+    private static final PosVector VEC_LOWER = new PosVector(PILLAR_MIDDLE_SIZE, PILLAR_MIDDLE_SIZE, PILLAR_BASE_HEIGHT);
 
     private static final Color4f WORLD_COLOR = Color4f.WHITE;
     private static final Material WORLD_MATERIAL = Material.ROUGH;
@@ -50,19 +52,26 @@ public class MissionSnake extends GameState {
 
     @Override
     public Color4f fogColor() {
-        return new Color4f(0.2f, 0.2f, 0.2f, 0f);
+        return new Color4f(0.8f, 0.8f, 0.8f, 0f);
     }
 
     @Override
     public void buildScene() {
-        staticEntities.add(new StaticObject(gameFloor, WORLD_MATERIAL, WORLD_COLOR));
+        staticEntities.add(new StaticObject(gameFloor, WORLD_MATERIAL, Color4f.BLUE));
 
-        for (int x = 0; x < LEVEL_SQUARE_COUNT; x++) {
-            for (int y = 0; y < LEVEL_SQUARE_COUNT; y++) {
+        for (int x = 0; x < (LEVEL_SQUARE_DIM + 1); x++) {
+            for (int y = 0; y < (LEVEL_SQUARE_DIM + 1); y++) {
                 final Vector offSet = new DirVector(LEVEL_SQUARE_SIZE * x, LEVEL_SQUARE_SIZE * y, 0);
-                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet, 1));
+                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, Color4f.RED, offSet, null));
             }
         }
+
+        final float offSet = LEVEL_SQUARE_SIZE * LEVEL_SQUARE_DIM;
+        staticEntities.add(new StaticObject(gameFloor, WORLD_MATERIAL, Color4f.BLUE, new DirVector(offSet, 0, LEVEL_HEIGHT), new Vector3f(-1, 1, 1)));
+
+        player.jet().set(new PosVector(LEVEL_SQUARE_SIZE/2f, LEVEL_SQUARE_SIZE/2f, LEVEL_HEIGHT/2f));
+
+        dynamicEntities.add(player.jet());
     }
 
     /**
@@ -71,16 +80,20 @@ public class MissionSnake extends GameState {
     private static Shape makePillar(){
         CustomShape frame = new CustomShape();
 
-        squareRing(frame, VEC_GROUND, VEC_RING);
-        squareRing(frame, VEC_RING, VEC_MIDDLE);
+        // create new vertices because we shouldn't mess with constants
+        squareRing(frame, new PosVector(VEC_GROUND), new PosVector(VEC_BOTTOM));
+        squareRing(frame, new PosVector(VEC_BOTTOM), new PosVector(VEC_LOWER));
 
-        PosVector roof = new PosVector(0, 0, LEVEL_HEIGHT);
-        // create new vertices because we shouldn't mess with passed parameters
-        PosVector top = roof.sub(VEC_GROUND, new PosVector());
-        PosVector upper = roof.sub(VEC_RING, new PosVector());
+        PosVector roof = new PosVector(VEC_GROUND);
+        PosVector top = new PosVector(VEC_BOTTOM);
+        PosVector upper = new PosVector(VEC_LOWER);
+        roof.mul(1, 1, -1).add(0, 0, LEVEL_HEIGHT);
+        top.mul(1, 1, -1).add(0, 0, LEVEL_HEIGHT);
+        upper.mul(1, 1, -1).add(0, 0, LEVEL_HEIGHT);
 
-        squareRing(frame, roof, top);
-        squareRing(frame, top, upper);
+        squareRing(frame, new PosVector(VEC_LOWER), upper);
+        squareRing(frame, upper, top);
+        squareRing(frame, top, roof);
 
         return frame.wrapUp();
     }
@@ -92,9 +105,13 @@ public class MissionSnake extends GameState {
      * @param upper the '' highest z-value
      */
     private static void squareRing(CustomShape frame, PosVector lower, PosVector upper) {
+        final PosVector newMid = lower.middleTo(upper);
+        newMid.mul(0, 0, 1);
+        frame.setMiddle(newMid);
+
         frame.addQuad(lower, upper);
         frame.addQuad(lower.mirrorX(new PosVector()), upper.mirrorX(new PosVector()));
-        frame.addMirrorQuad(lower, upper, lower.mirrorX(new PosVector()), upper.mirrorX(new PosVector()));
+        frame.addMirrorQuad(lower, upper, upper.mirrorX(new PosVector()), lower.mirrorX(new PosVector()));
     }
 
     /**
@@ -102,32 +119,33 @@ public class MissionSnake extends GameState {
      * @return a flat plane with tiling to allow pillars to be placed on every (x * SQUARE_SIZE, y * SQUARE_SIZE) coordinate
      */
     private static Shape makeFloorTiles(){
-        PosVector[][] world = new PosVector[2 * LEVEL_SQUARE_COUNT][2 * LEVEL_SQUARE_COUNT];
+        final int nOfPillars = LEVEL_SQUARE_DIM + 1;
+        PosVector[][] world = new PosVector[2 * nOfPillars][2 * nOfPillars];
 
-        for (int x = 0; x < LEVEL_SQUARE_COUNT; x++) {
-            for (int y = 0; y < LEVEL_SQUARE_COUNT; y++) {
+        for (int x = 0; x < nOfPillars; x++) {
+            for (int y = 0; y < nOfPillars; y++) {
                 addPoint(world, x, y, false, false);
                 addPoint(world, x, y, true, false);
                 addPoint(world, x, y, false, true);
                 addPoint(world, x, y, true, true);
+
             }
         }
 
         return new GridMesh(world);
     }
 
-    private static void addPoint(PosVector[][] world, int x, int y, boolean xs, boolean ys) {
-        int xsi = xs ? 1 : 0;
-        int ysi = ys ? 1 : 0;
+    private static void addPoint(PosVector[][] world, int x, int y, boolean positiveX, boolean positiveY) {
+        final PosVector offset = new PosVector(VEC_GROUND);
 
-        final PosVector vecGround = new PosVector(VEC_GROUND);
-        if (xs) vecGround.mirrorX(vecGround);
-        if (ys) vecGround.mirrorY(vecGround);
+        // not positive coordinate -> flip translation to negative
+        if (!positiveX) offset.mirrorX(offset);
+        if (!positiveY) offset.mirrorY(offset);
 
-        final float xPos = (x + xsi) * LEVEL_SQUARE_SIZE;
-        final float yPos = (y + ysi) * LEVEL_SQUARE_SIZE;
-        vecGround.add(xPos, yPos, 0);
+        offset.add(x * LEVEL_SQUARE_SIZE, y * LEVEL_SQUARE_SIZE, 0);
 
-        world[(2 * x) + xsi][(2 * y) + ysi] = vecGround;
+        final int xIndex = (2 * x) + (positiveX ? 1 : 0);
+        final int yIndex = (2 * y) + (positiveY ? 1 : 0);
+        world[xIndex][yIndex] = offset;
     }
 }

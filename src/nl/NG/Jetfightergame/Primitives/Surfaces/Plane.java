@@ -54,6 +54,10 @@ public abstract class Plane {
         }
     }
 
+    /**
+     * calculates the normal vector for a triangle given in counterclockwise order
+     * @return the normalized normal for a triangle ABC
+     */
     public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C) {
         DirVector normalVector = new DirVector();
         final DirVector BC = new DirVector();

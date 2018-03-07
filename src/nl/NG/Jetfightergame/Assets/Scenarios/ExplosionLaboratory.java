@@ -21,7 +21,7 @@ public class ExplosionLaboratory extends GameState {
 
     private Toolbox.DelayedAction action;
 
-    public ExplosionLaboratory(GameTimer time, Player player) {
+    public ExplosionLaboratory(Player player, GameTimer time) {
         super(player, time);
     }
 

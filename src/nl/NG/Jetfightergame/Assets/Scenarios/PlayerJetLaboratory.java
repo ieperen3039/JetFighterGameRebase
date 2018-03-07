@@ -26,7 +26,7 @@ public class PlayerJetLaboratory extends GameState {
     private static final int LAB_SIZE = 300;
     private Collection<HUDTargetable> cubeTargets = new ArrayList<>();
 
-    public PlayerJetLaboratory(GameTimer time, Player player) {
+    public PlayerJetLaboratory(Player player, GameTimer time) {
         super(player, time);
     }
 

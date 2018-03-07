@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3fc;
 
 /**
  * @author Geert van Ieperen
@@ -80,6 +81,10 @@ public interface MatrixStack {
 
     default void scale(float s) {
         scale(s, s, s);
+    }
+
+    default void scale(Vector3fc s){
+        scale(s.x(), s.y(), s.z());
     }
 
     /**

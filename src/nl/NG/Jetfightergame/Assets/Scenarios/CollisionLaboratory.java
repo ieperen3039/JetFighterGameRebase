@@ -31,7 +31,7 @@ public class CollisionLaboratory extends GameState {
     private final int nrOfCubes;
     private final float speeds;
 
-    public CollisionLaboratory(GameTimer time, Player player) {
+    public CollisionLaboratory(Player player, GameTimer time) {
         this(LAB_SIZE, NR_OF_CUBES, time, player);
     }
 

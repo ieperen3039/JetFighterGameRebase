@@ -20,7 +20,8 @@ import java.util.*;
  */
 public class CustomShape {
 
-    private final PosVector middle;
+    private PosVector middle;
+
     private final Map<PosVector, Integer> points;
     private final List<DirVector> normals;
     private final List<Mesh.Face> faces;
@@ -290,7 +291,7 @@ public class CustomShape {
      */
     public void addStrip(PosVector ... quads) {
         final int inputSize = quads.length;
-        if (inputSize % 2 != 0 || inputSize < 4){
+        if (((inputSize % 2) != 0) || (inputSize < 4)){
             throw new IllegalArgumentException(
                     "input arguments can not be of odd length or less than 4 (length is "+ inputSize + ")");
         }
@@ -302,18 +303,29 @@ public class CustomShape {
     }
 
     /**
-     * convert this object to a shape
+     * convert this object to a Shape
      * @return a shape with hardware-accelerated graphics using the {@link ShapeFromMesh} object
      */
     public Shape wrapUp(){
+        return new ShapeFromMesh(getSortedVertices(), normals, faces);
+    }
+
+    /**
+     * convert this object into a Mesh
+     * @return a hardware-accelerated Mesh object
+     */
+    public Mesh asMesh(){
+        return new Mesh(getSortedVertices(), normals, faces);
+    }
+
+    private List<PosVector> getSortedVertices() {
         // this is the most clear, structured way of the duplicate-vector problem. maybe not the most efficient.
         PosVector[] sortedVertices = new PosVector[points.size()];
         points.forEach((v, i) -> sortedVertices[i] = v);
 
         List<PosVector> vertexList = new ArrayList<>();
         Collections.addAll(vertexList, sortedVertices);
-
-        return new ShapeFromMesh(vertexList, normals, faces);
+        return vertexList;
     }
 
     /**
@@ -354,5 +366,9 @@ public class CustomShape {
 
     private static String readVertex(Pair<Integer, Integer> vertex) {
         return String.format("%d//%d", vertex.left + 1, vertex.right + 1);
+    }
+
+    public void setMiddle(PosVector middle) {
+        this.middle = middle;
     }
 }

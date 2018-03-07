@@ -1,10 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
-import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
-import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
-import nl.NG.Jetfightergame.Assets.Scenarios.Process592;
+import nl.NG.Jetfightergame.Assets.Scenarios.*;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
@@ -34,7 +31,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     public EnvironmentManager(Player player, GameTimer time) {
         this.time = time;
         this.player = player;
-        instance = new Process592(player, this::switchTo);
     }
 
     @Override
@@ -63,19 +59,21 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     public void init() {
+        instance = new MissionSnake(player, time);
         instance.buildScene();
     }
 
     @Override
     public void buildScene() {
-        init();
+        instance.buildScene();
     }
 
     public enum Worlds {
         MainMenu,
         PlayerJetLaboratory,
         CollisionLaboratory,
-        ExplosionLaboratory
+        ExplosionLaboratory,
+        SnakeLevel
     }
 
     @Override
@@ -121,16 +119,19 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
         switch (implementation) {
             case CollisionLaboratory:
-                instance = new CollisionLaboratory(time, player);
+                instance = new CollisionLaboratory(player, time);
                 break;
             case PlayerJetLaboratory:
-                instance = new PlayerJetLaboratory(time, player);
+                instance = new PlayerJetLaboratory(player, time);
                 break;
             case ExplosionLaboratory:
-                instance = new ExplosionLaboratory(time, player);
+                instance = new ExplosionLaboratory(player, time);
                 break;
             case MainMenu:
                 instance = new Process592(player, this::switchTo);
+                break;
+            case SnakeLevel:
+                instance = new MissionSnake(player, time);
                 break;
             default:
                 Toolbox.print("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
@@ -140,10 +141,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         instance.buildScene();
     }
 
-    /**
-     * private void... :D
-     */
+
     private class Void extends GameState {
+        /**
+         * public void... :D
+         */
         public Void() {
             super(EnvironmentManager.this.player, time);
         }

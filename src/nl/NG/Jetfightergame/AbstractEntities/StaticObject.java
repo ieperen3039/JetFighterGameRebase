@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
+import org.joml.Vector3f;
 
 import java.util.function.Consumer;
 
@@ -22,17 +23,17 @@ public class StaticObject implements Touchable {
     private final Material material;
     private final Color4f color;
     private final Vector offSet;
-    private final float scaling;
+    private final Vector3f scaling;
 
     public StaticObject(Shape source, Material material, Color4f color, float scaling) {
-        this(source, material, color, DirVector.zeroVector(), scaling);
+        this(source, material, color, DirVector.zeroVector(), new Vector3f(scaling, scaling, scaling));
     }
 
     public StaticObject(Shape source, Material material, Color4f color) {
-        this(source, material, color, 1);
+        this(source, material, color, null, null);
     }
 
-    public StaticObject(Shape source, Material material, Color4f color, Vector offSet, float scaling) {
+    public StaticObject(Shape source, Material material, Color4f color, Vector offSet, Vector3f scaling) {
         this.source = source;
         this.material = material;
         this.color = color;
@@ -44,8 +45,8 @@ public class StaticObject implements Touchable {
     public void create(MatrixStack ms, Consumer<Shape> action) {
         ms.pushMatrix();
         {
-            if (scaling != 0) ms.scale(scaling);
-            ms.translate(offSet);
+            if (offSet != null) ms.translate(offSet);
+            if (scaling != null) ms.scale(scaling);
             action.accept(source);
         }
         ms.popMatrix();

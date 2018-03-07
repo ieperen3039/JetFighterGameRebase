@@ -152,9 +152,9 @@ public class Toolbox {
             System.out.println();
             Toolbox.printFrom(2, "Ending JVM");
             Thread.sleep(10);
-            System.err.println();
+            System.exit(1);
         } finally {
-            throw new RuntimeException();
+            throw new Error();
         }
     }
 
