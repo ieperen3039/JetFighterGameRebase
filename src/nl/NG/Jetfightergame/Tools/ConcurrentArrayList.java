@@ -77,16 +77,6 @@ public class ConcurrentArrayList<T> implements Collection<T> {
         }
     }
 
-    public T[] asArray() {
-        readLock.lock();
-        try {
-            //noinspection unchecked
-            return (T[]) list.toArray();
-        } finally {
-            readLock.unlock();
-        }
-    }
-
     @Override
     public boolean add(T t) {
         writeLock.lock();
