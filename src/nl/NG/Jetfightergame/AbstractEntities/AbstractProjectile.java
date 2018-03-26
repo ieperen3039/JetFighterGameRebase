@@ -79,6 +79,11 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
         timeToLive = 0;
     }
 
+    @Override
+    public float getRange() {
+        return 0;
+    }
+
     /**
      * react on projectile collision impact, or simply explode if {@code other} is null
      * @param other collidee; the one that is collided upon; the thing that this thing hit

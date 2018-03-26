@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -24,6 +25,7 @@ public class StaticObject implements Touchable {
     private final Color4f color;
     private final Vector offSet;
     private final Vector3f scaling;
+    private final int thisID;
 
     public StaticObject(Shape source, Material material, Color4f color, float scaling) {
         this(source, material, color, DirVector.zeroVector(), new Vector3f(scaling, scaling, scaling));
@@ -34,6 +36,7 @@ public class StaticObject implements Touchable {
     }
 
     public StaticObject(Shape source, Material material, Color4f color, Vector offSet, Vector3f scaling) {
+        this.thisID = Settings.entityIDNumber++;
         this.source = source;
         this.material = material;
         this.color = color;
@@ -70,5 +73,10 @@ public class StaticObject implements Touchable {
     @Override
     public RigidBody getFinalCollision(float deltaTime) {
         return new RigidBody(this);
+    }
+
+    @Override
+    public int idNumber() {
+        return thisID;
     }
 }

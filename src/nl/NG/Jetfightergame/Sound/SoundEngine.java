@@ -63,6 +63,8 @@ public class SoundEngine {
 
         setListenerPosition(PosVector.zeroVector(), DirVector.zeroVector());
         setListenerOrientation(DirVector.xVector(), DirVector.yVector());
+
+        checkALError();
     }
 
     /**

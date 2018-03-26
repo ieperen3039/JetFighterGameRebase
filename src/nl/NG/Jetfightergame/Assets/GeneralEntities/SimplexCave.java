@@ -41,6 +41,7 @@ public class SimplexCave implements Touchable {
 
     private Shape topGrid;
     private Shape bottomGrid;
+    private final int thisID;
 
     public SimplexCave() {
         OpenSimplexNoise noiseBottom = new OpenSimplexNoise(SEED);
@@ -50,6 +51,7 @@ public class SimplexCave implements Touchable {
         bottomGrid = buildTerrain(noiseBottom, 0.3f, ROWS, PLANE_SIZE);
 
         collisions = new ArrayList<>();
+        thisID = Settings.entityIDNumber++;
     }
 
     /**
@@ -124,6 +126,11 @@ public class SimplexCave implements Touchable {
         collisions.forEach(a -> {});
         collisions.clear();
         return new RigidBody(this);
+    }
+
+    @Override
+    public int idNumber() {
+        return thisID;
     }
 
     @Override

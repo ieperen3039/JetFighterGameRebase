@@ -82,8 +82,20 @@ public interface MovingEntity extends Touchable {
     float getMass();
 
     /**
-     * @return a cooy of the position of the center of mass of this object in wolrd-space
+     * @return a copy of the position of the center of mass of this object in wolrd-space
      */
     PosVector getPosition();
+
+    /**
+     * distance of the farthest vertex of this object
+     * @return the vertex P for which P.to(getPosition()) is maximized in world-space
+     */
+    float getRange();
+
+    /**
+     * @return the position of this object in the next timestamp. This value is bound to change after calls to
+     * {@link nl.NG.Jetfightergame.Engine.GameState.CollisionDetection}
+     */
+    PosVector getExpectedPosition();
 }
 

@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Scenarios.*;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
@@ -14,6 +15,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Geert van Ieperen
@@ -59,7 +61,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     public void init() {
-        instance = new MissionSnake(player, time);
+        instance = new CollisionLaboratory(player, time);
         instance.buildScene();
     }
 
@@ -151,18 +153,23 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         }
 
         @Override
-        protected DirVector entityNetforce(MovingEntity entity) {
+        protected Collection<Touchable> createWorld() {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        protected Collection<MovingEntity> setEntities() {
+            return Collections.singletonList(player.jet());
+        }
+
+        @Override
+        public DirVector entityNetforce(MovingEntity entity) {
             return DirVector.zeroVector();
         }
 
         @Override
         public Color4f fogColor(){
             return new Color4f(0.0f, 0.0f, 0.0f, 0.0f);
-        }
-
-        @Override
-        public void buildScene() {
-            dynamicEntities.add(player.jet());
         }
     }
 }

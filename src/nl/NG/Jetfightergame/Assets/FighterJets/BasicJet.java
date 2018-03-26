@@ -66,4 +66,8 @@ public class BasicJet extends AbstractJet {
         return relativeInterpolatedDirection(new DirVector(3, 0, 1));
     }
 
+    @Override
+    public float getRange() {
+        return 6f * scale;
+    }
 }

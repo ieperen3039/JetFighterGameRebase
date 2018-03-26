@@ -70,8 +70,7 @@ public enum Material {
     WOOD(
             new Color4f(0.5f, 0.27f, 0.14f, 1),
             new Color4f(0.02f, 0.04f, 0.06f, 1),
-            new Color4f(0.75f, 0.375f, 0.20f, 1),
-            0.5f
+            new Color4f(0.75f, 0.375f, 0.20f, 1), 0.5f
     );
 
     /**

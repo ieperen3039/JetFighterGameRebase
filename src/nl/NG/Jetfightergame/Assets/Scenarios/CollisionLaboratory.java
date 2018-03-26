@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
@@ -9,12 +10,15 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings;
-import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.Quaternionf;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Geert van Ieperen
@@ -25,7 +29,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBESIZE = 1f;
     private static final float CUBEMASS = 10f;
     private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 8;
+    private static final int NR_OF_CUBES = 2*2*2;
 
     private final int labSize;
     private final int nrOfCubes;
@@ -39,36 +43,42 @@ public class CollisionLaboratory extends GameState {
         super(player, time);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
-        speeds = labSize / 5f;
+        this.speeds = labSize / 5f;
+
+        Settings.SPECTATOR_MODE = true;
+        time.setGameTimeMultiplier(0.2f);
     }
 
     @Override
-    public void buildScene() {
-        Settings.SPECTATOR_MODE = true;
-        player.jet().set();
+    protected Collection<Touchable> createWorld() {
+//        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.3f)));
+        return Collections.singletonList(new StaticObject(GeneralShapes.makeInverseCube(0), Material.ROUGH, Color4f.ORANGE, labSize));
+    }
 
+    @Override
+    protected Collection<MovingEntity> setEntities() {
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
-        staticEntities.add(new StaticObject(GeneralShapes.makeInverseCube(0), Material.ROUGH, Color4f.ORANGE, labSize));
-
         int remainingCubes = nrOfCubes;
+
+        Collection<MovingEntity> cubes = new ArrayList<>(nrOfCubes);
 
         cubing:
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 for (int z = 0; z < gridSize; z++) {
-                    makeCube(labSize, speeds, interSpace, x, y, z);
+                    cubes.add(makeCube(labSize, speeds, interSpace, x, y, z));
 
                     if (--remainingCubes <= 0) break cubing;
                 }
             }
         }
 
-        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.7f)));
+        return cubes;
     }
 
-    private void makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
+    private FallingCube makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
         final PosVector pos = new PosVector(
                 -labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace)
         );
@@ -82,13 +92,14 @@ public class CollisionLaboratory extends GameState {
                 random, new Quaternionf(), getTimer()
         );
         cube.addRandomRotation(0.2f);
-        dynamicEntities.add(cube);
+
+        return cube;
     }
 
     @SuppressWarnings("ConstantConditions")
     @Override
-    protected DirVector entityNetforce(MovingEntity entity) {
-        final int version = 0;
+    public DirVector entityNetforce(MovingEntity entity) {
+        final int version = 1;
 
         switch (version){
             case 1:

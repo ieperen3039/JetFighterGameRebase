@@ -14,7 +14,7 @@ public final class Settings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static final short TARGET_TPS = 10;
+    public static final short TARGET_TPS = 20;
     public static final short TARGET_FPS = 60;
 
     /** engine settings */
@@ -26,7 +26,7 @@ public final class Settings {
 
     /** collision settings */
     public static final short COLLISION_RESPONSE_LEVEL = 0;
-    public static final int MAX_COLLISION_ITERATIONS = 500/TARGET_TPS;
+    public static final int MAX_COLLISION_ITERATIONS = 1000/TARGET_TPS;
     public static boolean FIXED_DELTA_TIME = false;
 
     /** miscellaneous */
@@ -67,4 +67,5 @@ public final class Settings {
     public static final int MAX_POINT_LIGHTS = 10;
     public static boolean SPECTATOR_MODE = false;
 
+    public static int entityIDNumber = 0;
 }

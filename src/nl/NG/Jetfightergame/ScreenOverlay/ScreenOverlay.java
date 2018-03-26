@@ -168,20 +168,24 @@ public final class ScreenOverlay {
         private final int yPrintRoll = PRINTROLLSIZE + 5;
         private final int xPrintRoll = 5;
         private int printRollEntry = 0;
+        /** maps a position in world-space to a position on the screen */
+        private final Function<PosVector, Vector2f> mapper;
 
         public final int windowWidth;
         public final int windowHeight;
-        private final Function<PosVector, Vector2f> mapper;
+        public final PosVector cameraPosition;
 
         /**
          * @param windowWidth width of this hud display iteration
          * @param windowHeight height of ''
          * @param mapper maps a world-space vector to relative position ([-1, 1], [-1, 1]) in the view.
+         * @param cameraPosition
          */
-        public Painter(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper) {
+        public Painter(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
             this.windowWidth = windowWidth;
             this.windowHeight = windowHeight;
             this.mapper = mapper;
+            this.cameraPosition = cameraPosition;
         }
 
         /**
@@ -366,11 +370,11 @@ public final class ScreenOverlay {
         }
     }
 
-    public static synchronized void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper) {
+    public static synchronized void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
 
-        Painter vanGogh = new Painter(windowWidth, windowHeight, mapper);
+        Painter vanGogh = new Painter(windowWidth, windowHeight, mapper, cameraPosition);
         // Draw the right drawhandlers
         if (isMenuMode()) {
             menuBufferLock.lock();

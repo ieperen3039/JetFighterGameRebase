@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
@@ -16,6 +17,7 @@ import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Geert van Ieperen
@@ -31,11 +33,15 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    public void buildScene() {
+    protected Collection<Touchable> createWorld() {
+        return Collections.singleton(new StaticObject(GeneralShapes.makeInverseCube(0), Material.ROUGH, Color4f.ORANGE, LAB_SIZE));
+    }
+
+    @Override
+    protected Collection<MovingEntity> setEntities() {
         player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
+        Collection<MovingEntity> dynamicEntities = new ArrayList<>();
         dynamicEntities.add(player.jet());
-//        staticEntities.add(new SimplexCave());
-        staticEntities.add(new StaticObject(GeneralShapes.makeInverseCube(0), Material.ROUGH, Color4f.ORANGE, LAB_SIZE));
 
         // for x = -1 and x = 1
         for (int x = -1; x < 2; x += 2) {
@@ -54,6 +60,7 @@ public class PlayerJetLaboratory extends GameState {
                 }
             }
         }
+        return dynamicEntities;
     }
 
     @Override
@@ -63,7 +70,7 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    protected DirVector entityNetforce(MovingEntity entity) {
+    public DirVector entityNetforce(MovingEntity entity) {
         return DirVector.zeroVector();
     }
 

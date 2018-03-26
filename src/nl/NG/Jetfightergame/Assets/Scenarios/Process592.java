@@ -184,7 +184,7 @@ public class Process592 implements Environment {
 
     @Override
     public HUDTargetable getHUDTarget(MovingEntity entity) {
-        return new EnemyFlyingTarget(entity, PosVector::zeroVector);
+        return new EnemyFlyingTarget(entity);
     }
 
     /**

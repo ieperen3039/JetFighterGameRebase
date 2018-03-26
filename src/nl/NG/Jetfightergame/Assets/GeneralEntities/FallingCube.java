@@ -20,6 +20,8 @@ import java.util.function.Consumer;
  */
 public class FallingCube extends GameEntity {
 
+    public static final float SQRT3 = (float) Math.sqrt(3);
+
     /**
      * a cube that can be moved around, and has all physic properties
      *
@@ -61,7 +63,7 @@ public class FallingCube extends GameEntity {
 
     @Override
     public String toString() {
-        return "FallingCube";
+        return "FallingCube " + idNumber();
     }
 
     @Override
@@ -72,5 +74,10 @@ public class FallingCube extends GameEntity {
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
         action.accept(GeneralShapes.CUBE);
+    }
+
+    @Override
+    public float getRange() {
+        return scale * SQRT3;
     }
 }

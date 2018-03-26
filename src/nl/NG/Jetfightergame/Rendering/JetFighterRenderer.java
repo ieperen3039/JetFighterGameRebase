@@ -93,7 +93,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         }
 
         // scene lighting
-        gl.setLight(activeCamera.getEye(), new Color4f(1, 1, 1, 0.5f));
+        gl.setLight(activeCamera.getEye(), Color4f.GREY);
         gameState.setLights(gl);
         Toolbox.checkGLError();
 
@@ -119,7 +119,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         shaderManager.unbind();
 
         // HUD / menu
-        ScreenOverlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen);
+        ScreenOverlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen, activeCamera.getEye());
 
         // update window
         window.update();

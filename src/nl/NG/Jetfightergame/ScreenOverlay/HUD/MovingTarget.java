@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.Vector2i;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author Geert van Ieperen
@@ -18,16 +17,14 @@ import java.util.function.Supplier;
 public abstract class MovingTarget implements HUDTargetable {
     private final MovingEntity subject;
     private Consumer<ScreenOverlay.Painter> visual;
-    private Supplier<PosVector> eye;
 
     /**
      * create a targeting wrapper for the HUD to target entities.
      * @param subject the entity aimed at
-     * @param eye the camera of the player
+     *
      */
-    protected MovingTarget(MovingEntity subject, Supplier<PosVector> eye) {
+    protected MovingTarget(MovingEntity subject) {
         this.subject = subject;
-        this.eye = eye;
 
         visual = this::draw;
         ScreenOverlay.addHudItem(visual);
@@ -40,15 +37,15 @@ public abstract class MovingTarget implements HUDTargetable {
         return hud.positionOnScreen(subject.interpolatedPosition());
     }
 
-    protected int iconSize(){
-        float dist = distance();
+    protected int iconSize(PosVector cameraPos){
+        float dist = distance(cameraPos);
         if (dist < 25) return HUDStyleSettings.ICON_BIG;
         else if (dist < 100) return HUDStyleSettings.ICON_MED;
         else return HUDStyleSettings.ICON_SMALL;
     }
 
-    protected float distance(){
-        Vector distance = eye.get().to(subject.interpolatedPosition(), new DirVector());
+    protected float distance(PosVector cameraPos){
+        Vector distance = cameraPos.to(subject.interpolatedPosition(), new DirVector());
         return distance.length();
     }
 

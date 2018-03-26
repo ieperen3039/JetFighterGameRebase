@@ -126,6 +126,8 @@ public final class Resources {
     }
 
     public static boolean loadOggData(int dataID, File audioData) {
+        Toolbox.checkALError();
+
         OggData oggFile;
 
         try {

@@ -26,6 +26,8 @@ import java.util.function.Consumer;
  */
 public abstract class GameEntity implements MovingEntity{
 
+    private final int thisID;
+
     /** worldspace position in m */
     protected PosVector position;
     /** worldspace movement in m/s */
@@ -56,7 +58,7 @@ public abstract class GameEntity implements MovingEntity{
     private final GameTimer gameTimer;
 
     /** worldspace / localspace */
-    private float scale;
+    protected final float scale;
     private Material surfaceMaterial;
     protected final float mass;
 
@@ -75,6 +77,7 @@ public abstract class GameEntity implements MovingEntity{
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
             Quaternionf initialRotation, GameTimer gameTimer
     ) {
+        this.thisID = Settings.entityIDNumber++;
         this.position = new PosVector(initialPosition);
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
@@ -229,6 +232,11 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     @Override
+    public int idNumber() {
+        return thisID;
+    }
+
+    @Override
     public void applyCollision(RigidBody newState, float deltaTime, float currentTime){
         rollSpeed = newState.rollSpeed();
         pitchSpeed = newState.pitchSpeed();
@@ -350,6 +358,11 @@ public abstract class GameEntity implements MovingEntity{
      */
     public PosVector getPosition() {
         return new PosVector(position);
+    }
+
+    @Override
+    public PosVector getExpectedPosition() {
+        return new PosVector(extraPosition);
     }
 
     @Override

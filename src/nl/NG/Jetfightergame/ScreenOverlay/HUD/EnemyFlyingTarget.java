@@ -3,10 +3,7 @@ package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
-import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector2i;
-
-import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.*;
 import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.LUCIDA_CONSOLE;
@@ -22,10 +19,9 @@ public class EnemyFlyingTarget extends MovingTarget {
      * create a targeting wrapper for the HUD to target entities.
      *
      * @param subject the entity aimed at
-     * @param cameraPosition  the position of the camera
      */
-    public EnemyFlyingTarget(MovingEntity subject, Supplier<PosVector> cameraPosition) {
-        super(subject, cameraPosition);
+    public EnemyFlyingTarget(MovingEntity subject) {
+        super(subject);
     }
 
     @Override
@@ -33,7 +29,7 @@ public class EnemyFlyingTarget extends MovingTarget {
         Vector2i pos = entityPosition(hud);
         if (pos == null) return;
 
-        int size = iconSize();
+        int size = iconSize(hud.cameraPosition);
         final int halfSize = size / 2;
         hud.rectangle(pos.x() - halfSize, pos.y() - halfSize, size, size, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);
 
@@ -43,7 +39,7 @@ public class EnemyFlyingTarget extends MovingTarget {
 
         write(hud, pos, "TGT", Color4f.RED);
         write(hud, pos, targetName(), HUD_COLOR);
-        write(hud, pos, distance(), HUD_COLOR);
+        write(hud, pos, distance(hud.cameraPosition), HUD_COLOR);
     }
 
     private static void write(ScreenOverlay.Painter hud, Vector2i pos, Object text, Color4f color) {

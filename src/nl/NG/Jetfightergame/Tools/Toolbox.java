@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -8,8 +9,10 @@ import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector4f;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -18,7 +21,7 @@ import static org.lwjgl.opengl.GL11.*;
  * Created by Geert van Ieperen on 31-1-2017.
  * a class with various tools
  */
-public class Toolbox {
+public final class Toolbox {
 
     public static final Vector4f COLOR_WHITE = new Vector4f(1, 1, 1, 1);
     public static final Vector4f COLOR_BLACK = new Vector4f(0, 0, 0, 1);
@@ -152,6 +155,7 @@ public class Toolbox {
             System.out.println();
             Toolbox.printFrom(2, "Ending JVM");
             Thread.sleep(10);
+            new Exception().printStackTrace();
             System.exit(1);
         } finally {
             throw new Error();
@@ -160,6 +164,87 @@ public class Toolbox {
 
     public static boolean almostZero(float number) {
         return (((number + ROUNDINGERROR) >= 0.0f) && ((number - ROUNDINGERROR) <= 0.0f));
+    }
+
+    /**
+     * performs an incremental insertion-sort on (preferably nearly-sorted) array entities
+     * @param items the array to sort
+     * @param map maps a moving source to the value to be sorted upon
+     * @modifies items
+     */
+    public static <Type> void insertionSort(Type[] items, Function<Type, Float> map){
+        // iterate incrementally over the array
+        for (int head = 1; head < items.length; head++) {
+            Type subject = items[head];
+
+            // decrement for the right position
+            int empty = head;
+
+            while (empty > 0) {
+                Type target = items[empty - 1];
+
+                if (map.apply(target) > map.apply(subject)) {
+                    items[empty] = target;
+                    empty--;
+                }
+                else break;
+            }
+            items[empty] = subject;
+        }
+    }
+
+    /**
+     * merges a joining array into this array, and removes entities that are overdue
+     * @param host the sorted largest of the arrays to merge, entities in this array will be checked for relevance.
+     * @param join the sorted other array to merge
+     * @param map maps a moving source to the value to be sorted upon
+     * @return a sorted array of living entities from both host and join combined.
+     */
+    public static <Type> Type[] mergeAndClean(Type[] host, Type[] join, Function<Type, Float> map){
+        Type[] results = Arrays.copyOf(host, host.length + join.length);
+
+        int hIndex = 0;
+        int jIndex = 0;
+
+        // we let the final number of iterations i be available after the loop ends
+        int i = 0;
+
+        // while loop, so i++ indexing is required
+        while (i < results.length) {
+            // all host items must be checked for isDead, so first see if there are any left
+            if (hIndex >= host.length){
+                results[i++] = join[jIndex++];
+
+            } else {
+                Type hostItem = host[hIndex];
+
+                // check whether it is alive
+                if ((hostItem instanceof MortalEntity) && ((MortalEntity) hostItem).isDead()) {
+                    // skip adding this source to the resulting array, effectively deleting it.
+                    hIndex++;
+
+                } else if (jIndex >= join.length) {
+                    results[i++] = hostItem;
+                    hIndex++;
+
+                } else {
+                    Type joinItem = join[jIndex];
+
+                    // select the smallest
+                    if (map.apply(hostItem) < map.apply(joinItem)) {
+                        results[i++] = hostItem;
+                        hIndex++;
+
+                    } else {
+                        results[i++] = joinItem;
+                        jIndex++;
+                    }
+                }
+            }
+        }
+
+        // loop automatically ends after at most (i = alpha.length + beta.length) iterations
+        return Arrays.copyOf(results, i);
     }
 
     /**
