@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
+import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
@@ -26,6 +27,10 @@ import java.util.function.Consumer;
  */
 public abstract class GameEntity implements MovingEntity{
 
+    /**
+     * particles and new entities should be passed to this object
+     */
+    protected final EntityManager entityDeposit;
     private final int thisID;
 
     /** worldspace position in m */
@@ -75,7 +80,8 @@ public abstract class GameEntity implements MovingEntity{
      */
     public GameEntity(
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-            Quaternionf initialRotation, GameTimer gameTimer
+            Quaternionf initialRotation, GameTimer gameTimer,
+            EntityManager entityDeposit
     ) {
         this.thisID = Settings.entityIDNumber++;
         this.position = new PosVector(initialPosition);
@@ -89,6 +95,7 @@ public abstract class GameEntity implements MovingEntity{
         this.scale = scale;
         this.mass = mass;
         this.gameTimer = gameTimer;
+        this.entityDeposit = entityDeposit;
 
         yawSpeed = 0f;
         pitchSpeed = 0f;
@@ -418,8 +425,8 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     /**
-     * react on collision from projectile, with regard to damage
-     * @param impact hitPosition of the incoming projectile
+     * react on collision
+     * @param impact hitPosition of the incoming object
      * @param power magnitude of the impact
      */
     public abstract void impact(PosVector impact, float power);

@@ -60,10 +60,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * the number of hitpoints cannot exceed this number
      */
     private final int maxHeath;
-    /**
-     * particles and new entities should be passed to this object
-     */
-    private final EntityManager entityDeposit;
 
     protected Controller input;
     private DirVector forward;
@@ -106,7 +102,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
             MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, EntityManager entityDeposit
     ) {
-        super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer);
+        super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer, entityDeposit);
 
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
@@ -123,7 +119,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         this.gunBeta = gunBeta;
         this.hitPoints = hitPoints;
         this.maxHeath = hitPoints;
-        this.entityDeposit = entityDeposit;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);

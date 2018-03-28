@@ -149,13 +149,13 @@ public class CollisionDetection {
         CollisionEntity[] entityArray = entityArray();
         int nOfEntities = entityArray.length;
 
-        testSort();
         // initialize id values to correspond to the array
         for (int i = 0; i < nOfEntities; i++) {
             entityArray[i].setId(i);
         }
 
-        // this matrix is indexed using the entity id values
+        // this matrix is indexed using the entity id values, with i > j
+        // if (adjacencyMatrix[i][j] == 2) then entityArray[i] and entityArray[j] have 2 coordinates with coinciding intervals
         int[][] adjacencyMatrix = new int[nOfEntities][nOfEntities];
 
         checkOverlap(adjacencyMatrix, xLowerSorted, CollisionEntity::xLower, CollisionEntity::xUpper);
@@ -168,15 +168,17 @@ public class CollisionDetection {
 
         // select all source pairs that are 'close' in three coordinates
         for (int i = 0; i < nOfEntities; i++) {
-            for (int j = i + 1; j < nOfEntities; j++) {
-                // count how often i hits j and how often j hits i. These are calculated one-side per coordinate, but unordered
-                int intervalAgreements = adjacencyMatrix[i][j] + adjacencyMatrix[j][i];
+            for (int j = i - 1; j > 0; j--) {
+                // count how often i hits j and how often j hits i.
+                int intervalAgreements = adjacencyMatrix[i][j];
 
                 if (intervalAgreements >= 3){
                     Pair<Touchable, MovingEntity> newPair = new Pair<>(entityArray[i].entity, entityArray[j].entity);
                     allEntityPairs.add(newPair);
-                    debugs.add(new EnemyFlyingTarget(entityArray[i].entity));
-                    debugs.add(new EnemyFlyingTarget(entityArray[j].entity));
+                    if (DEBUG) {
+                        debugs.add(new EnemyFlyingTarget(entityArray[i].entity));
+                        debugs.add(new EnemyFlyingTarget(entityArray[j].entity));
+                    }
                 }
             }
         }
@@ -202,7 +204,7 @@ public class CollisionDetection {
     }
 
     public void testSort() {
-        Toolbox.printSpamless("testSort", Toolbox.getCallingMethod(1) + " Testing Sorting");
+        Toolbox.printSpamless("testSort", "\n" + Toolbox.getCallingMethod(1) + " Testing Sorting");
         float init = -Float.MAX_VALUE;
         for (int i = 0; i < xLowerSorted.length; i++) {
             CollisionEntity collisionEntity = xLowerSorted[i];
@@ -246,11 +248,11 @@ public class CollisionDetection {
     /**
      * iterating over xLowerSorted, increase the value of all pairs that have coinciding intervals
      * @param adjacencyMatrix the matrix where the pairs are marked using entity id's
-     * @param sortedArray an array sorted using the lower mapping
+     * @param sortedArray an array sorted increasingly on the lower mapping
      * @param lower a mapping that maps to the lower value of the interval of the entity
      * @param upper a mapping that maps an entity to its upper interval
      */
-    private void checkOverlap(int[][] adjacencyMatrix, CollisionEntity[] sortedArray, Function<CollisionEntity, Float> lower, Function<CollisionEntity, Float> upper) {
+    protected void checkOverlap(int[][] adjacencyMatrix, CollisionEntity[] sortedArray, Function<CollisionEntity, Float> lower, Function<CollisionEntity, Float> upper) {
         // INVARIANT:
         // all items i where i.lower < source.lower, are already added to the matrix
 
@@ -261,11 +263,18 @@ public class CollisionDetection {
             // increases the checks count of every source with index less than i, with position less than the given minimum
             int j = i + 1;
             CollisionEntity target = sortedArray[j++];
+
+            // while the lowerbound of target is less than the upperbound of our subject
             while (lower.apply(target) <= upper.apply(subject)) {
 
-                adjacencyMatrix[subject.id][target.id]++;
-                if (j == nOfItems) break;
+                // add one to the number of coinciding coordinates
+                if (subject.id > target.id) {
+                    adjacencyMatrix[subject.id][target.id]++;
+                } else {
+                    adjacencyMatrix[target.id][subject.id]++;
+                }
 
+                if (j == nOfItems) break;
                 target = sortedArray[j++];
             }
         }
@@ -276,7 +285,6 @@ public class CollisionDetection {
      * @param newEntities a set of new entities to be added to the collision detection. The set is unmodified.
      */
     public void prepareCollision(Collection<MovingEntity> newEntities) {
-        int nOfEntities = entityArray().length;
         int nOfNewEntities = newEntities.size();
 
         for (CollisionEntity entity : entityArray()) {
@@ -377,7 +385,7 @@ public class CollisionDetection {
         ScreenOverlay.removeHudItem(collisionCounter);
     }
 
-    private class CollisionEntity {
+    protected class CollisionEntity {
         public final MovingEntity entity;
         public int id;
 
@@ -403,28 +411,28 @@ public class CollisionDetection {
             this.id = id;
         }
 
-        private float zUpper() {
-            return z + range;
+        public float xUpper() {
+            return x + range;
         }
 
-        private float yUpper() {
+        public float yUpper() {
             return y + range;
         }
 
-        private float xUpper() {
+        public float zUpper() {
             return z + range;
         }
 
-        private float zLower() {
-            return z - range;
+        public float xLower() {
+            return x - range;
         }
 
-        private float yLower() {
+        public float yLower() {
             return y - range;
         }
 
-        private float xLower() {
-            return x - range;
+        public float zLower() {
+            return z - range;
         }
     }
 }

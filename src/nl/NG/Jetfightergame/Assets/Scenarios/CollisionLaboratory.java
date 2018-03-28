@@ -29,7 +29,7 @@ public class CollisionLaboratory extends GameState {
     private static final float CUBESIZE = 1f;
     private static final float CUBEMASS = 10f;
     private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 2*2*2;
+    private static final int NR_OF_CUBES = 2 * 2 * 2;
 
     private final int labSize;
     private final int nrOfCubes;
@@ -43,10 +43,10 @@ public class CollisionLaboratory extends GameState {
         super(player, time);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
-        this.speeds = labSize / 5f;
+        this.speeds = labSize / 3f;
 
         Settings.SPECTATOR_MODE = true;
-        time.setGameTimeMultiplier(0.2f);
+        time.setGameTimeMultiplier(Settings.TARGET_FPS/60f);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class CollisionLaboratory extends GameState {
                 pos.scale(0.8f, pos).toPosVector(),
                 random, new Quaternionf(), getTimer()
         );
-        cube.addRandomRotation(0.2f);
+        cube.addRandomRotation(0.4f);
 
         return cube;
     }
@@ -99,7 +99,8 @@ public class CollisionLaboratory extends GameState {
     @SuppressWarnings("ConstantConditions")
     @Override
     public DirVector entityNetforce(MovingEntity entity) {
-        final int version = 1;
+
+        final int version = 3;
 
         switch (version){
             case 1:

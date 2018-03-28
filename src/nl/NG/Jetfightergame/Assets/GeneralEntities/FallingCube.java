@@ -20,7 +20,7 @@ import java.util.function.Consumer;
  */
 public class FallingCube extends GameEntity {
 
-    public static final float SQRT3 = (float) Math.sqrt(3);
+    private float range;
 
     /**
      * a cube that can be moved around, and has all physic properties
@@ -38,6 +38,7 @@ public class FallingCube extends GameEntity {
     public FallingCube(Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
                        DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer) {
         super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer);
+        this.range = (float) Math.cbrt(3 * scale * scale);
     }
 
     /**
@@ -78,6 +79,6 @@ public class FallingCube extends GameEntity {
 
     @Override
     public float getRange() {
-        return scale * SQRT3;
+        return range;
     }
 }

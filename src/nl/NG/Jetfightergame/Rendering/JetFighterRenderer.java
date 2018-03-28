@@ -32,10 +32,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
-
     private ShaderManager shaderManager;
-
     private Environment gameState;
+
+    private final String sessionName;
     private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
@@ -65,6 +65,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
         new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera).activate();
+
+        SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");
+        sessionName = ft.format(new Date());
     }
 
     @Override
@@ -124,9 +127,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // update window
         window.update();
 
-        if (Settings.SAVE_PLAYBACK) {
-            SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");
-            window.printScreen("session_" + ft.format(new Date()) + "/" + frameNumber);
+        if (Settings.SAVE_PLAYBACK && !engine.isPaused()) {
+            window.printScreen("session_" + sessionName + "/" + frameNumber);
         }
 
         // update stop-condition
