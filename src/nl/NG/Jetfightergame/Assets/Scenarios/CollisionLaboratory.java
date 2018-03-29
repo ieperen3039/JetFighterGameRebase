@@ -28,8 +28,8 @@ public class CollisionLaboratory extends GameState {
 
     private static final float CUBESIZE = 1f;
     private static final float CUBEMASS = 10f;
-    private static final int LAB_SIZE = 10;
-    private static final int NR_OF_CUBES = 2 * 2 * 2;
+    private static final int LAB_SIZE = 20;
+    private static final int NR_OF_CUBES = 4*4*4;
 
     private final int labSize;
     private final int nrOfCubes;
@@ -89,7 +89,7 @@ public class CollisionLaboratory extends GameState {
         FallingCube cube = new FallingCube(
                 Material.SILVER, CUBEMASS, CUBESIZE,
                 pos.scale(0.8f, pos).toPosVector(),
-                random, new Quaternionf(), getTimer()
+                random, new Quaternionf(), getTimer(), this
         );
         cube.addRandomRotation(0.4f);
 

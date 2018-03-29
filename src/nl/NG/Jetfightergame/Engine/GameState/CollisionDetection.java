@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -176,8 +175,8 @@ public class CollisionDetection {
                     Pair<Touchable, MovingEntity> newPair = new Pair<>(entityArray[i].entity, entityArray[j].entity);
                     allEntityPairs.add(newPair);
                     if (DEBUG) {
-                        debugs.add(new EnemyFlyingTarget(entityArray[i].entity));
-                        debugs.add(new EnemyFlyingTarget(entityArray[j].entity));
+//                        debugs.add(new EnemyFlyingTarget(entityArray[i].entity));
+//                        debugs.add(new EnemyFlyingTarget(entityArray[j].entity));
                     }
                 }
             }

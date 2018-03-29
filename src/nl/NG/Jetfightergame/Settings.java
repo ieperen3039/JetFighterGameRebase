@@ -14,19 +14,19 @@ public final class Settings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static final short TARGET_TPS = 20;
+    public static final short TARGET_TPS = 10;
     public static final short TARGET_FPS = 60;
 
     /** engine settings */
     // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
-    public static final float RENDER_DELAY = 3f/TARGET_TPS;
+    public static final float RENDER_DELAY = 5f/TARGET_TPS;
     public static final int INTERPOLATION_QUEUE_SIZE = 10;
     public static float HIGHLIGHT_LINE_WIDTH = 1f;
     public static boolean SAVE_PLAYBACK = false;
 
     /** collision settings */
     public static final short COLLISION_RESPONSE_LEVEL = 0;
-    public static final int MAX_COLLISION_ITERATIONS = 1000/TARGET_TPS;
+    public static final int MAX_COLLISION_ITERATIONS = 250/TARGET_TPS;
     public static boolean FIXED_DELTA_TIME = false;
 
     /** miscellaneous */

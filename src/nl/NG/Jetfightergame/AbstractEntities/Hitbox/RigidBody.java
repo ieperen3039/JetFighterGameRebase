@@ -149,6 +149,7 @@ public class RigidBody {
 
     private void collisionResponseSimple() {
         if (velocity.dot(contactNormal) < 0) velocity.reflect(contactNormal);
+
         Vector3f angularVelChange  = contactNormal.cross(hitPosition, new Vector3f());
         invInertTensor.transform(angularVelChange);
         rotationSpeedVector.add(angularVelChange);

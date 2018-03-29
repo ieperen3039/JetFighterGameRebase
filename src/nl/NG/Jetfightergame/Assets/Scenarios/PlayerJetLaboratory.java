@@ -52,7 +52,7 @@ public class PlayerJetLaboratory extends GameState {
                     final FallingCube cube = new FallingCube(
                             Material.SILVER, 500, LAB_SIZE/10,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
-                            new DirVector(), new Quaternionf(), getTimer()
+                            new DirVector(), new Quaternionf(), getTimer(), this
                     );
 
                     dynamicEntities.add(cube);
@@ -62,6 +62,8 @@ public class PlayerJetLaboratory extends GameState {
         }
         return dynamicEntities;
     }
+
+
 
     @Override
     public void cleanUp() {

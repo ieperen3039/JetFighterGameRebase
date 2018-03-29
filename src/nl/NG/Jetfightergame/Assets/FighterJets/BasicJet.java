@@ -31,6 +31,7 @@ public class BasicJet extends AbstractJet {
     public static final float PITCH_POWER = 2f;
     public static final float ROLL_POWER = 2f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.002f;
+    private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
     private static final MachineGun GUN = new MachineGun(0.1f);
 
     private Shape shape;
@@ -68,6 +69,6 @@ public class BasicJet extends AbstractJet {
 
     @Override
     public float getRange() {
-        return 6f * scale;
+        return range;
     }
 }

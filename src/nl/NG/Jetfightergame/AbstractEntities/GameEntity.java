@@ -132,7 +132,7 @@ public abstract class GameEntity implements MovingEntity{
      * This method also considers the scaling of the vector; it can be used for relative positions
      * The returned direction is based on the gamestate, for rendering use {@link #relativeInterpolatedDirection(DirVector)}
      * @param relative a vector relative to this object
-     * @return a vector in {@code sm}'s frame of reference
+     * @return a vector in world-space
      */
     public DirVector relativeStateDirection(DirVector relative) {
         final DirVector[] axis = new DirVector[1];

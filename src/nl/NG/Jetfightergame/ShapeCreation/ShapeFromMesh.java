@@ -67,15 +67,15 @@ public class ShapeFromMesh implements Shape {
 
     private ShapeFromMesh(MeshParameters par, String name) {
         this(par.vertices, par.normals, par.faces);
-        Toolbox.print("loaded mesh " + name + ": [Faces: " + par.faces.size() + ", vertices: " + par.vertices.size() + "]");
+        if (Settings.DEBUG) Toolbox.print("loaded mesh " + name + ": [Faces: " + par.faces.size() + ", vertices: " + par.vertices.size() + "]");
     }
 
     /**
-     * create a mesh, and bind it to the GPU. the list of vertices is contained in this object and should not
+     * create a mesh, and bind it to the GPU. The list of vertices is contained in this object and should not
      * externally be modified
      *
      * @param vertices a list of vertices, where preferably every vertex occurs only once.
-     * @param normals  a list of normals, where preferably every normal occurs only once
+     * @param normals  a list of normals
      * @param faces    a collection of indices mapping to 3 vertices and corresponding normals
      */
     public ShapeFromMesh(List<PosVector> vertices, List<DirVector> normals, List<Mesh.Face> faces) {

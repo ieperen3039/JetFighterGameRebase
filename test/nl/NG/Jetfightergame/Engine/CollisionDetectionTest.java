@@ -113,12 +113,12 @@ public class CollisionDetectionTest extends CollisionDetection {
 
     private class TestEntity extends CollisionEntity {
         public TestEntity(float value, int id) {
-            super(new FallingCube(Material.SILVER, 10f, 1f, new PosVector(0, 0, value), DirVector.zeroVector(), new Quaternionf(), new GameTimer()));
+            super(new FallingCube(Material.SILVER, 10f, 1f, new PosVector(0, 0, value), DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null));
             setId(id);
         }
 
         public TestEntity(float x, float y, float z, int id) {
-            super(new FallingCube(Material.SILVER, 10f, 1f, new PosVector(x, y, z), DirVector.zeroVector(), new Quaternionf(), new GameTimer()));
+            super(new FallingCube(Material.SILVER, 10f, 1f, new PosVector(x, y, z), DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null));
             setId(id);
         }
     }

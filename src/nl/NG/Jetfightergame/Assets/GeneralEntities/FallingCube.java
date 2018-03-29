@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Assets.GeneralEntities;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
@@ -20,7 +21,7 @@ import java.util.function.Consumer;
  */
 public class FallingCube extends GameEntity {
 
-    private float range;
+    private final float range;
 
     /**
      * a cube that can be moved around, and has all physic properties
@@ -34,11 +35,12 @@ public class FallingCube extends GameEntity {
      * @param initialRotation the initial rotation of this object
      * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
      *                        return the interpolated position
+     * @param entityDeposit
      */
     public FallingCube(Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
-                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer) {
-        super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer);
-        this.range = (float) Math.cbrt(3 * scale * scale);
+                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityManager entityDeposit) {
+        super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer, entityDeposit);
+        this.range = (float) Math.sqrt(3 * scale * scale);
     }
 
     /**

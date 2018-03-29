@@ -63,7 +63,7 @@ public abstract class AbstractGameLoop extends Thread {
      * start the loop, running until {@link #stopLoop()} is called.
      */
     public void run() {
-        Toolbox.print(loopName + " enabled");
+        if (Settings.DEBUG) Toolbox.print(loopName + " enabled");
         Timer loopTimer = new Timer();
         float deltaTime = 0;
 
@@ -122,12 +122,12 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void unPause(){
         pauseBlock.countDown();
-        Toolbox.printFrom(2, "unpaused " + loopName);
+        if (Settings.DEBUG) Toolbox.printFrom(2, "unpaused " + loopName);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        Toolbox.printFrom(2, "paused " + loopName);
+        if (Settings.DEBUG) Toolbox.printFrom(2, "paused " + loopName);
     }
 
     /**

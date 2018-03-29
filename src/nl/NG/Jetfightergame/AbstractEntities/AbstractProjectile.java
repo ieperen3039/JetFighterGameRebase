@@ -24,7 +24,7 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
             Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, EntityManager particleDeposit
     ) {
-        super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, gameTimer);
+        super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, gameTimer, null);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
         this.particleDeposit = particleDeposit;
