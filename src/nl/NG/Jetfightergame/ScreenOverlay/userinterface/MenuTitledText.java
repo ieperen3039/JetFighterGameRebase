@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
+import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.TEXT_SIZE_LARGE;
 import static nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuTextField.TEXT_DIFF;
+import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.TEXT_SIZE_LARGE;
 
 /**
  * @author Geert van Ieperen

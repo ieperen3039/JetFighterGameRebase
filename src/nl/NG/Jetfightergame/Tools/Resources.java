@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.Sound.OggData;
 import nl.NG.Jetfightergame.Sound.WaveData;
 import org.lwjgl.openal.AL10;

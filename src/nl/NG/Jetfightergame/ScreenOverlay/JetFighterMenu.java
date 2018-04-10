@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 
 import java.util.function.Supplier;
 

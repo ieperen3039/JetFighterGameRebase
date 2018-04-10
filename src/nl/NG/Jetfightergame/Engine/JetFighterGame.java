@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;

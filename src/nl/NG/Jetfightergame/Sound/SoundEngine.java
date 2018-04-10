@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Sound;
 
 import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GLException;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;

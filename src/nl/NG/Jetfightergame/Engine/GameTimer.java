@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 
-import static nl.NG.Jetfightergame.Settings.RENDER_DELAY;
+import static nl.NG.Jetfightergame.Settings.Settings.RENDER_DELAY;
 
 /**
  * a class that harbors a gameloop timer and a render timer, upon retrieving either of these timers, they are updated

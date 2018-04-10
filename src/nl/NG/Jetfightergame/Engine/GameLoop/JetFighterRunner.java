@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.Engine.GameState.Environment;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 
 import java.util.function.Consumer;
 

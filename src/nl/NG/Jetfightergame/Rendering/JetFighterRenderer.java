@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 

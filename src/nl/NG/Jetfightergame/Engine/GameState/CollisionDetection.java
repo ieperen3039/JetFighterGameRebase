@@ -22,8 +22,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.NG.Jetfightergame.Settings.DEBUG;
-import static nl.NG.Jetfightergame.Settings.MAX_COLLISION_ITERATIONS;
+import static nl.NG.Jetfightergame.Settings.Settings.DEBUG;
+import static nl.NG.Jetfightergame.Settings.Settings.MAX_COLLISION_ITERATIONS;
 
 /**
  * @author Geert van Ieperen

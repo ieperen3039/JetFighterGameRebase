@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.ScreenOverlay;
+package nl.NG.Jetfightergame.Settings;
 
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 

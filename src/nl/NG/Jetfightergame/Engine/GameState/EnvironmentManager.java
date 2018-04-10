@@ -8,7 +8,7 @@ import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;

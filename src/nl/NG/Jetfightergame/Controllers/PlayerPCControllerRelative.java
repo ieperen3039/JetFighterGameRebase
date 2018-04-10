@@ -7,8 +7,8 @@ import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_COLOR;
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_STROKE_WIDTH;
-import static nl.NG.Jetfightergame.Settings.PITCH_MODIFIER;
-import static nl.NG.Jetfightergame.Settings.ROLL_MODIFIER;
+import static nl.NG.Jetfightergame.Settings.Settings.PITCH_MODIFIER;
+import static nl.NG.Jetfightergame.Settings.Settings.ROLL_MODIFIER;
 
 /**
  * @author Geert van Ieperen

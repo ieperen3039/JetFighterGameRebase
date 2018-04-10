@@ -5,7 +5,7 @@ import org.joml.Vector3f;
 
 import java.io.IOException;
 
-import static nl.NG.Jetfightergame.Settings.MAX_POINT_LIGHTS;
+import static nl.NG.Jetfightergame.Settings.Settings.MAX_POINT_LIGHTS;
 
 /**
  * @author Geert van Ieperen

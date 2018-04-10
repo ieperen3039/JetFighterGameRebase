@@ -4,8 +4,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
-
-import static nl.NG.Jetfightergame.Settings.*;
+import nl.NG.Jetfightergame.Settings.KeyBindings;
 
 /**
  * @author Geert van Ieperen
@@ -27,25 +26,25 @@ public abstract class PlayerPCController implements TrackerMoveListener, Tracker
 
         mouse.addMotionListener(this);
         mouse.addClickListener(this, true);
-        keyboard.addKey(THROTTLE_UP);
-        keyboard.addKey(THROTTLE_DOWN);
-        keyboard.addKey(YAW_UP);
-        keyboard.addKey(YAW_DOWN);
+        keyboard.addKey(KeyBindings.THROTTLE_UP);
+        keyboard.addKey(KeyBindings.THROTTLE_DOWN);
+        keyboard.addKey(KeyBindings.YAW_UP);
+        keyboard.addKey(KeyBindings.YAW_DOWN);
     }
 
     @Override
     public float throttle() {
         int i = 0;
-        if (keyboard.isPressed(THROTTLE_UP)) i++;
-        if (keyboard.isPressed(THROTTLE_DOWN)) i--;
+        if (keyboard.isPressed(KeyBindings.THROTTLE_UP)) i++;
+        if (keyboard.isPressed(KeyBindings.THROTTLE_DOWN)) i--;
         return (i);
     }
 
     @Override
     public float yaw() {
         int i = 0;
-        if (keyboard.isPressed(YAW_UP)) i++;
-        if (keyboard.isPressed(YAW_DOWN)) i--;
+        if (keyboard.isPressed(KeyBindings.YAW_UP)) i++;
+        if (keyboard.isPressed(KeyBindings.YAW_DOWN)) i--;
         return (i);
     }
 

@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Toolbox;

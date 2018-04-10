@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;

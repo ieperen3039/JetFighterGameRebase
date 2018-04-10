@@ -10,7 +10,7 @@ import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import static nl.NG.Jetfightergame.Settings.COLLISION_RESPONSE_LEVEL;
+import static nl.NG.Jetfightergame.Settings.Settings.COLLISION_RESPONSE_LEVEL;
 
 /**
  * a class that represents the collision state of a Touchable Entity.

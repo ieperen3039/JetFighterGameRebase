@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
 
-import nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
+import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
 /**
  * @author Geert van Ieperen

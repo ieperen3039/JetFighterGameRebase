@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;

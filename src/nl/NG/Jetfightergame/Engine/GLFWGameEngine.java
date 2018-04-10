@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
-import nl.NG.Jetfightergame.Settings;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Collection;

@@ -22,7 +22,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings.*;
+import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.*;
 import static nl.NG.Jetfightergame.Tools.Directory.fonts;
 import static org.lwjgl.nanovg.NanoVG.*;
 import static org.lwjgl.nanovg.NanoVGGL3.*;

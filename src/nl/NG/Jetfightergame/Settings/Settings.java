@@ -1,12 +1,10 @@
-package nl.NG.Jetfightergame;
-
-import org.lwjgl.glfw.GLFW;
+package nl.NG.Jetfightergame.Settings;
 
 import java.util.Random;
 
 /**
  * a class that harbours the variables that may or may not be changed by the player
- * @see nl.NG.Jetfightergame.ScreenOverlay.MenuStyleSettings
+ * @see MenuStyleSettings
  * @author Geert van Ieperen
  *         created on 2-11-2017.
  */
@@ -47,12 +45,7 @@ public final class Settings {
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
 
-    /** controllers */
-    public static int THROTTLE_UP = GLFW.GLFW_KEY_W;
-    public static int THROTTLE_DOWN = GLFW.GLFW_KEY_S;
-    public static int YAW_UP = GLFW.GLFW_KEY_A;
-    public static int YAW_DOWN = GLFW.GLFW_KEY_D;
-    // these modifiers are also used to inverse direction
+    /** controller settings; these modifiers are also used to inverse direction */
     public static float PITCH_MODIFIER = -0.05f;
     public static float ROLL_MODIFIER = 0.05f;
 
