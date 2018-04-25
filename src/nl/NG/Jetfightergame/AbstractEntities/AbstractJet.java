@@ -66,7 +66,9 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
-    private static final float defaultThrustSquared = 100_000f;
+
+    private static final float BASE_SPEED = 1000f;
+    private final float defaultThrustSquared;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -124,6 +126,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         relativeStateDirection(DirVector.xVector()).normalize(forward);
         forwardInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
         velocityInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
+        defaultThrustSquared = BASE_SPEED * BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
     }
 
     @Override

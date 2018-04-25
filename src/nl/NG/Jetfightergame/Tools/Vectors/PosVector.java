@@ -8,7 +8,7 @@ import org.joml.Vector3f;
 public class PosVector extends Vector {
 
     public PosVector() {
-
+        super();
     }
 
     public static PosVector zeroVector() {

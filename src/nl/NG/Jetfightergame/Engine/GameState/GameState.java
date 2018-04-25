@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -26,9 +27,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public abstract class GameState implements Environment {
-
-    private static final int COLLISION_COUNT_AVERAGE = 5;
+public abstract class GameState implements Environment, PathDescription {
 
     protected final Collection<Particle> particles = new ConcurrentArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
@@ -72,7 +71,7 @@ public abstract class GameState implements Environment {
         newEntities.clear();
 
         if ((Settings.MAX_COLLISION_ITERATIONS != 0) && (deltaTime > 0))
-            collisionDetection.analyseCollisions(currentTime, deltaTime);
+            collisionDetection.analyseCollisions(currentTime, deltaTime, null);
 
         // update new state
         collisionDetection.updateEntities(currentTime);
@@ -149,5 +148,10 @@ public abstract class GameState implements Environment {
         particles.clear();
         collisionDetection.cleanUp();
         System.gc();
+    }
+
+    @Override
+    public PosVector getMiddleOfPath(PosVector position) {
+        return PosVector.zeroVector();
     }
 }

@@ -373,6 +373,11 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     @Override
+    public void applyMoment(DirVector momentum) {
+        extraVelocity.add(momentum.scale(1/mass, new DirVector())); // TODO verification
+    }
+
+    @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
     }

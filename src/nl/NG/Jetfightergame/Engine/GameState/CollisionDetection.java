@@ -5,9 +5,12 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.Settings.Settings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Extreme;
@@ -22,8 +25,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.NG.Jetfightergame.Settings.Settings.DEBUG;
-import static nl.NG.Jetfightergame.Settings.Settings.MAX_COLLISION_ITERATIONS;
+import static nl.NG.Jetfightergame.Settings.Settings.*;
 
 /**
  * @author Geert van Ieperen
@@ -78,8 +80,9 @@ public class CollisionDetection {
      * checks and resolves all collisions that occurred in the given timeperiod
      * @param currentTime the current game-loop time
      * @param deltaTime the in-game time difference from the last call to this method
+     * @param environment the path contained in the static parts of this
      */
-    public void analyseCollisions(float currentTime, float deltaTime) {
+    public void analyseCollisions(float currentTime, float deltaTime, PathDescription environment) {
         int remainingLoops = MAX_COLLISION_ITERATIONS;
 
         // the pairs that have their collision been processed
@@ -91,21 +94,30 @@ public class CollisionDetection {
              * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
              * On the other hand, we may assume collisions of that magnitude appear seldom
              */
-            collisionPairs = getIntersectingPairs().parallelStream()
+            // check for collisions, remove items that did not collide
+
+            collisionPairs = getIntersectingPairs()
+                    .parallelStream()
                     // check for collisions, remove items that did not collide
-                    .filter(closeTarget -> checkCollisionPair(closeTarget.right, closeTarget.left, deltaTime))
+                    .filter(p -> checkCollisionPair(p.left, p.right, deltaTime))
                     .collect(Collectors.toList());
 
-            // process the final collisions in pairs
-            List<RigidBody> postCollisions = collisionPairs.stream()
-                    .flatMap(p -> processCollision(deltaTime, p))
-                    // every item once
-                    .distinct()
-                    .collect(Collectors.toList());
+            if (DO_COLLISION_RESPONSE) {
+                // process the final collisions in pairs
+                List<RigidBody> postCollisions = collisionPairs
+                        .stream()
+                        .flatMap(p -> processCollision(deltaTime, p))
+                        // every item once
+                        .distinct()
+                        // wait until all processing is finished
+                        .collect(Collectors.toList());
 
-            // apply the collisions to the objects
-            postCollisions//.parallelStream()
-                    .forEach(r -> r.apply(deltaTime, currentTime));
+                // apply the collisions to the objects
+                postCollisions.forEach(r -> r.apply(deltaTime, currentTime));
+
+            } else {
+                gameCollision(collisionPairs, environment);
+            }
 
         } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
@@ -117,6 +129,66 @@ public class CollisionDetection {
 
     }
 
+    private void gameCollision(List<Pair<Touchable, MovingEntity>> collisionPairs, PathDescription environment) {
+        Set<MovingEntity> uniqueValues = new HashSet<>();
+
+        for (Pair<Touchable, MovingEntity> pair : collisionPairs) {
+
+            // if two entities collide
+            if (pair.left instanceof MovingEntity) {
+                MovingEntity left = (MovingEntity) pair.left;
+                MovingEntity right = pair.right;
+
+                bumpOff(left, right);
+
+            // if entity collides with terrain
+            } else {
+                MovingEntity entity = pair.right;
+
+                if (uniqueValues.add(entity)) {
+                    applyCorrection(entity, environment);
+                }
+            }
+        }
+    }
+
+    /**
+     * move two entities away from each other
+     * @param left one entity, which has collided with right
+     * @param right another entity, which has collided with left
+     */
+    private void bumpOff(MovingEntity left, MovingEntity right) {
+        DirVector force = new DirVector();
+        force = left.getExpectedPosition().to(right.getExpectedPosition(), force);
+        force.reducedTo(Settings.BUMP_POWER, force);
+
+        right.applyMoment(force);
+        force.negate(force);
+        left.applyMoment(force);
+    }
+
+    /**
+     * gives a correcting momentum to the target entity, such that it restores its path.
+     * It may not happen that the momentum results in another collision
+     * @param target an entity that has collided with a solid entity
+     */
+    private void applyCorrection(MovingEntity target, PathDescription path) {
+        PosVector jetPosition = target.getPosition();
+        PosVector middle = path.getMiddleOfPath(jetPosition);
+        float targetSpeed = target.getVelocity().length();
+
+        DirVector jerk = new DirVector();
+        jetPosition.to(middle, jerk).reducedTo(targetSpeed, jerk);
+
+        target.applyMoment(jerk);
+    }
+
+    /**
+     * calculates the effect of the collision, on both elements of the pair
+     * @param deltaTime time difference since last gameloop
+     * @param p pair of entities that have their collision been confirmed
+     * @return a stream of the individual processed elements
+     */
     private static Stream<? extends RigidBody> processCollision(float deltaTime, Pair<Touchable, MovingEntity> p) {
         RigidBody left = p.left.getFinalCollision(deltaTime);
         RigidBody right = p.right.getFinalCollision(deltaTime);
@@ -129,7 +201,7 @@ public class CollisionDetection {
      * @return false iff neither hits the other
      */
     @SuppressWarnings("SimplifiableIfStatement")
-    private boolean checkCollisionPair(MovingEntity moving, Touchable either, float deltaTime) {
+    private boolean checkCollisionPair(Touchable either, MovingEntity moving, float deltaTime) {
         // the isDead checks are for entities that die in a previous collision iteration
         if ((moving instanceof MortalEntity) && ((MortalEntity) moving).isDead()) return false;
         if ((either instanceof MortalEntity) && ((MortalEntity) either).isDead()) return false;
@@ -175,8 +247,8 @@ public class CollisionDetection {
                     Pair<Touchable, MovingEntity> newPair = new Pair<>(entityArray[i].entity, entityArray[j].entity);
                     allEntityPairs.add(newPair);
                     if (DEBUG) {
-//                        debugs.add(new EnemyFlyingTarget(entityArray[i].entity));
-//                        debugs.add(new EnemyFlyingTarget(entityArray[j].entity));
+                        debugs.add(new EnemyFlyingTarget(entityArray[i].entity));
+                        debugs.add(new EnemyFlyingTarget(entityArray[j].entity));
                     }
                 }
             }
@@ -202,6 +274,10 @@ public class CollisionDetection {
         return allEntityPairs;
     }
 
+    /**
+     * tests whether the invariant holds.
+     * Throws an error if any of the arrays is not correctly sorted
+     */
     public void testSort() {
         Toolbox.printSpamless("testSort", "\n" + Toolbox.getCallingMethod(1) + " Testing Sorting");
         float init = -Float.MAX_VALUE;

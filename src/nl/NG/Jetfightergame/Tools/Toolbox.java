@@ -147,10 +147,15 @@ public final class Toolbox {
     }
 
     /**
-     * call System.exit and tells who did it
+     * call System.exit and tells who did it,
+     * unless DEBUG is false
      */
     public static void exitJava() {
-        if (!Settings.DEBUG) return;
+        if (!Settings.DEBUG) {
+            Toolbox.printFrom(2, "Tried to exit JVM while DEBUG mode is false.");
+            return;
+        }
+
         try {
             System.out.println();
             Toolbox.printFrom(2, "Ending JVM");
