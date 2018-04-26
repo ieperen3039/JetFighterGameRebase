@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -63,7 +63,7 @@ public abstract class AbstractGameLoop extends Thread {
      * start the loop, running until {@link #stopLoop()} is called.
      */
     public void run() {
-        if (Settings.DEBUG) Toolbox.print(loopName + " enabled");
+        if (ServerSettings.DEBUG) Toolbox.print(loopName + " enabled");
         Timer loopTimer = new Timer();
         float deltaTime = 0;
 
@@ -85,7 +85,7 @@ public abstract class AbstractGameLoop extends Thread {
 
                 // number of milliseconds remaining in this loop
                 float remainingTime = targetDeltaMillis - loopTimer.getTimeSinceLastUpdate();
-                if (Settings.DEBUG && notifyDelay && (remainingTime < 0))
+                if (ServerSettings.DEBUG && notifyDelay && (remainingTime < 0))
                     System.err.printf("%s can't keep up! Running %d milliseconds behind%n", loopName, (int) -remainingTime);
 
                 // sleep at least one millisecond
@@ -99,7 +99,7 @@ public abstract class AbstractGameLoop extends Thread {
                 // update Ticks per Second
                 float realTPS = 1000f / loopTimer.getElapsedTime();
                 avgTPS.add(realTPS);
-                avgPoss.add(-(remainingTime - targetDeltaMillis) / targetDeltaMillis);
+                avgPoss.add((targetDeltaMillis - remainingTime) / targetDeltaMillis);
 
                 // wait if the game is paused
                 isPaused = true;
@@ -122,12 +122,12 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void unPause(){
         pauseBlock.countDown();
-        if (Settings.DEBUG) Toolbox.printFrom(2, "unpaused " + loopName);
+        if (ServerSettings.DEBUG) Toolbox.printFrom(2, "unpaused " + loopName);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        if (Settings.DEBUG) Toolbox.printFrom(2, "paused " + loopName);
+        if (ServerSettings.DEBUG) Toolbox.printFrom(2, "paused " + loopName);
     }
 
     /**

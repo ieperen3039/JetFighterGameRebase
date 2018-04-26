@@ -7,7 +7,6 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -28,8 +27,8 @@ public class PlayerJetLaboratory extends GameState {
     private static final int LAB_SIZE = 300;
     private Collection<HUDTargetable> cubeTargets = new ArrayList<>();
 
-    public PlayerJetLaboratory(Player player, GameTimer time) {
-        super(player, time);
+    public PlayerJetLaboratory(GameTimer time) {
+        super(time);
     }
 
     @Override
@@ -39,9 +38,7 @@ public class PlayerJetLaboratory extends GameState {
 
     @Override
     protected Collection<MovingEntity> setEntities() {
-        player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
         Collection<MovingEntity> dynamicEntities = new ArrayList<>();
-        dynamicEntities.add(player.jet());
 
         // for x = -1 and x = 1
         for (int x = -1; x < 2; x += 2) {

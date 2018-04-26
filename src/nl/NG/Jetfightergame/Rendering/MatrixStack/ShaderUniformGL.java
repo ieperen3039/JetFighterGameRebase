@@ -3,7 +3,8 @@ package nl.NG.Jetfightergame.Rendering.MatrixStack;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderProgram;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -48,7 +49,7 @@ public class ShaderUniformGL implements GL2 {
         glEnable(GL_LINE_SMOOTH);
         Toolbox.checkGLError();
 //
-        glLineWidth(Settings.HIGHLIGHT_LINE_WIDTH); // throws errors with any other value than 1f
+        glLineWidth(ClientSettings.HIGHLIGHT_LINE_WIDTH); // throws errors with any other value than 1f
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         Toolbox.checkGLError();
@@ -56,7 +57,7 @@ public class ShaderUniformGL implements GL2 {
         modelMatrix = new Matrix4f();
         viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
 
-        for (int i = 0; i < Settings.MAX_POINT_LIGHTS; i++) {
+        for (int i = 0; i < ServerSettings.MAX_POINT_LIGHTS; i++) {
             shader.setPointLight(i, new Vector3f(), Color4f.INVISIBLE);
         }
     }
@@ -66,7 +67,7 @@ public class ShaderUniformGL implements GL2 {
 
         // Set the projection.
         float aspectRatio = windowWidth / windowHeight;
-        vpMatrix.setPerspective(Settings.FOV, aspectRatio, Settings.Z_NEAR, Settings.Z_FAR);
+        vpMatrix.setPerspective(ClientSettings.FOV, aspectRatio, ClientSettings.Z_NEAR, ClientSettings.Z_FAR);
 
         // set the view
         vpMatrix.lookAt(

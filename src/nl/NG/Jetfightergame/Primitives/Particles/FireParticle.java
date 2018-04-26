@@ -3,7 +3,8 @@ package nl.NG.Jetfightergame.Primitives.Particles;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -27,8 +28,8 @@ public class FireParticle implements Particle {
     private float timeToLive;
 
     public static FireParticle randomParticle(PosVector position, float power, float maxTTL){
-        final Color4f fire = new Color4f(1, Settings.random.nextFloat(), 0);
-        final float randFloat = Settings.random.nextFloat();
+        final Color4f fire = new Color4f(1, ServerSettings.random.nextFloat(), 0);
+        final float randFloat = ServerSettings.random.nextFloat();
         final DirVector random = DirVector.randomOrb();
         final float rotationSpeed = 2 + (2 / randFloat);
 
@@ -55,7 +56,7 @@ public class FireParticle implements Particle {
         {
             gl.translate(x, y, z);
             gl.rotate(currentRotation, angVec.x(), angVec.y(), angVec.z());
-            gl.scale(Settings.FIRE_PARTICLE_SIZE);
+            gl.scale(ClientSettings.FIRE_PARTICLE_SIZE);
             gl.draw(GeneralShapes.TRIANGLE);
         }
         gl.popMatrix();

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Controllers;
 
-import static nl.NG.Jetfightergame.Settings.Settings.PITCH_MODIFIER;
-import static nl.NG.Jetfightergame.Settings.Settings.ROLL_MODIFIER;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PITCH_MODIFIER;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
 
 /**
  * @author Geert van Ieperen

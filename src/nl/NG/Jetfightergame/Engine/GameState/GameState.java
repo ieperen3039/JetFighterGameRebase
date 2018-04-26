@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -11,7 +12,8 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -35,12 +37,9 @@ public abstract class GameState implements Environment, PathDescription {
 
     private CollisionDetection collisionDetection;
 
-    protected final Player player;
-
     private final GameTimer time;
 
-    public GameState(Player player, GameTimer time) {
-        this.player = player;
+    public GameState(GameTimer time) {
         this.time = time;
     }
 
@@ -51,9 +50,21 @@ public abstract class GameState implements Environment, PathDescription {
         collisionDetection = new CollisionDetection(dynamicEntities, staticEntities);
     }
 
+    /**
+     * @return all the static entities that are part of this world
+     */
     protected abstract Collection<Touchable> createWorld();
 
+    /**
+     * @return all the dynamic entities that are standard part of this world
+     */
     protected abstract Collection<MovingEntity> setEntities();
+
+    @Override
+    public void addPlayer(Player player) {
+        final AbstractJet playerJet = player.jet();
+        playerJet.set();
+    }
 
     @Override
     @SuppressWarnings("ConstantConditions")
@@ -70,13 +81,17 @@ public abstract class GameState implements Environment, PathDescription {
         collisionDetection.prepareCollision(newEntities);
         newEntities.clear();
 
-        if ((Settings.MAX_COLLISION_ITERATIONS != 0) && (deltaTime > 0))
+        if ((ServerSettings.MAX_COLLISION_ITERATIONS != 0) && (deltaTime > 0))
             collisionDetection.analyseCollisions(currentTime, deltaTime, null);
 
         // update new state
         collisionDetection.updateEntities(currentTime);
     }
 
+    /**
+     * @param entity any dynamic entity in this world
+     * @return the force of gravity (or whatever) that naturally acts on this entity
+     */
     public abstract DirVector entityNetforce(MovingEntity entity);
 
     @Override
@@ -87,7 +102,7 @@ public abstract class GameState implements Environment, PathDescription {
 
             gl.setLight(pos, color);
 
-            if (Settings.SHOW_LIGHT_POSITIONS) {
+            if (ClientSettings.SHOW_LIGHT_POSITIONS) {
                 gl.setMaterial(Material.GLOWING, color);
                 gl.pushMatrix();
                 {
@@ -147,6 +162,7 @@ public abstract class GameState implements Environment, PathDescription {
         lights.clear();
         particles.clear();
         collisionDetection.cleanUp();
+        collisionDetection = null;
         System.gc();
     }
 

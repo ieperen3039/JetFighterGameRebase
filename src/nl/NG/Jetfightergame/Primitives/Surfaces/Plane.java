@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Primitives.Surfaces;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,25 +54,6 @@ public abstract class Plane {
             if (posVector.z > mostZ) mostZ = posVector.z;
         }
     }
-
-    /**
-     * calculates the normal vector for a triangle given in counterclockwise order
-     * @return the normalized normal for a triangle ABC
-     */
-    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C) {
-        DirVector normalVector = new DirVector();
-        final DirVector BC = new DirVector();
-        final DirVector BA = new DirVector();
-
-        B.to(C, BC);
-        B.to(A, BA);
-        BA.cross(BC, normalVector);
-
-        normalVector.normalize();
-
-        return normalVector;
-    }
-
 
     /**
      * given a point on position {@code linePosition} moving in the direction of {@code direction},
@@ -210,5 +192,61 @@ public abstract class Plane {
         }
         return middle;
     }
+
+    /**
+     * calculates the normal vector for a triangle given in counterclockwise order
+     * @return the normalized normal for a triangle ABC
+     */
+    public static DirVector getNormalVector(PosVector A, PosVector B, PosVector C) {
+        DirVector normalVector = new DirVector();
+        final DirVector BC = new DirVector();
+        final DirVector BA = new DirVector();
+
+        B.to(C, BC);
+        B.to(A, BA);
+        BA.cross(BC, normalVector);
+
+        normalVector.normalize();
+
+        return normalVector;
+    }
+
+    /**
+     * evaluates a beziér curve defined by vectors. The given ABCD vectors are kept intact.
+     *
+     * @param A starting point
+     * @param B first control point
+     * @param C second control point
+     * @param D ending point
+     * @param u fraction of the curve to be requested
+     * @return vector to the point on the curve on fraction u
+     */
+    public static Vector bezierPoint(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
+        PosVector temp = new PosVector();
+        PosVector point = new PosVector();
+        //A*(1−u)^3 + B*3u(1−u)^2 + C*3u^2(1−u) + D*u^3
+        A.scale((float) ((1 - u) * (1 - u) * (1 - u)), point)
+                .add(B.scale((float) (3 * u * (1 - u) * (1 - u)), temp), point)
+                .add(C.scale((float) (3 * u * u * (1 - u)), temp), point)
+                .add(D.scale((float) (u * u * u), temp), point);
+        return point;
+    }
+
+    /**
+     * evaluates the derivative of a beziér curve on a point defined by u
+     *
+     * @see #bezierPoint(PosVector, PosVector, PosVector, PosVector, double)
+     */
+    public static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
+        DirVector direction = new DirVector();
+        final PosVector point = new PosVector();
+        //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
+        (B.sub(A, point))
+                .scale((float) (3 * (1 - u) * (1 - u)), point)
+                .add(C.sub(B, new PosVector()).scale((float) (6 * (1 - u) * u), new PosVector()), direction)
+                .add(D.sub(C, new PosVector()).scale((float) (3 * u * u), new PosVector()), direction);
+        return direction;
+    }
+
 }
 

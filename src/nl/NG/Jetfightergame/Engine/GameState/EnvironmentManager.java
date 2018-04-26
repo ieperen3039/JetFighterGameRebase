@@ -2,13 +2,16 @@ package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Assets.Scenarios.*;
+import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
+import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
+import nl.NG.Jetfightergame.Assets.Scenarios.MissionSnake;
+import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -26,13 +29,11 @@ import java.util.Collections;
  */
 public class EnvironmentManager implements Environment, Manager<EnvironmentManager.Worlds> {
 
-    private final Player player;
     private final GameTimer time;
     private Environment instance;
 
-    public EnvironmentManager(Player player, GameTimer time) {
+    public EnvironmentManager(GameTimer time) {
         this.time = time;
-        this.player = player;
     }
 
     @Override
@@ -61,7 +62,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     public void init() {
-        instance = new CollisionLaboratory(player, time);
+        instance = new CollisionLaboratory(time);
         instance.buildScene();
     }
 
@@ -71,11 +72,15 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     public enum Worlds {
-        MainMenu,
         PlayerJetLaboratory,
         CollisionLaboratory,
         ExplosionLaboratory,
         SnakeLevel
+    }
+
+    @Override
+    public void addPlayer(Player player) {
+        instance.addPlayer(player);
     }
 
     @Override
@@ -117,23 +122,20 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     @Override
     public void switchTo(Worlds implementation) {
         instance.cleanUp();
-        Settings.SPECTATOR_MODE = false;
+        ServerSettings.SPECTATOR_MODE = false;
 
         switch (implementation) {
             case CollisionLaboratory:
-                instance = new CollisionLaboratory(player, time);
+                instance = new CollisionLaboratory(time);
                 break;
             case PlayerJetLaboratory:
-                instance = new PlayerJetLaboratory(player, time);
+                instance = new PlayerJetLaboratory(time);
                 break;
             case ExplosionLaboratory:
-                instance = new ExplosionLaboratory(player, time);
-                break;
-            case MainMenu:
-                instance = new Process592(player, this::switchTo);
+                instance = new ExplosionLaboratory(time);
                 break;
             case SnakeLevel:
-                instance = new MissionSnake(player, time);
+                instance = new MissionSnake(time);
                 break;
             default:
                 Toolbox.print("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
@@ -149,17 +151,17 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
          * public void... :D
          */
         public Void() {
-            super(EnvironmentManager.this.player, time);
+            super(time);
         }
 
         @Override
         protected Collection<Touchable> createWorld() {
-            return Collections.EMPTY_LIST;
+            return Collections.EMPTY_SET;
         }
 
         @Override
         protected Collection<MovingEntity> setEntities() {
-            return Collections.singletonList(player.jet());
+            return Collections.EMPTY_SET;
         }
 
         @Override

@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -37,7 +37,7 @@ public class Process592 implements Environment {
     private static final int SCALE = 50;
     private static final float OFFSET = 0.1f;
     private static final float SPACE = SCALE/2;
-    private final Player player;
+    private Player player = null;//TODO
     private final ArrayList<Particle> particles;
 
     private GameTimer time = new GameTimer(); // I know, time does not exist, but it is for user experience.
@@ -54,11 +54,9 @@ public class Process592 implements Environment {
     private int selection;
 
     /**
-     * @param player the player
      * @param worldSelector Consumer of worlds. Must be available and implemented
      */
-    public Process592(Player player, Consumer<Worlds> worldSelector) {
-        this.player = player;
+    public Process592(Consumer<Worlds> worldSelector) {
         particles = new ArrayList<>();
         currentItems = worldSelectionMenu(worldSelector);
     }
@@ -66,6 +64,11 @@ public class Process592 implements Environment {
     @Override
     public void buildScene() {
         player.jet().set();
+    }
+
+    @Override
+    public void addPlayer(Player player) {
+        this.player = player;
     }
 
     @Override
@@ -150,8 +153,8 @@ public class Process592 implements Environment {
 
         final Float deltaTime = time.getGameTime().difference();
 
-        phi += input.pitch() * Settings.PITCH_MODIFIER * phiFactor * deltaTime;
-        theta += input.roll() * Settings.ROLL_MODIFIER * thetaFactor * deltaTime;
+        phi += input.pitch() * ClientSettings.PITCH_MODIFIER * phiFactor * deltaTime;
+        theta += input.roll() * ClientSettings.ROLL_MODIFIER * thetaFactor * deltaTime;
 
         if (input.primaryFire() && (selection >= 0)) currentItems[selection].run();
     }

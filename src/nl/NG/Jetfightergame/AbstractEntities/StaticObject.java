@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -36,7 +36,7 @@ public class StaticObject implements Touchable {
     }
 
     public StaticObject(Shape source, Material material, Color4f color, Vector offSet, Vector3f scaling) {
-        this.thisID = Settings.entityIDNumber++;
+        this.thisID = ServerSettings.entityIDNumber++;
         this.source = source;
         this.material = material;
         this.color = color;

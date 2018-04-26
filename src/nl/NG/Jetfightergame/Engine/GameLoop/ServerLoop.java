@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.Engine.GameState.Environment;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 
 import java.util.function.Consumer;
 
@@ -9,12 +9,12 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
-public class JetFighterRunner extends AbstractGameLoop {
+public class ServerLoop extends AbstractGameLoop {
 
     private final Environment game;
 
-    public JetFighterRunner(Environment game, Consumer<Exception> exceptionHandler) {
-        super("GameEngine loop", Settings.TARGET_TPS, true, exceptionHandler);
+    public ServerLoop(Environment game, Consumer<Exception> exceptionHandler) {
+        super("GameEngine loop", ServerSettings.TARGET_TPS, true, exceptionHandler);
         this.game = game;
     }
 

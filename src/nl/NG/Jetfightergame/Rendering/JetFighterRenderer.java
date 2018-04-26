@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
@@ -13,7 +14,8 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
@@ -39,9 +41,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
-                              Camera camera, ControllerManager controllerManager) throws IOException, ShaderException {
+                              Camera camera, ControllerManager controllerManager, AbstractJet player) throws IOException, ShaderException {
         super(
-                "Rendering loop", Settings.TARGET_FPS, false,
+                "Rendering loop", ClientSettings.TARGET_FPS, false,
                 (ex) -> {
                     window.close();
                     engine.exitGame();
@@ -56,7 +58,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         shaderManager = new ShaderManager();
 
         final Runnable cameraMode = () -> {
-            if (Settings.SPECTATOR_MODE) {
+            if (ServerSettings.SPECTATOR_MODE) {
                 engine.setSpectatorMode();
             } else {
                 engine.setPlayMode();
@@ -64,7 +66,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         };
 
         new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
-        new GravityHud(window::getWidth, window::getHeight, engine.getPlayer(), camera).activate();
+        new GravityHud(window::getWidth, window::getHeight, player, camera).activate();
 
         SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");
         sessionName = ft.format(new Date());
@@ -80,7 +82,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         Toolbox.checkGLError();
 
         Color4f ambientLight = gameState.fogColor();
-        float fog = Math.min(Settings.Z_FAR, (1f /ambientLight.alpha)); // also considers div/0
+        float fog = Math.min(ClientSettings.Z_FAR, (1f /ambientLight.alpha)); // also considers div/0
         ambientLight = new Color4f(ambientLight, 1f);
         window.setClearColor(ambientLight);
         shaderManager.initShader(activeCamera, ambientLight, fog);
@@ -89,7 +91,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         ShaderUniformGL gl = new ShaderUniformGL(shaderManager, window.getWidth(), window.getHeight(), activeCamera);
         Toolbox.checkGLError();
 
-        if (Settings.CULL_FACES) {
+        if (ClientSettings.CULL_FACES) {
             // Cull backfaces
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
@@ -107,7 +109,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // overlay with transparent objects
         // TODO transparent meshes?
 
-        if (Settings.HIGHLIGHT_LINE_WIDTH > 0){
+        if (ClientSettings.HIGHLIGHT_LINE_WIDTH > 0){
             gl.setFill(false);
             gameState.drawObjects(gl);
             Toolbox.checkGLError();
@@ -127,7 +129,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // update window
         window.update();
 
-        if (Settings.SAVE_PLAYBACK && !engine.isPaused()) {
+        if (ClientSettings.SAVE_PLAYBACK && !engine.isPaused()) {
             window.printScreen("session_" + sessionName + "/" + frameNumber);
         }
 

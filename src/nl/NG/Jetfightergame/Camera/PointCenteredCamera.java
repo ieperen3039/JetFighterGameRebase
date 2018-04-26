@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerDragListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerScrollListener;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
@@ -114,7 +114,7 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
 
     @Override
     public void mouseDragged(int deltaX, int deltaY) {
-        int s = Settings.INVERT_CAMERA_ROTATION ? -1 : 1;
+        int s = ClientSettings.INVERT_CAMERA_ROTATION ? -1 : 1;
 
         theta += deltaY * DRAG_PIXEL_TO_RADIAN * s;
         phi += deltaX * DRAG_PIXEL_TO_RADIAN * s;

@@ -1,14 +1,12 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -27,9 +25,9 @@ import java.util.Collections;
  */
 public class ExplosionLaboratory extends GameState {
 
-    public ExplosionLaboratory(Player player, GameTimer time) {
-        super(player, time);
-        Settings.SPECTATOR_MODE = true;
+    public ExplosionLaboratory(GameTimer time) {
+        super(time);
+        ServerSettings.SPECTATOR_MODE = true;
     }
 
     @Override
@@ -40,12 +38,7 @@ public class ExplosionLaboratory extends GameState {
 
     @Override
     protected Collection<MovingEntity> setEntities() {
-
-        final AbstractJet playerJet = player.jet();
-        playerJet.set();
-
         Collection<MovingEntity> dynamicEntities = new ArrayList<>(21);
-        dynamicEntities.add(playerJet);
 
         for (int i = 0; i < 20; i++) {
             final PosVector pos = Vector.random().toPosVector();

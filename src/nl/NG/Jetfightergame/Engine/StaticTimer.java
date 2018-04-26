@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 
 /**
@@ -10,7 +10,7 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
  */
 public class StaticTimer extends GameTimer {
     private TrackedFloat currentTime = new TrackedFloat(0f);
-    private TrackedFloat renderTime = new TrackedFloat(-Settings.RENDER_DELAY);
+    private TrackedFloat renderTime = new TrackedFloat(-ClientSettings.RENDER_DELAY);
     private final float deltaTime;
     private float gameMult = 1f;
     private float engineMult = 1f;
@@ -26,7 +26,7 @@ public class StaticTimer extends GameTimer {
 
     @Override
     public void updateRenderTime() {
-        renderTime.update(currentTime.current() - Settings.RENDER_DELAY);
+        renderTime.update(currentTime.current() - ClientSettings.RENDER_DELAY);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Sound.OggData;
 import nl.NG.Jetfightergame.Sound.WaveData;
 import org.lwjgl.openal.AL10;
@@ -113,7 +113,7 @@ public final class Resources {
 
         } catch (IOException | UnsupportedAudioFileException e) {
             System.err.println("Could not load wave file '" + audioData + "'. Continuing without this sound");
-            if (Settings.DEBUG) e.printStackTrace();
+            if (ServerSettings.DEBUG) e.printStackTrace();
             return false;
         }
 
@@ -136,7 +136,7 @@ public final class Resources {
 
         } catch (IOException e) {
             System.err.println("Could not load ogg file '" + audioData + "'. Continuing without this sound");
-            if (Settings.DEBUG) e.printStackTrace();
+            if (ServerSettings.DEBUG) e.printStackTrace();
             return false;
         }
 

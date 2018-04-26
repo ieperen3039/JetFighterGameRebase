@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Assets.GeneralEntities;
+package nl.NG.Jetfightergame.Assets.WorldObjects;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.GridMesh;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.OpenSimplexNoise;
@@ -51,7 +51,7 @@ public class SimplexCave implements Touchable {
         bottomGrid = buildTerrain(noiseBottom, 0.3f, ROWS, PLANE_SIZE);
 
         collisions = new ArrayList<>();
-        thisID = Settings.entityIDNumber++;
+        thisID = ServerSettings.entityIDNumber++;
     }
 
     /**
@@ -68,10 +68,11 @@ public class SimplexCave implements Touchable {
         for(int x = 0; x < rows; x++){
             for(int y = 0; y < rows; y++){
                 // comparable to x and y
-                float xCoord = ((getRandom(scatter) + x) - rows/2);
-                float yCoord = ((getRandom(scatter) + y) - rows/2);
+                float xCoord = ((getRandom(scatter) + x) - (rows / 2));
+                float yCoord = ((getRandom(scatter) + y) - (rows / 2));
 
-                final float height =  ((float) noise.eval(xCoord/pointDensity, yCoord/pointDensity) / SIM_VAR + 0.5f);
+                float noiseHeight = (float) noise.eval(xCoord / pointDensity, yCoord / pointDensity);
+                float height = ((noiseHeight / SIM_VAR) + 0.5f);
                 grid[x][y] = new PosVector(xCoord, yCoord, height);
             }
         }
@@ -81,7 +82,7 @@ public class SimplexCave implements Touchable {
 
     /** @return random between -scatter and scatter */
     private static float getRandom(float scatter) {
-        return (2 * Settings.random.nextFloat() - 1f) * scatter;
+        return ((2 * ServerSettings.random.nextFloat()) - 1f) * scatter;
     }
 
     @Override

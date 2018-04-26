@@ -4,7 +4,8 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -45,7 +46,7 @@ public final class Particles {
         launchDir.add(startVelocity);
 
         final float jitter = 0.4f;
-        return splitIntoParticles(plane, Settings.PARTICLE_SPLITS, launchDir, jitter, METAL_LINGER_TIME, launchSpeed, planeColor, ms);
+        return splitIntoParticles(plane, ClientSettings.PARTICLE_SPLITS, launchDir, jitter, METAL_LINGER_TIME, launchSpeed, planeColor, ms);
     }
 
     /**
@@ -63,8 +64,8 @@ public final class Particles {
 
         Collection<Particle> particles = new ArrayList<>();
         for (PosVector[] t : splittedTriangles){
-            Color4f fire = new Color4f(1, Settings.random.nextFloat(), 0);
-            float randFloat = Settings.random.nextFloat();
+            Color4f fire = new Color4f(1, ServerSettings.random.nextFloat(), 0);
+            float randFloat = ServerSettings.random.nextFloat();
             final DirVector random = DirVector.randomOrb();
             particles.add(generateParticle(
                     t[0], t[1], t[2], random.scale(2*force, random),
@@ -106,7 +107,7 @@ public final class Particles {
      */
     public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, float timeToLive, Color4f particleColor){
         Vector3f angleVector = DirVector.random();
-        float rotationSpeed = Settings.random.nextFloat();
+        float rotationSpeed = ServerSettings.random.nextFloat();
         rotationSpeed *= rotationSpeed * RANDOM_ROTATION;
         return generateParticle(a, b, c, movement, angleVector, rotationSpeed, timeToLive, particleColor);
     }
@@ -144,7 +145,7 @@ public final class Particles {
             DirVector movement = new DirVector();
             DirVector random = DirVector.random();
 
-            float randFloat = Settings.random.nextFloat();
+            float randFloat = ServerSettings.random.nextFloat();
 
             launchDir.add(random.scale(jitter, random), movement)
                     .scale(speed * (1 - randFloat), movement);

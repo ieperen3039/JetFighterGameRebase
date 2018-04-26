@@ -7,7 +7,7 @@ import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -48,9 +48,9 @@ public class FallingCube extends GameEntity {
      * @param factor arbitrary factor. higher is more rotation, 0 is no rotation
      */
     public void addRandomRotation(float factor){
-        yawSpeed += (Settings.random.nextFloat() - 0.5f) * factor;
-        pitchSpeed += (Settings.random.nextFloat() - 0.5f) * factor;
-        rollSpeed += (Settings.random.nextFloat() - 0.5f) * factor;
+        yawSpeed += (ServerSettings.random.nextFloat() - 0.5f) * factor;
+        pitchSpeed += (ServerSettings.random.nextFloat() - 0.5f) * factor;
+        rollSpeed += (ServerSettings.random.nextFloat() - 0.5f) * factor;
     }
 
     @Override

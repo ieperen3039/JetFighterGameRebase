@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -55,6 +55,6 @@ public class AudioSource {
     }
 
     protected void setGain(float newValue){
-        alSourcef(sourceID, AL10.AL_GAIN, newValue * Settings.SOUND_MASTER_GAIN);
+        alSourcef(sourceID, AL10.AL_GAIN, newValue * ClientSettings.SOUND_MASTER_GAIN);
     }
 }

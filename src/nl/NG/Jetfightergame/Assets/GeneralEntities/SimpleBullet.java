@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -58,7 +58,7 @@ public class SimpleBullet extends AbstractProjectile {
     public Collection<Particle> explode() {
         List<Particle> result = new ArrayList<>(5);
 
-        for (int i = 0; i < Settings.SPARK_PARTICLE_DENSITY; i++) {
+        for (int i = 0; i < ClientSettings.SPARK_PARTICLE_DENSITY; i++) {
             result.add(FireParticle.randomParticle(getPosition(), 10, 1));
         }
         timeToLive = 0;

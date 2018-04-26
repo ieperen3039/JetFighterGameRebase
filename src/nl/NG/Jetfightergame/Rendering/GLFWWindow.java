@@ -1,7 +1,8 @@
 package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Engine.GLException;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
@@ -77,8 +78,8 @@ public class GLFWWindow {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         if (antialiasing()) {
-            glfwWindowHint(GLFW_STENCIL_BITS, Settings.ANTIALIAS);
-            glfwWindowHint(GLFW_SAMPLES, Settings.ANTIALIAS);
+            glfwWindowHint(GLFW_STENCIL_BITS, ClientSettings.ANTIALIAS);
+            glfwWindowHint(GLFW_SAMPLES, ClientSettings.ANTIALIAS);
         }
 
         window = getWindow(this.width, this.height);
@@ -106,10 +107,10 @@ public class GLFWWindow {
 
         final FloatBuffer floatBuffer = BufferUtils.createFloatBuffer(2);
         glGetFloatv(GL_SMOOTH_LINE_WIDTH_RANGE, floatBuffer);
-        Settings.HIGHLIGHT_LINE_WIDTH = Math.max(floatBuffer.get(), Settings.HIGHLIGHT_LINE_WIDTH);
-        Settings.HIGHLIGHT_LINE_WIDTH = Math.min(floatBuffer.get(), Settings.HIGHLIGHT_LINE_WIDTH);
+        ClientSettings.HIGHLIGHT_LINE_WIDTH = Math.max(floatBuffer.get(), ClientSettings.HIGHLIGHT_LINE_WIDTH);
+        ClientSettings.HIGHLIGHT_LINE_WIDTH = Math.min(floatBuffer.get(), ClientSettings.HIGHLIGHT_LINE_WIDTH);
 
-        if (Settings.DEBUG && GL_DEBUG_MESSAGES) {
+        if (ServerSettings.DEBUG && GL_DEBUG_MESSAGES) {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
             GLUtil.setupDebugMessageCallback();
         }
@@ -118,7 +119,7 @@ public class GLFWWindow {
     }
 
     public static boolean antialiasing() {
-        return Settings.ANTIALIAS > 0;
+        return ClientSettings.ANTIALIAS > 0;
     }
 
     /**
@@ -159,6 +160,12 @@ public class GLFWWindow {
         clear();
     }
 
+    /**
+     * saves a copy of the front buffer (the display) to disc
+     * @param filename the file to save to
+     * @return
+     */
+    @SuppressWarnings("NumericOverflow")
     public boolean printScreen(String filename) {
         glReadBuffer(GL11.GL_FRONT);
         int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
@@ -167,7 +174,9 @@ public class GLFWWindow {
         Toolbox.checkGLError();
 
         File file = new File("ScreenShots/" + filename + ".png"); // The file to save to.
-        file.mkdirs();
+        boolean success = file.mkdirs();
+        if (!success) return false;
+
         String format = "PNG";
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
@@ -297,7 +306,7 @@ public class GLFWWindow {
      * @return Whether vSync is enabled.
      */
     public boolean vSyncEnabled() {
-        return Settings.V_SYNC;
+        return ClientSettings.V_SYNC;
     }
 
     /**

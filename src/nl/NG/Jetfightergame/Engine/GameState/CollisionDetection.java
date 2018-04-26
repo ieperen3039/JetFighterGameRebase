@@ -10,7 +10,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Extreme;
@@ -25,7 +25,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.NG.Jetfightergame.Settings.Settings.*;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
 
 /**
  * @author Geert van Ieperen
@@ -160,7 +160,7 @@ public class CollisionDetection {
     private void bumpOff(MovingEntity left, MovingEntity right) {
         DirVector force = new DirVector();
         force = left.getExpectedPosition().to(right.getExpectedPosition(), force);
-        force.reducedTo(Settings.BUMP_POWER, force);
+        force.reducedTo(ServerSettings.BUMP_POWER, force);
 
         right.applyMoment(force);
         force.negate(force);
@@ -458,6 +458,7 @@ public class CollisionDetection {
         yLowerSorted = new CollisionEntity[0];
         zLowerSorted = new CollisionEntity[0];
         ScreenOverlay.removeHudItem(collisionCounter);
+        debugs.forEach(HUDTargetable::dispose);
     }
 
     protected class CollisionEntity {

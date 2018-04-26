@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -124,8 +124,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-        forwardInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
-        velocityInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
+        forwardInterpolator = new VectorInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
+        velocityInterpolator = new VectorInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
         defaultThrustSquared = BASE_SPEED * BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
     }
 
@@ -293,7 +293,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         toLocalSpace(sm, () -> create(sm, particleMapper));
 
-        for (int i = 0; i < Settings.FIRE_PARTICLE_DENSITY; i++) {
+        for (int i = 0; i < ClientSettings.FIRE_PARTICLE_DENSITY; i++) {
             result.add(FireParticle.randomParticle(getPosition(), force * 2, 2));
         }
 

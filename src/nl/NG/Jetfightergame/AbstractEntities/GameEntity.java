@@ -10,7 +10,8 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
@@ -83,7 +84,7 @@ public abstract class GameEntity implements MovingEntity{
             Quaternionf initialRotation, GameTimer gameTimer,
             EntityManager entityDeposit
     ) {
-        this.thisID = Settings.entityIDNumber++;
+        this.thisID = ServerSettings.entityIDNumber++;
         this.position = new PosVector(initialPosition);
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
@@ -172,7 +173,7 @@ public abstract class GameEntity implements MovingEntity{
         positionInterpolator.add(new PosVector(position), currentTime);
         rotationInterpolator.add(new Quaternionf(rotation), currentTime);
 
-        if (Settings.DEBUG) {
+        if (ServerSettings.DEBUG) {
             if ((position.x() == Float.NaN) || (position.y() == Float.NaN) || (position.z() == Float.NaN))
                 throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
             if ((rotation.x() == Float.NaN) || (rotation.y() == Float.NaN) || (rotation.z() == Float.NaN))
@@ -437,8 +438,8 @@ public abstract class GameEntity implements MovingEntity{
     public abstract void impact(PosVector impact, float power);
 
     public void resetCache() {
-        positionInterpolator = new VectorInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, position);
-        rotationInterpolator = new QuaternionInterpolator(Settings.INTERPOLATION_QUEUE_SIZE, rotation);
+        positionInterpolator = new VectorInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, position);
+        rotationInterpolator = new QuaternionInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, rotation);
     }
 
     public static class State {

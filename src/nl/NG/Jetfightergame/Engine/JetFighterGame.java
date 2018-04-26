@@ -8,12 +8,13 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GameLoop.JetFighterRunner;
+import nl.NG.Jetfightergame.Engine.GameLoop.ServerLoop;
 import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
@@ -26,6 +27,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +46,6 @@ import static org.lwjgl.glfw.GLFW.*;
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
     private EnvironmentManager environment;
     protected AbstractGameLoop renderLoop;
-    protected AbstractGameLoop gameLoop;
     private Collection<AbstractGameLoop> otherLoops = new ArrayList<>();
     protected SoundEngine soundEngine;
 
@@ -62,37 +63,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            if (Settings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(Settings.TARGET_FPS);
+            if (ServerSettings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(ClientSettings.TARGET_FPS);
             else globalGameTimer = new GameTimer();
 
-            KeyTracker keyTracker = KeyTracker.getInstance();
-            keyTracker.addKeyListener(this);
+            if (ClientSettings.LOCAL_SERVER) startServer();
 
-            player = new Player(playerInput);
-            environment = new EnvironmentManager(player, globalGameTimer);
-
-            player.setJet(new BasicJet(playerInput, globalGameTimer, environment));
-
-            final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
-            MouseTracker.getInstance().setMenuModeDecision(inGame);
-
-            gameLoop = new JetFighterRunner(environment, e -> this.exitGame());
-            otherLoops.add(gameLoop);
-
-//            MusicProvider musicProvider = new MusicProvider(new Timer());
-            soundEngine = new SoundEngine();
-            Sounds.initAll();
-
-            ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
-
-            environment.init();
-
-            renderLoop = new JetFighterRenderer(
-                    this, environment, window, camera, playerInput
-            );
-
-
-            camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), getPlayer(), DirVector.zVector());
+            player = startClient();
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
@@ -107,6 +83,39 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         // reclaim all space used for initialisation
         System.gc();
         Toolbox.print("Initialisation complete\n");
+    }
+
+    private Player startClient() throws IOException {
+        KeyTracker keyTracker = KeyTracker.getInstance();
+        keyTracker.addKeyListener(this);
+
+        Player player = new Player(playerInput);
+        player.setJet(new BasicJet(playerInput, globalGameTimer, environment));
+
+//            MusicProvider musicProvider = new MusicProvider(new Timer());
+        soundEngine = new SoundEngine();
+        Sounds.initAll();
+
+        ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
+
+        renderLoop = new JetFighterRenderer(
+                this, environment, window, camera, playerInput, player.jet()
+        );
+
+        camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), player.jet(), DirVector.zVector());
+
+        return player;
+    }
+
+    private void startServer() {
+        environment = new EnvironmentManager(globalGameTimer);
+        final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
+        MouseTracker.getInstance().setMenuModeDecision(inGame);
+
+        AbstractGameLoop gameLoop = new ServerLoop(environment, e -> this.exitGame());
+        otherLoops.add(gameLoop);
+
+        environment.init();
     }
 
     @Override
@@ -144,18 +153,29 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 if (currentGameMode == GameMode.MENU_MODE) exitGame();
                 else setMenuMode();
                 break;
+
             case GLFW_KEY_F11:
                 Toolbox.print("Switching fullscreen");
                 window.toggleFullScreen();
                 break;
+
             case GLFW_KEY_PRINT_SCREEN:
                 SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
                 final String name = "Screenshot_" + ft.format(new Date());
 
-                if (window.printScreen(name)){
+                boolean success = window.printScreen(name);
+                if (success){
                     Toolbox.print("Saved screenshot as \"" + name + "\"");
                 }
         }
+    }
+
+    public EnvironmentManager getEnvironment() {
+        return environment;
+    }
+
+    public GameTimer getGlobalGameTimer() {
+        return globalGameTimer;
     }
 
     @Override
@@ -167,9 +187,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
      * a splash image that can be shown and disposed.
      */
     private class Splash extends Frame implements Runnable {
-        Splash() {
 
-            setTitle("Loading " + Settings.GAME_NAME);
+        Splash() {
+            setTitle("Loading " + ServerSettings.GAME_NAME);
             // TODO better splash image
             final String image = "SplashImage.png";
 

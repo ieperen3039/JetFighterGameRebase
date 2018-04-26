@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Collection;
@@ -31,7 +31,7 @@ public abstract class GLFWGameEngine {
      * Classes that extend this engine should implement their own gameloop and rendering loop
      */
     public GLFWGameEngine() {
-        window = new GLFWWindow(Settings.GAME_NAME, 1600, 900, true);
+        window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
         new InputDelegate(window);
         playerInput = new ControllerManager();
         camera = new CameraManager();
@@ -72,7 +72,7 @@ public abstract class GLFWGameEngine {
 
     protected abstract Collection<AbstractGameLoop> secondaryGameLoops();
 
-    /** tells the renderloop to stop, renderloop must call back to clean up others */
+    /** tells the gameloops to stop */
     public void exitGame(){
         try { Thread.sleep(10); } catch (InterruptedException ignored) {} // wait for possible error-printing
 

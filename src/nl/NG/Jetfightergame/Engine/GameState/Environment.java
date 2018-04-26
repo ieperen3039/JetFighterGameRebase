@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
@@ -10,6 +11,12 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
  * created on 8-1-2018.
  */
 public interface Environment extends EntityManager {
+
+    /**
+     * @param player a new player to be added to this world
+     */
+    void addPlayer(Player player);
+
     /**
      * update the physics of all game objects and check for collisions
      */

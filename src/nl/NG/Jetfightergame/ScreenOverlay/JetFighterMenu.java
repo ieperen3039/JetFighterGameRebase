@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 
 import java.util.function.Supplier;
 
@@ -66,7 +66,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         MenuClickable controls = new MenuButton("Controls", () -> switchContentTo(controlsMenu));
         {
             MenuClickable invertX = new MenuToggle("Invert camera-x", (b) ->
-                    Settings.INVERT_CAMERA_ROTATION = !Settings.INVERT_CAMERA_ROTATION);
+                    ClientSettings.INVERT_CAMERA_ROTATION = !ClientSettings.INVERT_CAMERA_ROTATION);
             MenuClickable controllerType = new MenuToggleMultiple("Controller", control.names(), control::switchTo);
             MenuClickable backControls = new MenuButton("Back", () -> switchContentTo(optionMenu));
             controlsMenu = new MenuClickable[]{invertX, controllerType, backControls};

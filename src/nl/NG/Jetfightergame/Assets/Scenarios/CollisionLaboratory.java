@@ -7,9 +7,9 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -35,18 +35,18 @@ public class CollisionLaboratory extends GameState {
     private final int nrOfCubes;
     private final float speeds;
 
-    public CollisionLaboratory(Player player, GameTimer time) {
-        this(LAB_SIZE, NR_OF_CUBES, time, player);
+    public CollisionLaboratory(GameTimer time) {
+        this(LAB_SIZE, NR_OF_CUBES, time);
     }
 
-    public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time, Player player) {
-        super(player, time);
+    public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time) {
+        super(time);
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
         this.speeds = labSize / 3f;
 
-        Settings.SPECTATOR_MODE = true;
-        time.setGameTimeMultiplier(Settings.TARGET_FPS/60f);
+        ServerSettings.SPECTATOR_MODE = true;
+        time.setGameTimeMultiplier(ClientSettings.TARGET_FPS/60f);
     }
 
     @Override

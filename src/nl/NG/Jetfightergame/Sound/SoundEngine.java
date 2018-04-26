@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Sound;
 
 import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GLException;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -55,7 +55,7 @@ public class SoundEngine {
         final ALCapabilities alCaps = AL.createCapabilities(deviceCaps);
         checkALError();
 
-        if (Settings.DEBUG) {
+        if (ServerSettings.DEBUG) {
             if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open AL 10");
             if (!alCaps.OpenAL10) System.err.println("Warning: Sound system does not support Open AL 10");
 //            if (!alCaps.) System.err.println("Warning: Sound system does not support ...");

@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Updatable;
 
@@ -96,7 +96,7 @@ public class MusicProvider extends Thread implements Updatable {
      * @param percentage The volume in percentages
      */
     public void setBaseVolume(float percentage) {
-        this.baseVolume = percentage * (Settings.MAX_VOLUME - Settings.MIN_VOLUME) + Settings.MIN_VOLUME;
+        this.baseVolume = percentage * (ClientSettings.MAX_VOLUME - ClientSettings.MIN_VOLUME) + ClientSettings.MIN_VOLUME;
         fadeVolumeTo(baseVolume, true);
     }
 

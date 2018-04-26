@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.ShapeCreation;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -67,7 +67,7 @@ public class ShapeFromMesh implements Shape {
 
     private ShapeFromMesh(MeshParameters par, String name) {
         this(par.vertices, par.normals, par.faces);
-        if (Settings.DEBUG) Toolbox.print("loaded mesh " + name + ": [Faces: " + par.faces.size() + ", vertices: " + par.vertices.size() + "]");
+        if (ServerSettings.DEBUG) Toolbox.print("loaded mesh " + name + ": [Faces: " + par.faces.size() + ", vertices: " + par.vertices.size() + "]");
     }
 
     /**
@@ -185,7 +185,7 @@ public class ShapeFromMesh implements Shape {
                 return Files.readAllLines(dir.getPath(fileName));
             } catch (IOException e) {
                 System.err.println("Could not read mesh '" + fileName + "'. Continuing game without model.");
-                if (Settings.DEBUG) e.printStackTrace();
+                if (ServerSettings.DEBUG) e.printStackTrace();
                 return new ArrayList<>();
             }
         }

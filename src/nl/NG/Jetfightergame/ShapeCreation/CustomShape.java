@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,42 +41,6 @@ public class CustomShape {
         faces = new ArrayList<>();
         points = new Hashtable<>();
         normals = new ArrayList<>();
-    }
-
-    /**
-     * evaluates a beziér curve defined by vectors
-     *
-     * @param A starting point
-     * @param B first control point
-     * @param C second control point
-     * @param D ending point
-     * @param u fraction of the curve to be requested
-     * @return vector to the point on the curve on fraction u
-     */
-    private static Vector bezierPoint(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
-        PosVector point = new PosVector();
-        //A*(1−u)^3 + B*3u(1−u)^2 + C*3u^2(1−u) + D*u^3
-        A.scale((float) ((1 - u) * (1 - u) * (1 - u)), point)
-                .add(B.scale((float) (3 * u * (1 - u) * (1 - u)), new PosVector()), point)
-                .add(C.scale((float) (3 * u * u * (1 - u)), new PosVector()), point)
-                .add(D.scale((float) (u * u * u), new PosVector()), point);
-        return point;
-    }
-
-    /**
-     * evaluates the derivative of a beziér curve on a point defined by u
-     *
-     * @see CustomShape#bezierPoint(PosVector, PosVector, PosVector, PosVector, double)
-     */
-    private static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
-        DirVector direction = new DirVector();
-        final PosVector point = new PosVector();
-        //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
-        (B.sub(A, point))
-                .scale((float) (3 * (1 - u) * (1 - u)), point)
-                .add(C.sub(B, new PosVector()).scale((float) (6 * (1 - u) * u), new PosVector()), direction)
-                .add(D.sub(C, new PosVector()).scale((float) (3 * u * u), new PosVector()), direction);
-        return direction;
     }
 
     /**
@@ -220,7 +183,7 @@ public class CustomShape {
                                                                  PosVector C1, PosVector C2, PosVector D1, PosVector D2,
                                                                  double slices) {
 
-        DirVector startNormal = bezierDerivative(A2, B2, C2, D2, 0);
+        DirVector startNormal = Plane.bezierDerivative(A2, B2, C2, D2, 0);
         if (startNormal.dot(A2.to(middle, new DirVector())) > 0) startNormal = startNormal.scale(-1, new DirVector());
         TrackedObject<DirVector> normal = new TrackedVector<>(startNormal);
 
@@ -228,18 +191,18 @@ public class CustomShape {
         List<PosVector> rightVertices = new ArrayList<>();
 
         // initialize the considered vertices by their starting point
-        TrackedObject<PosVector> left = new TrackedObject<>(bezierPoint(A1, B1, C1, D1, 0).toPosVector());
-        TrackedObject<PosVector> right = new TrackedObject<>(bezierPoint(A2, B2, C2, D2, 0).toPosVector());
+        TrackedObject<PosVector> left = new TrackedObject<>(Plane.bezierPoint(A1, B1, C1, D1, 0).toPosVector());
+        TrackedObject<PosVector> right = new TrackedObject<>(Plane.bezierPoint(A2, B2, C2, D2, 0).toPosVector());
 
         // add vertices for every part of the slice, and combine these into a quad
         for (int i = 1; i <= slices; i++) {
-            left.update(bezierPoint(A1, B1, C1, D1, i / slices).toPosVector());
+            left.update(Plane.bezierPoint(A1, B1, C1, D1, i / slices).toPosVector());
             leftVertices.add(left.current());
 
-            right.update(bezierPoint(A2, B2, C2, D2, i / slices).toPosVector());
+            right.update(Plane.bezierPoint(A2, B2, C2, D2, i / slices).toPosVector());
             rightVertices.add(right.current());
 
-            DirVector newNormal = bezierDerivative(A2, B2, C2, D2, i / slices);
+            DirVector newNormal = Plane.bezierDerivative(A2, B2, C2, D2, i / slices);
             newNormal = newNormal.dot(normal.previous()) > 0 ? newNormal : newNormal.scale(-1, new DirVector());
             normal.update(newNormal);
 

@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Settings.Settings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector4f;
@@ -88,7 +88,7 @@ public final class Toolbox {
      * If DEBUG == false, return an empty string
      */
     public static String getCallingMethod(int level) {
-        if (!Settings.DEBUG) return "";
+        if (!ServerSettings.DEBUG) return "";
 
         final StackTraceElement caller = new Exception().getStackTrace()[level + 1];
         return caller.getClassName() + "." + caller.getMethodName() + "(line:" + caller.getLineNumber() + ")";
@@ -98,7 +98,7 @@ public final class Toolbox {
      * Draws the x-axis (red), y-axis (green), z-axis (blue), and origin (yellow).
      */
     public static void drawAxisFrame(GL2 gl) {
-        if (!Settings.DEBUG) return;
+        if (!ServerSettings.DEBUG) return;
 
         String source = getCallingMethod(1);
         if (!callerBlacklist.contains(source)) {
@@ -125,7 +125,7 @@ public final class Toolbox {
     }
 
     public static void checkGLError(){
-        if (!Settings.DEBUG) return;
+        if (!ServerSettings.DEBUG) return;
         int error;
         while ((error = glGetError()) != GL_NO_ERROR) {
             printFrom(2, "glError " + asHex(error) + ": " + glGetString(error));
@@ -138,7 +138,7 @@ public final class Toolbox {
 
 
     public static void checkALError() {
-        if (!Settings.DEBUG) return;
+        if (!ServerSettings.DEBUG) return;
         int error;
         while ((error = alGetError()) != AL_NO_ERROR) {
             printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
@@ -151,7 +151,7 @@ public final class Toolbox {
      * unless DEBUG is false
      */
     public static void exitJava() {
-        if (!Settings.DEBUG) {
+        if (!ServerSettings.DEBUG) {
             Toolbox.printFrom(2, "Tried to exit JVM while DEBUG mode is false.");
             return;
         }
