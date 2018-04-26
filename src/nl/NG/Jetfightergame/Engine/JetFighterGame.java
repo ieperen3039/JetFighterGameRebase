@@ -49,7 +49,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     private Collection<AbstractGameLoop> otherLoops = new ArrayList<>();
     protected SoundEngine soundEngine;
 
-    private final GameTimer globalGameTimer;
+    private GameTimer globalGameTimer;
     
     private final Player player;
 
@@ -63,18 +63,22 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            if (ServerSettings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(ClientSettings.TARGET_FPS);
-            else globalGameTimer = new GameTimer();
 
-            if (ClientSettings.LOCAL_SERVER) startServer();
+            if (ClientSettings.LOCAL_SERVER) {
+                if (ServerSettings.FIXED_DELTA_TIME) globalGameTimer = new StaticTimer(ClientSettings.TARGET_FPS);
+                else globalGameTimer = new GameTimer();
 
-            player = startClient();
+                startServer(globalGameTimer);
+
+            } else {
+                globalGameTimer = new StaticTimer(0);
+            }
+
+            player = startClient(globalGameTimer, environment);
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
 
-            ShapeFromMesh.initAll();
-            GeneralShapes.initAll();
         } finally {
             // remove splash frame
             splash.dispose();
@@ -85,29 +89,31 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         Toolbox.print("Initialisation complete\n");
     }
 
-    private Player startClient() throws IOException {
+    private Player startClient(GameTimer globalGameTimer, EnvironmentManager environment) throws IOException {
         KeyTracker keyTracker = KeyTracker.getInstance();
         keyTracker.addKeyListener(this);
 
         Player player = new Player(playerInput);
         player.setJet(new BasicJet(playerInput, globalGameTimer, environment));
 
-//            MusicProvider musicProvider = new MusicProvider(new Timer());
-        soundEngine = new SoundEngine();
-        Sounds.initAll();
-
         ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
 
+        soundEngine = new SoundEngine();
+
         renderLoop = new JetFighterRenderer(
-                this, environment, window, camera, playerInput, player.jet()
+                this, this.environment, window, camera, playerInput, player.jet()
         );
+
+        Sounds.initAll();
+        ShapeFromMesh.initAll();
+        GeneralShapes.initAll();
 
         camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), player.jet(), DirVector.zVector());
 
         return player;
     }
 
-    private void startServer() {
+    private void startServer(GameTimer globalGameTimer) {
         environment = new EnvironmentManager(globalGameTimer);
         final BooleanSupplier inGame = () -> currentGameMode == GameMode.PLAY_MODE;
         MouseTracker.getInstance().setMenuModeDecision(inGame);

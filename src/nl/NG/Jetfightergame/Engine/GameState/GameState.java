@@ -17,7 +17,6 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Collection;
@@ -29,13 +28,13 @@ import static org.lwjgl.opengl.GL11.glDisable;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public abstract class GameState implements Environment, PathDescription {
+public abstract class GameState implements Environment, PathDescription, NetForceProvider {
 
     protected final Collection<Particle> particles = new ConcurrentArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
     private Collection<MovingEntity> newEntities = new ConcurrentArrayList<>();
 
-    private CollisionDetection collisionDetection;
+    private EntityManagement physicsEngine;
 
     private final GameTimer time;
 
@@ -47,7 +46,17 @@ public abstract class GameState implements Environment, PathDescription {
     public void buildScene() {
         final Collection<Touchable> staticEntities = createWorld();
         final Collection<MovingEntity> dynamicEntities = setEntities();
-        collisionDetection = new CollisionDetection(dynamicEntities, staticEntities);
+
+        switch (ServerSettings.COLLISION_DETECTION_LEVEL){
+            case 0:
+                physicsEngine = new EntityList(dynamicEntities, staticEntities);
+                break;
+            case 1:
+                physicsEngine = new CollisionDetection(dynamicEntities, staticEntities);
+                break;
+            default:
+                throw new UnsupportedOperationException("unsupported collision detection level:" + ServerSettings.COLLISION_DETECTION_LEVEL);
+        }
     }
 
     /**
@@ -72,27 +81,21 @@ public abstract class GameState implements Environment, PathDescription {
         final float currentTime = time.getGameTime().current();
         final float deltaTime = time.getGameTime().difference();
 
-        if (deltaTime == 0) return;
+        if (deltaTime == 0f) return;
 
         // update positions and apply physics
-        collisionDetection.preUpdateEntities(this, deltaTime);
+        physicsEngine.preUpdateEntities(this, deltaTime);
 
         // add new entities
-        collisionDetection.prepareCollision(newEntities);
+        physicsEngine.addEntities(newEntities);
         newEntities.clear();
 
         if ((ServerSettings.MAX_COLLISION_ITERATIONS != 0) && (deltaTime > 0))
-            collisionDetection.analyseCollisions(currentTime, deltaTime, null);
+            physicsEngine.analyseCollisions(currentTime, deltaTime, this);
 
         // update new state
-        collisionDetection.updateEntities(currentTime);
+        physicsEngine.updateEntities(currentTime);
     }
-
-    /**
-     * @param entity any dynamic entity in this world
-     * @return the force of gravity (or whatever) that naturally acts on this entity
-     */
-    public abstract DirVector entityNetforce(MovingEntity entity);
 
     @Override
     public void setLights(GL2 gl) {
@@ -118,10 +121,10 @@ public abstract class GameState implements Environment, PathDescription {
     @Override
     public void drawObjects(GL2 gl) {
 //        Toolbox.drawAxisFrame(gl);
-        collisionDetection.getStaticEntities().forEach(d -> d.draw(gl));
+        physicsEngine.getStaticEntities().forEach(d -> d.draw(gl));
 
         glDisable(GL_CULL_FACE); // TODO when new meshes are created or fixed, this should be removed
-        collisionDetection.getDynamicEntities().forEach(d -> d.draw(gl));
+        physicsEngine.getDynamicEntities().forEach(d -> d.draw(gl));
     }
 
     @Override
@@ -161,8 +164,8 @@ public abstract class GameState implements Environment, PathDescription {
     public void cleanUp() {
         lights.clear();
         particles.clear();
-        collisionDetection.cleanUp();
-        collisionDetection = null;
+        physicsEngine.cleanUp();
+        physicsEngine = null;
         System.gc();
     }
 

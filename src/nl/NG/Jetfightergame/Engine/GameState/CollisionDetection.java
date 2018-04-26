@@ -31,14 +31,14 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
  * @author Geert van Ieperen
  * created on 10-3-2018.
  */
-public class CollisionDetection {
+public class CollisionDetection implements EntityManagement {
     private List<HUDTargetable> debugs = new LinkedList<>();
 
     private CollisionEntity[] xLowerSorted;
     private CollisionEntity[] yLowerSorted;
     private CollisionEntity[] zLowerSorted;
 
-    private AveragingQueue avgCollision = new AveragingQueue(20);
+    private AveragingQueue avgCollision = new AveragingQueue(ServerSettings.TARGET_TPS);
     private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) ->
             hud.printRoll(String.format("Collision pair count average: %1.01f", avgCollision.average()));
 
@@ -69,19 +69,22 @@ public class CollisionDetection {
         dynamicClones = Collections.unmodifiableCollection(dynamicEntities);
     }
 
-    public void preUpdateEntities(GameState gameState, float deltaTime) {
-        Arrays.stream(entityArray())
-//                .parallel()
-                .map(e -> e.entity)
-                .forEach((entity) -> entity.preUpdate(deltaTime, gameState.entityNetforce(entity)));
+    @Override
+    public void preUpdateEntities(NetForceProvider gameState, float deltaTime) {
+        for (CollisionEntity e : entityArray()) {
+            MovingEntity entity = e.entity;
+            DirVector netForce = gameState.entityNetforce(entity);
+            entity.preUpdate(deltaTime, netForce);
+
+            e.update();
+        }
+
+        Toolbox.insertionSort(xLowerSorted, CollisionEntity::xLower);
+        Toolbox.insertionSort(yLowerSorted, CollisionEntity::yLower);
+        Toolbox.insertionSort(zLowerSorted, CollisionEntity::zLower);
     }
 
-    /**
-     * checks and resolves all collisions that occurred in the given timeperiod
-     * @param currentTime the current game-loop time
-     * @param deltaTime the in-game time difference from the last call to this method
-     * @param environment the path contained in the static parts of this
-     */
+    @Override
     public void analyseCollisions(float currentTime, float deltaTime, PathDescription environment) {
         int remainingLoops = MAX_COLLISION_ITERATIONS;
 
@@ -104,8 +107,8 @@ public class CollisionDetection {
 
             if (DO_COLLISION_RESPONSE) {
                 // process the final collisions in pairs
-                List<RigidBody> postCollisions = collisionPairs
-                        .stream()
+                List<RigidBody> postCollisions = collisionPairs.stream()
+                        // process collision, extract individual entities
                         .flatMap(p -> processCollision(deltaTime, p))
                         // every item once
                         .distinct()
@@ -120,8 +123,6 @@ public class CollisionDetection {
             }
 
         } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
-
-        //avgCollision.add(newCollisions);
 
         if (!collisionPairs.isEmpty()) {
             Toolbox.print(collisionPairs.size() + " collisions not resolved");
@@ -355,20 +356,9 @@ public class CollisionDetection {
         }
     }
 
-    /**
-     * adds the new entities to the collision detection, and cleans out dead entities from the arrays.
-     * @param newEntities a set of new entities to be added to the collision detection. The set is unmodified.
-     */
-    public void prepareCollision(Collection<MovingEntity> newEntities) {
+    @Override
+    public void addEntities(Collection<MovingEntity> newEntities) {
         int nOfNewEntities = newEntities.size();
-
-        for (CollisionEntity entity : entityArray()) {
-            entity.update();
-        }
-
-        Toolbox.insertionSort(xLowerSorted, CollisionEntity::xLower);
-        Toolbox.insertionSort(yLowerSorted, CollisionEntity::yLower);
-        Toolbox.insertionSort(zLowerSorted, CollisionEntity::zLower);
 
         CollisionEntity[] newXSort = new CollisionEntity[nOfNewEntities];
         CollisionEntity[] newYSort = new CollisionEntity[nOfNewEntities];
@@ -438,21 +428,25 @@ public class CollisionDetection {
         return xLowerSorted;
     }
 
+    @Override
     public Collection<Touchable> getStaticEntities() {
         // is unmodifiable
         return staticEntities;
     }
 
+    @Override
     public Collection<MovingEntity> getDynamicEntities() {
         return dynamicClones;
     }
 
+    @Override
     public void updateEntities(float currentTime) {
         for (CollisionEntity e : entityArray()) {
             e.entity.update(currentTime);
         }
     }
 
+    @Override
     public void cleanUp() {
         xLowerSorted = new CollisionEntity[0];
         yLowerSorted = new CollisionEntity[0];

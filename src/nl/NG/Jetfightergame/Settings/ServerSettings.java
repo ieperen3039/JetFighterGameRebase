@@ -16,6 +16,7 @@ public final class ServerSettings {
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
     public static final short TARGET_TPS = 10;
+    public static final int COLLISION_DETECTION_LEVEL = 1;
     public static boolean FIXED_DELTA_TIME = false;
 
     /** collision settings */

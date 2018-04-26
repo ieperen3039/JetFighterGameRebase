@@ -48,15 +48,17 @@ public abstract class GLFWGameEngine {
 
         try {
             renderingLoop().unPause();
-            renderingLoop().run();
+            renderingLoop().run(); // blocks until the client is quit
 
             for (AbstractGameLoop abstractGameLoop : secondaryGameLoops()) {
                 abstractGameLoop.join();
             }
+
         } catch (Exception e) {
             e.printStackTrace();
             renderingLoop().interrupt();
             secondaryGameLoops().forEach(Thread::interrupt);
+
         } finally {
             Toolbox.checkGLError();
             Toolbox.checkALError();
