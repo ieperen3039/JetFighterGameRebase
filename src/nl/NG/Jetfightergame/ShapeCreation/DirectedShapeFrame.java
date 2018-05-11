@@ -6,9 +6,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
-import java.util.Collection;
-import java.util.stream.Stream;
-
 /**
  * Created by Geert van Ieperen on 13-3-2017.
  * a {@link Shape} drawn from some point to another point
@@ -39,12 +36,12 @@ public class DirectedShapeFrame implements DirectedShape {
     }
 
     @Override
-    public Stream<? extends Plane> getPlanes() {
+    public Iterable<? extends Plane> getPlanes() {
         return object.getPlanes();
     }
 
     @Override
-    public Collection<PosVector> getPoints() {
+    public Iterable<PosVector> getPoints() {
         return object.getPoints();
     }
 

@@ -11,7 +11,7 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
+import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -31,11 +31,11 @@ public class SimpleBullet extends AbstractProjectile {
     private static final float AIR_RESIST_COEFF = 0.01f;
 
     public SimpleBullet(PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-                        GameTimer gameTimer, EntityManager particleDeposit
+                        GameTimer gameTimer, EntityManager particleDeposit, int id
     ) {
         super(
                 Material.SILVER, MASS, 1, initialPosition, initialVelocity, initialRotation, gameTimer, AIR_RESIST_COEFF,
-                1000 / initialVelocity.length(), particleDeposit
+                1000 / initialVelocity.length(), particleDeposit, id
         );
     }
 
@@ -44,7 +44,7 @@ public class SimpleBullet extends AbstractProjectile {
         ms.pushMatrix();
         {
             ms.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
-            action.accept(ShapeFromMesh.ARROW);
+            action.accept(ShapeFromFile.ARROW);
         }
         ms.popMatrix();
     }

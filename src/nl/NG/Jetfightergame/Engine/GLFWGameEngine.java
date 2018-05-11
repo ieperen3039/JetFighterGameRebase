@@ -161,7 +161,7 @@ public abstract class GLFWGameEngine {
         public void run() {
             try {
                 Thread.sleep(millis);
-                Toolbox.print(name + " timed out!");
+                Toolbox.printError(name + " timed out!");
                 action.run();
             } catch (InterruptedException e) {
                 e.printStackTrace();

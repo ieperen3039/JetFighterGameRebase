@@ -6,8 +6,8 @@ import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.GridMesh;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -86,8 +86,7 @@ public class MissionSnake extends GameState {
     }
 
     @Override
-    public void addPlayer(Player player) {
-        final AbstractJet playerJet = player.jet();
+    public void addPlayerJet(AbstractJet playerJet) {
         playerJet.set(new PosVector(LEVEL_SQUARE_SIZE/2f, LEVEL_SQUARE_SIZE/2f, LEVEL_HEIGHT/2f));
     }
 
@@ -112,7 +111,7 @@ public class MissionSnake extends GameState {
         squareRing(frame, upper, top);
         squareRing(frame, top, roof);
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     /**

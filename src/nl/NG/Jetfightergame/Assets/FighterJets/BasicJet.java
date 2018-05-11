@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
+import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -36,17 +36,19 @@ public class BasicJet extends AbstractJet {
 
     private Shape shape;
 
-    public BasicJet(Controller input, GameTimer renderTimer, EntityManager entityDeposit) {
-        this(PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(5));
+    public BasicJet(int id, Controller input, GameTimer renderTimer, EntityManager entityDeposit) {
+        this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(5));
     }
 
-    public BasicJet(PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,
+    public BasicJet(int id, PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,
                     EntityManager entityDeposit, SpecialWeapon specialWeapon) {
-        super(input, initialPosition, initialRotation, 1f,
+        super(id, input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
                 0.8f, renderTimer, 0.3f, 0.3f, GUN, specialWeapon, 1000, entityDeposit);
-        shape = ShapeFromMesh.CONCEPT_BLUEPRINT;
+
+        shape = ShapeFromFile.CONCEPT_BLUEPRINT;
+
     }
 
     @Override

@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -17,11 +16,8 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen created on 25-4-2018.
  */
 public class Tunnel implements Touchable {
-    private final int thisID;
 
     public Tunnel(PosVector ... path) {
-         thisID = ServerSettings.entityIDNumber++;
-
          if ((path.length % 3) != 0){
              throw new IllegalStateException("Path must be a multiple of 3");
          }
@@ -65,10 +61,5 @@ public class Tunnel implements Touchable {
     @Override
     public RigidBody getFinalCollision(float deltaTime) {
         return null;
-    }
-
-    @Override
-    public int idNumber() {
-        return thisID;
     }
 }

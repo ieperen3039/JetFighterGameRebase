@@ -10,11 +10,6 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
  */
 public class GameTimer {
 
-    /** multiplication of time as effect of in-game events. with playMultiplier = 2, the game goes twice as fast. */
-    private float playMultiplier = 1f;
-    /** multiplication of time by the engine. Main use is for pausing. with engineMultiplier = 2, the game goes twice as fast. */
-    private float engineMultiplier = 0f;
-
     /** game-seconds since creating this gametimer */
     private float currentInGameTime;
     /** last record of system time */
@@ -24,6 +19,7 @@ public class GameTimer {
 
     private final TrackedFloat gameTime;
     private final TrackedFloat renderTime;
+    private boolean isPaused = false;
 
     public GameTimer() {
         currentInGameTime = 0f;
@@ -61,22 +57,19 @@ public class GameTimer {
         long currentTime = System.nanoTime();
         float deltaTime = (currentTime - lastMark) * MUL_TO_SECONDS;
         lastMark = currentTime;
-        currentInGameTime += deltaTime * playMultiplier * engineMultiplier;
+
+        if (!isPaused) currentInGameTime += deltaTime;
     }
 
-    /**
-     * @param multiplier time will move {@code multiplier} times as fast
-     */
-    public void setGameTimeMultiplier(float multiplier) {
+    /** stops the in-game time */
+    public void pause(){
         updateTimer();
-        playMultiplier = multiplier;
+        isPaused = true;
     }
 
-    /**
-     * @param multiplier time will move {@code multiplier} times as fast
-     */
-    public void setEngineMultiplier(float multiplier){
+    /** lets the in-game time proceed, without jumping */
+    public void unPause(){
         updateTimer();
-        engineMultiplier = multiplier;
+        isPaused = false;
     }
 }

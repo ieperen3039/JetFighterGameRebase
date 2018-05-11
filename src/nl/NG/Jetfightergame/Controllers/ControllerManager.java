@@ -10,9 +10,7 @@ import nl.NG.Jetfightergame.Tools.Manager;
  */
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
-    private Controller playerControl = new PlayerPCControllerAbsolute();
-    private Controller override = new EmptyController();
-    private boolean playerHasControl = true;
+    private Controller instance = new PlayerPCControllerAbsolute();
 
     /**
      * all control types available for the player. This logically excludes AI.
@@ -26,73 +24,50 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
         return ControllerImpl.values();
     }
 
-    /**
-     * set the implementation of the override, but doesn't enables it.
-     * @param override the new override implementation
-     */
-    public void setOverride(Controller override) {
-        if (override instanceof TrackerListener) {
-            ((TrackerListener) override).cleanUp();
-        }
-        this.override = override;
-    }
-
-    /**
-     * @param enable if true, the player has control.
-     *               if false, the override will have the control.
-     */
-    public void setPlayerControl(boolean enable){
-        playerHasControl = enable;
-    }
-
     public void switchTo(ControllerImpl type){
-        if (playerControl instanceof TrackerListener) {
-            ((TrackerListener) playerControl).cleanUp();
+        if (instance instanceof TrackerListener) {
+            ((TrackerListener) instance).cleanUp();
         }
 
         switch (type){
             case MouseAbsolute:
-                playerControl = new PlayerPCControllerAbsolute();
+                instance = new PlayerPCControllerAbsolute();
                 break;
             case MouseRelative:
-                playerControl = new PlayerPCControllerRelative();
+                instance = new PlayerPCControllerRelative();
                 break;
             default:
                 throw new UnsupportedOperationException("unknown enum: " + type);
         }
     }
 
-    private Controller instance(){
-        return playerHasControl ? playerControl : override;
-    }
-
     @Override
     public float throttle() {
-        return instance().throttle();
+        return instance.throttle();
     }
 
     @Override
     public float pitch() {
-        return instance().pitch();
+        return instance.pitch();
     }
 
     @Override
     public float yaw() {
-        return instance().yaw();
+        return instance.yaw();
     }
 
     @Override
     public float roll() {
-        return instance().roll();
+        return instance.roll();
     }
 
     @Override
     public boolean primaryFire() {
-        return instance().primaryFire();
+        return instance.primaryFire();
     }
 
     @Override
     public boolean secondaryFire() {
-        return instance().secondaryFire();
+        return instance.secondaryFire();
     }
 }

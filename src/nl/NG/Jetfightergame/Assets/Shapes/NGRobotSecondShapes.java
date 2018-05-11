@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
-import nl.NG.Jetfightergame.ShapeCreation.Direction;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -136,7 +136,7 @@ public class NGRobotSecondShapes {
 //            e.printStackTrace();
 //        }
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeLeg1() {
@@ -159,7 +159,7 @@ public class NGRobotSecondShapes {
         frame.addQuad(E, F);
         frame.addQuad(F, A);
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeLeg2() {
@@ -193,7 +193,7 @@ public class NGRobotSecondShapes {
         frame.addQuad(inner, Dp);
         frame.addMirrorTriangle(Ap, inner, Dp);
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeFoot() {
@@ -226,7 +226,7 @@ public class NGRobotSecondShapes {
         foot.addQuad(B, C);
         foot.addTriangle(C, C.mirrorY(new PosVector()), D);
 
-        return foot.wrapUp();
+        return foot.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeEar() {
@@ -238,7 +238,7 @@ public class NGRobotSecondShapes {
 
         ear.addMirrorTriangle(Side, Up, Back);
 
-        return ear.wrapUp();
+        return ear.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeTorso() {
@@ -350,7 +350,7 @@ public class NGRobotSecondShapes {
         torso.addQuad(H, V);
         torso.addQuad(V, W);
 
-        return torso.wrapUp();
+        return torso.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeNeck() {

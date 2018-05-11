@@ -41,6 +41,8 @@ public interface EntityManager {
 
     GameTimer getTimer();
 
+    Collection<MovingEntity> getEntities();
+
 //    /**
 //     * adds the sound effect to the sound engine.
 //     * Properties of the source should still be managed by the calling method

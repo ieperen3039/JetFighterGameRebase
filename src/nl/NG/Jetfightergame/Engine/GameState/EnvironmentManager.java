@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
@@ -7,10 +9,10 @@ import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
 import nl.NG.Jetfightergame.Assets.Scenarios.MissionSnake;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -62,13 +64,18 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     public void init() {
-        instance = new CollisionLaboratory(time);
-        instance.buildScene();
+        instance = new PlayerJetLaboratory(time);
+        instance.buildScene(ServerSettings.COLLISION_DETECTION_LEVEL, true);
     }
 
     @Override
-    public void buildScene() {
-        instance.buildScene();
+    public void buildScene(int collisionDetLevel, boolean loadDynamic) {
+        instance.buildScene(collisionDetLevel, true);
+    }
+
+    @Override
+    public GameEntity.State getNewSpawn() {
+        return instance.getNewSpawn();
     }
 
     public enum Worlds {
@@ -79,8 +86,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void addPlayer(Player player) {
-        instance.addPlayer(player);
+    public void addPlayerJet(AbstractJet playerJet) {
+        instance.addPlayerJet(playerJet);
     }
 
     @Override
@@ -109,6 +116,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
+    public Collection<MovingEntity> getEntities() {
+        return instance.getEntities();
+    }
+
+    @Override
     public void cleanUp() {
         instance.cleanUp();
     }
@@ -122,7 +134,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     @Override
     public void switchTo(Worlds implementation) {
         instance.cleanUp();
-        ServerSettings.SPECTATOR_MODE = false;
+        ClientSettings.SPECTATOR_MODE = false;
 
         switch (implementation) {
             case CollisionLaboratory:
@@ -138,11 +150,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
                 instance = new MissionSnake(time);
                 break;
             default:
-                Toolbox.print("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
+                Toolbox.printError("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
                 instance = new Void();
         }
 
-        instance.buildScene();
+        instance.buildScene(ServerSettings.COLLISION_DETECTION_LEVEL, true);
     }
 
 

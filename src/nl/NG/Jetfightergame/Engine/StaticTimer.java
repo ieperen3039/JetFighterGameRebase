@@ -44,13 +44,4 @@ public class StaticTimer extends GameTimer {
         return currentTime.current();
     }
 
-    @Override
-    public void setGameTimeMultiplier(float multiplier) {
-        gameMult = multiplier;
-    }
-
-    @Override
-    public void setEngineMultiplier(float multiplier) {
-        engineMult = multiplier;
-    }
 }

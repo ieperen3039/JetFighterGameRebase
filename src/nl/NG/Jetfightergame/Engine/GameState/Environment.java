@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
-import nl.NG.Jetfightergame.Player;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
@@ -13,9 +14,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 public interface Environment extends EntityManager {
 
     /**
-     * @param player a new player to be added to this world
+     * @param playerJet
      */
-    void addPlayer(Player player);
+    void addPlayerJet(AbstractJet playerJet);
 
     /**
      * update the physics of all game objects and check for collisions
@@ -46,6 +47,10 @@ public interface Environment extends EntityManager {
 
     /**
      * initialize the scene
+     * @param collisionDetLevel 0 = no collision
+     * @param loadDynamic if false, all dynamic entities are not loaded. This is required if these are managed by a server
      */
-    void buildScene();
+    void buildScene(int collisionDetLevel, boolean loadDynamic);
+
+    GameEntity.State getNewSpawn();
 }

@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -32,7 +33,7 @@ public final class GeneralShapes {
                 new DirVector(0, 0, 1)
         );
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     private static Shape makeCube() {
@@ -49,7 +50,7 @@ public final class GeneralShapes {
         frame.addQuad(NPP, PPP);
         frame.addMirrorQuad(PPP, PPN, NPN, NPP);
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     /**
@@ -76,7 +77,7 @@ public final class GeneralShapes {
         recursiveQuad(frame, PPP, PPN, NPN, NPP, new DirVector(0, -1, 0), splits);
         recursiveQuad(frame, NPP, PPP, PNP, NNP, new DirVector(0, 0, -1), splits);
 
-        return frame.wrapUp();
+        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
     }
 
     /**

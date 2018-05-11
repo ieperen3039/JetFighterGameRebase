@@ -7,9 +7,9 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -45,8 +45,7 @@ public class CollisionLaboratory extends GameState {
         this.nrOfCubes = nrOfCubes;
         this.speeds = labSize / 3f;
 
-        ServerSettings.SPECTATOR_MODE = true;
-        time.setGameTimeMultiplier(ClientSettings.TARGET_FPS/60f);
+        ClientSettings.SPECTATOR_MODE = true;
     }
 
     @Override
@@ -87,7 +86,7 @@ public class CollisionLaboratory extends GameState {
         random.scale(speeds, random);
 
         FallingCube cube = new FallingCube(
-                Material.SILVER, CUBEMASS, CUBESIZE,
+                Identity.next(), Material.SILVER, CUBEMASS, CUBESIZE,
                 pos.scale(0.8f, pos).toPosVector(),
                 random, new Quaternionf(), getTimer(), this
         );

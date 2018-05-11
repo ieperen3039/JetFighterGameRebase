@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameState.Environment;
@@ -13,6 +14,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -37,7 +39,7 @@ public class Process592 implements Environment {
     private static final int SCALE = 50;
     private static final float OFFSET = 0.1f;
     private static final float SPACE = SCALE/2;
-    private Player player = null;//TODO
+    private final Player player;//TODO
     private final ArrayList<Particle> particles;
 
     private GameTimer time = new GameTimer(); // I know, time does not exist, but it is for user experience.
@@ -55,20 +57,26 @@ public class Process592 implements Environment {
 
     /**
      * @param worldSelector Consumer of worlds. Must be available and implemented
+     * @param player
      */
-    public Process592(Consumer<Worlds> worldSelector) {
+    public Process592(Consumer<Worlds> worldSelector, Player player) {
         particles = new ArrayList<>();
         currentItems = worldSelectionMenu(worldSelector);
+        this.player = player;
     }
 
     @Override
-    public void buildScene() {
+    public void buildScene(int collisionDetLevel, boolean loadDynamic) {
         player.jet().set();
     }
 
     @Override
-    public void addPlayer(Player player) {
-        this.player = player;
+    public GameEntity.State getNewSpawn() {
+        return new GameEntity.State();
+    }
+
+    @Override
+    public void addPlayerJet(AbstractJet playerJet) {
     }
 
     @Override
@@ -170,6 +178,11 @@ public class Process592 implements Environment {
     }
 
     @Override
+    public Collection<MovingEntity> getEntities() {
+        return Collections.EMPTY_SET;
+    }
+
+    @Override
     public void cleanUp() {
         particles.clear();
     }
@@ -244,7 +257,7 @@ public class Process592 implements Environment {
                     i.next(), i.next(), i.next(), i.next()
             );
 
-            Shape shape = frame.wrapUp();
+            Shape shape = frame.wrapUp(ServerSettings.RENDER_ENABLED);
             cache.put(parts, shape);
 
             return new MenuPanel(shape, action, parts);

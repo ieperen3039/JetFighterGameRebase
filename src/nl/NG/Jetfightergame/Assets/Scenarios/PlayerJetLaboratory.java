@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -47,7 +48,7 @@ public class PlayerJetLaboratory extends GameState {
                 // etc.
                 for (int z = -1; z < 2; z += 2) {
                     final FallingCube cube = new FallingCube(
-                            Material.SILVER, 500, LAB_SIZE/10,
+                            Identity.next(), Material.SILVER, 500, LAB_SIZE/10,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new DirVector(), new Quaternionf(), getTimer(), this
                     );

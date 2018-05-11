@@ -24,7 +24,7 @@ public enum Material {
             Color4f.WHITE,
             Color4f.BLACK,
             Color4f.INVISIBLE,
-            100f
+            1f
     ),
 
     /**

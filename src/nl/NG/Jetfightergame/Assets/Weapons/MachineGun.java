@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
+import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -23,6 +24,6 @@ public class MachineGun extends AbstractWeapon {
         vel.add(source.forward().mul(30));
         final PosVector pos = source.position(spawnTime);
         final Quaternionf rot = source.rotation(spawnTime);
-        return new SimpleBullet(pos, vel, rot, entityDeposit.getTimer(), entityDeposit);
+        return new SimpleBullet(pos, vel, rot, entityDeposit.getTimer(), entityDeposit, Identity.next());
     }
 }

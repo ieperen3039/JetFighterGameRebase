@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Assets.WorldObjects;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
@@ -51,7 +52,7 @@ public class SimplexCave implements Touchable {
         bottomGrid = buildTerrain(noiseBottom, 0.3f, ROWS, PLANE_SIZE);
 
         collisions = new ArrayList<>();
-        thisID = ServerSettings.entityIDNumber++;
+        thisID = Identity.next();
     }
 
     /**
@@ -129,7 +130,6 @@ public class SimplexCave implements Touchable {
         return new RigidBody(this);
     }
 
-    @Override
     public int idNumber() {
         return thisID;
     }

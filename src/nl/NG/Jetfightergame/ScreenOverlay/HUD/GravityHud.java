@@ -52,7 +52,7 @@ public class GravityHud {
                         xPosVelocityBar, (int) (height * inverseBarMargin)
                 );
 
-                final float currentVelocity = target.interpolatedVelocity().length();
+                final float currentVelocity = target.interpolatedVelocity().length() * 10f;
 
                 float[] velocityTicks = ticks(currentVelocity, 25, 100);
                 for (float tick : velocityTicks) {

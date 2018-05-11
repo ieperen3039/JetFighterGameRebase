@@ -10,9 +10,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Queue;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -24,7 +24,7 @@ import static org.lwjgl.opengl.GL30.*;
  *         created on 17-11-2017.
  */
 public class Mesh implements Renderable {
-    private static Queue<Mesh> registeredMeshes = new ArrayDeque<>();
+    private static Collection<Mesh> loadedMeshes = new ArrayList<>(20);
     public static Mesh EMPTY_MESH = new EmptyMesh();
 
     private int vaoId;
@@ -34,13 +34,8 @@ public class Mesh implements Renderable {
 
     /**
      * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.
-     *
-     * @param posList a list of vertices, possibly with unique entries
-     * @param normList a list of (possibly non-normalized) normals, possibly with unique entries
-     * @param facesList a list of references to the posList and normList, describing planes
      */
     public Mesh(List<PosVector> posList, List<DirVector> normList, List<Face> facesList) {
-
         // Create position array in the order it has been declared. faces have 3 vertices of 3 indices
         float[] posArr = new float[facesList.size() * 9];
         float[] normArr = new float[facesList.size() * 9];
@@ -52,6 +47,7 @@ public class Mesh implements Renderable {
         }
 
         writeToGL(posArr, normArr);
+        loadedMeshes.add(this);
     }
 
     private void readFaceVertex(List<PosVector> posList, float[] posArr, int faceNumber, Face face) {
@@ -116,8 +112,7 @@ public class Mesh implements Renderable {
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
-
-            registeredMeshes.offer(this);
+            
         } finally {
             if (posBuffer != null) {
                 MemoryUtil.memFree(posBuffer);
@@ -145,13 +140,11 @@ public class Mesh implements Renderable {
      * all meshes that have been written to the GPU will be removed
      */
     public static void cleanAll() {
-        while (!registeredMeshes.isEmpty()){
-            registeredMeshes.peek().dispose();
-            Toolbox.checkGLError();
-        }
+        loadedMeshes.forEach(Mesh::dispose);
+        Toolbox.checkGLError();
     }
 
-    public void dispose() {
+    protected void dispose() {
         glDisableVertexAttribArray(0);
 
         glDeleteBuffers(posVboID);
@@ -160,8 +153,6 @@ public class Mesh implements Renderable {
         // Delete the VAO
         glBindVertexArray(0);
         glDeleteVertexArrays(vaoId);
-
-        registeredMeshes.remove(this);
     }
 
     /** allows for an empty mesh */
@@ -196,11 +187,6 @@ public class Mesh implements Renderable {
             A = a;
             B = b;
             C = c;
-        }
-
-        @Override
-        public String toString() {
-            return "(" + A.toString() + B.toString() + C.toString() + ")";
         }
     }
 

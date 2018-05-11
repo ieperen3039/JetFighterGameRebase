@@ -5,8 +5,10 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeFromMesh;
+import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import org.joml.Quaternionf;
 import org.joml.Vector4f;
 
 import java.util.Arrays;
@@ -37,8 +39,23 @@ public final class Toolbox {
      * prints the toString method of the given objects to System.out, preceded
      * with calling method
      */
-    public static synchronized void print(Object... o) {
+    public static void print(Object... o) {
         printFrom(2, o);
+    }
+
+    /**
+     * the system error version of {@link #print(Object...)}, but always print caller
+     * @param o the objects to print
+     */
+    public static synchronized void printError(Object... o) {
+        int level = 1;
+        StackTraceElement caller;
+        Exception ex = new Exception();
+        do {
+            caller = ex.getStackTrace()[level++];
+        } while (caller.isNativeMethod());
+
+        System.err.println(caller + ": " + concatenate(o));
     }
 
     /**
@@ -48,10 +65,10 @@ public final class Toolbox {
      */
     public static synchronized void printFrom(int level, Object... o) {
         String source = getCallingMethod(level);
-        System.out.println(source + ": " + getValues(o));
+        System.out.println(source + ": " + concatenate(o));
     }
 
-    private static String getValues(Object[] x) {
+    private static String concatenate(Object[] x) {
         if (x.length == 0) return "";
         for (int i = 0; i < x.length; i++) {
             if (x[i] == null)
@@ -74,7 +91,7 @@ public final class Toolbox {
      */
     public static synchronized void printSpamless(String identifier, Object... o) {
         if (!callerBlacklist.contains(identifier)) {
-            System.out.println(Toolbox.getCallingMethod(1) + ": " + getValues(o));
+            System.out.println(Toolbox.getCallingMethod(1) + ": " + concatenate(o));
             callerBlacklist.add(identifier);
         }
     }
@@ -91,7 +108,11 @@ public final class Toolbox {
     public static String getCallingMethod(int level) {
         if (!ServerSettings.DEBUG) return "";
 
-        final StackTraceElement caller = new Exception().getStackTrace()[level + 1];
+        StackTraceElement caller;
+        do {
+            caller = new Exception().getStackTrace()[++level]; // level + 1
+        } while (caller.isNativeMethod());
+
         return caller.getClassName() + "." + caller.getMethodName() + "(line:" + caller.getLineNumber() + ")";
     }
 
@@ -112,13 +133,13 @@ public final class Toolbox {
         gl.pushMatrix();
         {
             gl.setMaterial(mat, Color4f.BLUE);
-            gl.draw(ShapeFromMesh.ARROW);
+            gl.draw(ShapeFromFile.ARROW);
             gl.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
             gl.setMaterial(mat, Color4f.RED);
-            gl.draw(ShapeFromMesh.ARROW);
+            gl.draw(ShapeFromFile.ARROW);
             gl.rotate((float) Math.toRadians(-90), 1f, 0f, 0f);
             gl.setMaterial(mat, Color4f.GREEN);
-            gl.draw(ShapeFromMesh.ARROW);
+            gl.draw(ShapeFromFile.ARROW);
             gl.scale(0.2f);
             gl.setMaterial(Material.ROUGH, Color4f.WHITE);
             gl.draw(GeneralShapes.CUBE);
@@ -134,8 +155,8 @@ public final class Toolbox {
         }
     }
 
-    public static String asHex(int error) {
-        return "0x" + Integer.toHexString(error).toUpperCase();
+    public static String asHex(int decimal) {
+        return "0x" + Integer.toHexString(decimal).toUpperCase();
     }
 
 
@@ -154,8 +175,8 @@ public final class Toolbox {
      */
     public static void exitJava() {
         if (!ServerSettings.DEBUG) {
-            Toolbox.printFrom(2, "Tried to exit JVM while DEBUG mode is false.");
-            return;
+            final StackTraceElement caller = new Exception().getStackTrace()[1];
+            System.err.println(caller + ": Tried to exit JVM while DEBUG mode is false.");
         }
 
         try {
@@ -255,6 +276,11 @@ public final class Toolbox {
 
         // loop automatically ends after at most (i = alpha.length + beta.length) iterations
         return Arrays.copyOf(results, i);
+    }
+
+    /** @return a rotation that maps the x-vector to the given direction, with up in direction of z */
+    public static Quaternionf xTo(DirVector direction) {
+        return new Quaternionf().rotateTo(DirVector.xVector(), direction);
     }
 
     /**

@@ -8,23 +8,25 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
+import java.io.Serializable;
+
 /**
  * @author Geert van Ieperen
  * created on 24-1-2018.
  */
-public abstract class AbstractProjectile extends GameEntity implements MortalEntity {
+public abstract class AbstractProjectile extends GameEntity implements MortalEntity, Serializable {
 
     private DirVector forward;
     private final float airResistCoeff;
 
     protected float timeToLive;
-    private final EntityManager particleDeposit;
+    protected final EntityManager particleDeposit;
 
     public AbstractProjectile(
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, EntityManager particleDeposit
+            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, EntityManager particleDeposit, int id
     ) {
-        super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, gameTimer, null);
+        super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, gameTimer, null);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
         this.particleDeposit = particleDeposit;
@@ -37,7 +39,7 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
     public void applyPhysics(DirVector netForce, float deltaTime) {
         timeToLive -= deltaTime;
         if (isDead()) {
-            particleDeposit.addParticles(this.explode());
+            entityDeposit.addParticles(this.explode());
             return;
         }
 

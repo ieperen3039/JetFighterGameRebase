@@ -232,7 +232,7 @@ public final class Particles {
      * @param sm
      */
     public static void createFireEffect(float force, Collection<Particle> collector, ShadowMatrix sm) {
-        GeneralShapes.CUBE.getPlanes()
+        GeneralShapes.CUBE.getPlaneStream()
 //                .parallel()
                 .map(p -> generateFireParticles(force, sm, p, FIRE_LINGER_TIME))
                 .forEach(collector::addAll);

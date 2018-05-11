@@ -1,12 +1,18 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
+import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
+import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 /**
+ * Possibly split into a control-part and an engine-part
  * {@author Geert van Ieperen created on 7-11-2017. an object that moves, and
  * may be influenced by other objects.
  */
@@ -85,6 +91,12 @@ public interface MovingEntity extends Touchable {
      */
     DirVector getVelocity();
 
+    /** adds a position state for rendering on the specified time */
+    void addPositionPoint(PosVector hitPosition, float currentTime);
+
+    /** adds a rotation state for rendering on the specified time */
+    void addRotationPoint(Quaternionf rotation, float currentTime);
+
     /**
      * @return the mass of this object in kilograms.
      */
@@ -92,9 +104,14 @@ public interface MovingEntity extends Touchable {
 
     /**
      * @return a copy of the position of the center of mass of this object in
-     *         wolrd-space
+     *         world-space
      */
     PosVector getPosition();
+
+    /**
+     * @return the object's current rotation
+     */
+    Quaternionf getRotation();
 
     /**
      * distance of the farthest vertex of this object
@@ -118,5 +135,36 @@ public interface MovingEntity extends Touchable {
      *                 entity
      */
     void applyMoment(DirVector momentum);
+
+    void setTimer(GameTimer timer);
+
+    void setEntityManager(EntityManager game);
+
+    int idNumber();
+
+    /**
+     * a description of a moving entity
+     */
+    class SpawnEntity {
+        public final EntityClass type;
+        public final PosVector position;
+        public final Quaternionf rotation;
+        public final DirVector velocity;
+
+        public SpawnEntity(EntityClass type, PosVector position, Quaternionf rotation, DirVector velocity) {
+            this.type = type;
+            this.position = position;
+            this.rotation = rotation;
+            this.velocity = velocity;
+        }
+
+        public SpawnEntity(EntityClass type, GameEntity.State state) {
+            this(type, state.position(0), state.rotation(0), state.velocity());
+        }
+
+        public MovingEntity construct(EntityManager game, Controller input, GameTimer time){
+            return type.construct(Identity.next(), game, input, position, rotation, velocity, time);
+        }
+    }
 }
 

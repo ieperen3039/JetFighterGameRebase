@@ -7,9 +7,9 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Geert van Ieperen
@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 public interface Shape extends Renderable {
 
     /** returns all planes of this object in no specific order */
-    Stream<? extends Plane> getPlanes();
+    Iterable<? extends Plane> getPlanes();
 
     /** @return the points of this plane in no specific order */
-    Collection<PosVector> getPoints();
+    Iterable<PosVector> getPoints();
 
     /**
      * given a point on position {@code linePosition} moving in the direction of {@code direction},
@@ -34,7 +34,7 @@ public interface Shape extends Renderable {
      * otherwise, it provides a collision object about the first collision with this shape
      */
     default Collision getCollision(PosVector linePosition, DirVector direction, PosVector endPoint){
-        return getPlanes()
+        return getPlaneStream()
                 // find the vector that hits the planes
                 .map((plane) -> plane.getCollisionWith(linePosition, direction, endPoint))
                 // exclude the vectors that did not hit
@@ -42,6 +42,14 @@ public interface Shape extends Renderable {
                 // return the shortest vector
                 .min(Collision::compareTo)
                 .orElse(null);
+    }
+
+    default Stream<? extends Plane> getPlaneStream() {
+        return StreamSupport.stream(getPlanes().spliterator(), false);
+    }
+
+    default Stream<? extends PosVector> getPointStream() {
+        return StreamSupport.stream(getPoints().spliterator(), false);
     }
 
     /**
@@ -52,7 +60,7 @@ public interface Shape extends Renderable {
      * @return true iff this shape intersects this ray
      */
     default boolean isHitByRay(PosVector position, DirVector direction){
-        return getPlanes()
+        return getPlaneStream()
                 // find the vector that hits the planes
                 .map((plane) -> plane.intersectWithRay(position, direction))
                 // return whether at least one hit

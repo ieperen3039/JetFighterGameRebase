@@ -4,7 +4,6 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderProgram;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -57,7 +56,7 @@ public class ShaderUniformGL implements GL2 {
         modelMatrix = new Matrix4f();
         viewProjectionMatrix = getProjection(windowWidth, windowHeight, camera);
 
-        for (int i = 0; i < ServerSettings.MAX_POINT_LIGHTS; i++) {
+        for (int i = 0; i < ClientSettings.MAX_POINT_LIGHTS; i++) {
             shader.setPointLight(i, new Vector3f(), Color4f.INVISIBLE);
         }
     }

@@ -14,6 +14,7 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -27,8 +28,7 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
- * @author Geert van Ieperen
- * created on 30-10-2017.
+ * @author Geert van Ieperen created on 30-10-2017.
  */
 public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
@@ -61,7 +61,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      */
     private final int maxHeath;
 
-    protected Controller input;
+    protected transient Controller input;
     private DirVector forward;
 
     private VectorInterpolator forwardInterpolator;
@@ -72,7 +72,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /**
      * You are defining a complete Fighterjet here. good luck.
-     *
+     * @param id                       unique identifier for this entity
      * @param input                    controller input, either player or AI.
      * @param initialPosition          position of spawning (of the origin) in world coordinates
      * @param initialRotation          the initial rotation of spawning
@@ -81,7 +81,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param material                 the default material properties of the whole object.
      * @param mass                     the mass of the object in kilograms.
      * @param liftFactor               arbitrary factor of the lift-effect of the wings in gravitational situations.
-     *                                 This is applied only on the vector of external influences, thus not in zero-gravity.
+     *                                 This is applied only on the vector of external influences, thus not in
+     *                                 zero-gravity.
      * @param airResistanceCoefficient 0.5 * A * Cw. This is a factor that should be experimentally found
      * @param throttlePower            force of the engines at full power in Newton
      * @param brakePower               air resistance is multiplied with this value when braking
@@ -89,7 +90,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param pitchAcc                 acceleration over the Y-axis when pitching up at full power in rad/ss
      * @param rollAcc                  acceleration over the X-axis when rolling at full power in rad/ss
      * @param rotationReductionFactor  the fraction that the rotationspeed is reduced every second [0, 1]
-     * @param renderTimer              the timer that determines the "current rendering time" for {@link MovingEntity#interpolatedPosition()}
+     * @param renderTimer              the timer that determines the "current rendering time" for {@link
+     *                                 MovingEntity#interpolatedPosition()}
      * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
      * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
      * @param gunAlpha                 the primary firing method
@@ -98,13 +100,13 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param entityDeposit            the class that allows new entities and particles to be added to the environment
      */
     public AbstractJet(
-            Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
+            int id, Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
             MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, EntityManager entityDeposit
     ) {
-        super(material, mass, scale, initialPosition, DirVector.zeroVector(), initialRotation, renderTimer, entityDeposit);
+        super(id, initialPosition, DirVector.zeroVector(), initialRotation, material, mass, scale, renderTimer, entityDeposit);
 
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
@@ -124,8 +126,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-        forwardInterpolator = new VectorInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
-        velocityInterpolator = new VectorInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
+        forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
+        velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
         defaultThrustSquared = BASE_SPEED * BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
     }
 
@@ -152,7 +154,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /**
      * physics model where input absolutely determines the plane rotation.
-     *
      * @param deltaTime timestamp in seconds
      * @param netForce  vector of force in N
      * @param velocity  movement vector with length in (m/s)
@@ -230,12 +231,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         return forward;
     }
 
-    public DirVector interpolatedForward(){
+    public DirVector interpolatedForward() {
         return forwardInterpolator.getInterpolated(renderTime()).toDirVector();
     }
 
-    public DirVector interpolatedVelocity(){
-         return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
+    public DirVector interpolatedVelocity() {
+        return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
     }
 
     @Override
@@ -247,8 +248,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     /**
-     * set the state of this plane to the given parameters. This also updates the interpolation cache,
-     * which may result in temporal visual glitches. Usage is preferably restricted to switching worlds
+     * set the state of this plane to the given parameters. This also updates the interpolation cache, which may result
+     * in temporal visual glitches. Usage is preferably restricted to switching worlds
      */
     public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation) {
         this.position = new PosVector(newPosition);
@@ -272,10 +273,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     public abstract DirVector getPilotEyePosition();
 
     /**
-     * #BOOM
-     * This method does not remove this entity, only generate particles. It does however set the number of hitpoints to 0,
-     * so it will be scheduled for removal, if necessary.
-     *
+     * #BOOM This method does not remove this entity, only generate particles. It does however set the number of
+     * hitpoints to 0, so it will be scheduled for removal, if necessary.
      * @return the generated particles resulting from this entity
      */
     public Collection<Particle> explode() {
@@ -286,7 +285,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         ShadowMatrix sm = new ShadowMatrix();
         Toolbox.print(getVelocity());
 
-        Consumer<Shape> particleMapper = (shape) -> shape.getPlanes()
+        Consumer<Shape> particleMapper = (shape) -> shape.getPlaneStream()
 //                .parallel()
                 .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.GREY, getVelocity()))
                 .forEach(result::addAll);
@@ -315,7 +314,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     /**
      * set the position of the jet
-     *
      * @see #set(PosVector, DirVector, Quaternionf)
      */
     public void set(PosVector posVector) {

@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,7 +14,7 @@ import java.util.List;
  * @author Geert van Ieperen
  * created on 18-2-2018.
  */
-public abstract class AbstractWeapon {
+public abstract class AbstractWeapon implements Serializable {
     protected final float cooldown;
     /** time until next fire */
     protected float timeRemaining;

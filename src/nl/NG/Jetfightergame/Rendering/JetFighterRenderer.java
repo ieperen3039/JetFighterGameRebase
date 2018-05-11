@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameState.Environment;
-import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
@@ -15,7 +14,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
@@ -40,7 +38,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private final String sessionName;
     private int frameNumber = 0;
 
-    public JetFighterRenderer(JetFighterGame engine, EnvironmentManager gameState, GLFWWindow window,
+    public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
                               Camera camera, ControllerManager controllerManager, AbstractJet player) throws IOException, ShaderException {
         super(
                 "Rendering loop", ClientSettings.TARGET_FPS, false,
@@ -58,14 +56,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
         shaderManager = new ShaderManager();
 
         final Runnable cameraMode = () -> {
-            if (ServerSettings.SPECTATOR_MODE) {
+            if (ClientSettings.SPECTATOR_MODE) {
                 engine.setSpectatorMode();
             } else {
                 engine.setPlayMode();
             }
         };
 
-        new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager, gameState);
+        new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager);
         new GravityHud(window::getWidth, window::getHeight, player, camera).activate();
 
         SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");

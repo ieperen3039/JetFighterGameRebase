@@ -32,6 +32,13 @@ public abstract class AbstractGameLoop extends Thread {
     private final Consumer<ScreenOverlay.Painter> tickCounter;
     private final Consumer<ScreenOverlay.Painter> possessionCounter;
 
+    /**
+     * creates a new, paused gameloop
+     * @param name the name as displayed in {@link #toString()}
+     * @param targetTps the target number of executions of {@link #update(float)} per second
+     * @param notifyDelay if true, an error message will be printed whenever the update method has encountered delay.
+     * @param exceptionHandler this is executed whenever any part of the system throws an uncaught exception
+     */
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
         this.targetDeltaMillis = 1000f/targetTps;
         this.notifyDelay = notifyDelay;
@@ -47,7 +54,7 @@ public abstract class AbstractGameLoop extends Thread {
      * invoked (targetTps) times per second
      * @param deltaTime real-time difference since last loop
      */
-    protected abstract void update(float deltaTime);
+    protected abstract void update(float deltaTime) throws Exception;
 
     /**
      * commands the engine to finish the current loop, and then quit

@@ -10,7 +10,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
@@ -23,15 +22,12 @@ import java.util.*;
 import java.util.function.Consumer;
 
 /**
- * @author Geert van Ieperen
- *         created on 29-10-2017.
+ * @author Geert van Ieperen created on 29-10-2017.
  */
-public abstract class GameEntity implements MovingEntity{
+public abstract class GameEntity implements MovingEntity {
 
-    /**
-     * particles and new entities should be passed to this object
-     */
-    protected final EntityManager entityDeposit;
+    /** particles and new entities should be passed to this object */
+    protected transient EntityManager entityDeposit;
     private final int thisID;
 
     /** worldspace position in m */
@@ -55,36 +51,37 @@ public abstract class GameEntity implements MovingEntity{
 
     /** collision of this gametick, null if it doesn't hit */
     protected Extreme<Collision> nextCrash;
-    /** cached positions of the hitpoints*/
+    /** cached positions of the hitpoints */
     private Collection<TrackedVector<PosVector>> hitPoints = null;
 
-    /** The render timer.
-     * gameTime.getRenderTime().current() will provide the current time for interpolation,
-     * and renderTime.difference() provides the deltaTime */
-    private final GameTimer gameTimer;
+    /**
+     * The render timer. gameTime.getRenderTime().current() will provide the current time for interpolation, and
+     * renderTime.difference() provides the deltaTime
+     */
+    private GameTimer gameTimer;
 
     /** worldspace / localspace */
     protected final float scale;
-    private Material surfaceMaterial;
+    protected Material surfaceMaterial;
     protected final float mass;
 
     /**
      * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
-     *  @param surfaceMaterial material properties
-     * @param mass the mass of the object in kilograms.
-     * @param scale           scalefactor applied to this object. the scale is in global space and executed in
- *                        {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param id an unique identifier for this entity
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
-     * @param gameTimer       A timer that defines rendering, in order to let {@link MovingEntity#interpolatedPosition()} return the position
+     * @param surfaceMaterial material properties
+     * @param mass            the mass of the object in kilograms.
+     * @param scale           scalefactor applied to this object. the scale is in global space and executed in {@link
+*                        #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param gameTimer       A timer that defines rendering, in order to let {@link MovingEntity#interpolatedPosition()}
      */
     public GameEntity(
-            Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-            Quaternionf initialRotation, GameTimer gameTimer,
-            EntityManager entityDeposit
+            int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
+            Material surfaceMaterial, float mass, float scale, GameTimer gameTimer, EntityManager entityDeposit
     ) {
-        this.thisID = ServerSettings.entityIDNumber++;
+        this.thisID = id;
         this.position = new PosVector(initialPosition);
         this.extraPosition = new PosVector(initialPosition);
         this.rotation = new Quaternionf(initialRotation);
@@ -129,9 +126,9 @@ public abstract class GameEntity implements MovingEntity{
     protected abstract void updateShape(float deltaTime);
 
     /**
-     * translates the given relative vector of this object to the object direction in world-space.
-     * This method also considers the scaling of the vector; it can be used for relative positions
-     * The returned direction is based on the gamestate, for rendering use {@link #relativeInterpolatedDirection(DirVector)}
+     * translates the given relative vector of this object to the object direction in world-space. This method also
+     * considers the scaling of the vector; it can be used for relative positions The returned direction is based on the
+     * gamestate, for rendering use {@link #relativeInterpolatedDirection(DirVector)}
      * @param relative a vector relative to this object
      * @return a vector in world-space
      */
@@ -143,9 +140,9 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     /**
-     * translates the given relative vector of this object to the true direction in world-space.
-     * This method also considers the scaling of the vector; it can be used for relative positions
-     * The returned direction is based on rendertime interpolated direction, for gamestate changes use {@link #relativeStateDirection(DirVector)}
+     * translates the given relative vector of this object to the true direction in world-space. This method also
+     * considers the scaling of the vector; it can be used for relative positions The returned direction is based on
+     * rendertime interpolated direction, for gamestate changes use {@link #relativeStateDirection(DirVector)}
      * @param relative a vector relative to this object
      * @return a vector in {@code sm}'s frame of reference
      */
@@ -157,10 +154,10 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     /**
-     * apply net force on this object and possibly read input. Should not change the current state
-     * except for {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}.
-     * The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity} are invalid.
-     * @param netForce accumulated external forces on this object
+     * apply net force on this object and possibly read input. Should not change the current state except for {@link
+     * #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}. The current values of {@link #extraPosition},
+     * {@link #extraRotation} and {@link #extraVelocity} are invalid.
+     * @param netForce  accumulated external forces on this object
      * @param deltaTime time-difference, cannot be 0
      */
     public abstract void applyPhysics(DirVector netForce, float deltaTime);
@@ -182,7 +179,7 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     @Override
-    public boolean checkCollisionWith(Touchable other, float deltaTime){
+    public boolean checkCollisionWith(Touchable other, float deltaTime) {
         Collision newCollision = hitPoints.stream()
                 // see which points collide with the other
                 .map(point -> getPointCollision(point, other, deltaTime))
@@ -245,7 +242,7 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     @Override
-    public void applyCollision(RigidBody newState, float deltaTime, float currentTime){
+    public void applyCollision(RigidBody newState, float deltaTime, float currentTime) {
         rollSpeed = newState.rollSpeed();
         pitchSpeed = newState.pitchSpeed();
         yawSpeed = newState.yawSpeed();
@@ -268,10 +265,10 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     /**
-     * returns the collisions caused by {@code point} in the given reference frame.
-     * the returned collision is caused by the first plane of #other, as it is hit by #point
-     * @param point the movement of a point in global space
-     * @param other another object
+     * returns the collisions caused by {@code point} in the given reference frame. the returned collision is caused by
+     * the first plane of #other, as it is hit by #point
+     * @param point     the movement of a point in global space
+     * @param other     another object
      * @param deltaTime time-difference of this loop
      * @return the first collision caused by this point on the other object
      */
@@ -298,7 +295,7 @@ public abstract class GameEntity implements MovingEntity{
             }
         };
 
-        if (other instanceof MovingEntity){
+        if (other instanceof MovingEntity) {
             final MovingEntity moving = (MovingEntity) other;
 
             // consider the movement of the plane, by assuming relative movement and linear interpolation.
@@ -333,7 +330,7 @@ public abstract class GameEntity implements MovingEntity{
     private List<PosVector> getPointPositions(boolean extrapolate) {
         ShadowMatrix identity = new ShadowMatrix();
         final List<PosVector> list = new ArrayList<>();
-        final Consumer<Shape> collect = (shape -> shape.getPoints().stream()
+        final Consumer<Shape> collect = (shape -> shape.getPointStream()
                 // map to world-coordinates
                 .map(identity::getPosition)
                 // collect them in an array list
@@ -361,8 +358,9 @@ public abstract class GameEntity implements MovingEntity{
         ms.popMatrix();
     }
 
-    /** returns the latest calculated position
-     * for rendering, one should preferably use {@link MovingEntity#interpolatedPosition()}
+    /**
+     * returns the latest calculated position for rendering, one should preferably use {@link
+     * MovingEntity#interpolatedPosition()}
      */
     public PosVector getPosition() {
         return new PosVector(position);
@@ -375,7 +373,17 @@ public abstract class GameEntity implements MovingEntity{
 
     @Override
     public void applyMoment(DirVector momentum) {
-        extraVelocity.add(momentum.scale(1/mass, new DirVector())); // TODO verification
+        extraVelocity.add(momentum.scale(1 / mass, new DirVector())); // TODO verification
+    }
+
+    @Override
+    public void setTimer(GameTimer timer) {
+        gameTimer = timer;
+    }
+
+    @Override
+    public void setEntityManager(EntityManager game) {
+        entityDeposit = game;
     }
 
     @Override
@@ -407,11 +415,13 @@ public abstract class GameEntity implements MovingEntity{
         return gameTimer.getRenderTime().current();
     }
 
-    protected void addPositionPoint(PosVector hitPosition, float currentTime){
+    @Override
+    public void addPositionPoint(PosVector hitPosition, float currentTime) {
         positionInterpolator.add(hitPosition, currentTime);
     }
 
-    protected void addRotationPoint(Quaternionf rotation, float currentTime){
+    @Override
+    public void addRotationPoint(Quaternionf rotation, float currentTime) {
         rotationInterpolator.add(rotation, currentTime);
     }
 
@@ -426,20 +436,25 @@ public abstract class GameEntity implements MovingEntity{
     }
 
     @Override
-    public String toString(){
+    public Quaternionf getRotation() {
+        return rotation;
+    }
+
+    @Override
+    public String toString() {
         return getClass().getSimpleName();
     }
 
     /**
      * react on collision
      * @param impact hitPosition of the incoming object
-     * @param power magnitude of the impact
+     * @param power  magnitude of the impact
      */
     public abstract void impact(PosVector impact, float power);
 
     public void resetCache() {
-        positionInterpolator = new VectorInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, position);
-        rotationInterpolator = new QuaternionInterpolator(ClientSettings.INTERPOLATION_QUEUE_SIZE, rotation);
+        positionInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, position);
+        rotationInterpolator = new QuaternionInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, rotation);
     }
 
     public static class State {
@@ -450,6 +465,17 @@ public abstract class GameEntity implements MovingEntity{
         private final DirVector velocity;
         private final DirVector forward;
 
+        public State() {
+            this(
+                    PosVector.zeroVector(),
+                    PosVector.zeroVector(),
+                    new Quaternionf(),
+                    new Quaternionf(),
+                    DirVector.zeroVector(),
+                    DirVector.xVector()
+            );
+        }
+
         public State(PosVector firstPos, PosVector secondPos, Quaternionf firstRot, Quaternionf secondRot, DirVector velocity, DirVector forward) {
             this.firstPos = firstPos;
             this.secondPos = secondPos;
@@ -459,15 +485,15 @@ public abstract class GameEntity implements MovingEntity{
             this.forward = forward;
         }
 
-        public PosVector position(float timeFraction){
+        public PosVector position(float timeFraction) {
             return firstPos.interpolateTo(secondPos, timeFraction);
         }
 
-        public Quaternionf rotation(float timeFraction){
+        public Quaternionf rotation(float timeFraction) {
             return firstRot.nlerp(secondRot, timeFraction);
         }
 
-        public DirVector velocity(){
+        public DirVector velocity() {
             return new DirVector(velocity);
         }
 

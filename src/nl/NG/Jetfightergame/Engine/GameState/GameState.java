@@ -1,12 +1,12 @@
 package nl.NG.Jetfightergame.Engine.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.PathDescription;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -19,6 +19,7 @@ import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
@@ -43,11 +44,11 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     }
 
     @Override
-    public void buildScene() {
+    public void buildScene(int collisionDetLevel, boolean loadDynamic) {
         final Collection<Touchable> staticEntities = createWorld();
-        final Collection<MovingEntity> dynamicEntities = setEntities();
+        final Collection<MovingEntity> dynamicEntities = loadDynamic ? setEntities() : new ArrayList<>();
 
-        switch (ServerSettings.COLLISION_DETECTION_LEVEL){
+        switch (collisionDetLevel){
             case 0:
                 physicsEngine = new EntityList(dynamicEntities, staticEntities);
                 break;
@@ -55,8 +56,13 @@ public abstract class GameState implements Environment, PathDescription, NetForc
                 physicsEngine = new CollisionDetection(dynamicEntities, staticEntities);
                 break;
             default:
-                throw new UnsupportedOperationException("unsupported collision detection level:" + ServerSettings.COLLISION_DETECTION_LEVEL);
+                throw new UnsupportedOperationException("unsupported collision detection level:" + collisionDetLevel);
         }
+    }
+
+    @Override
+    public GameEntity.State getNewSpawn() {
+        return new GameEntity.State();
     }
 
     /**
@@ -70,8 +76,7 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     protected abstract Collection<MovingEntity> setEntities();
 
     @Override
-    public void addPlayer(Player player) {
-        final AbstractJet playerJet = player.jet();
+    public void addPlayerJet(AbstractJet playerJet) {
         playerJet.set();
     }
 
@@ -123,7 +128,7 @@ public abstract class GameState implements Environment, PathDescription, NetForc
 //        Toolbox.drawAxisFrame(gl);
         physicsEngine.getStaticEntities().forEach(d -> d.draw(gl));
 
-        glDisable(GL_CULL_FACE); // TODO when new meshes are created or fixed, this should be removed
+        glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
         physicsEngine.getDynamicEntities().forEach(d -> d.draw(gl));
     }
 
@@ -139,6 +144,11 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     @Override
     public GameTimer getTimer() {
         return time;
+    }
+
+    @Override
+    public Collection<MovingEntity> getEntities() {
+        return physicsEngine.getDynamicEntities();
     }
 
     @Override

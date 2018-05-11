@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
-import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -38,7 +37,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
 
     public JetFighterMenu(Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier,
                           Runnable startGame, Runnable exitGame, ControllerManager input,
-                          ShaderManager shaderManager, EnvironmentManager worlds) {
+                          ShaderManager shaderManager) {
         super(widthSupplier, heightSupplier);
 
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
@@ -55,9 +54,8 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
             MenuButton creditBackButton = new MenuButton("Back", () -> switchContentTo(mainMenu));
             creditScreen = new UIElement[]{credit, creditBackButton};
         }
-        MenuClickable toggleEnvironment = new MenuToggleMultiple("World", worlds.names(), worlds::switchTo);
         MenuClickable exitGameButton = new MenuButton("Exit Game", exitGame);
-        mainMenu = new MenuClickable[]{startGameButton, options, credits, toggleEnvironment, exitGameButton};
+        mainMenu = new MenuClickable[]{startGameButton, options, credits, exitGameButton};
 
         switchContentTo(mainMenu);
     }

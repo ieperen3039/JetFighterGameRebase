@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.Queue;
@@ -12,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * A timedQueue that uses ArrayDeque for implementation.
  * Includes synchoronized adding and deletion
  */
-public class TimedArrayDeque<T> implements TimedQueue<T> {
+public class TimedArrayDeque<T> implements TimedQueue<T>, Serializable {
 
     /** prevents race-conditions upon adding and removing */
     private Lock changeGuard;

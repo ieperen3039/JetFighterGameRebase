@@ -125,7 +125,7 @@ public class CollisionDetection implements EntityManagement {
         } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
         if (!collisionPairs.isEmpty()) {
-            Toolbox.print(collisionPairs.size() + " collisions not resolved");
+            Toolbox.printError(collisionPairs.size() + " collisions not resolved");
         }
 
     }
@@ -285,7 +285,7 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < xLowerSorted.length; i++) {
             CollisionEntity collisionEntity = xLowerSorted[i];
             if (collisionEntity.xLower() < init) {
-                Toolbox.print("Sorting error on x = " + i);
+                Toolbox.printError("Sorting error on x = " + i);
                 for (CollisionEntity entity : xLowerSorted) {
                     System.out.print(entity.xLower() + ", ");
                 }
@@ -298,7 +298,7 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < yLowerSorted.length; i++) {
             CollisionEntity collisionEntity = yLowerSorted[i];
             if (collisionEntity.yLower() < init) {
-                Toolbox.print("Sorting error on y = " + i);
+                Toolbox.printError("Sorting error on y = " + i);
                 for (CollisionEntity entity : yLowerSorted) {
                     System.out.print(entity.yLower() + ", ");
                 }
@@ -311,7 +311,7 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < zLowerSorted.length; i++) {
             CollisionEntity collisionEntity = zLowerSorted[i];
             if (collisionEntity.zLower() < init) {
-                Toolbox.print("Sorting error on z = " + i);
+                Toolbox.printError("Sorting error on z = " + i);
                 for (CollisionEntity entity : zLowerSorted) {
                     System.out.print(entity.zLower() + ", ");
                 }

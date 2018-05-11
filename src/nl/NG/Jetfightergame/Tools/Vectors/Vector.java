@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 import org.joml.Vector3fc;
 import org.lwjgl.BufferUtils;
 
+import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.util.Locale;
 
@@ -17,7 +18,7 @@ import static java.lang.StrictMath.sin;
  * openGL normally does not agree on this, but the effect is the same anyhow
  */
 
-public abstract class Vector extends Vector3f{
+public abstract class Vector extends Vector3f implements Serializable {
 
     public Vector(Vector3fc source){
         super(source);

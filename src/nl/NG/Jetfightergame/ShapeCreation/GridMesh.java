@@ -11,10 +11,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.stream.Stream;
+import java.util.Iterator;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -89,12 +87,12 @@ public class GridMesh implements Shape {
     }
 
     @Override
-    public Stream<? extends Plane> getPlanes() {
-        return Arrays.stream(planeGrid).flatMap(Arrays::stream);
+    public Iterable<? extends Plane> getPlanes() {
+        return (Iterable<Plane>) PlaneIterator::new;
     }
 
     @Override
-    public Collection<PosVector> getPoints() {
+    public Iterable<PosVector> getPoints() {
         //noinspection AssignmentOrReturnOfFieldWithMutableType,unchecked
         return Collections.EMPTY_LIST;
     }
@@ -141,4 +139,23 @@ public class GridMesh implements Shape {
         graphicalGrid.render(lock);
     }
 
+    private class PlaneIterator implements Iterator<Plane> {
+        int x = 0;
+        int y = 0;
+
+        @Override
+        public boolean hasNext() {
+            return (x == xSize) && (y == ySize);
+        }
+
+        @Override
+        public Plane next() {
+            x++;
+            if (x == xSize) {
+                x = 0;
+                y++;
+            }
+            return planeGrid[x][y];
+        }
+    }
 }

@@ -16,8 +16,7 @@ import org.joml.Quaternionf;
 import java.util.function.Consumer;
 
 /**
- * @author Geert van Ieperen
- * created on 26-12-2017.
+ * @author Geert van Ieperen created on 26-12-2017.
  */
 public class FallingCube extends GameEntity {
 
@@ -25,21 +24,47 @@ public class FallingCube extends GameEntity {
 
     /**
      * a cube that can be moved around, and has all physic properties
-     *
-     * @param surfaceMaterial material properties
-     * @param mass            in kg
-     * @param scale           scalefactor applied to this object. the scale is in global space and executed in
-     *                        {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param id
+     * @param renderTimer   the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
+     *                      return the interpolated position
+     * @param entityDeposit new entities are passed here
+     */
+    public FallingCube(int id, GameTimer renderTimer, EntityManager entityDeposit) {
+        this(id, Material.ROUGH, 1, 1, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), renderTimer, entityDeposit);
+    }
+
+    /**
+     * a cube that can be moved around, and has all physic properties
+     * @param id
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
-     *                        return the interpolated position
-     * @param entityDeposit
+*                        return the interpolated position
+     * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
-    public FallingCube(Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
+    public FallingCube(int id, PosVector initialPosition,
                        DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityManager entityDeposit) {
-        super(surfaceMaterial, mass, scale, initialPosition, initialVelocity, initialRotation, renderTimer, entityDeposit);
+        this(id, Material.ROUGH, 1, 1, initialPosition, initialVelocity, initialRotation, renderTimer, entityDeposit);
+    }
+
+    /**
+     * a cube that can be moved around, and has all physic properties
+     * @param id
+     * @param surfaceMaterial material properties
+     * @param mass            in kg
+     * @param scale           scalefactor applied to this object. the scale is in global space and executed in {@link
+*                        #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param initialPosition position of spawining (of the origin) in world coordinates
+     * @param initialVelocity the initial speed of this object in world coordinates
+     * @param initialRotation the initial rotation of this object
+     * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
+*                        return the interpolated position
+     * @param entityDeposit   new entities are passed here, when this entity seizes control of it
+     */
+    public FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
+                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityManager entityDeposit) {
+        super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, renderTimer, entityDeposit);
         this.range = (float) Math.sqrt(3 * scale * scale);
     }
 
@@ -47,7 +72,7 @@ public class FallingCube extends GameEntity {
      * ad a random twitch to the object
      * @param factor arbitrary factor. higher is more rotation, 0 is no rotation
      */
-    public void addRandomRotation(float factor){
+    public void addRandomRotation(float factor) {
         yawSpeed += (ServerSettings.random.nextFloat() - 0.5f) * factor;
         pitchSpeed += (ServerSettings.random.nextFloat() - 0.5f) * factor;
         rollSpeed += (ServerSettings.random.nextFloat() - 0.5f) * factor;
@@ -59,7 +84,7 @@ public class FallingCube extends GameEntity {
 
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
-        velocity.add(netForce.scale(deltaTime/mass, extraVelocity), extraVelocity);
+        velocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }

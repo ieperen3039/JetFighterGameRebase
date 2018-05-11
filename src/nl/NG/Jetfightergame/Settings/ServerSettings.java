@@ -17,7 +17,9 @@ public final class ServerSettings {
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
     public static final short TARGET_TPS = 10;
     public static final int COLLISION_DETECTION_LEVEL = 1;
-    public static boolean FIXED_DELTA_TIME = false;
+
+    /** connection settings */
+    public static final int SERVER_PORT = 3039;
 
     /** collision settings */
     public static final short COLLISION_RESPONSE_LEVEL = 0;
@@ -29,8 +31,8 @@ public final class ServerSettings {
     /** miscellaneous */
     // universal random to be used everywhere
     public static final Random random = new Random();
-    public static final int MAX_POINT_LIGHTS = 10;
-    public static boolean SPECTATOR_MODE = false;
+    public static final int INTERPOLATION_QUEUE_SIZE = 10;
+    public static boolean RENDER_ENABLED = false;
 
     public static int entityIDNumber = 0;
 }

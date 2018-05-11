@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ShapeCreation;
 
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;
@@ -12,6 +13,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static nl.NG.Jetfightergame.ShapeCreation.Mesh.EMPTY_MESH;
 
 /**
  * Created by Geert van Ieperen on 1-3-2017.
@@ -30,11 +34,11 @@ public class CustomShape {
     }
 
     /**
-     * a shape that may be defined by the client code using methods of this class.
-     * When the shape is finished, call {@link #wrapUp()} to load it into the GPU.
-     * The returned shape should be re-used as a static mesh for any future calls to such shape.
-     * @param middle the middle of this object. More specifically, from this point,
-     *               all normal vectors point outward except maybe for those that have their normal explicitly defined.
+     * a shape that may be defined by the client code using methods of this class. When the shape is finished, call
+     * {@link #wrapUp(boolean)} to load it into the GPU. The returned shape should be re-used as a static mesh for any future
+     * calls to such shape.
+     * @param middle the middle of this object. More specifically, from this point, all normal vectors point outward
+     *               except maybe for those that have their normal explicitly defined.
      */
     public CustomShape(PosVector middle) {
         this.middle = middle;
@@ -44,9 +48,7 @@ public class CustomShape {
     }
 
     /**
-     * defines a quad in rotational order.
-     * The vectors do not have to be given clockwise
-     *
+     * defines a quad in rotational order. The vectors do not have to be given clockwise
      * @param A      (0, 0)
      * @param B      (0, 1)
      * @param C      (1, 1)
@@ -54,10 +56,10 @@ public class CustomShape {
      * @param normal the normal of this plane
      * @throws NullPointerException if any of the vectors is null
      */
-    public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal){
+    public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
         DirVector currentNormal = Triangle.getNormalVector(A, B, C);
 
-        if (currentNormal.dot(normal) >= 0){
+        if (currentNormal.dot(normal) >= 0) {
             addFinalQuad(A, B, C, D, normal);
         } else {
             addFinalQuad(D, C, B, A, normal);
@@ -72,7 +74,6 @@ public class CustomShape {
 
     /**
      * defines a quad that is mirrored over the xz-plane
-     *
      * @see CustomShape#addFinalQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addQuad(PosVector A, PosVector B) {
@@ -126,7 +127,7 @@ public class CustomShape {
     public void addTriangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
         DirVector currentNormal = Triangle.getNormalVector(A, B, C);
 
-        if (currentNormal.dot(normal) >= 0){
+        if (currentNormal.dot(normal) >= 0) {
             addFinalTriangle(A, B, C, normal);
         } else {
             addFinalTriangle(C, B, A, normal);
@@ -135,7 +136,6 @@ public class CustomShape {
 
     /**
      * defines a triangle with the given points in counterclockwise ordering
-     *
      * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector)
      */
     private void addFinalTriangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
@@ -147,7 +147,7 @@ public class CustomShape {
     }
 
     private int addNormal(DirVector normal) {
-        if (normal == null || normal.equals(DirVector.zeroVector()))
+        if ((normal == null) || normal.equals(DirVector.zeroVector()))
             throw new IllegalArgumentException("Customshape.addNormal(DirVector): invalid normal: " + normal);
 
         normals.add(normal);
@@ -173,9 +173,8 @@ public class CustomShape {
     }
 
     /**
-     * Adds a strip defined by a beziér curve
-     * the 1-vectors are the curve of one size, the 2-vectors are the curve of the other side
-     *
+     * Adds a strip defined by a beziér curve the 1-vectors are the curve of one size, the 2-vectors are the curve of
+     * the other side
      * @param slices number of fractions of the curve
      * @return either side of the strip, with left the row starting with A1
      */
@@ -203,7 +202,7 @@ public class CustomShape {
             rightVertices.add(right.current());
 
             DirVector newNormal = Plane.bezierDerivative(A2, B2, C2, D2, i / slices);
-            newNormal = newNormal.dot(normal.previous()) > 0 ? newNormal : newNormal.scale(-1, new DirVector());
+            newNormal = (newNormal.dot(normal.previous()) > 0) ? newNormal : newNormal.scale(-1, new DirVector());
             normal.update(newNormal);
 
             addFinalQuad(left.previous(), right.previous(), right.current(), left.current(), normal.current());
@@ -214,10 +213,9 @@ public class CustomShape {
 
     /**
      * adds a simple beziér curve, mirrored over the xz plane
-     *
      * @param start the starting point of the curve
-     * @param M     a point indicating the direction of the curve
-     *              (NOT the middle control point, but the direction coefficients DO point to M)
+     * @param M     a point indicating the direction of the curve (NOT the middle control point, but the direction
+     *              coefficients DO point to M)
      * @param end   the endpoint of the curve
      * @return this strip defined as two lists of points each defining one side of the strip
      * @see CustomShape#addBezierStrip
@@ -230,11 +228,10 @@ public class CustomShape {
 
     /**
      * creates a plane connecting an existing beziér curve to a point
-     *
-     * @param point      the point where the curve must be connected to
-     * @param strip      the id returned upon creation of the specific curve
-     * @param takeLeft   {@code true} if the first vectors should be accounted
-     *                   {@code false} if the second vectors should be accounted
+     * @param point    the point where the curve must be connected to
+     * @param strip    the id returned upon creation of the specific curve
+     * @param takeLeft {@code true} if the first vectors should be accounted {@code false} if the second vectors should
+     *                 be accounted
      */
     public void addPlaneToBezierStrip(PosVector point, Pair<List<PosVector>, List<PosVector>> strip, boolean takeLeft) {
         Iterator<PosVector> positions = (takeLeft ? strip.left : strip.right).iterator();
@@ -249,14 +246,14 @@ public class CustomShape {
 
     /**
      * adds a strip as separate quad objects
-     * @param quads an array of 2n+4 vertices defining quads as
-     * {@link #addQuad(PosVector, PosVector, PosVector, PosVector)} for every natural number n.
+     * @param quads an array of 2n+4 vertices defining quads as {@link #addQuad(PosVector, PosVector, PosVector,
+     *              PosVector)} for every natural number n.
      */
-    public void addStrip(PosVector ... quads) {
+    public void addStrip(PosVector... quads) {
         final int inputSize = quads.length;
-        if (((inputSize % 2) != 0) || (inputSize < 4)){
+        if (((inputSize % 2) != 0) || (inputSize < 4)) {
             throw new IllegalArgumentException(
-                    "input arguments can not be of odd length or less than 4 (length is "+ inputSize + ")");
+                    "input arguments can not be of odd length or less than 4 (length is " + inputSize + ")");
         }
 
         for (int i = 4; i < inputSize; i += 2) {
@@ -267,17 +264,18 @@ public class CustomShape {
 
     /**
      * convert this object to a Shape
-     * @return a shape with hardware-accelerated graphics using the {@link ShapeFromMesh} object
+     * @return a shape with hardware-accelerated graphics using the {@link ShapeFromFile} object
+     * @param loadMesh
      */
-    public Shape wrapUp(){
-        return new ShapeFromMesh(getSortedVertices(), normals, faces);
+    public Shape wrapUp(boolean loadMesh) {
+        return new ShapeFromFile(getSortedVertices(), normals, faces, loadMesh);
     }
 
     /**
      * convert this object into a Mesh
      * @return a hardware-accelerated Mesh object
      */
-    public Mesh asMesh(){
+    public Mesh asMesh() {
         return new Mesh(getSortedVertices(), normals, faces);
     }
 
@@ -286,9 +284,7 @@ public class CustomShape {
         PosVector[] sortedVertices = new PosVector[points.size()];
         points.forEach((v, i) -> sortedVertices[i] = v);
 
-        List<PosVector> vertexList = new ArrayList<>();
-        Collections.addAll(vertexList, sortedVertices);
-        return vertexList;
+        return Arrays.asList(sortedVertices);
     }
 
     /**
@@ -307,11 +303,11 @@ public class CustomShape {
         points.forEach((v, i) -> sortedVertices[i] = v);
 
         for (PosVector vec : sortedVertices) {
-            writer.println(String.format(Locale.US,"v %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
+            writer.println(String.format(Locale.US, "v %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
         }
 
         for (DirVector vec : normals) {
-            writer.println(String.format(Locale.US,"vn %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
+            writer.println(String.format(Locale.US, "vn %1.09f %1.09f %1.09f", vec.x(), vec.z(), vec.y()));
         }
 
         writer.println("usemtl None");
@@ -333,5 +329,42 @@ public class CustomShape {
 
     public void setMiddle(PosVector middle) {
         this.middle = middle;
+    }
+
+    /**
+     * the object returned after calling {@link #wrapUp(boolean)}
+     */
+    private static class WrappedCustomShape implements Shape {
+        private final List<PosVector> vertices;
+        private final List<Plane> triangles;
+        private final Mesh mesh;
+
+        private WrappedCustomShape(List<PosVector> sortedVertices, List<DirVector> normals, List<Mesh.Face> faces, boolean loadMesh) {
+            vertices = sortedVertices;
+            triangles = faces.stream()
+                    .map(f -> ShapeFromFile.toTriangle(f, vertices, normals))
+                    .collect(Collectors.toList());
+
+            if (loadMesh) {
+                mesh = new Mesh(sortedVertices, normals, faces);
+            } else {
+                mesh = EMPTY_MESH;
+            }
+        }
+
+        @Override
+        public Iterable<? extends Plane> getPlanes() {
+            return Collections.unmodifiableList(triangles);
+        }
+
+        @Override
+        public Iterable<PosVector> getPoints() {
+            return Collections.unmodifiableList(vertices);
+        }
+
+        @Override
+        public void render(GL2.Painter lock) {
+            mesh.render(lock);
+        }
     }
 }
