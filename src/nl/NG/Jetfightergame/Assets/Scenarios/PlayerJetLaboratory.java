@@ -5,11 +5,12 @@ import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -34,7 +35,7 @@ public class PlayerJetLaboratory extends GameState {
 
     @Override
     protected Collection<Touchable> createWorld() {
-        return Collections.singleton(new StaticObject(GeneralShapes.makeInverseCube(0), Material.ROUGH, Color4f.ORANGE, LAB_SIZE));
+        return Collections.singleton(new StaticObject(GeneralShapes.makeInverseCube(0, ServerSettings.RENDER_ENABLED), Material.ROUGH, Color4f.ORANGE, LAB_SIZE));
     }
 
     @Override

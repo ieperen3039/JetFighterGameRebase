@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.Weapons;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.io.Serializable;
@@ -37,7 +37,7 @@ public abstract class AbstractWeapon implements Serializable {
      * @param entityDeposit allows the new bullets to add entities
      *                      @return a collection of all newly generated entities
      */
-    public Collection<AbstractProjectile> update(float deltaTime, boolean isFiring, GameEntity.State source, EntityManager entityDeposit) {
+    public Collection<AbstractProjectile> update(float deltaTime, boolean isFiring, GameEntity.State source, EntityReceiver entityDeposit) {
         timeRemaining -= deltaTime;
 
         List<AbstractProjectile> newProjectiles = new ArrayList<>();
@@ -68,5 +68,5 @@ public abstract class AbstractWeapon implements Serializable {
      * @param entityDeposit
      * @return a new projectile as if it was fired on the given moment
      */
-    protected abstract AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityManager entityDeposit);
+    protected abstract AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityReceiver entityDeposit);
 }

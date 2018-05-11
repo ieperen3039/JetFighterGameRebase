@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -13,17 +12,20 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 public final class GeneralShapes {
 
     /** a triangle with vertices [a(1, 0, 0), b(0, 1, 0), c(0, 0, 0)] */
-    public static final Shape TRIANGLE = makeTriangle();
+    public static Shape TRIANGLE;
+
+    public static void init(boolean loadMesh){
+        TRIANGLE = makeTriangle(loadMesh);
+        INVERSE_CUBE = makeInverseCube(0, loadMesh);
+        CUBE = makeCube(loadMesh);
+    }
+
     /** a 2*2*2 cube with center on (0, 0, 0) */
-    public static final Shape CUBE = makeCube();
-    public static final Shape INVERSE_CUBE = makeInverseCube(0);
+    public static Shape CUBE;
 
-    /**
-     * a void method that allows pre-initialisation
-     */
-    public static void initAll(){}
+    public static Shape INVERSE_CUBE;
 
-    private static Shape makeTriangle() {
+    private static Shape makeTriangle(boolean loadMesh) {
         CustomShape frame = new CustomShape(new PosVector(0, 0, -1));
 
         frame.addTriangle(
@@ -33,10 +35,10 @@ public final class GeneralShapes {
                 new DirVector(0, 0, 1)
         );
 
-        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
+        return frame.wrapUp(loadMesh);
     }
 
-    private static Shape makeCube() {
+    private static Shape makeCube(boolean loadMesh) {
         CustomShape frame = new CustomShape();
 
         PosVector PPP = new PosVector(1, 1, 1);
@@ -50,15 +52,16 @@ public final class GeneralShapes {
         frame.addQuad(NPP, PPP);
         frame.addMirrorQuad(PPP, PPN, NPN, NPP);
 
-        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
+        return frame.wrapUp(loadMesh);
     }
 
     /**
      * create a new inverse cube
      * @param splits number of splits on each side.
+     * @param loadMesh
      * @return a cube with normals pointing inside, made out of {@code 6 * 2 ^ splits} quads
      */
-    public static Shape makeInverseCube(int splits){
+    public static Shape makeInverseCube(int splits, boolean loadMesh){
         CustomShape frame = new CustomShape();
 
         PosVector PPP = new PosVector(1, 1, 1);
@@ -77,7 +80,7 @@ public final class GeneralShapes {
         recursiveQuad(frame, PPP, PPN, NPN, NPP, new DirVector(0, -1, 0), splits);
         recursiveQuad(frame, NPP, PPP, PNP, NNP, new DirVector(0, 0, -1), splits);
 
-        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
+        return frame.wrapUp(loadMesh);
     }
 
     /**

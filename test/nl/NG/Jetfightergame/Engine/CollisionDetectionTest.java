@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
-import nl.NG.Jetfightergame.Engine.GameState.CollisionDetection;
+import nl.NG.Jetfightergame.GameState.CollisionDetection;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;

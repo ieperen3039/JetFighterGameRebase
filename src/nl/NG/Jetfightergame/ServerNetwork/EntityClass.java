@@ -5,8 +5,7 @@ import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
-import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -35,19 +34,18 @@ public enum  EntityClass {
      * @param position the position of spawn
      * @param rotation the rotation of the object upon spawning
      * @param velocity the initial velocity of the spawned object
-     * @param timer the gametimer for rendering purposes
      * @return an implementation of the class represented by this enum
      */
-    public MovingEntity construct(int id, EntityManager game, Controller input, PosVector position, Quaternionf rotation, DirVector velocity, GameTimer timer){
+    public MovingEntity construct(int id, EntityReceiver game, Controller input, PosVector position, Quaternionf rotation, DirVector velocity){
         switch (this) {
             case BASIC_JET:
-                BasicJet jet = new BasicJet(id, input, timer, game);
+                BasicJet jet = new BasicJet(id, input, game.getTimer(), game);
                 jet.set(position, velocity, rotation);
                 return jet;
             case SIMPLE_BULLET:
-                return new SimpleBullet(position, velocity, rotation, timer, game, id);
+                return new SimpleBullet(position, velocity, rotation, game.getTimer(), game, id);
             case FALLING_CUBE:
-                return new FallingCube(id, position, velocity, rotation, timer, game);
+                return new FallingCube(id, position, velocity, rotation, game.getTimer(), game);
             default:
                 Toolbox.printError("Construction of entity class " + this + " is not defined!");
                 return null;

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameState;
+package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -27,13 +27,21 @@ public interface EntityManagement {
     void analyseCollisions(float currentTime, float deltaTime, PathDescription environment);
 
     /**
-     * adds the new entities to the collision detection, and cleans out dead entities from the arrays.
+     * adds the new entities to the collision detection
      * @param newEntities a set of new entities to be added to the collision detection. The set is unmodified.
      */
-    void addEntities(Collection<MovingEntity> newEntities);
+    void addEntities(Collection<? extends MovingEntity> newEntities);
 
+    /**
+     * adds one new entity to the collision detection. This will only be in effect in the next loop
+     * @param entity
+     */
+    void addEntity(MovingEntity entity);
+
+    /** @return an unmodifiable collection of the static entities in this world */
     Collection<Touchable> getStaticEntities();
 
+    /** @return an unmodifiable collection of the moving entities in this world */
     Collection<MovingEntity> getDynamicEntities();
 
     /**

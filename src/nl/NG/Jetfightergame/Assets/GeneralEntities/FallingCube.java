@@ -3,8 +3,8 @@ package nl.NG.Jetfightergame.Assets.GeneralEntities;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -29,7 +29,7 @@ public class FallingCube extends GameEntity {
      *                      return the interpolated position
      * @param entityDeposit new entities are passed here
      */
-    public FallingCube(int id, GameTimer renderTimer, EntityManager entityDeposit) {
+    public FallingCube(int id, GameTimer renderTimer, EntityReceiver entityDeposit) {
         this(id, Material.ROUGH, 1, 1, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), renderTimer, entityDeposit);
     }
 
@@ -44,7 +44,7 @@ public class FallingCube extends GameEntity {
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
     public FallingCube(int id, PosVector initialPosition,
-                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityManager entityDeposit) {
+                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityReceiver entityDeposit) {
         this(id, Material.ROUGH, 1, 1, initialPosition, initialVelocity, initialRotation, renderTimer, entityDeposit);
     }
 
@@ -63,7 +63,7 @@ public class FallingCube extends GameEntity {
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
     public FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
-                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityManager entityDeposit) {
+                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, EntityReceiver entityDeposit) {
         super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, renderTimer, entityDeposit);
         this.range = (float) Math.sqrt(3 * scale * scale);
     }
@@ -87,11 +87,6 @@ public class FallingCube extends GameEntity {
         velocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
-    }
-
-    @Override
-    public String toString() {
-        return "FallingCube " + idNumber();
     }
 
     @Override

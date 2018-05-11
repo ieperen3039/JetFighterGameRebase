@@ -2,9 +2,8 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Engine.GameLoop.SpawnEntityManager;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
-import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Engine.GameLoop.GameServer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.io.BufferedOutputStream;
@@ -22,22 +21,22 @@ public class ServerConnection implements BlockingListener {
     private final InputStream clientIn;
     private final BufferedOutputStream clientOut;
     private final String clientName;
-    private final boolean hasAdminCapabilities;
+    public final boolean hasAdminCapabilities;
 
-    private final EntityManager game;
-    private final SpawnEntityManager entityDisposal;
+    private final EntityReceiver entityDump;
+    private final GameServer server;
     private Lock sendOutput = new ReentrantLock();
 
     private final RemoteControlReceiver controls;
 
-    public ServerConnection(Socket connection, boolean isAdmin, EntityManager game, SpawnEntityManager entityDisposal) throws IOException {
+    public ServerConnection(Socket connection, boolean isAdmin, EntityReceiver entityDump, GameServer server) throws IOException {
         this.clientIn = connection.getInputStream();
         this.clientOut = new BufferedOutputStream(connection.getOutputStream());
         this.hasAdminCapabilities = isAdmin;
-        this.entityDisposal = entityDisposal;
+        this.server = server;
         this.controls = new RemoteControlReceiver();
         this.clientName = connection.toString();
-        this.game = game;
+        this.entityDump = entityDump;
     }
 
     /**
@@ -82,30 +81,38 @@ public class ServerConnection implements BlockingListener {
     @Override
     public boolean handleMessage() throws IOException {
         MessageType type = MessageType.get(clientIn.read());
-        Toolbox.print(type);
 
         if (type.isOf(MessageType.adminOnly) && !hasAdminCapabilities) {
             Toolbox.printError(this + " sent an " + type + " command, while it has no access to it");
             return true;
+
+        } else if (type == MessageType.CONNECTION_CLOSE) {
+            return false;
         }
 
         if (type.isOf(MessageType.controls)) {
             JetFighterProtocol.controlRead(clientIn, controls, type);
 
-        } else if (type == MessageType.ENTITY_UPDATE) {
-            JetFighterProtocol.entityUpdateRead(clientIn, game.getEntities());
+        } else if (type == MessageType.START_GAME) {
+            server.unPause();
+
+        } else if (type == MessageType.PAUSE_GAME) {
+            server.pause();
+
+        } else if (type == MessageType.SHUTDOWN_GAME){
+            server.shutDown();
 
         } else if (type == MessageType.ENTITY_SPAWN) {
             // actually works for Jets
             MovingEntity.SpawnEntity spawn = JetFighterProtocol.spawnRequestRead(clientIn);
-            entityDisposal.addEntity(spawn, controls);
+            server.spawnEntity(spawn, controls);
 
         } else {
             long bits = clientIn.skip(type.nOfArgs());
             Toolbox.printError("Message caused an error: " + type, "skipping " + bits + " bits");
         }
 
-        return type != MessageType.CONNECTION_CLOSE;
+        return true;
     }
 
     @Override
@@ -115,9 +122,9 @@ public class ServerConnection implements BlockingListener {
 
     /**
      * reads a new player from the client
-     * @see ClientConnection#getPlayer(GameTimer)
+     * @see ClientConnection#getPlayer()
      */
-    public MovingEntity getPlayer(GameEntity.State position, GameTimer time) throws IOException {
+    public MovingEntity getPlayer(GameEntity.State position) throws IOException {
         // notify client
         clientOut.write(MessageType.CONFIRM_CONNECTION.ordinal());
         clientOut.flush();
@@ -125,7 +132,7 @@ public class ServerConnection implements BlockingListener {
         EntityClass type = EntityClass.get(clientIn.read());
         // create new plane
         MovingEntity.SpawnEntity spawn = new MovingEntity.SpawnEntity(type, position);
-        MovingEntity player = spawn.construct(game, controls, time);
+        MovingEntity player = spawn.construct(entityDump, controls);
         // notify client about his new acquisition
         JetFighterProtocol.newEntitySend(clientOut, spawn, player.idNumber());
         clientOut.flush();

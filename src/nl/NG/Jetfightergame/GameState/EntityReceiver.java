@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameState;
+package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -11,7 +11,7 @@ import java.util.Collection;
  * @author Geert van Ieperen
  * created on 5-2-2018.
  */
-public interface EntityManager {
+public interface EntityReceiver {
 
     /**
      * adds an moving entity to the game's collision detection and rendering

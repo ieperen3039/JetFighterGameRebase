@@ -4,9 +4,9 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.Environment;
-import nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager.Worlds;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.EnvironmentManager.Worlds;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -206,7 +206,7 @@ public class Process592 implements Environment {
     /**
      * creates menuPanels for selecting worlds
      * @param sceneSelector switches the current world to the given world
-     * @return a new menu with all values defined in {@link nl.NG.Jetfightergame.Engine.GameState.EnvironmentManager.Worlds}
+     * @return a new menu with all values defined in {@link nl.NG.Jetfightergame.GameState.EnvironmentManager.Worlds}
      */
     private static MenuPanel[] worldSelectionMenu(Consumer<Worlds> sceneSelector) {
         final Worlds[] allScenes = Worlds.values();

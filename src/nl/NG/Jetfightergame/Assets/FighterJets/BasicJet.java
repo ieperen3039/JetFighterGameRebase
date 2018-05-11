@@ -4,8 +4,8 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
 import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -34,14 +34,14 @@ public class BasicJet extends AbstractJet {
     private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
     private static final MachineGun GUN = new MachineGun(0.1f);
 
-    private Shape shape;
+    private final Shape shape;
 
-    public BasicJet(int id, Controller input, GameTimer renderTimer, EntityManager entityDeposit) {
+    public BasicJet(int id, Controller input, GameTimer renderTimer, EntityReceiver entityDeposit) {
         this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(5));
     }
 
     public BasicJet(int id, PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,
-                    EntityManager entityDeposit, SpecialWeapon specialWeapon) {
+                    EntityReceiver entityDeposit, SpecialWeapon specialWeapon) {
         super(id, input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,

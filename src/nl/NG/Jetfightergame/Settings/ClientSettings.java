@@ -13,6 +13,7 @@ public final class ClientSettings {
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final int PARTICLE_SPLITS = 0;
     public static final int COLLISION_DETECTION_LEVEL = 0;
+    public static final int PHYSICS_TPS = 30;
     public static boolean FIXED_DELTA_TIME = false;
 
     /** particles */

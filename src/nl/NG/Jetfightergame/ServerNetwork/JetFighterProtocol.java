@@ -2,8 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
-import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -138,7 +137,7 @@ public final class JetFighterProtocol {
     }
 
     /** client reading an entity off the InputStream and creates an instance of it */
-    public static MovingEntity newEntityRead(InputStream input, EntityManager game, Controller controller, GameTimer time) throws IOException {
+    public static MovingEntity newEntityRead(InputStream input, EntityReceiver game, Controller controller) throws IOException {
         EntityClass type = EntityClass.get(input.read());
         DataInputStream DIS = new DataInputStream(input);
         // identity number
@@ -148,7 +147,7 @@ public final class JetFighterProtocol {
         Quaternionf rotation = readQuaternion(DIS);
         DirVector velocity = readDirVector(DIS);
 
-        return type.construct(id, game, controller, position, rotation, velocity, time);
+        return type.construct(id, game, controller, position, rotation, velocity);
     }
 
     /** read a control message off the InputStream */
@@ -158,13 +157,12 @@ public final class JetFighterProtocol {
     }
 
     /** sends a control message into the OutputStream */
-    static synchronized void controlSend(OutputStream output, MessageType type, byte value) throws IOException {
-        output.write(type.ordinal());
+    static synchronized void controlSend(OutputStream output, byte value) throws IOException {
         output.write(value);
     }
 
     /** sends a request to spawn a new plane.
-     * When successful, the reply is caught with {@link #newEntityRead(InputStream, EntityManager, Controller, GameTimer)} */
+     * When successful, the reply is caught with {@link #newEntityRead(InputStream, EntityReceiver, Controller)} */
     public static void playerSpawnRequest(OutputStream output, EntityClass entity) throws IOException {
         output.write(entity.ordinal());
     }

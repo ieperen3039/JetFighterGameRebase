@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
@@ -123,7 +123,7 @@ public interface MovingEntity extends Touchable {
     /**
      * @return the position of this object in the next timestamp. This value is
      *         bound to change after calls to
-     *         {@link nl.NG.Jetfightergame.Engine.GameState.CollisionDetection}
+     *         {@link nl.NG.Jetfightergame.GameState.CollisionDetection}
      */
     PosVector getExpectedPosition();
 
@@ -138,7 +138,7 @@ public interface MovingEntity extends Touchable {
 
     void setTimer(GameTimer timer);
 
-    void setEntityManager(EntityManager game);
+    void setEntityManager(EntityReceiver game);
 
     int idNumber();
 
@@ -162,8 +162,8 @@ public interface MovingEntity extends Touchable {
             this(type, state.position(0), state.rotation(0), state.velocity());
         }
 
-        public MovingEntity construct(EntityManager game, Controller input, GameTimer time){
-            return type.construct(Identity.next(), game, input, position, rotation, velocity, time);
+        public MovingEntity construct(EntityReceiver game, Controller input){
+            return type.construct(Identity.next(), game, input, position, rotation, velocity);
         }
     }
 }

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameState;
+package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
@@ -12,10 +12,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.AveragingQueue;
-import nl.NG.Jetfightergame.Tools.Extreme;
-import nl.NG.Jetfightergame.Tools.Pair;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.*;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -44,9 +41,11 @@ public class CollisionDetection implements EntityManagement {
 
     private final Collection<Touchable> staticEntities;
     private Collection<MovingEntity> dynamicClones;
+    private Collection<MovingEntity> newEntities;
 
     public CollisionDetection(Collection<MovingEntity> dynamicEntities, Collection<Touchable> staticEntities) {
         this.staticEntities = Collections.unmodifiableCollection(staticEntities);
+        this.newEntities = new ConcurrentArrayList<>();
         ScreenOverlay.addHudItem(collisionCounter);
 
         xLowerSorted = new CollisionEntity[dynamicEntities.size()];
@@ -71,6 +70,13 @@ public class CollisionDetection implements EntityManagement {
 
     @Override
     public void preUpdateEntities(NetForceProvider gameState, float deltaTime) {
+
+        // add new entities
+        if (!newEntities.isEmpty()) {
+            mergeNewEntities(newEntities);
+            newEntities.clear();
+        }
+
         for (CollisionEntity e : entityArray()) {
             MovingEntity entity = e.entity;
             DirVector netForce = gameState.entityNetforce(entity);
@@ -357,7 +363,16 @@ public class CollisionDetection implements EntityManagement {
     }
 
     @Override
-    public void addEntities(Collection<MovingEntity> newEntities) {
+    public void addEntities(Collection<? extends MovingEntity> entities) {
+        newEntities.addAll(entities);
+    }
+
+    @Override
+    public void addEntity(MovingEntity entity) {
+        newEntities.add(entity);
+    }
+
+    private void mergeNewEntities(Collection<MovingEntity> newEntities){
         int nOfNewEntities = newEntities.size();
 
         CollisionEntity[] newXSort = new CollisionEntity[nOfNewEntities];

@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameState;
+package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;

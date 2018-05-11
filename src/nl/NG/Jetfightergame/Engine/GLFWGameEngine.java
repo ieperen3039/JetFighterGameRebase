@@ -61,7 +61,7 @@ public abstract class GLFWGameEngine {
 
         } finally {
             Toolbox.checkGLError();
-            Toolbox.checkALError();
+//            Toolbox.checkALError();
             this.cleanUp();
             window.cleanup();
         }

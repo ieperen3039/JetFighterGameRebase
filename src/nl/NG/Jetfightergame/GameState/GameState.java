@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameState;
+package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
@@ -86,16 +86,12 @@ public abstract class GameState implements Environment, PathDescription, NetForc
         final float currentTime = time.getGameTime().current();
         final float deltaTime = time.getGameTime().difference();
 
-        if (deltaTime == 0f) return;
-
         // update positions and apply physics
         physicsEngine.preUpdateEntities(this, deltaTime);
 
-        // add new entities
-        physicsEngine.addEntities(newEntities);
-        newEntities.clear();
+        if (deltaTime == 0f) return;
 
-        if ((ServerSettings.MAX_COLLISION_ITERATIONS != 0) && (deltaTime > 0))
+        if (ServerSettings.MAX_COLLISION_ITERATIONS != 0)
             physicsEngine.analyseCollisions(currentTime, deltaTime, this);
 
         // update new state
@@ -153,12 +149,12 @@ public abstract class GameState implements Environment, PathDescription, NetForc
 
     @Override
     public void addEntity(MovingEntity entity) {
-        newEntities.add(entity);
+        physicsEngine.addEntity(entity);
     }
 
     @Override
     public void addEntities(Collection<? extends MovingEntity> entities) {
-        newEntities.addAll(entities);
+        physicsEngine.addEntities(entities);
     }
 
     @Override

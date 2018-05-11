@@ -4,9 +4,9 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GameState.Environment;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
+import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
@@ -41,7 +41,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
                               Camera camera, ControllerManager controllerManager, AbstractJet player) throws IOException, ShaderException {
         super(
-                "Rendering loop", ClientSettings.TARGET_FPS, false,
+                "Rendering", ClientSettings.TARGET_FPS, false,
                 (ex) -> {
                     window.close();
                     engine.exitGame();
@@ -55,15 +55,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         shaderManager = new ShaderManager();
 
-        final Runnable cameraMode = () -> {
-            if (ClientSettings.SPECTATOR_MODE) {
-                engine.setSpectatorMode();
-            } else {
-                engine.setPlayMode();
-            }
-        };
-
-        new JetFighterMenu(window::getWidth, window::getHeight, cameraMode, engine::exitGame, controllerManager, shaderManager);
+        new JetFighterMenu(window::getWidth, window::getHeight, engine::setPlayMode, engine::exitGame, controllerManager, shaderManager);
         new GravityHud(window::getWidth, window::getHeight, player, camera).activate();
 
         SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");

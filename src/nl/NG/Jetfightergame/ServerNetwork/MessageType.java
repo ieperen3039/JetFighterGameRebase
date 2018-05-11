@@ -8,15 +8,15 @@ import java.util.EnumSet;
  * @author Geert van Ieperen, created on 5-5-2018.
  */
 public enum MessageType {
-    CONNECTION_CLOSE, // counts as id = 0, and also id = -1
-    START_GAME, SHUTDOWN_GAME, CONFIRM_CONNECTION,
+    CONNECTION_CLOSE, CONFIRM_CONNECTION, // CONNECTION_CLOSE counts as id = 0, and also id = -1
+    START_GAME, PAUSE_GAME, SHUTDOWN_GAME,
     THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE,
     ENTITY_UPDATE, ENTITY_SPAWN, PLAYER_SPAWN;
 
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
     public static EnumSet<MessageType> entityMessages = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE);
     public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, SHUTDOWN_GAME);
-    public static EnumSet<MessageType> lobbyCommands = EnumSet.of(START_GAME, SHUTDOWN_GAME);
+    public static EnumSet<MessageType> lobbyCommands = EnumSet.of(START_GAME);
 
     /**
      * @param id a number n corresponing to an enum ordinal

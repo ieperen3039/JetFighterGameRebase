@@ -5,8 +5,8 @@ import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.GameState.GameState;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -51,7 +51,7 @@ public class CollisionLaboratory extends GameState {
     @Override
     protected Collection<Touchable> createWorld() {
 //        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.3f)));
-        return Collections.singletonList(new StaticObject(GeneralShapes.makeInverseCube(0), Material.ROUGH, Color4f.ORANGE, labSize));
+        return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, Material.ROUGH, Color4f.ORANGE, labSize));
     }
 
     @Override

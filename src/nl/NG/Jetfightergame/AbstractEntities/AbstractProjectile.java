@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -20,11 +20,11 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
     private final float airResistCoeff;
 
     protected float timeToLive;
-    protected final EntityManager particleDeposit;
+    protected final EntityReceiver particleDeposit;
 
     public AbstractProjectile(
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, EntityManager particleDeposit, int id
+            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, EntityReceiver particleDeposit, int id
     ) {
         super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, gameTimer, null);
         this.airResistCoeff = airResistCoeff;

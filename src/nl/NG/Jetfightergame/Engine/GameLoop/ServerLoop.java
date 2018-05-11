@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Engine.GameLoop;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.SpawnEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.ServerNetwork.ServerConnection;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -18,27 +18,28 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
-public class ServerLoop extends AbstractGameLoop implements SpawnEntityManager {
+public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     private final Environment world;
     private final Collection<ServerConnection> connections;
 
     public ServerLoop(Environment world, Consumer<Exception> exceptionHandler) {
-        super("GameEngine loop", ServerSettings.TARGET_TPS, true, exceptionHandler);
+        super("Server", ServerSettings.TARGET_TPS, true, exceptionHandler);
         this.world = world;
         connections = new ArrayList<>();
     }
 
     /**
-     * initialize connections with the player
+     * initialize connections with the player, accepting a new jet and sending all entities to the client.
      * @param socket the socket connection of this player, accepted and without listeners on its streams
+     * @param asAdmin if true, the connection has admin capabilities
      * @throws IOException if the connection could not be established
      */
-    public void connectToPlayer(Socket socket) throws IOException {
+    public void connectToPlayer(Socket socket, boolean asAdmin) throws IOException {
         // establish communication handler
-        ServerConnection connector = new ServerConnection(socket, false, world, this);
+        ServerConnection connector = new ServerConnection(socket, asAdmin, world, this);
         // first thing to do is creating a player
-        MovingEntity player = connector.getPlayer(world.getNewSpawn(), world.getTimer());
+        MovingEntity player = connector.getPlayer(world.getNewSpawn());
         connections.add(connector);
         new Thread(connector::listen).start();
 
@@ -53,8 +54,8 @@ public class ServerLoop extends AbstractGameLoop implements SpawnEntityManager {
     }
 
     @Override
-    public void addEntity(SpawnEntity spawn, Controller playerInput){
-        MovingEntity entity = spawn.construct(world, playerInput, world.getTimer());
+    public void spawnEntity(SpawnEntity spawn, Controller playerInput){
+        MovingEntity entity = spawn.construct(world, playerInput);
         world.addEntity(entity);
         connections.forEach(c -> c.sendEntitySpawn(spawn, entity.idNumber()));
     }
@@ -81,6 +82,11 @@ public class ServerLoop extends AbstractGameLoop implements SpawnEntityManager {
     public void pause() {
         world.getTimer().pause();
         super.pause();
+    }
+
+    @Override
+    public void shutDown() {
+        super.stopLoop();
     }
 
     @Override

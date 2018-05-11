@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameState;
+package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
@@ -11,7 +11,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
  * @author Geert van Ieperen
  * created on 8-1-2018.
  */
-public interface Environment extends EntityManager {
+public interface Environment extends EntityReceiver {
 
     /**
      * @param playerJet
@@ -46,7 +46,7 @@ public interface Environment extends EntityManager {
     Color4f fogColor();
 
     /**
-     * initialize the scene
+     * initialize the scene. Make sure to call Shapes.init() for all shapes you want to initialize
      * @param collisionDetLevel 0 = no collision
      * @param loadDynamic if false, all dynamic entities are not loaded. This is required if these are managed by a server
      */

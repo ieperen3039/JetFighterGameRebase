@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Assets.Weapons;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -19,7 +19,7 @@ public class MachineGun extends AbstractWeapon {
     }
 
     @Override
-    protected AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityManager entityDeposit) {
+    protected AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityReceiver entityDeposit) {
         DirVector vel = source.velocity();
         vel.add(source.forward().mul(30));
         final PosVector pos = source.position(spawnTime);

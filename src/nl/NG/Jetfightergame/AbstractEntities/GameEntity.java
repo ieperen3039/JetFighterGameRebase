@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 public abstract class GameEntity implements MovingEntity {
 
     /** particles and new entities should be passed to this object */
-    protected transient EntityManager entityDeposit;
+    protected transient EntityReceiver entityDeposit;
     private final int thisID;
 
     /** worldspace position in m */
@@ -79,7 +79,7 @@ public abstract class GameEntity implements MovingEntity {
      */
     public GameEntity(
             int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-            Material surfaceMaterial, float mass, float scale, GameTimer gameTimer, EntityManager entityDeposit
+            Material surfaceMaterial, float mass, float scale, GameTimer gameTimer, EntityReceiver entityDeposit
     ) {
         this.thisID = id;
         this.position = new PosVector(initialPosition);
@@ -382,7 +382,7 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void setEntityManager(EntityManager game) {
+    public void setEntityManager(EntityReceiver game) {
         entityDeposit = game;
     }
 
@@ -442,7 +442,7 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName();
+        return getClass().getSimpleName() + "(" + idNumber() + ")";
     }
 
     /**

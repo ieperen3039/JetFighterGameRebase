@@ -1,16 +1,16 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameLoop.ServerLoop;
-import nl.NG.Jetfightergame.Engine.GameState.Environment;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -57,6 +57,7 @@ public class JetFighterServer {
 
         if (loadModels) {
             ShapeFromFile.init(false);
+            GeneralShapes.init(false);
         }
 
         currentPhase = WAITING_FOR_HOST;
@@ -76,6 +77,7 @@ public class JetFighterServer {
         new Thread(server::listenForHost).start();
         client.connect(new InetSocketAddress(server.portNumber));
 
+        server.currentPhase = STARTING;
         return server.getGameLoop();
     }
 
@@ -91,41 +93,11 @@ public class JetFighterServer {
 
         try {
             Toolbox.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
-            Socket host = acceptConnection();
-            if (host == null) return;
+            acceptConnection(true);
 
-            connectHost(host);
         } catch (IOException ex){
             Toolbox.printError(ex);
         }
-    }
-
-    /** connects the given socket to this server, allowing it to send admin commands */
-    private void connectHost(Socket host) throws IOException {
-        // create an input for the host to remotely start the game
-        InputStream hostCall = host.getInputStream();
-        BlockingListener commandListener = () -> {
-            MessageType type = MessageType.get(hostCall.read());
-
-            if (type == MessageType.START_GAME) {
-                Toolbox.print("Host started game");
-                terminateListen();
-                return false;
-
-            } else if (type == MessageType.CONNECTION_CLOSE) {
-                Toolbox.printError("Unexpected connection close " + type);
-                return false;
-
-            } else {
-                Toolbox.printError("Unsupported Message " + type);
-                return true;
-            }
-        };
-
-        new Thread(commandListener::listen).start();
-
-        Toolbox.print("Accepted " + host + " as host");
-        currentPhase = PREPARATION;
     }
 
     /**
@@ -137,19 +109,19 @@ public class JetFighterServer {
         if (currentPhase != PREPARATION) throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
         Toolbox.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
 
-        while ((currentPhase == PREPARATION) && (acceptConnection() != null));
+        while ((currentPhase == PREPARATION) && acceptConnection(false));
 
         Toolbox.print("Stopped listening for new players");
         currentPhase = STARTING;
     }
 
-    public Socket acceptConnection() throws IOException {
+    public boolean acceptConnection(boolean asAdmin) throws IOException {
         Socket client = socket.accept();
-        if (client == terminalSocket) return null;
+        if (client == terminalSocket) return false;
 
         Toolbox.print("Connection made with " + client);
-        game.connectToPlayer(client);
-        return client;
+        game.connectToPlayer(client, asAdmin);
+        return true;
     }
 
     /**
@@ -181,7 +153,7 @@ public class JetFighterServer {
         return currentPhase;
     }
 
-    /** starts a random test-server */
+    /** starts a test-server */
     public static void main(String[] args) throws IOException {
         GameTimer time = new GameTimer();
         Environment world = new CollisionLaboratory(time);
@@ -190,7 +162,6 @@ public class JetFighterServer {
         server.listen();
 
         AbstractGameLoop game = server.getGameLoop();
-        game.unPause();
         game.run();
     }
 }

@@ -4,8 +4,8 @@ import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
 import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameState.EntityManager;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.EntityReceiver;
 import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
@@ -104,7 +104,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
-            MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, EntityManager entityDeposit
+            MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, EntityReceiver entityDeposit
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, material, mass, scale, renderTimer, entityDeposit);
 
@@ -237,14 +237,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     public DirVector interpolatedVelocity() {
         return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
-    }
-
-    @Override
-    public String toString() {
-        return "Jet '" + this.getClass().getSimpleName() + "'{" +
-                "pos: " + position +
-                ", velocity: " + velocity +
-                "}";
     }
 
     /**

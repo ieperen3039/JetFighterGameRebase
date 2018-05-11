@@ -34,5 +34,4 @@ public final class ServerSettings {
     public static final int INTERPOLATION_QUEUE_SIZE = 10;
     public static boolean RENDER_ENABLED = false;
 
-    public static int entityIDNumber = 0;
 }

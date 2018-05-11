@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
-import nl.NG.Jetfightergame.Engine.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.GameState;
 
 /**
  * @author Geert van Ieperen
