@@ -10,7 +10,6 @@ import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
-import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
 import nl.NG.Jetfightergame.ServerNetwork.MessageType;
@@ -100,9 +99,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             player = new Player(playerInput, playerJet);
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
-
-            ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
-            ScreenOverlay.addHudItem((hud) -> Toolbox.printOnline(hud::printRoll));
 
             renderLoop = new JetFighterRenderer(
                     this, environment, window, camera, playerInput, playerJet

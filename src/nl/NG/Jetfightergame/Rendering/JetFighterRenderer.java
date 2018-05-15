@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static nl.NG.Jetfightergame.Engine.GLFWGameEngine.GameMode.MENU_MODE;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -29,11 +30,13 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class JetFighterRenderer extends AbstractGameLoop {
 
+    private final GravityHud gravityHud;
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
     private ShaderManager shaderManager;
     private Environment gameState;
+    private ScreenOverlay overlay;
 
     private final String sessionName;
     private int frameNumber = 0;
@@ -55,8 +58,17 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         shaderManager = new ShaderManager();
 
-        new JetFighterMenu(window::getWidth, window::getHeight, engine::setPlayMode, engine::exitGame, controllerManager, shaderManager);
-        new GravityHud(window::getWidth, window::getHeight, player, camera).activate();
+        overlay = new ScreenOverlay(() -> engine.getCurrentGameMode() == MENU_MODE);
+        overlay.addHudItem((hud) -> Toolbox.printOnline(hud::printRoll));
+
+        new JetFighterMenu(
+                window::getWidth, window::getHeight,
+                engine::setPlayMode, engine::exitGame,
+                controllerManager, shaderManager, overlay
+        );
+
+        gravityHud = new GravityHud(player, camera);
+        overlay.addHudItem(gravityHud);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yymmdd_hhmmss");
         sessionName = dateFormat.format(new Date());
@@ -115,7 +127,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         shaderManager.unbind();
 
         // HUD / menu
-        ScreenOverlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen, activeCamera.getEye());
+        overlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen, activeCamera.getEye());
 
         // update window
         window.update();
@@ -135,5 +147,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
     @Override
     public void cleanup() {
         shaderManager.cleanup();
+        overlay.removeHudItem(gravityHud);
     }
 }

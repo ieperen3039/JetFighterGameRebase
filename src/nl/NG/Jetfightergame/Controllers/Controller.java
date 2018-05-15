@@ -1,5 +1,9 @@
 package nl.NG.Jetfightergame.Controllers;
 
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+
+import java.util.function.Consumer;
+
 /**
  * may be called to check the current actions of this controller
  * at least one implementation will concern player input.
@@ -21,6 +25,10 @@ public interface Controller {
      *          if (return > 0) the controller wants to accelerate.
      */
     float throttle();
+
+    default Consumer<ScreenOverlay.Painter> hudElement() {
+        return hud -> {};
+    }
 
     /**
      * the amount of pitch requested by this controller.

@@ -1,7 +1,10 @@
 package nl.NG.Jetfightergame.Controllers;
 
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Manager;
+
+import java.util.function.Consumer;
 
 /**
  * a controller decorator that manages the current controller for the player, implementing overriding control.
@@ -10,6 +13,7 @@ import nl.NG.Jetfightergame.Tools.Manager;
  */
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
+    private ScreenOverlay hud = null;
     private Controller instance = new PlayerPCControllerAbsolute();
 
     /**
@@ -29,6 +33,8 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
             ((TrackerListener) instance).cleanUp();
         }
 
+        if (hud != null) hud.removeHudItem(instance.hudElement());
+
         switch (type){
             case MouseAbsolute:
                 instance = new PlayerPCControllerAbsolute();
@@ -39,11 +45,24 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
             default:
                 throw new UnsupportedOperationException("unknown enum: " + type);
         }
+
+        if (hud != null) hud.addHudItem(instance.hudElement());
+    }
+
+    public void setDisplay(ScreenOverlay target) {
+        if (hud != null) hud.removeHudItem(instance.hudElement());
+        hud = target;
+        hud.addHudItem(instance.hudElement());
     }
 
     @Override
     public float throttle() {
         return instance.throttle();
+    }
+
+    @Override
+    public Consumer<ScreenOverlay.Painter> hudElement() {
+        return instance.hudElement();
     }
 
     @Override

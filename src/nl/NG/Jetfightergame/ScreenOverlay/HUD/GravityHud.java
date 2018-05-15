@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.function.Consumer;
-import java.util.function.IntSupplier;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_COLOR;
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_STROKE_WIDTH;
@@ -20,117 +19,113 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
  * @author Geert van Ieperen
  * created on 24-12-2017.
  */
-public class GravityHud {
+public class GravityHud implements Consumer<ScreenOverlay.Painter> {
 
     private static final float FPV_SENSITIVITY = 400f;
     private static final float BS_SENSITIVITY = 2000f;
-    public final Consumer<ScreenOverlay.Painter> display;
+    private final AbstractJet target;
+    private final Camera camera;
 
-    public GravityHud(IntSupplier windowWidth, IntSupplier windowHeight, final AbstractJet target, Camera camera) {
-
-        display = hud -> {
-            final int width = windowWidth.getAsInt();
-            final int height = windowHeight.getAsInt();
-            final int xMid = width / 2;
-            final int yMid = height / 2;
-            final float barMargin = (1 - HUDStyleSettings.ALTVEL_BAR_SIZE) / 2;
-            final float inverseBarMargin = 1 - barMargin;
-            final DirVector lookDirection = new DirVector(camera.vectorToFocus());
-            final DirVector upVector = new DirVector(camera.getUpVector());
-            final DirVector lookRight = lookDirection.cross(upVector, new DirVector());
-            final DirVector lookUp = lookRight.cross(lookDirection, upVector);
-
-            lookDirection.normalize();
-            lookRight.normalize();
-            lookUp.normalize();
-
-            { // velocity bar
-                final int xPosVelocityBar = (int) (width * barMargin);
-                hud.line(
-                        HUD_STROKE_WIDTH, HUD_COLOR,
-                        xPosVelocityBar, (int) (height * barMargin),
-                        xPosVelocityBar, (int) (height * inverseBarMargin)
-                );
-
-                final float currentVelocity = target.interpolatedVelocity().length() * 10f;
-
-                float[] velocityTicks = ticks(currentVelocity, 25, 100);
-                for (float tick : velocityTicks) {
-                    int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
-                    hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosVelocityBar, yPos, xPosVelocityBar + HUDStyleSettings.TICKSIZE, yPos);
-                }
-
-                hud.text(
-                        xPosVelocityBar - (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
-                        HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_RIGHT, HUD_COLOR,
-                        Integer.toString((int) currentVelocity)
-                );
-            }
-
-            { // altitude bar
-                final int xPosAltitudeBar = (int) (width * inverseBarMargin);
-                hud.line(
-                        HUD_STROKE_WIDTH, HUD_COLOR,
-                        xPosAltitudeBar, (int) (height * barMargin),
-                        xPosAltitudeBar, (int) (height * inverseBarMargin)
-                );
-                final float currentAltitude = target.interpolatedPosition().z() * 10f; // TODO determine altitude
-
-                float[] heightTicks = ticks(currentAltitude, 25, 100);
-                for (float tick : heightTicks) {
-                    int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
-                    hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosAltitudeBar, yPos, xPosAltitudeBar + HUDStyleSettings.TICKSIZE, yPos);
-                }
-
-                hud.text(
-                        xPosAltitudeBar + (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
-                        HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_LEFT, HUD_COLOR,
-                        Integer.toString((int) currentAltitude)
-                );
-            }
-
-            { // boresight / direction
-                final DirVector forward = target.interpolatedForward();
-
-                final float xComp = lookRight.dot(forward);
-                final float yComp = -(lookUp.dot(forward));
-
-                int BSX = (int) (BS_SENSITIVITY * xComp) + xMid;
-                int BSY = (int) (BS_SENSITIVITY * yComp) + yMid;
-                hud.line(
-                        HUD_STROKE_WIDTH, HUD_COLOR,
-                        BSX - HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE,
-                        BSX, BSY,
-                        BSX + HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE
-                );
-            }
-
-            { // Flight Path Vector
-                final DirVector velocity = target.interpolatedVelocity().normalize(new DirVector());
-
-                final float xComp = lookRight.dot(velocity);
-                final float yComp = -(lookUp.dot(velocity));
-
-                int FPVX = (int) (FPV_SENSITIVITY * xComp) + xMid;
-                int FPVY = (int) (FPV_SENSITIVITY * yComp) + yMid;
-                hud.circle(FPVX, FPVY, 10, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);
-                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX - 25, FPVY, FPVX - 10, FPVY);
-                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX + 25, FPVY, FPVX + 10, FPVY);
-                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX, FPVY - 25, FPVX, FPVY - 10);
-            }
-
-            { // Angle markings
-
-            }
-        };
+    public GravityHud(final AbstractJet target, Camera camera) {
+        this.target = target;
+        this.camera = camera;
     }
 
-    public void activate(){
-        ScreenOverlay.addHudItem(display);
-    }
+    @Override
+    public void accept(ScreenOverlay.Painter hud) {
+        final int width = hud.windowWidth;
+        final int height = hud.windowHeight;
+        final int xMid = width / 2;
+        final int yMid = height / 2;
+        final float barMargin = (1 - HUDStyleSettings.ALTVEL_BAR_SIZE) / 2;
+        final float inverseBarMargin = 1 - barMargin;
+        final DirVector lookDirection = new DirVector(camera.vectorToFocus());
+        final DirVector upVector = new DirVector(camera.getUpVector());
+        final DirVector lookRight = lookDirection.cross(upVector, new DirVector());
+        final DirVector lookUp = lookRight.cross(lookDirection, upVector);
 
-    public void deactivate(){
-        ScreenOverlay.removeHudItem(display);
+        lookDirection.normalize();
+        lookRight.normalize();
+        lookUp.normalize();
+
+        { // velocity bar
+            final int xPosVelocityBar = (int) (width * barMargin);
+            hud.line(
+                    HUD_STROKE_WIDTH, HUD_COLOR,
+                    xPosVelocityBar, (int) (height * barMargin),
+                    xPosVelocityBar, (int) (height * inverseBarMargin)
+            );
+
+            final float currentVelocity = target.interpolatedVelocity().length() * 10f;
+
+            float[] velocityTicks = ticks(currentVelocity, 25, 100);
+            for (float tick : velocityTicks) {
+                int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
+                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosVelocityBar, yPos, xPosVelocityBar + HUDStyleSettings.TICKSIZE, yPos);
+            }
+
+            hud.text(
+                    xPosVelocityBar - (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
+                    HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_RIGHT, HUD_COLOR,
+                    Integer.toString((int) currentVelocity)
+            );
+        }
+
+        { // altitude bar
+            final int xPosAltitudeBar = (int) (width * inverseBarMargin);
+            hud.line(
+                    HUD_STROKE_WIDTH, HUD_COLOR,
+                    xPosAltitudeBar, (int) (height * barMargin),
+                    xPosAltitudeBar, (int) (height * inverseBarMargin)
+            );
+            final float currentAltitude = target.interpolatedPosition().z() * 10f; // TODO determine altitude
+
+            float[] heightTicks = ticks(currentAltitude, 25, 100);
+            for (float tick : heightTicks) {
+                int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
+                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosAltitudeBar, yPos, xPosAltitudeBar + HUDStyleSettings.TICKSIZE, yPos);
+            }
+
+            hud.text(
+                    xPosAltitudeBar + (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
+                    HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_LEFT, HUD_COLOR,
+                    Integer.toString((int) currentAltitude)
+            );
+        }
+
+        { // boresight / direction
+            final DirVector forward = target.interpolatedForward();
+
+            final float xComp = lookRight.dot(forward);
+            final float yComp = -(lookUp.dot(forward));
+
+            int BSX = (int) (BS_SENSITIVITY * xComp) + xMid;
+            int BSY = (int) (BS_SENSITIVITY * yComp) + yMid;
+            hud.line(
+                    HUD_STROKE_WIDTH, HUD_COLOR,
+                    BSX - HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE,
+                    BSX, BSY,
+                    BSX + HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE
+            );
+        }
+
+        { // Flight Path Vector
+            final DirVector velocity = target.interpolatedVelocity().normalize(new DirVector());
+
+            final float xComp = lookRight.dot(velocity);
+            final float yComp = -(lookUp.dot(velocity));
+
+            int FPVX = (int) (FPV_SENSITIVITY * xComp) + xMid;
+            int FPVY = (int) (FPV_SENSITIVITY * yComp) + yMid;
+            hud.circle(FPVX, FPVY, 10, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);
+            hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX - 25, FPVY, FPVX - 10, FPVY);
+            hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX + 25, FPVY, FPVX + 10, FPVY);
+            hud.line(HUD_STROKE_WIDTH, HUD_COLOR, FPVX, FPVY - 25, FPVX, FPVY - 10);
+        }
+
+        { // Angle markings
+
+        }
     }
 
     /**

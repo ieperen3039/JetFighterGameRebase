@@ -37,8 +37,9 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
 
     public JetFighterMenu(Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier,
                           Runnable startGame, Runnable exitGame, ControllerManager input,
-                          ShaderManager shaderManager) {
-        super(widthSupplier, heightSupplier);
+                          ShaderManager shaderManager, ScreenOverlay hud
+    ) {
+        super(widthSupplier, heightSupplier, hud);
 
         MenuClickable startGameButton = new MenuButton("Start Game", startGame);
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));

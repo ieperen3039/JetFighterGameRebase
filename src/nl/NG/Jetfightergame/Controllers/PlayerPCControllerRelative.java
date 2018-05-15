@@ -18,18 +18,16 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
  */
 public class PlayerPCControllerRelative extends PlayerPCController {
     private static final float SENSITIVITY = 0.2f;
-    private final Consumer<ScreenOverlay.Painter> moveVector;
     private final int INDICATOR_SENSITIVITY = 3;
 
-    public PlayerPCControllerRelative() {
-        moveVector = (hud) -> {
+    @Override
+    public Consumer<ScreenOverlay.Painter> hudElement() {
+        return (hud) -> {
             final int xPos = (currentRoll / INDICATOR_SENSITIVITY) + (hud.windowWidth / 2);
             final int yPos = (currentPitch / INDICATOR_SENSITIVITY) + (hud.windowHeight / 2);
             hud.circle(xPos, yPos, 30, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);
             hud.line(HUD_STROKE_WIDTH, Color4f.BLACK, hud.windowWidth/2, hud.windowHeight/2, xPos, yPos);
         };
-
-        ScreenOverlay.addHudItem(moveVector);
     }
 
     @Override
@@ -45,6 +43,5 @@ public class PlayerPCControllerRelative extends PlayerPCController {
     @Override
     public void cleanUp() {
         super.cleanUp();
-        ScreenOverlay.removeHudItem(moveVector);
     }
 }

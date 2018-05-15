@@ -35,23 +35,23 @@ import static org.lwjgl.system.MemoryUtil.NULL;
  */
 public final class ScreenOverlay {
 
-    private static long vg;
-    private static NVGColor color;
-    private static NVGPaint paint;
+    private long vg;
+    private NVGColor color;
+    private NVGPaint paint;
 
     /** fontbuffer MUST be a field */
     @SuppressWarnings("FieldCanBeLocal")
-    private static final ByteBuffer[] fontBuffer = new ByteBuffer[Font.values().length];
-    private static Map<String, Integer> imageBuffer = new HashMap<>();
+    private final ByteBuffer[] fontBuffer = new ByteBuffer[Font.values().length];
+    private Map<String, Integer> imageBuffer = new HashMap<>();
 
-    private static final Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
-    private static final Collection<Consumer<Painter>> hudDrawBuffer = new ArrayList<>();
-    private static BooleanSupplier menuMode;
+    private final Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
+    private final Collection<Consumer<Painter>> hudDrawBuffer = new ArrayList<>();
+    private BooleanSupplier menuMode;
 
-    private static final Lock menuBufferLock = new ReentrantLock();
-    private static final Lock hudBufferLock = new ReentrantLock();
+    private final Lock menuBufferLock = new ReentrantLock();
+    private final Lock hudBufferLock = new ReentrantLock();
 
-    public static boolean isMenuMode() {
+    public boolean isMenuMode() {
         return menuMode.getAsBoolean();
     }
 
@@ -77,8 +77,8 @@ public final class ScreenOverlay {
      * @throws IOException If an error occures during the setup of the Hud.
      * @param menuMode
      */
-    public static void initialize(BooleanSupplier menuMode) throws IOException {
-        ScreenOverlay.menuMode = menuMode;
+    public ScreenOverlay(BooleanSupplier menuMode) throws IOException {
+        this.menuMode = menuMode;
 
         vg = GLFWWindow.antialiasing() ? nvgCreate(NVG_ANTIALIAS | NVG_STENCIL_STROKES) : nvgCreate(NVG_STENCIL_STROKES);
         if (vg == NULL) {
@@ -103,7 +103,7 @@ public final class ScreenOverlay {
      *
      * @param render The code for drawing inside the hud.
      */
-    public static void addMenuItem(Consumer<Painter> render) {
+    public void addMenuItem(Consumer<Painter> render) {
         menuBufferLock.lock();
         menuDrawBuffer.add(render);
         menuBufferLock.unlock();
@@ -114,7 +114,7 @@ public final class ScreenOverlay {
      *
      * @param render The handler to remove.
      */
-    public static void removeMenuItem(Consumer<Painter> render) {
+    public void removeMenuItem(Consumer<Painter> render) {
         menuBufferLock.lock();
         try {
             menuDrawBuffer.remove(render);
@@ -124,7 +124,7 @@ public final class ScreenOverlay {
     }
 
     /** clear the menu drawBuffer */
-    public static void removeMenuItem() {
+    public void removeMenuItem() {
         menuBufferLock.lock();
         menuDrawBuffer.clear();
         menuBufferLock.unlock();
@@ -136,7 +136,7 @@ public final class ScreenOverlay {
      *
      * @param render The code for drawing inside the hud.
      */
-    public static void addHudItem(Consumer<Painter> render) {
+    public void addHudItem(Consumer<Painter> render) {
         hudBufferLock.lock();
         hudDrawBuffer.add(render);
         hudBufferLock.unlock();
@@ -147,7 +147,7 @@ public final class ScreenOverlay {
      *
      * @param render The handler to remove.
      */
-    public static void removeHudItem(Consumer<Painter> render) {
+    public void removeHudItem(Consumer<Painter> render) {
         hudBufferLock.lock();
         try {
             hudDrawBuffer.remove(render);
@@ -157,13 +157,13 @@ public final class ScreenOverlay {
     }
 
     /** clear the hud drawBuffer */
-    public static void removeHudItem(){
+    public void removeHudItem(){
         hudBufferLock.lock();
         hudDrawBuffer.clear();
         hudBufferLock.unlock();
     }
 
-    public static class Painter {
+    public class Painter {
         private static final int PRINTROLLSIZE = 24;
         private final int yPrintRoll = PRINTROLLSIZE + 5;
         private final int xPrintRoll = 5;
@@ -370,7 +370,7 @@ public final class ScreenOverlay {
         }
     }
 
-    public static synchronized void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
+    public synchronized void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
 

@@ -18,10 +18,12 @@ public abstract class HudMenu implements TrackerClickListener {
     private final Supplier<Integer> width;
     private final Supplier<Integer> height;
     private UIElement[] activeElements;
+    private ScreenOverlay hud;
 
-    public HudMenu(Supplier<Integer> width, Supplier<Integer> height) {
+    public HudMenu(Supplier<Integer> width, Supplier<Integer> height, ScreenOverlay hud) {
         this.width = width;
         this.height = height;
+        this.hud = hud;
         MouseTracker.getInstance().addClickListener(this, false);
     }
 
@@ -33,13 +35,13 @@ public abstract class HudMenu implements TrackerClickListener {
         activeElements = newElements.clone();
 
         // destroy the current entries of the hud
-        ScreenOverlay.removeMenuItem();
+        hud.removeMenuItem();
 
         // correct positions of buttons
         MenuPositioner caret = new MenuPositionerCenter(width.get());
         for (UIElement element : activeElements) {
             caret.place(element);
-            ScreenOverlay.addMenuItem(element::draw);
+            hud.addMenuItem(element::draw);
         }
 
     }
@@ -47,7 +49,7 @@ public abstract class HudMenu implements TrackerClickListener {
     // note that these can only fire when mouse is not in capture mode
     @Override
     public void clickEvent(int x, int y) {
-        if (!ScreenOverlay.isMenuMode()) return;
+        if (!hud.isMenuMode()) return;
 
         Arrays.stream(activeElements)
                 // take all clickable elements

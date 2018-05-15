@@ -15,19 +15,21 @@ import java.util.function.Consumer;
  * created on 18-2-2018.
  */
 public abstract class MovingTarget implements HUDTargetable {
-    private final MovingEntity subject;
+    protected final MovingEntity subject;
+    private final ScreenOverlay hud;
     private Consumer<ScreenOverlay.Painter> visual;
 
     /**
      * create a targeting wrapper for the HUD to target entities.
      * @param subject the entity aimed at
+     * @param hud
      *
      */
-    protected MovingTarget(MovingEntity subject) {
+    protected MovingTarget(MovingEntity subject, ScreenOverlay hud) {
         this.subject = subject;
-
+        this.hud = hud;
+        hud.addHudItem(visual);
         visual = this::draw;
-        ScreenOverlay.addHudItem(visual);
     }
 
     /**
@@ -57,6 +59,6 @@ public abstract class MovingTarget implements HUDTargetable {
 
     @Override
     public void dispose(){
-        ScreenOverlay.removeHudItem(visual);
+        hud.removeHudItem(visual);
     }
 }

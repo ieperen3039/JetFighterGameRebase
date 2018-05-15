@@ -19,9 +19,10 @@ public class EnemyFlyingTarget extends MovingTarget {
      * create a targeting wrapper for the HUD to target entities.
      *
      * @param subject the entity aimed at
+     * @param hud
      */
-    public EnemyFlyingTarget(MovingEntity subject) {
-        super(subject);
+    public EnemyFlyingTarget(MovingEntity subject, ScreenOverlay hud) {
+        super(subject, hud);
     }
 
     @Override
