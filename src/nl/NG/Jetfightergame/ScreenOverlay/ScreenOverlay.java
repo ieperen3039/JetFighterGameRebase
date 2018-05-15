@@ -137,6 +137,8 @@ public final class ScreenOverlay {
      * @param render The code for drawing inside the hud.
      */
     public void addHudItem(Consumer<Painter> render) {
+        if (render == null) return;
+
         hudBufferLock.lock();
         hudDrawBuffer.add(render);
         hudBufferLock.unlock();
@@ -148,6 +150,8 @@ public final class ScreenOverlay {
      * @param render The handler to remove.
      */
     public void removeHudItem(Consumer<Painter> render) {
+        if (render == null) return;
+
         hudBufferLock.lock();
         try {
             hudDrawBuffer.remove(render);

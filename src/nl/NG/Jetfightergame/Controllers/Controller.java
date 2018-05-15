@@ -26,10 +26,6 @@ public interface Controller {
      */
     float throttle();
 
-    default Consumer<ScreenOverlay.Painter> hudElement() {
-        return hud -> {};
-    }
-
     /**
      * the amount of pitch requested by this controller.
      * a positive pitch makes the nose move up
@@ -68,11 +64,14 @@ public interface Controller {
     boolean primaryFire();
 
     /**
-     *
      * @return whether secondary fire should be activated
      */
     boolean secondaryFire();
 
+    /** any visual clue about the controller */
+    default Consumer<ScreenOverlay.Painter> hudElement() {
+        return null;
+    }
 
     /**
      * a controller that does nothing

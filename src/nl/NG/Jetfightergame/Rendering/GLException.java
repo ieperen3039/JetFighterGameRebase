@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine;
+package nl.NG.Jetfightergame.Rendering;
 
 /**
  * @author Geert van Ieperen

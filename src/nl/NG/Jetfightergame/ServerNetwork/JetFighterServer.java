@@ -1,9 +1,8 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
+import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GameLoop.ServerLoop;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -94,6 +93,7 @@ public class JetFighterServer {
         try {
             Toolbox.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
             acceptConnection(true);
+            currentPhase = PREPARATION;
 
         } catch (IOException ex){
             Toolbox.printError(ex);
@@ -119,7 +119,7 @@ public class JetFighterServer {
         Socket client = socket.accept();
         if (client == terminalSocket) return false;
 
-        Toolbox.print("Connection made with " + client);
+        Toolbox.print("Connection made with " + client + (asAdmin ? " with admin privileges": ""));
         game.connectToPlayer(client, asAdmin);
         return true;
     }
@@ -130,7 +130,6 @@ public class JetFighterServer {
      */
     public AbstractGameLoop getGameLoop() {
         if (currentPhase != STARTING) throw new IllegalStateException("getGameLoop() was called in " + currentPhase + " phase");
-        terminateListen();
         currentPhase = RUNNING;
         return game;
     }
@@ -156,10 +155,12 @@ public class JetFighterServer {
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
         GameTimer time = new GameTimer();
-        Environment world = new CollisionLaboratory(time);
+        Environment world = new PlayerJetLaboratory(time);
         JetFighterServer server = new JetFighterServer(world, true);
         server.listenForHost();
-        server.listen();
+
+//        server.listen();
+        server.currentPhase = STARTING;
 
         AbstractGameLoop game = server.getGameLoop();
         game.run();

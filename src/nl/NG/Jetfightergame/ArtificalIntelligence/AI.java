@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 
 /**
  * @author Geert van Ieperen

@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Camera.CameraManager;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;

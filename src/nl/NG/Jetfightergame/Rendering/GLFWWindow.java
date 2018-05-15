@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering;
 
-import nl.NG.Jetfightergame.Engine.GLException;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;

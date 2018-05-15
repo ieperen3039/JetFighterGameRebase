@@ -36,10 +36,11 @@ public final class JetFighterProtocol {
      * read an entity from the InputStream, match the entity with one in the list, and updates it
      * @param input    the input stream, with an entity state on its next read chunk.
      * @param entities a list of all entities of which one of them must be the one on the stream
+     * @return the relevant entity, or null if it was not found
      * @throws IOException if anything goes wrong with the connection
      * @see #entityUpdateRead(InputStream, Collection)
      */
-    public static void entityUpdateRead(InputStream input, Collection<MovingEntity> entities) throws IOException {
+    public static MovingEntity entityUpdateRead(InputStream input, Collection<MovingEntity> entities) throws IOException {
         DataInputStream DIS = new DataInputStream(input);
         // identity and time
         int id = DIS.readInt();
@@ -52,11 +53,12 @@ public final class JetFighterProtocol {
 
         if (target == null) {
             Toolbox.printError("Entity with id " + id + " not found among " + entities.size() + " entities.");
-            return;
+            return null;
         }
 
         target.addPositionPoint(pos, time);
         target.addRotationPoint(rot, time);
+        return target;
     }
 
     /** returns the (first) entity with the given id, or null when it is not found */
@@ -158,7 +160,6 @@ public final class JetFighterProtocol {
     /** read a control message off the InputStream */
     static void controlRead(InputStream clientIn, RemoteControlReceiver controls, MessageType type) throws IOException {
         int value = clientIn.read();
-        if ((type == MessageType.PITCH) && (value != 127)) Toolbox.print(value);
         controls.receive(type, value);
     }
 
@@ -183,9 +184,7 @@ public final class JetFighterProtocol {
 
     /**
      * sets up synchronizing time across server-client connection
-     * @param input
-     * @param output
-     * @param serverTime current time according to the server
+     * @param serverTime current time according to the source
      */
     public static void syncTimerSource(InputStream input, OutputStream output, GameTimer serverTime) throws IOException {
         float deltaNanos = ping(input, output);
@@ -196,24 +195,16 @@ public final class JetFighterProtocol {
     }
 
     /**
-     * updates the timer to serverTime + ping
+     * updates the timer to sourceTime + ping
      */
     public static void syncTimerTarget(InputStream input, OutputStream output, GameTimer timer) throws IOException {
+        // wait for signal to arrive, to let the source measure the delay
+        // repeat and take average for more accurate results
         pong(input, output);
 
         DataInputStream DIS = new DataInputStream(input);
         float serverTime = DIS.readFloat();
         timer.set(serverTime);
-    }
-
-    /**
-     * reacts on an expected ping message
-     */
-    public static void pong(InputStream input, OutputStream output) throws IOException {
-        int ping = input.read();
-        if (ping != MessageType.PING.ordinal()) throw new IOException("unexpected reply: " + ping);
-        output.write(MessageType.PONG.ordinal());
-        output.flush();
     }
 
     /** @return the RTT in seconds */
@@ -227,5 +218,15 @@ public final class JetFighterProtocol {
 
         int deltaNanos = (int) (System.nanoTime() - start);
         return deltaNanos * 1E-9f;
+    }
+
+    /**
+     * reacts on an expected ping message
+     */
+    private static void pong(InputStream input, OutputStream output) throws IOException {
+        int ping = input.read();
+        if (ping != MessageType.PING.ordinal()) throw new IOException("unexpected reply: " + ping);
+        output.write(MessageType.PONG.ordinal());
+        output.flush();
     }
 }

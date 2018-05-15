@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameLoop;
+package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 

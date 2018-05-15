@@ -77,7 +77,7 @@ public class MouseTracker {
      * @param isInGame should return true if the mouse is captured. and listeners in gamemode should receive notifications
      *                 if it returns false, mouse is not captured, and listeners of menumode will receive notifications
      */
-    public void setMenuModeDecision(BooleanSupplier isInGame){
+    public void setGameModeDecision(BooleanSupplier isInGame){
         this.inPlayMode = isInGame;
     }
 

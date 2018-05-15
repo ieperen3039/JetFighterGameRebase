@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Engine.GameLoop.GameServer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.io.BufferedOutputStream;
@@ -51,7 +50,7 @@ public class ServerConnection implements BlockingListener {
         try {
             clientOut.write(MessageType.ENTITY_UPDATE.ordinal());
             JetFighterProtocol.entityUpdateSend(clientOut, thing, currentTime);
-            clientOut.flush();
+            // no flush
 
         } catch (IOException ex) {
             Toolbox.printError(ex);
@@ -89,6 +88,8 @@ public class ServerConnection implements BlockingListener {
             return true;
 
         } else if (type == MessageType.CONNECTION_CLOSE) {
+            clientOut.write(type.ordinal()); // reflect
+            clientOut.close();
             return false;
         }
 
@@ -149,5 +150,30 @@ public class ServerConnection implements BlockingListener {
 
     public MovingEntity getPlayerJet() {
         return playerJet;
+    }
+
+    /**
+     * a passive closing, doesnt actually close the connection yet
+     */
+    public void close() {
+        try {
+            clientOut.write(MessageType.SHUTDOWN_GAME.ordinal());
+            clientOut.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void flush() {
+        sendOutput.lock();
+        try {
+            clientOut.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        } finally {
+            sendOutput.unlock();
+        }
     }
 }

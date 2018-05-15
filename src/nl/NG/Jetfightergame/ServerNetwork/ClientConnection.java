@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -61,9 +61,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         } else if (type == MessageType.ENTITY_UPDATE) {
             JetFighterProtocol.entityUpdateRead(serverIn, game.getEntities());
+
+        } else if (type == MessageType.SHUTDOWN_GAME) {
+            stopLoop();
+
+        } else if (type != MessageType.CONNECTION_CLOSE) {
+            serverIn.close();
+            return false;
         }
 
-        return type != MessageType.CONNECTION_CLOSE;
+        return true;
     }
 
     public void sendCommand(MessageType type) {
@@ -141,11 +148,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     protected void cleanup() {
         try {
-            sendLock.lock(); // locks forever
+            sendLock.lock(); // lock sending forever
             serverOut.write(CONNECTION_CLOSE.ordinal());
-            serverOut.flush();
-            serverIn.close();
-            serverOut.close();
+            serverOut.close(); // also flushes
+
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -16,9 +16,7 @@ public class PlayerPCControllerAbsolute extends PlayerPCController {
     public float pitch() {
         int pitch = currentPitch;
         currentPitch = 0;
-        float normalize = normalize(pitch * PITCH_MODIFIER * SENSITIVITY);
-//        if (normalize != 0) Toolbox.print(normalize);
-        return normalize;
+        return normalize(pitch * PITCH_MODIFIER * SENSITIVITY);
     }
 
     @Override

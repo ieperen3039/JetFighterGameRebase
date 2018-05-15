@@ -1,13 +1,12 @@
-package nl.NG.Jetfightergame.Engine.GameLoop;
+package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.Spawn;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
-import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
-import nl.NG.Jetfightergame.ServerNetwork.ServerConnection;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 
 import java.io.IOException;
@@ -54,6 +53,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         }
 
         world.addEntity(player);
+        world.updateGameLoop();
     }
 
     @Override
@@ -83,6 +83,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
         connections.parallelStream()
                 .forEach(conn -> entities.forEach(e -> conn.sendEntityUpdate(e, time)));
+        connections.forEach(ServerConnection::flush);
     }
 
     @Override
@@ -99,11 +100,18 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     @Override
     public void shutDown() {
+        connections.forEach(ServerConnection::close);
         super.stopLoop();
     }
 
     @Override
     protected void cleanup() {
         world.cleanUp();
+    }
+
+    public String entityList() {
+        StringBuilder s = new StringBuilder();
+        world.getEntities().forEach(e -> s.append("\n").append(e));
+        return s.toString();
     }
 }

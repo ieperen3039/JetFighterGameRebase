@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Rendering;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
+import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.GameState.Environment;

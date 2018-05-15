@@ -16,9 +16,9 @@ public enum MessageType {
     ENTITY_UPDATE, ENTITY_SPAWN, PLAYER_SPAWN;
 
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
-    public static EnumSet<MessageType> entityMessages = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE);
     public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, SHUTDOWN_GAME);
     public static EnumSet<MessageType> lobbyCommands = EnumSet.of(START_GAME);
+    public static EnumSet<MessageType> variableLength = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE, PLAYER_SPAWN);
 
     /**
      * @param id a number n corresponing to an enum ordinal
@@ -42,7 +42,7 @@ public enum MessageType {
     /** @return the number of values must be send after this message, or Integer.MAX_VALUE if this is undetermined */
     public int nOfArgs() {
         if (isOf(controls)) return 1;
-        if (isOf(entityMessages)) return Integer.MAX_VALUE;
+        if (isOf(variableLength)) return Integer.MAX_VALUE;
         else return 0;
     }
 }

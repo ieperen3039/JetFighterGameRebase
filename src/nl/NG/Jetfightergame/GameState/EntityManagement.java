@@ -33,7 +33,7 @@ public interface EntityManagement {
     void addEntities(Collection<? extends MovingEntity> newEntities);
 
     /**
-     * adds one new entity to the collision detection. This will only be in effect in the next loop
+     * adds one new entity to the collision detection. This will at last be in effect in the next loop
      * @param entity
      */
     void addEntity(MovingEntity entity);

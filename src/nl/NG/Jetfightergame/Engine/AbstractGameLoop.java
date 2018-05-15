@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Engine.GameLoop;
+package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;

@@ -6,8 +6,8 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
+import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
-import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
@@ -58,6 +58,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         ShapeFromFile.init(true);
         GeneralShapes.init(true);
         KeyTracker.getInstance().addKeyListener(this);
+        MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
 
         new InputDelegate(window);
         playerInput = new ControllerManager();
@@ -72,11 +73,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             GameTimer globalGameTimer = new GameTimer();
             Socket socket = new Socket();
 
+            // TODO get environment from the server
             Function<GameTimer, Environment> worldFactory = PlayerJetLaboratory::new;
 
-
             environment = worldFactory.apply(globalGameTimer);
-            otherLoops.add(new PhysicsLoop(environment));
 
             if (ClientSettings.LOCAL_SERVER) {
                 Toolbox.print("Creating new local server");
@@ -103,7 +103,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), playerJet, DirVector.zVector());
 
-            environment.updateGameLoop();
             new Thread(connection::listen).start();
 
             // set currentGameMode and engine.isPaused
@@ -143,11 +142,13 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     @Override
     public void setMenuMode() {
+        connection.getTimer().pause();
         connection.sendCommand(MessageType.PAUSE_GAME);
         super.setMenuMode();
     }
 
     public void setPlayMode() {
+        connection.getTimer().unPause();
         connection.sendCommand(MessageType.START_GAME);
         if (ClientSettings.SPECTATOR_MODE) {
             super.setSpectatorMode();
