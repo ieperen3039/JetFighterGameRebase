@@ -1,9 +1,11 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.SpawnEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.Spawn;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.ServerNetwork.ServerConnection;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -15,6 +17,7 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
+ * mostly a controlling layer between server and an environment
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
@@ -37,7 +40,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
      */
     public void connectToPlayer(Socket socket, boolean asAdmin) throws IOException {
         // establish communication handler
-        ServerConnection connector = new ServerConnection(socket, asAdmin, world, this);
+        ServerConnection connector = new ServerConnection(socket, asAdmin, this);
         // first thing to do is creating a player
         MovingEntity player = connector.getPlayer(world.getNewSpawn());
         connections.add(connector);
@@ -46,7 +49,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         // send all entities until this point (excluding the player itself)
         for (MovingEntity entity : world.getEntities()) {
             EntityClass type = EntityClass.get(entity);
-            SpawnEntity spawn = new SpawnEntity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
+            Spawn spawn = new Spawn(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
             connector.sendEntitySpawn(spawn, entity.idNumber());
         }
 
@@ -54,10 +57,20 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     }
 
     @Override
-    public void spawnEntity(SpawnEntity spawn, Controller playerInput){
-        MovingEntity entity = spawn.construct(world, playerInput);
+    public void addSpawn(Spawn spawn){
+        MovingEntity entity = spawn.construct(this, Controller.EMPTY);
         world.addEntity(entity);
         connections.forEach(c -> c.sendEntitySpawn(spawn, entity.idNumber()));
+    }
+
+    @Override
+    public void addParticles(Collection<Particle> newParticles) {
+        world.addParticles(newParticles);
+    }
+
+    @Override
+    public GameTimer getTimer() {
+        return world.getTimer();
     }
 
     @Override

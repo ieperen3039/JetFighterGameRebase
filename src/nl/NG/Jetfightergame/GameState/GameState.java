@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -10,8 +9,6 @@ import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
@@ -33,10 +30,8 @@ public abstract class GameState implements Environment, PathDescription, NetForc
 
     protected final Collection<Particle> particles = new ConcurrentArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
-    private Collection<MovingEntity> newEntities = new ConcurrentArrayList<>();
 
     private EntityManagement physicsEngine;
-
     private final GameTimer time;
 
     public GameState(GameTimer time) {
@@ -44,9 +39,9 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     }
 
     @Override
-    public void buildScene(int collisionDetLevel, boolean loadDynamic) {
+    public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
         final Collection<Touchable> staticEntities = createWorld();
-        final Collection<MovingEntity> dynamicEntities = loadDynamic ? setEntities() : new ArrayList<>();
+        final Collection<MovingEntity> dynamicEntities = loadDynamic ? setEntities(deposit) : new ArrayList<>();
 
         switch (collisionDetLevel){
             case 0:
@@ -72,13 +67,9 @@ public abstract class GameState implements Environment, PathDescription, NetForc
 
     /**
      * @return all the dynamic entities that are standard part of this world
+     * @param deposit
      */
-    protected abstract Collection<MovingEntity> setEntities();
-
-    @Override
-    public void addPlayerJet(AbstractJet playerJet) {
-        playerJet.set();
-    }
+    protected abstract Collection<MovingEntity> setEntities(SpawnReceiver deposit);
 
     @Override
     @SuppressWarnings("ConstantConditions")
@@ -137,7 +128,6 @@ public abstract class GameState implements Environment, PathDescription, NetForc
         particles.forEach(p -> p.draw(gl));
     }
 
-    @Override
     public GameTimer getTimer() {
         return time;
     }
@@ -162,17 +152,11 @@ public abstract class GameState implements Environment, PathDescription, NetForc
         particles.addAll(newParticles);
     }
 
-    @Override
-    public HUDTargetable getHUDTarget(MovingEntity entity) {
-        return new EnemyFlyingTarget(entity);
-    }
-
     public void cleanUp() {
         lights.clear();
         particles.clear();
         physicsEngine.cleanUp();
         physicsEngine = null;
-        System.gc();
     }
 
     @Override

@@ -8,7 +8,8 @@ import java.util.EnumSet;
  * @author Geert van Ieperen, created on 5-5-2018.
  */
 public enum MessageType {
-    CONNECTION_CLOSE, CONFIRM_CONNECTION, // CONNECTION_CLOSE counts as id = 0, and also id = -1
+    WRONG_MESSAGE_0, WRONG_MESSAGE_1, // for ease of debugging, these messages may not be used
+    CONNECTION_CLOSE, CONFIRM_CONNECTION, // CONNECTION_CLOSE counts also for id = -1
     START_GAME, PAUSE_GAME, SHUTDOWN_GAME,
     THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE,
     ENTITY_UPDATE, ENTITY_SPAWN, PLAYER_SPAWN;

@@ -5,17 +5,20 @@ import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
+import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Quaternionf;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.util.Collection;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -26,19 +29,19 @@ import static nl.NG.Jetfightergame.ServerNetwork.RemoteControlReceiver.toByte;
 /**
  * @author Geert van Ieperen created on 6-5-2018.
  */
-public class ClientConnection extends AbstractGameLoop implements BlockingListener {
+public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver {
     private final Controller input;
     private final BufferedOutputStream serverOut;
     private final InputStream serverIn;
-    private final EntityReceiver game;
+    private final Environment game;
 
     private Lock sendLock = new ReentrantLock();
 
-    public ClientConnection(Consumer<Exception> exceptionHandler, Controller playerInput, Socket connection, EntityReceiver game) throws IOException {
+    public ClientConnection(Consumer<Exception> exceptionHandler, Controller playerInput, Socket connection, Environment game) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false, exceptionHandler);
         this.input = playerInput;
-        serverOut = new BufferedOutputStream(connection.getOutputStream());
-        serverIn = connection.getInputStream();
+        this.serverOut = new BufferedOutputStream(connection.getOutputStream());
+        this.serverIn = connection.getInputStream();
         this.game = game;
     }
 
@@ -47,7 +50,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         MessageType type = MessageType.get(serverIn.read());
 
         if (type == MessageType.ENTITY_SPAWN) {
-            MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, game, input);
+            MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, this, Controller.EMPTY);
             Toolbox.print("Received new entity: " + newEntity);
             game.addEntity(newEntity);
 
@@ -72,6 +75,21 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         }
     }
 
+    @Override
+    public void addSpawn(MovingEntity.Spawn spawn) {
+        sendLock.lock();
+        try {
+            serverOut.write(MessageType.ENTITY_SPAWN.ordinal());
+            JetFighterProtocol.spawnRequestSend(serverOut, spawn);
+
+        } catch (IOException e) {
+            Toolbox.printError(e);
+
+        } finally {
+            sendLock.unlock();
+        }
+    }
+
     /**
      * creates a new entity in the server. This entity will be sent back, and can be caught by {@link #handleMessage()}
      * @param type type of entity
@@ -80,17 +98,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
      * @param velocity world-space movement of the plane
      */
     public void createEntity(EntityClass type, PosVector position, DirVector forward, DirVector velocity){
-        sendLock.lock();
-        try {
-            Quaternionf rotation = Toolbox.xTo(forward);
-            JetFighterProtocol.spawnRequestSend(serverOut, type, position, rotation, velocity);
-
-        } catch (IOException e) {
-            Toolbox.printError(e);
-
-        } finally {
-            sendLock.unlock();
-        }
+        addSpawn(new MovingEntity.Spawn(type, position, Toolbox.xTo(forward), velocity));
     }
 
     /**
@@ -119,8 +127,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         sendControl(PITCH, toByte(input.pitch()));
         sendControl(YAW, toByte(input.yaw()));
         sendControl(ROLL, toByte(input.roll()));
-        sendControl(PRIMARY_FIRE, input.primaryFire() ? (byte) 1 : 0);
-        sendControl(SECONDARY_FIRE, input.secondaryFire() ? (byte) 1 : 0);
+        sendControl(PRIMARY_FIRE, input.primaryFire() ? (byte) 1 : (byte) 0);
+        sendControl(SECONDARY_FIRE, input.secondaryFire() ? (byte) 1 : (byte) 0);
 
         serverOut.flush();
     }
@@ -152,7 +160,17 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         serverOut.flush();
 
         return (AbstractJet) JetFighterProtocol.newEntityRead(
-                serverIn, game, input
+                serverIn, this, input
         );
+    }
+
+    @Override
+    public void addParticles(Collection<Particle> newParticles) {
+        game.addParticles(newParticles);
+    }
+
+    @Override
+    public GameTimer getTimer() {
+        return game.getTimer();
     }
 }

@@ -2,8 +2,7 @@ package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
@@ -136,33 +135,30 @@ public interface MovingEntity extends Touchable {
      */
     void applyMoment(DirVector momentum);
 
-    void setTimer(GameTimer timer);
-
-    void setEntityManager(EntityReceiver game);
-
+    /** @return an unique number given by the server */
     int idNumber();
 
     /**
      * a description of a moving entity
      */
-    class SpawnEntity {
+    class Spawn {
         public final EntityClass type;
         public final PosVector position;
         public final Quaternionf rotation;
         public final DirVector velocity;
 
-        public SpawnEntity(EntityClass type, PosVector position, Quaternionf rotation, DirVector velocity) {
+        public Spawn(EntityClass type, PosVector position, Quaternionf rotation, DirVector velocity) {
             this.type = type;
             this.position = position;
             this.rotation = rotation;
             this.velocity = velocity;
         }
 
-        public SpawnEntity(EntityClass type, GameEntity.State state) {
+        public Spawn(EntityClass type, GameEntity.State state) {
             this(type, state.position(0), state.rotation(0), state.velocity());
         }
 
-        public MovingEntity construct(EntityReceiver game, Controller input){
+        public MovingEntity construct(SpawnReceiver game, Controller input){
             return type.construct(Identity.next(), game, input, position, rotation, velocity);
         }
     }

@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -36,7 +36,7 @@ public enum  EntityClass {
      * @param velocity the initial velocity of the spawned object
      * @return an implementation of the class represented by this enum
      */
-    public MovingEntity construct(int id, EntityReceiver game, Controller input, PosVector position, Quaternionf rotation, DirVector velocity){
+    public MovingEntity construct(int id, SpawnReceiver game, Controller input, PosVector position, Quaternionf rotation, DirVector velocity){
         switch (this) {
             case BASIC_JET:
                 BasicJet jet = new BasicJet(id, input, game.getTimer(), game);

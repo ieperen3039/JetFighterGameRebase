@@ -1,9 +1,13 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+
+import java.util.Collection;
 
 /**
  * an environment where the player can fly in.
@@ -11,12 +15,16 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
  * @author Geert van Ieperen
  * created on 8-1-2018.
  */
-public interface Environment extends EntityReceiver {
+public interface Environment {
+
+    /** @see #addEntity(MovingEntity) */
+    Collection<MovingEntity> getEntities();
 
     /**
-     * @param playerJet
+     * adds an entity to this world
+     * @param entity an entity, set in the appropriate position, not being controlled by outside resources
      */
-    void addPlayerJet(AbstractJet playerJet);
+    void addEntity(MovingEntity entity);
 
     /**
      * update the physics of all game objects and check for collisions
@@ -24,6 +32,9 @@ public interface Environment extends EntityReceiver {
     @SuppressWarnings("ConstantConditions")
     void updateGameLoop();
 
+    /**
+     * initializes the lights of this environment in the gl environment
+     */
     void setLights(GL2 gl);
 
     /**
@@ -32,6 +43,12 @@ public interface Environment extends EntityReceiver {
     void drawObjects(GL2 gl);
 
     void drawParticles(GL2 gl);
+
+    default void addEntities(Collection<? extends MovingEntity> entities) {
+        entities.forEach(this::addEntity);
+    }
+
+    void addParticles(Collection<Particle> newParticles);
 
     /**
      * allows this object to be cleaned.
@@ -47,10 +64,13 @@ public interface Environment extends EntityReceiver {
 
     /**
      * initialize the scene. Make sure to call Shapes.init() for all shapes you want to initialize
+     * @param deposit
      * @param collisionDetLevel 0 = no collision
      * @param loadDynamic if false, all dynamic entities are not loaded. This is required if these are managed by a server
      */
-    void buildScene(int collisionDetLevel, boolean loadDynamic);
+    void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic);
 
     GameEntity.State getNewSpawn();
+
+    GameTimer getTimer();
 }

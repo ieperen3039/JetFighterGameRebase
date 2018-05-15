@@ -10,6 +10,8 @@ package nl.NG.Jetfightergame.Controllers;
  */
 public interface Controller {
 
+    Controller EMPTY = new EmptyController();
+
     /**
      * the amount of throttle requested by this controller.
      * Values out of the range [-1, 1] do not occur (should be taken care of in implementation).

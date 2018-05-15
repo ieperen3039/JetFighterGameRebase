@@ -1,14 +1,11 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 
 /**
  * @author Geert van Ieperen created on 10-5-2018.
  */
-public interface GameServer {
-    /** adds an entity to this world */
-    void spawnEntity(MovingEntity.SpawnEntity e, Controller playerInput);
+public interface GameServer extends SpawnReceiver {
 
     /** pauses the server  */
     void pause();

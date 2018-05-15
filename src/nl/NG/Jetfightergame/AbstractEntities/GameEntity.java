@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 public abstract class GameEntity implements MovingEntity {
 
     /** particles and new entities should be passed to this object */
-    protected transient EntityReceiver entityDeposit;
+    protected transient SpawnReceiver entityDeposit;
     private final int thisID;
 
     /** worldspace position in m */
@@ -79,7 +79,7 @@ public abstract class GameEntity implements MovingEntity {
      */
     public GameEntity(
             int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-            Material surfaceMaterial, float mass, float scale, GameTimer gameTimer, EntityReceiver entityDeposit
+            Material surfaceMaterial, float mass, float scale, GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         this.thisID = id;
         this.position = new PosVector(initialPosition);
@@ -374,16 +374,6 @@ public abstract class GameEntity implements MovingEntity {
     @Override
     public void applyMoment(DirVector momentum) {
         extraVelocity.add(momentum.scale(1 / mass, new DirVector())); // TODO verification
-    }
-
-    @Override
-    public void setTimer(GameTimer timer) {
-        gameTimer = timer;
-    }
-
-    @Override
-    public void setEntityManager(EntityReceiver game) {
-        entityDeposit = game;
     }
 
     @Override

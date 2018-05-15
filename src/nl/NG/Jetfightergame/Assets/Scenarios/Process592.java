@@ -7,12 +7,11 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.GameState.EnvironmentManager.Worlds;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
@@ -66,17 +65,13 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public void buildScene(int collisionDetLevel, boolean loadDynamic) {
+    public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
         player.jet().set();
     }
 
     @Override
     public GameEntity.State getNewSpawn() {
         return new GameEntity.State();
-    }
-
-    @Override
-    public void addPlayerJet(AbstractJet playerJet) {
     }
 
     @Override
@@ -196,11 +191,6 @@ public class Process592 implements Environment {
     @Override
     public void addParticles(Collection<Particle> newParticles) {
         particles.addAll(newParticles);
-    }
-
-    @Override
-    public HUDTargetable getHUDTarget(MovingEntity entity) {
-        return new EnemyFlyingTarget(entity);
     }
 
     /**

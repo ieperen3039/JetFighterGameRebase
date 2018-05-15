@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -11,7 +10,6 @@ import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Manager;
@@ -33,6 +31,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     private final GameTimer time;
     private Environment instance;
+    private SpawnReceiver deposit;
 
     public EnvironmentManager(GameTimer time) {
         this.time = time;
@@ -54,23 +53,19 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public HUDTargetable getHUDTarget(MovingEntity entity) {
-        return instance.getHUDTarget(entity);
-    }
-
-    @Override
     public Color4f fogColor(){
         return instance.fogColor();
     }
 
-    public void init() {
+    public void init(SpawnReceiver deposit) {
+        this.deposit = deposit;
         instance = new PlayerJetLaboratory(time);
-        instance.buildScene(ServerSettings.COLLISION_DETECTION_LEVEL, true);
+        instance.buildScene(deposit, ServerSettings.COLLISION_DETECTION_LEVEL, true);
     }
 
     @Override
-    public void buildScene(int collisionDetLevel, boolean loadDynamic) {
-        instance.buildScene(collisionDetLevel, true);
+    public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
+        instance.buildScene(deposit, collisionDetLevel, true);
     }
 
     @Override
@@ -83,11 +78,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         CollisionLaboratory,
         ExplosionLaboratory,
         SnakeLevel
-    }
-
-    @Override
-    public void addPlayerJet(AbstractJet playerJet) {
-        instance.addPlayerJet(playerJet);
     }
 
     @Override
@@ -154,7 +144,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
                 instance = new Void();
         }
 
-        instance.buildScene(ServerSettings.COLLISION_DETECTION_LEVEL, true);
+        instance.buildScene(deposit, ServerSettings.COLLISION_DETECTION_LEVEL, true);
     }
 
 
@@ -172,7 +162,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         }
 
         @Override
-        protected Collection<MovingEntity> setEntities() {
+        protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
             return Collections.EMPTY_SET;
         }
 

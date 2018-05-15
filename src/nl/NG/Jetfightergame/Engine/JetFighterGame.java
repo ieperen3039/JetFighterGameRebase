@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
@@ -28,7 +27,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -53,9 +51,9 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
 
     private GameTimer globalGameTimer;
-    
+
     private final Player player;
-    private ClientConnection server;
+    private ClientConnection connection;
 
     /** Shows a splash screen, and creates a window in which the game runs */
     public JetFighterGame() throws Exception {
@@ -70,6 +68,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             Function<GameTimer, Environment> worldFactory = PlayerJetLaboratory::new;
 
+            ShapeFromFile.init(true);
+            GeneralShapes.init(true);
+
+            environment = worldFactory.apply(globalGameTimer);
+            otherLoops.add(new PhysicsLoop(environment));
+
             if (ClientSettings.LOCAL_SERVER) {
                 Toolbox.print("Creating new local server");
                 // a second (new) environment is created, as the server runs separately from the client
@@ -80,21 +84,32 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             }
 
-            Toolbox.print("initializing client");
+            connection = new ClientConnection((ex) -> exitGame(), playerInput, socket, environment);
 
-            ShapeFromFile.init(true);
-            GeneralShapes.init(true);
+            otherLoops.add(connection);
+            AbstractJet playerJet = connection.getPlayer();
+            Toolbox.print("Received " + playerJet + " from the server");
 
-            environment = worldFactory.apply(globalGameTimer);
-            otherLoops.add(new PhysicsLoop(environment));
-            environment.buildScene(ClientSettings.COLLISION_DETECTION_LEVEL, false);
-
-            AbstractJet playerJet = getPlayer(socket, playerInput, environment);
             player = new Player(playerInput, playerJet);
+            environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
+            environment.addEntity(playerJet);
 
-            initClient(playerJet);
+            KeyTracker keyTracker = KeyTracker.getInstance();
+            keyTracker.addKeyListener(this);
+
+//        new SoundEngine();
+//        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
+
+            ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
+
+            renderLoop = new JetFighterRenderer(
+                    this, environment, window, camera, playerInput, playerJet
+            );
+
+            camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), playerJet, DirVector.zVector());
 
             environment.updateGameLoop();
+            new Thread(connection::listen).start();
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
@@ -107,35 +122,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         // reclaim all space used for initialisation
         System.gc();
         Toolbox.print("Initialisation complete\n");
-    }
-
-    private void initClient(AbstractJet playerJet) throws IOException {
-        KeyTracker keyTracker = KeyTracker.getInstance();
-        keyTracker.addKeyListener(this);
-
-//        new SoundEngine();
-//        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
-
-        ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
-
-        renderLoop = new JetFighterRenderer(
-                this, environment, window, camera, playerInput, playerJet
-        );
-
-        camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), playerJet, DirVector.zVector());
-    }
-
-    /** initializes the connection between the player and the server */
-    private AbstractJet getPlayer(Socket socket, ControllerManager playerInput, Environment world) throws IOException {
-        server = new ClientConnection((ex) -> exitGame(), playerInput, socket, world);
-        otherLoops.add(server);
-        AbstractJet playerJet = server.getPlayer();
-
-        Toolbox.print("Received " + playerJet + " from the server");
-        world.addEntity(playerJet);
-        new Thread(server::listen).start();
-
-        return playerJet;
     }
 
     @Override
@@ -162,12 +148,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     @Override
     public void setMenuMode() {
-        server.sendCommand(MessageType.PAUSE_GAME);
+        connection.sendCommand(MessageType.PAUSE_GAME);
         super.setMenuMode();
     }
 
     public void setPlayMode() {
-        server.sendCommand(MessageType.START_GAME);
+        connection.sendCommand(MessageType.START_GAME);
         if (ClientSettings.SPECTATOR_MODE) {
             super.setSpectatorMode();
         } else {
@@ -203,14 +189,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                     Toolbox.print("Saved screenshot as \"" + name + "\"");
                 }
         }
-    }
-
-    public Environment getEnvironment() {
-        return environment;
-    }
-
-    public GameTimer getGlobalGameTimer() {
-        return globalGameTimer;
     }
 
     @Override

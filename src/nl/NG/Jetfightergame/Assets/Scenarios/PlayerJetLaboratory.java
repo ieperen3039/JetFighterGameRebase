@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
@@ -39,7 +40,7 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities() {
+    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
         Collection<MovingEntity> dynamicEntities = new ArrayList<>();
 
         // for x = -1 and x = 1
@@ -51,11 +52,10 @@ public class PlayerJetLaboratory extends GameState {
                     final FallingCube cube = new FallingCube(
                             Identity.next(), Material.SILVER, 500, LAB_SIZE/10,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
-                            new DirVector(), new Quaternionf(), getTimer(), this
+                            new DirVector(), new Quaternionf(), getTimer(), deposit
                     );
 
                     dynamicEntities.add(cube);
-                    cubeTargets.add(getHUDTarget(cube));
                 }
             }
         }

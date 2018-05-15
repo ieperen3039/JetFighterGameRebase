@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -55,7 +56,7 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities() {
+    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
@@ -67,7 +68,7 @@ public class CollisionLaboratory extends GameState {
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 for (int z = 0; z < gridSize; z++) {
-                    cubes.add(makeCube(labSize, speeds, interSpace, x, y, z));
+                    cubes.add(makeCube(labSize, speeds, interSpace, x, y, z, deposit));
 
                     if (--remainingCubes <= 0) break cubing;
                 }
@@ -77,7 +78,7 @@ public class CollisionLaboratory extends GameState {
         return cubes;
     }
 
-    private FallingCube makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
+    private MovingEntity makeCube(int labSize, float speeds, int interSpace, int x, int y, int z, SpawnReceiver deposit) {
         final PosVector pos = new PosVector(
                 -labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace)
         );
@@ -88,7 +89,7 @@ public class CollisionLaboratory extends GameState {
         FallingCube cube = new FallingCube(
                 Identity.next(), Material.SILVER, CUBEMASS, CUBESIZE,
                 pos.scale(0.8f, pos).toPosVector(),
-                random, new Quaternionf(), getTimer(), this
+                random, new Quaternionf(), getTimer(), deposit
         );
         cube.addRandomRotation(0.4f);
 

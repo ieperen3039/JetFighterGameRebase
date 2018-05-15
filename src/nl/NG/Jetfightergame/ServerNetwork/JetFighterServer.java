@@ -52,7 +52,7 @@ public class JetFighterServer {
         this.socket = new ServerSocket(ServerSettings.SERVER_PORT);
         this.game = new ServerLoop(environment, e -> {});
 
-        environment.buildScene(ServerSettings.COLLISION_DETECTION_LEVEL, true);
+        environment.buildScene(game, ServerSettings.COLLISION_DETECTION_LEVEL, true);
         portNumber = socket.getLocalPort();
 
         if (loadModels) {

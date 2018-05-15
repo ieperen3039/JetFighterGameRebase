@@ -1,10 +1,9 @@
 package nl.NG.Jetfightergame.Assets.Weapons;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
-import nl.NG.Jetfightergame.Identity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -19,11 +18,11 @@ public class MachineGun extends AbstractWeapon {
     }
 
     @Override
-    protected AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityReceiver entityDeposit) {
+    protected MovingEntity.Spawn newProjectile(float spawnTime, GameEntity.State source, SpawnReceiver entityDeposit) {
         DirVector vel = source.velocity();
         vel.add(source.forward().mul(30));
         final PosVector pos = source.position(spawnTime);
         final Quaternionf rot = source.rotation(spawnTime);
-        return new SimpleBullet(pos, vel, rot, entityDeposit.getTimer(), entityDeposit, Identity.next());
+        return new MovingEntity.Spawn(EntityClass.SIMPLE_BULLET, pos, rot, vel);
     }
 }

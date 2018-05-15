@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -99,21 +99,21 @@ public final class JetFighterProtocol {
 
     /** client sending a request of spawing a new entity.
      * @see #spawnRequestRead(InputStream) */
-    public static void spawnRequestSend(OutputStream output, EntityClass entity, PosVector position, Quaternionf rotation, DirVector velocity) throws IOException {
-        output.write(entity.ordinal());
+    public static void spawnRequestSend(OutputStream output, MovingEntity.Spawn spawn) throws IOException {
+        output.write(spawn.type.ordinal());
         DataOutputStream DOS = new DataOutputStream(output);
         // state
-        writeVector(DOS, position);
-        writeQuaternion(DOS, rotation);
-        writeVector(DOS, velocity);
+        writeVector(DOS, spawn.position);
+        writeQuaternion(DOS, spawn.rotation);
+        writeVector(DOS, spawn.velocity);
     }
 
     /**
      * server reading an entity from the InputStream
      * @return a description of a new entity to be added to the server
-     * @see #spawnRequestSend(OutputStream, EntityClass, PosVector, Quaternionf, DirVector)
+     * @see #spawnRequestSend(OutputStream, MovingEntity.Spawn)
      */
-    public static MovingEntity.SpawnEntity spawnRequestRead(InputStream input) throws IOException {
+    public static MovingEntity.Spawn spawnRequestRead(InputStream input) throws IOException {
         EntityClass type = EntityClass.get(input.read());
         DataInputStream DIS = new DataInputStream(input);
         // state
@@ -121,11 +121,11 @@ public final class JetFighterProtocol {
         Quaternionf rotation = readQuaternion(DIS);
         DirVector velocity = readDirVector(DIS);
 
-        return new MovingEntity.SpawnEntity(type, position, rotation, velocity);
+        return new MovingEntity.Spawn(type, position, rotation, velocity);
     }
 
     /** server sending a new entity */
-    public static void newEntitySend(OutputStream output, MovingEntity.SpawnEntity entity, int id) throws IOException {
+    public static void newEntitySend(OutputStream output, MovingEntity.Spawn entity, int id) throws IOException {
         output.write(entity.type.ordinal());
         DataOutputStream DOS = new DataOutputStream(output);
         // identity number
@@ -137,7 +137,7 @@ public final class JetFighterProtocol {
     }
 
     /** client reading an entity off the InputStream and creates an instance of it */
-    public static MovingEntity newEntityRead(InputStream input, EntityReceiver game, Controller controller) throws IOException {
+    public static MovingEntity newEntityRead(InputStream input, SpawnReceiver world, Controller controller) throws IOException {
         EntityClass type = EntityClass.get(input.read());
         DataInputStream DIS = new DataInputStream(input);
         // identity number
@@ -147,7 +147,7 @@ public final class JetFighterProtocol {
         Quaternionf rotation = readQuaternion(DIS);
         DirVector velocity = readDirVector(DIS);
 
-        return type.construct(id, game, controller, position, rotation, velocity);
+        return type.construct(id, world, controller, position, rotation, velocity);
     }
 
     /** read a control message off the InputStream */
@@ -162,8 +162,15 @@ public final class JetFighterProtocol {
     }
 
     /** sends a request to spawn a new plane.
-     * When successful, the reply is caught with {@link #newEntityRead(InputStream, EntityReceiver, Controller)} */
+     * When successful, the reply is caught with {@link #newEntityRead(InputStream, SpawnReceiver, Controller)}
+     * @see #playerSpawnAccept(InputStream)
+     */
     public static void playerSpawnRequest(OutputStream output, EntityClass entity) throws IOException {
         output.write(entity.ordinal());
+    }
+
+    /** @see #playerSpawnRequest(OutputStream, EntityClass)  */
+    public static EntityClass playerSpawnAccept(InputStream clientIn) throws IOException {
+        return EntityClass.get(clientIn.read());
     }
 }

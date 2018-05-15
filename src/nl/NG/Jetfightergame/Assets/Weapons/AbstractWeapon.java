@@ -1,9 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Weapons;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -18,7 +17,7 @@ public abstract class AbstractWeapon implements Serializable {
     protected final float cooldown;
     /** time until next fire */
     protected float timeRemaining;
-    private boolean wasFiring = false;
+    private boolean wasFiring = true;
 
     /**
      * any gun that continues to shoot when fire-key is held down
@@ -27,7 +26,7 @@ public abstract class AbstractWeapon implements Serializable {
     public AbstractWeapon(float timeBetweenShots) {
         if (timeBetweenShots <= 0) throw new IllegalArgumentException("illegal reload time: " + timeBetweenShots);
         this.cooldown = timeBetweenShots;
-        timeRemaining = 0;
+        timeRemaining = 1f;
     }
 
     /**
@@ -37,10 +36,10 @@ public abstract class AbstractWeapon implements Serializable {
      * @param entityDeposit allows the new bullets to add entities
      *                      @return a collection of all newly generated entities
      */
-    public Collection<AbstractProjectile> update(float deltaTime, boolean isFiring, GameEntity.State source, EntityReceiver entityDeposit) {
+    public Collection<MovingEntity.Spawn> update(float deltaTime, boolean isFiring, GameEntity.State source, SpawnReceiver entityDeposit) {
         timeRemaining -= deltaTime;
 
-        List<AbstractProjectile> newProjectiles = new ArrayList<>();
+        List<MovingEntity.Spawn> newProjectiles = new ArrayList<>();
 
         if (timeRemaining >= 0) return newProjectiles;
         if (!wasFiring) timeRemaining = 0;
@@ -48,8 +47,7 @@ public abstract class AbstractWeapon implements Serializable {
         if (isFiring) {
             do {
                 final float bulletSpawnTime = deltaTime + timeRemaining;
-                AbstractProjectile bullet = newProjectile(bulletSpawnTime, source, entityDeposit);
-                bullet.preUpdate(-timeRemaining, DirVector.zeroVector());
+                MovingEntity.Spawn bullet = newProjectile(bulletSpawnTime, source, entityDeposit);
                 newProjectiles.add(bullet);
                 timeRemaining += cooldown;
             } while (timeRemaining < 0);
@@ -68,5 +66,5 @@ public abstract class AbstractWeapon implements Serializable {
      * @param entityDeposit
      * @return a new projectile as if it was fired on the given moment
      */
-    protected abstract AbstractProjectile newProjectile(float spawnTime, GameEntity.State source, EntityReceiver entityDeposit);
+    protected abstract MovingEntity.Spawn newProjectile(float spawnTime, GameEntity.State source, SpawnReceiver entityDeposit);
 }

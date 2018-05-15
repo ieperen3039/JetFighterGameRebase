@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -38,7 +39,7 @@ public class ExplosionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities() {
+    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
         Collection<MovingEntity> dynamicEntities = new ArrayList<>(21);
 
         for (int i = 0; i < 20; i++) {
@@ -47,7 +48,7 @@ public class ExplosionLaboratory extends GameState {
             final DirVector vel = new DirVector(0, 1, 0);
             pos.negate(vel).add(DirVector.random(), vel);
             dynamicEntities.add(
-                    new SimpleBullet(pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer(), this, Identity.next())
+                    new SimpleBullet(pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer(), deposit, Identity.next())
             );
         }
 

@@ -1,11 +1,12 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.Assets.Sounds;
+import nl.NG.Jetfightergame.Assets.Weapons.AbstractWeapon;
 import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
 import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.EntityReceiver;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
@@ -104,7 +105,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
-            MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, EntityReceiver entityDeposit
+            MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, SpawnReceiver entityDeposit
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, material, mass, scale, renderTimer, entityDeposit);
 
@@ -142,14 +143,17 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         State interpolator = new State(gunMount, gunMount2, rotation, extraRotation, velocity, forward);
 
-        final Collection<AbstractProjectile> bullets;
-        final Collection<AbstractProjectile> rockets;
+        updateGun(deltaTime, interpolator, gunAlpha, input.primaryFire());
+        updateGun(deltaTime, interpolator, gunBeta, input.secondaryFire());
+    }
 
-        bullets = gunAlpha.update(deltaTime, input.primaryFire(), interpolator, entityDeposit);
-        rockets = gunBeta.update(deltaTime, input.secondaryFire(), interpolator, entityDeposit);
-
-        if (!bullets.isEmpty()) entityDeposit.addEntities(bullets);
-        if (!rockets.isEmpty()) entityDeposit.addEntities(rockets);
+    /**
+     * updates the firing of the gun
+     */
+    private void updateGun(float deltaTime, State interpolator, AbstractWeapon gunAlpha, boolean isFiring) {
+        final Collection<Spawn> bullets;
+        bullets = gunAlpha.update(deltaTime, isFiring, interpolator, entityDeposit);
+        entityDeposit.addSpawns(bullets);
     }
 
     /**

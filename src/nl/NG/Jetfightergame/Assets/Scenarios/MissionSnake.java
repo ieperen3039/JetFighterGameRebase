@@ -1,11 +1,11 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
@@ -81,13 +81,8 @@ public class MissionSnake extends GameState {
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities() {
+    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
         return Collections.EMPTY_SET;
-    }
-
-    @Override
-    public void addPlayerJet(AbstractJet playerJet) {
-        playerJet.set(new PosVector(LEVEL_SQUARE_SIZE/2f, LEVEL_SQUARE_SIZE/2f, LEVEL_HEIGHT/2f));
     }
 
     /**
