@@ -167,11 +167,18 @@ public class CollisionDetection implements EntityManagement {
     private void bumpOff(MovingEntity left, MovingEntity right) {
         DirVector force = new DirVector();
         force = left.getExpectedPosition().to(right.getExpectedPosition(), force);
-        force.reducedTo(ServerSettings.BUMP_POWER, force);
 
-        right.applyMoment(force);
-        force.negate(force);
+        force.normalize(); // left to right
+        float leftSpeed = left.getVelocity().dot(force);
+
+        force.negate(force); // right to left
+        float rightSpeed = right.getVelocity().dot(force);
+
+        force.scale(BUMP_POWER * (leftSpeed + rightSpeed) * 0.5f, force);
         left.applyMoment(force);
+
+        force.negate(); // left to right
+        right.applyMoment(force);
     }
 
     /**
@@ -182,12 +189,15 @@ public class CollisionDetection implements EntityManagement {
     private void applyCorrection(MovingEntity target, PathDescription path) {
         PosVector jetPosition = target.getPosition();
         PosVector middle = path.getMiddleOfPath(jetPosition);
-        float targetSpeed = target.getVelocity().length();
+        DirVector toMid = jetPosition.to(middle, new DirVector());
 
-        DirVector jerk = new DirVector();
-        jetPosition.to(middle, jerk).reducedTo(targetSpeed, jerk);
+        toMid.normalize();
+        DirVector notMid = toMid.negate(new DirVector());
 
-        target.applyMoment(jerk);
+        float targetSpeed = target.getVelocity().dot(notMid) * BUMP_POWER;
+        toMid.scale(targetSpeed, toMid);
+
+        target.applyMoment(toMid);
     }
 
     /**

@@ -16,6 +16,7 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_RESPONSE_LE
  * a class that represents the collision state of a Touchable Entity.
  * May be considered a subclass of Touchable / GameEntity
  * @author Geert van Ieperen
+ * @deprecated
  */
 public class RigidBody {
     public final float timeScalar;
@@ -291,19 +292,19 @@ public class RigidBody {
         // check for zero-mass collisions (which are ignored)
         if ((alpha.mass == 0) || (beta.mass == 0)) return;
         // check for projectile collisions; if there is no dynamic collision, this is ignored
-        else if (COLLISION_RESPONSE_LEVEL < 2) {
+        else if (COLLISION_RESPONSE_LEVEL < 3) {
             if ((alpha.source instanceof AbstractProjectile) || (beta.source instanceof AbstractProjectile)) return;
         }
 
-        if (COLLISION_RESPONSE_LEVEL == 0) {
+        if (COLLISION_RESPONSE_LEVEL == 1) {
             if (alpha.contactNormal != null) alpha.collisionResponseSimple();
             if (beta.contactNormal != null) beta.collisionResponseSimple();
 
-        } else if (COLLISION_RESPONSE_LEVEL == 1) {
+        } else if (COLLISION_RESPONSE_LEVEL == 2) {
             if (!Float.isInfinite(alpha.mass)) alpha.collisionWithStaticResponse();
             if (!Float.isInfinite(beta.mass)) beta.collisionWithStaticResponse();
 
-        } else if (COLLISION_RESPONSE_LEVEL == 2) {
+        } else if (COLLISION_RESPONSE_LEVEL == 3) {
             if (Float.isInfinite(beta.mass)) alpha.collisionWithStaticResponse();
             else if (Float.isInfinite(alpha.mass)) beta.collisionWithStaticResponse();
             else dynamicCollisionResponse(alpha, beta);

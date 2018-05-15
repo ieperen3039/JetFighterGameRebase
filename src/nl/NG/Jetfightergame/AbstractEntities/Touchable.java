@@ -57,6 +57,7 @@ public interface Touchable extends Drawable {
 
     /**
      * returns the first collision of this object
+     * @deprecated
      */
     RigidBody getFinalCollision(float deltaTime);
 }

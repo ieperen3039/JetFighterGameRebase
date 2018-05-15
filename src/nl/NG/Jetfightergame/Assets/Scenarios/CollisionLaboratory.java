@@ -3,13 +3,13 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -86,14 +86,10 @@ public class CollisionLaboratory extends GameState {
         DirVector random = Vector.random();
         random.scale(speeds, random);
 
-        FallingCube cube = new FallingCube(
-                Identity.next(), Material.SILVER, CUBEMASS, CUBESIZE,
-                pos.scale(0.8f, pos).toPosVector(),
-                random, new Quaternionf(), getTimer(), deposit
+        return EntityClass.FALLING_CUBE_SMALL.construct(
+                Identity.next(), deposit, null,
+                pos, new Quaternionf(), random
         );
-        cube.addRandomRotation(0.4f);
-
-        return cube;
     }
 
     @SuppressWarnings("ConstantConditions")

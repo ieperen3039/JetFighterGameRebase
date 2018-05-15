@@ -56,7 +56,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         if (type == MessageType.ENTITY_SPAWN) {
             MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, this, Controller.EMPTY);
-            Toolbox.print("Received new entity: " + newEntity);
             game.addEntity(newEntity);
 
         } else if (type == MessageType.ENTITY_UPDATE) {

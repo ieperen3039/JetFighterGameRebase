@@ -5,17 +5,21 @@ import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
+import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
+
 /**
  * @author Geert van Ieperen created on 10-5-2018.
  */
 public enum  EntityClass {
-    BASIC_JET, SIMPLE_BULLET, FALLING_CUBE;
+    BASIC_JET, SIMPLE_BULLET, FALLING_CUBE_SMALL, FALLING_CUBE_LARGE;
 
     /**
      * @param id a number n corresponing to an enum ordinal
@@ -37,15 +41,18 @@ public enum  EntityClass {
      * @return an implementation of the class represented by this enum
      */
     public MovingEntity construct(int id, SpawnReceiver game, Controller input, PosVector position, Quaternionf rotation, DirVector velocity){
+        GameTimer timer = game.getTimer();
         switch (this) {
             case BASIC_JET:
-                BasicJet jet = new BasicJet(id, input, game.getTimer(), game);
+                BasicJet jet = new BasicJet(id, input, timer, game);
                 jet.set(position, velocity, rotation);
                 return jet;
             case SIMPLE_BULLET:
-                return new SimpleBullet(position, velocity, rotation, game.getTimer(), game, id);
-            case FALLING_CUBE:
-                return new FallingCube(id, position, velocity, rotation, game.getTimer(), game);
+                return new SimpleBullet(position, velocity, rotation, timer, game, id);
+            case FALLING_CUBE_SMALL:
+                return new FallingCube(id, Material.SILVER, CUBE_MASS_SMALL, CUBE_SIZE_SMALL, position, velocity, rotation, timer, game);
+            case FALLING_CUBE_LARGE:
+                return new FallingCube(id, Material.SILVER, CUBE_MASS_LARGE, CUBE_SIZE_LARGE, position, velocity, rotation, timer, game);
             default:
                 Toolbox.printError("Construction of entity class " + this + " is not defined!");
                 return null;
@@ -57,11 +64,22 @@ public enum  EntityClass {
      */
     public static EntityClass get(MovingEntity type){
         if (type instanceof FallingCube) {
-            return FALLING_CUBE;
+            if (type.getMass() == CUBE_MASS_LARGE){
+                return FALLING_CUBE_LARGE;
+
+            } else if (type.getMass() == CUBE_MASS_SMALL) {
+                return FALLING_CUBE_SMALL;
+
+            } else {
+                return FALLING_CUBE_SMALL;
+            }
+
         } else if (type instanceof BasicJet) {
             return BASIC_JET;
+
         } else if (type instanceof SimpleBullet) {
             return SIMPLE_BULLET;
+
         } else {
             return null;
         }

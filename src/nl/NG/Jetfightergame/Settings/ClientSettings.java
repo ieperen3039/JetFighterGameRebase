@@ -11,7 +11,7 @@ public final class ClientSettings {
     public static final float RENDER_DELAY = 2f/ ServerSettings.TARGET_TPS;
     public static final int COLLISION_DETECTION_LEVEL = 0;
     public static final int PHYSICS_TPS = 30;
-    public static final boolean LOCAL_SERVER = false;
+    public static final boolean LOCAL_SERVER = true;
     public static boolean FIXED_DELTA_TIME = false;
 
     /** particles */

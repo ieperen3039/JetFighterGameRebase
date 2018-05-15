@@ -55,6 +55,7 @@ public interface MovingEntity extends Touchable {
      * @param newState
      * @param deltaTime
      * @param currentTime
+     * @deprecated
      */
     void applyCollision(RigidBody newState, float deltaTime, float currentTime);
 
