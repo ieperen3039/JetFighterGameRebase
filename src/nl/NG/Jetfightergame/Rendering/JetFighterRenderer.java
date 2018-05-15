@@ -58,8 +58,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         new JetFighterMenu(window::getWidth, window::getHeight, engine::setPlayMode, engine::exitGame, controllerManager, shaderManager);
         new GravityHud(window::getWidth, window::getHeight, player, camera).activate();
 
-        SimpleDateFormat ft = new SimpleDateFormat("yymmdd_hhmmss");
-        sessionName = ft.format(new Date());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yymmdd_hhmmss");
+        sessionName = dateFormat.format(new Date());
     }
 
     @Override
@@ -99,6 +99,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // overlay with transparent objects
         // TODO transparent meshes?
 
+        // line highlighting
         if (ClientSettings.HIGHLIGHT_LINE_WIDTH > 0){
             gl.setFill(false);
             gameState.drawObjects(gl);

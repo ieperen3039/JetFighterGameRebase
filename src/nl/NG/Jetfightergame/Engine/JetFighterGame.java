@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
@@ -58,6 +59,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     /** Shows a splash screen, and creates a window in which the game runs */
     public JetFighterGame() throws Exception {
         super();
+        ShapeFromFile.init(true);
+        GeneralShapes.init(true);
+        new InputDelegate(window);
+
+        KeyTracker.getInstance().addKeyListener(this);
+
+//        new SoundEngine();
+//        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
 
         Splash splash = new Splash();
         splash.run();
@@ -68,8 +77,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             Function<GameTimer, Environment> worldFactory = PlayerJetLaboratory::new;
 
-            ShapeFromFile.init(true);
-            GeneralShapes.init(true);
 
             environment = worldFactory.apply(globalGameTimer);
             otherLoops.add(new PhysicsLoop(environment));
@@ -94,13 +101,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
 
-            KeyTracker keyTracker = KeyTracker.getInstance();
-            keyTracker.addKeyListener(this);
-
-//        new SoundEngine();
-//        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
-
             ScreenOverlay.initialize(() -> currentGameMode == GameMode.MENU_MODE);
+            ScreenOverlay.addHudItem((hud) -> Toolbox.printOnline(hud::printRoll));
 
             renderLoop = new JetFighterRenderer(
                     this, environment, window, camera, playerInput, playerJet

@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.EnemyFlyingTarget;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
-import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.*;
@@ -19,6 +18,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,8 +36,7 @@ public class CollisionDetection implements EntityManagement {
     private CollisionEntity[] zLowerSorted;
 
     private AveragingQueue avgCollision = new AveragingQueue(ServerSettings.TARGET_TPS);
-    private final Consumer<ScreenOverlay.Painter> collisionCounter = (hud) ->
-            hud.printRoll(String.format("Collision pair count average: %1.01f", avgCollision.average()));
+    private final Supplier<String> collisionCounter;
 
     private final Collection<Touchable> staticEntities;
     private Collection<MovingEntity> dynamicClones;
@@ -46,7 +45,9 @@ public class CollisionDetection implements EntityManagement {
     public CollisionDetection(Collection<MovingEntity> dynamicEntities, Collection<Touchable> staticEntities) {
         this.staticEntities = Collections.unmodifiableCollection(staticEntities);
         this.newEntities = new ConcurrentArrayList<>();
-        ScreenOverlay.addHudItem(collisionCounter);
+
+        collisionCounter = () -> String.format("Collision pair count average: %1.01f", avgCollision.average());
+        Toolbox.addOnlineUpdate(collisionCounter);
 
         xLowerSorted = new CollisionEntity[dynamicEntities.size()];
         yLowerSorted = new CollisionEntity[dynamicEntities.size()];
@@ -466,7 +467,7 @@ public class CollisionDetection implements EntityManagement {
         xLowerSorted = new CollisionEntity[0];
         yLowerSorted = new CollisionEntity[0];
         zLowerSorted = new CollisionEntity[0];
-        ScreenOverlay.removeHudItem(collisionCounter);
+        Toolbox.removeOnlineUpdate(collisionCounter);
         debugs.forEach(HUDTargetable::dispose);
     }
 

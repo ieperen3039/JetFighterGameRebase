@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.CameraManager;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
-import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -32,7 +31,6 @@ public abstract class GLFWGameEngine {
      */
     public GLFWGameEngine() {
         window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
-        new InputDelegate(window);
         playerInput = new ControllerManager();
         camera = new CameraManager();
     }

@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Engine.GameLoop;
 
-import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Timer;
@@ -8,6 +7,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 
 /**
@@ -29,8 +29,8 @@ public abstract class AbstractGameLoop extends Thread {
 
     private AveragingQueue avgTPS;
     private AveragingQueue avgPoss;
-    private final Consumer<ScreenOverlay.Painter> tickCounter;
-    private final Consumer<ScreenOverlay.Painter> possessionCounter;
+    private final Supplier<String> tickCounter;
+    private final Supplier<String> possessionCounter;
 
     /**
      * creates a new, paused gameloop
@@ -44,10 +44,12 @@ public abstract class AbstractGameLoop extends Thread {
         this.notifyDelay = notifyDelay;
         this.exceptionHandler = exceptionHandler;
         loopName = name;
+
         avgTPS = new AveragingQueue(targetTps/2);
         avgPoss = new AveragingQueue(targetTps/10);
-        tickCounter = (hud) -> hud.printRoll(String.format("%s TPS: %1.01f", name, avgTPS.average()));
-        possessionCounter = (hud) -> hud.printRoll(String.format("%s POSS: %3d%%", name, (int) (100* avgPoss.average())));
+
+        tickCounter = () -> String.format("%s TPS: %1.01f", name, avgTPS.average());
+        possessionCounter = () -> String.format("%s POSS: %3d%%", name, (int) (100* avgPoss.average()));
     }
 
     /**
@@ -74,8 +76,8 @@ public abstract class AbstractGameLoop extends Thread {
         Timer loopTimer = new Timer();
         float deltaTime = 0;
 
-        ScreenOverlay.addHudItem(tickCounter);
-        ScreenOverlay.addHudItem(possessionCounter);
+        Toolbox.addOnlineUpdate(tickCounter);
+        Toolbox.addOnlineUpdate(possessionCounter);
 
         try {
             pauseBlock.await();
@@ -118,8 +120,8 @@ public abstract class AbstractGameLoop extends Thread {
             ex.printStackTrace();
             exceptionHandler.accept(ex);
         } finally {
-            ScreenOverlay.removeHudItem(tickCounter);
-            ScreenOverlay.removeHudItem(possessionCounter);
+            Toolbox.removeOnlineUpdate(tickCounter);
+            Toolbox.removeOnlineUpdate(possessionCounter);
             cleanup();
         }
 

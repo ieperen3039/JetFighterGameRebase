@@ -9,12 +9,11 @@ import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import org.joml.Quaternionf;
-import org.joml.Vector4f;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -24,11 +23,8 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public final class Toolbox {
 
-    public static final Vector4f COLOR_WHITE = new Vector4f(1, 1, 1, 1);
-    public static final Vector4f COLOR_BLACK = new Vector4f(0, 0, 0, 1);
-    public static final Vector4f COLOR_RED = new Vector4f(1, 0, 0, 1);
-    public static final Vector4f COLOR_GREEN = new Vector4f(0, 1, 0, 1);
-    public static final Vector4f COLOR_BLUE = new Vector4f(0, 0, 1, 1);
+    private static Consumer<String> out = System.out::println;
+    private static List<Supplier<String>> onlinePrints = new ArrayList<>();
 
     /** prevents spamming the chat */
     private static Set<String> callerBlacklist = new HashSet<>();
@@ -47,7 +43,7 @@ public final class Toolbox {
      * the system error version of {@link #print(Object...)}, but always print caller
      * @param o the objects to print
      */
-    public static synchronized void printError(Object... o) {
+    public static void printError(Object... o) {
         int level = 1;
         StackTraceElement caller;
         Exception ex = new Exception();
@@ -59,13 +55,18 @@ public final class Toolbox {
     }
 
     /**
-     * prints the toString method of the given objects to System.out, preceded
+     * prints the toString method of the given objects to the debug output, preceded
      * with the method caller specified by the given call depth
      * @param level 0 = this method, 1 = the calling method (yourself)
      */
-    public static synchronized void printFrom(int level, Object... o) {
+    public static void printFrom(int level, Object... o) {
         String source = getCallingMethod(level);
-        System.out.println(source + ": " + concatenate(o));
+        write(source, o);
+    }
+
+    /** the actual writing function */
+    private static synchronized void write(String source, Object[] o) {
+        out.accept(source + ": " + concatenate(o));
     }
 
     private static String concatenate(Object[] x) {
@@ -91,8 +92,39 @@ public final class Toolbox {
      */
     public static synchronized void printSpamless(String identifier, Object... o) {
         if (!callerBlacklist.contains(identifier)) {
-            System.out.println(Toolbox.getCallingMethod(1) + ": " + concatenate(o));
+            printFrom(2, o);
             callerBlacklist.add(identifier);
+        }
+    }
+
+    /**
+     * sets the debug output of the print methods to the specified file
+     * @param newOutput
+     */
+    public static void setOutput(Consumer<String> newOutput){
+        if (newOutput == null) {
+            Toolbox.printError("New output is null");
+            return;
+        }
+
+        out = newOutput;
+    }
+
+    public static void addOnlineUpdate(Supplier<String> source){
+        if (source == null) {
+            Toolbox.printError("source is null");
+        }
+        onlinePrints.add(source);
+    }
+
+    /**
+     * prints the registered onlineUpdate using the given consumer
+     * @param accepter a method that prints the given string, on the same position as a previous call to this method
+     */
+    public static void printOnline(Consumer<String> accepter){
+        for (Supplier<String> source : onlinePrints) {
+            String message = source.get();
+            accepter.accept(message);
         }
     }
 
@@ -109,11 +141,12 @@ public final class Toolbox {
         if (!ServerSettings.DEBUG) return "";
 
         StackTraceElement caller;
+        Exception exception = new Exception();
         do {
-            caller = new Exception().getStackTrace()[++level]; // level + 1
+            caller = exception.getStackTrace()[++level]; // level + 1
         } while (caller.isNativeMethod());
 
-        return caller.getClassName() + "." + caller.getMethodName() + "(line:" + caller.getLineNumber() + ")";
+        return caller.toString();
     }
 
     /**
@@ -125,7 +158,7 @@ public final class Toolbox {
 
         String source = getCallingMethod(1);
         if (!callerBlacklist.contains(source)) {
-            System.out.println(source + " - draws axis frame");
+            print(source, " - draws axis frame");
             callerBlacklist.add(source);
         }
 
@@ -176,7 +209,7 @@ public final class Toolbox {
     public static void exitJava() {
         if (!ServerSettings.DEBUG) {
             final StackTraceElement caller = new Exception().getStackTrace()[1];
-            System.err.println(caller + ": Tried to exit JVM while DEBUG mode is false.");
+            printError(": Tried to exit JVM while DEBUG mode is false.");
         }
 
         try {
@@ -281,6 +314,10 @@ public final class Toolbox {
     /** @return a rotation that maps the x-vector to the given direction, with up in direction of z */
     public static Quaternionf xTo(DirVector direction) {
         return new Quaternionf().rotateTo(DirVector.xVector(), direction);
+    }
+
+    public static void removeOnlineUpdate(Supplier<String> source) {
+        onlinePrints.remove(source);
     }
 
     /**
