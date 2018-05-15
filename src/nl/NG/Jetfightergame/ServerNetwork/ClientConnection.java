@@ -34,6 +34,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final BufferedOutputStream serverOut;
     private final InputStream serverIn;
     private final Environment game;
+    private final AbstractJet playerJet;
 
     private Lock sendLock = new ReentrantLock();
 
@@ -43,6 +44,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.serverOut = new BufferedOutputStream(connection.getOutputStream());
         this.serverIn = connection.getInputStream();
         this.game = game;
+
+        JetFighterProtocol.syncTimerTarget(serverIn, serverOut, game.getTimer());
+
+        this.playerJet = createPlayer();
     }
 
     @Override
@@ -148,13 +153,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     /**
      * sends a request for a jet to the server and reads the final entity
-     * @see ServerConnection#getPlayer(GameEntity.State)
+     * @see ServerConnection#createPlayer(GameEntity.State)
      */
-    public AbstractJet getPlayer() throws IOException {
+    private AbstractJet createPlayer() throws IOException {
         // wait for confirmation of connection
         int reply = serverIn.read();
-        if (MessageType.get(reply) != MessageType.CONFIRM_CONNECTION)
-            throw new IOException("Received " + reply + " as reaction on connection");
+        if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
+            throw new IOException("Received " + MessageType.get(reply) + " as reaction on connection");
 
         JetFighterProtocol.playerSpawnRequest(serverOut, EntityClass.BASIC_JET);
         serverOut.flush();
@@ -172,5 +177,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public GameTimer getTimer() {
         return game.getTimer();
+    }
+
+    public AbstractJet getPlayer() {
+        return playerJet;
     }
 }

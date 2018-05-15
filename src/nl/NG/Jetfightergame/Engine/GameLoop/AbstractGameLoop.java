@@ -73,7 +73,6 @@ public abstract class AbstractGameLoop extends Thread {
      */
     public void run() {
         if (ServerSettings.DEBUG) Toolbox.print(loopName + " enabled");
-        Timer loopTimer = new Timer();
         float deltaTime = 0;
 
         Toolbox.addOnlineUpdate(tickCounter);
@@ -81,6 +80,7 @@ public abstract class AbstractGameLoop extends Thread {
 
         try {
             pauseBlock.await();
+            Timer loopTimer = new Timer();
             isPaused = false;
 
             while (!shouldStop) {

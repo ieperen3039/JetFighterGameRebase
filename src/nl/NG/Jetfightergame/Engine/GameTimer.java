@@ -22,9 +22,13 @@ public class GameTimer {
     private boolean isPaused = false;
 
     public GameTimer() {
-        currentInGameTime = 0f;
-        gameTime = new TrackedFloat(0f);
-        renderTime = new TrackedFloat(-RENDER_DELAY);
+        this(0f);
+    }
+
+    public GameTimer(float startTime) {
+        currentInGameTime = startTime;
+        gameTime = new TrackedFloat(startTime);
+        renderTime = new TrackedFloat(startTime - RENDER_DELAY);
         lastMark = System.nanoTime();
     }
 
@@ -71,5 +75,18 @@ public class GameTimer {
     public void unPause(){
         updateTimer();
         isPaused = false;
+    }
+
+    /**
+     * @param offset the ingame time is offset by the given time
+     */
+    public void addOffset(float offset){
+        currentInGameTime += offset;
+    }
+
+    /** sets the ingame time to the given time */
+    public void set(float time){
+        updateTimer();
+        currentInGameTime = time;
     }
 }

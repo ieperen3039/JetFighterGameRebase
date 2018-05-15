@@ -1,12 +1,11 @@
-package nl.NG.Jetfightergame.Assets.Weapons;
+package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,21 +31,21 @@ public abstract class AbstractWeapon implements Serializable {
     /**
      * @param deltaTime time since last check
      * @param isFiring true iff the controller wants to fire
-     * @param source
+     * @param source a description of what object to shoot
      * @param entityDeposit allows the new bullets to add entities
      *                      @return a collection of all newly generated entities
      */
     public Collection<MovingEntity.Spawn> update(float deltaTime, boolean isFiring, GameEntity.State source, SpawnReceiver entityDeposit) {
         timeRemaining -= deltaTime;
+        if (timeRemaining >= 0) return Collections.EMPTY_SET;
 
         List<MovingEntity.Spawn> newProjectiles = new ArrayList<>();
-
-        if (timeRemaining >= 0) return newProjectiles;
         if (!wasFiring) timeRemaining = 0;
 
+        float loopStart = entityDeposit.getTimer().time() - deltaTime;
         if (isFiring) {
             do {
-                final float bulletSpawnTime = deltaTime + timeRemaining;
+                final float bulletSpawnTime = loopStart + timeRemaining;
                 MovingEntity.Spawn bullet = newProjectile(bulletSpawnTime, source, entityDeposit);
                 newProjectiles.add(bullet);
                 timeRemaining += cooldown;

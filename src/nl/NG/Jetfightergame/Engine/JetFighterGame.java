@@ -3,12 +3,12 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
@@ -45,14 +45,11 @@ import static org.lwjgl.glfw.GLFW.*;
  *         a class that manages all game objects, and houses both the rendering- and the gameloop
  */
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
+    protected final ControllerManager playerInput;
     protected AbstractGameLoop renderLoop;
 
     private Environment environment;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
-
-    private GameTimer globalGameTimer;
-
-    private final Player player;
     private ClientConnection connection;
 
     /** Shows a splash screen, and creates a window in which the game runs */
@@ -60,9 +57,10 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         super();
         ShapeFromFile.init(true);
         GeneralShapes.init(true);
-        new InputDelegate(window);
-
         KeyTracker.getInstance().addKeyListener(this);
+
+        new InputDelegate(window);
+        playerInput = new ControllerManager();
 
 //        new SoundEngine();
 //        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
@@ -71,7 +69,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            globalGameTimer = new GameTimer();
+            GameTimer globalGameTimer = new GameTimer();
             Socket socket = new Socket();
 
             Function<GameTimer, Environment> worldFactory = PlayerJetLaboratory::new;
@@ -96,7 +94,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             AbstractJet playerJet = connection.getPlayer();
             Toolbox.print("Received " + playerJet + " from the server");
 
-            player = new Player(playerInput, playerJet);
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
 
@@ -187,11 +184,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                     Toolbox.print("Saved screenshot as \"" + name + "\"");
                 }
         }
-    }
-
-    @Override
-    public AbstractJet getPlayer() {
-        return player.jet();
     }
 
     /**

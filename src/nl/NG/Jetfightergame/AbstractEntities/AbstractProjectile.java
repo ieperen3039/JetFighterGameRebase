@@ -20,16 +20,15 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
     private final float airResistCoeff;
 
     protected float timeToLive;
-    protected final SpawnReceiver particleDeposit;
 
     public AbstractProjectile(
             Material surfaceMaterial, float mass, float scale, PosVector initialPosition, DirVector initialVelocity,
-            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive, SpawnReceiver particleDeposit, int id
+            Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive,
+            SpawnReceiver particleDeposit, int id
     ) {
-        super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, gameTimer, null);
+        super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, gameTimer, particleDeposit);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
-        this.particleDeposit = particleDeposit;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);

@@ -1,8 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.CameraManager;
-import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.GameLoop.AbstractGameLoop;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -20,8 +18,6 @@ import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCentered
  */
 public abstract class GLFWGameEngine {
 
-    protected final ControllerManager playerInput;
-
     protected GLFWWindow window;
     protected CameraManager camera;
     protected GameMode currentGameMode;
@@ -31,7 +27,6 @@ public abstract class GLFWGameEngine {
      */
     public GLFWGameEngine() {
         window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
-        playerInput = new ControllerManager();
         camera = new CameraManager();
     }
 
@@ -135,8 +130,6 @@ public abstract class GLFWGameEngine {
     public boolean isPaused() {
         return getCurrentGameMode() == GameMode.MENU_MODE;
     }
-
-    public abstract AbstractJet getPlayer();
 
     public enum GameMode {
         PLAY_MODE, SPECTATOR_MODE, MENU_MODE

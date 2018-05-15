@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Weapons;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractWeapon;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;

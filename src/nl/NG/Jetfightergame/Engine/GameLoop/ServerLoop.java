@@ -40,9 +40,9 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
      */
     public void connectToPlayer(Socket socket, boolean asAdmin) throws IOException {
         // establish communication handler
-        ServerConnection connector = new ServerConnection(socket, asAdmin, this);
+        ServerConnection connector = new ServerConnection(socket, asAdmin, this, world.getNewSpawn());
         // first thing to do is creating a player
-        MovingEntity player = connector.getPlayer(world.getNewSpawn());
+        MovingEntity player = connector.getPlayerJet();
         connections.add(connector);
         new Thread(connector::listen).start();
 

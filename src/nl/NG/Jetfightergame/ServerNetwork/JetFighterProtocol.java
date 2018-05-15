@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -17,8 +18,10 @@ import java.util.Collection;
  */
 public final class JetFighterProtocol {
 
-    /** writes the given entity to the OutputStream.
-     * @see #entityUpdateRead(InputStream, Collection) */
+    /**
+     * writes the given entity to the OutputStream.
+     * @see #entityUpdateRead(InputStream, Collection)
+     */
     public static void entityUpdateSend(OutputStream output, MovingEntity thing, float currentTime) throws IOException {
         DataOutputStream DOS = new DataOutputStream(output);
         // identity and time
@@ -31,7 +34,7 @@ public final class JetFighterProtocol {
 
     /**
      * read an entity from the InputStream, match the entity with one in the list, and updates it
-     * @param input the input stream, with an entity state on its next read chunk.
+     * @param input    the input stream, with an entity state on its next read chunk.
      * @param entities a list of all entities of which one of them must be the one on the stream
      * @throws IOException if anything goes wrong with the connection
      * @see #entityUpdateRead(InputStream, Collection)
@@ -48,7 +51,7 @@ public final class JetFighterProtocol {
         MovingEntity target = matchEntity(entities, id);
 
         if (target == null) {
-            Toolbox.printError("Entity with id "+ id +" not found among " + entities.size() + " entities.");
+            Toolbox.printError("Entity with id " + id + " not found among " + entities.size() + " entities.");
             return;
         }
 
@@ -59,7 +62,7 @@ public final class JetFighterProtocol {
     /** returns the (first) entity with the given id, or null when it is not found */
     private static MovingEntity matchEntity(Collection<MovingEntity> entities, int id) {
         for (MovingEntity entity : entities) {
-            if (entity.idNumber() == id){
+            if (entity.idNumber() == id) {
                 return entity;
             }
         }
@@ -97,8 +100,10 @@ public final class JetFighterProtocol {
         return new DirVector(DOS.readFloat(), DOS.readFloat(), DOS.readFloat());
     }
 
-    /** client sending a request of spawing a new entity.
-     * @see #spawnRequestRead(InputStream) */
+    /**
+     * client sending a request of spawing a new entity.
+     * @see #spawnRequestRead(InputStream)
+     */
     public static void spawnRequestSend(OutputStream output, MovingEntity.Spawn spawn) throws IOException {
         output.write(spawn.type.ordinal());
         DataOutputStream DOS = new DataOutputStream(output);
@@ -153,6 +158,7 @@ public final class JetFighterProtocol {
     /** read a control message off the InputStream */
     static void controlRead(InputStream clientIn, RemoteControlReceiver controls, MessageType type) throws IOException {
         int value = clientIn.read();
+        if ((type == MessageType.PITCH) && (value != 127)) Toolbox.print(value);
         controls.receive(type, value);
     }
 
@@ -161,16 +167,65 @@ public final class JetFighterProtocol {
         output.write(value);
     }
 
-    /** sends a request to spawn a new plane.
-     * When successful, the reply is caught with {@link #newEntityRead(InputStream, SpawnReceiver, Controller)}
+    /**
+     * sends a request to spawn a new plane. When successful, the reply is caught with {@link
+     * #newEntityRead(InputStream, SpawnReceiver, Controller)}
      * @see #playerSpawnAccept(InputStream)
      */
     public static void playerSpawnRequest(OutputStream output, EntityClass entity) throws IOException {
         output.write(entity.ordinal());
     }
 
-    /** @see #playerSpawnRequest(OutputStream, EntityClass)  */
+    /** @see #playerSpawnRequest(OutputStream, EntityClass) */
     public static EntityClass playerSpawnAccept(InputStream clientIn) throws IOException {
         return EntityClass.get(clientIn.read());
+    }
+
+    /**
+     * sets up synchronizing time across server-client connection
+     * @param input
+     * @param output
+     * @param serverTime current time according to the server
+     */
+    public static void syncTimerSource(InputStream input, OutputStream output, GameTimer serverTime) throws IOException {
+        float deltaNanos = ping(input, output);
+
+        DataOutputStream DOS = new DataOutputStream(output);
+        DOS.writeFloat(serverTime.time() + deltaNanos);
+        DOS.flush();
+    }
+
+    /**
+     * updates the timer to serverTime + ping
+     */
+    public static void syncTimerTarget(InputStream input, OutputStream output, GameTimer timer) throws IOException {
+        pong(input, output);
+
+        DataInputStream DIS = new DataInputStream(input);
+        float serverTime = DIS.readFloat();
+        timer.set(serverTime);
+    }
+
+    /**
+     * reacts on an expected ping message
+     */
+    public static void pong(InputStream input, OutputStream output) throws IOException {
+        int ping = input.read();
+        if (ping != MessageType.PING.ordinal()) throw new IOException("unexpected reply: " + ping);
+        output.write(MessageType.PONG.ordinal());
+        output.flush();
+    }
+
+    /** @return the RTT in seconds */
+    public static float ping(InputStream input, OutputStream output) throws IOException {
+        output.write(MessageType.PING.ordinal());
+        output.flush();
+        long start = System.nanoTime();
+
+        int reply = input.read();
+        if (reply != MessageType.PONG.ordinal()) Toolbox.printError("unexpected reply: " + MessageType.get(reply));
+
+        int deltaNanos = (int) (System.nanoTime() - start);
+        return deltaNanos * 1E-9f;
     }
 }

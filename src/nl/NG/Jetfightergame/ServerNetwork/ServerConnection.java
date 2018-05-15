@@ -23,17 +23,22 @@ public class ServerConnection implements BlockingListener {
     public final boolean hasAdminCapabilities;
 
     private final GameServer server;
+    private final MovingEntity playerJet;
     private Lock sendOutput = new ReentrantLock();
 
     private final RemoteControlReceiver controls;
 
-    public ServerConnection(Socket connection, boolean isAdmin, GameServer server) throws IOException {
+    public ServerConnection(Socket connection, boolean isAdmin, GameServer server, GameEntity.State playerSpawn) throws IOException {
         this.clientIn = connection.getInputStream();
         this.clientOut = new BufferedOutputStream(connection.getOutputStream());
         this.hasAdminCapabilities = isAdmin;
         this.server = server;
         this.controls = new RemoteControlReceiver();
         this.clientName = connection.toString();
+
+        JetFighterProtocol.syncTimerSource(clientIn, clientOut, server.getTimer());
+
+        this.playerJet = createPlayer(playerSpawn);
     }
 
     /**
@@ -90,6 +95,10 @@ public class ServerConnection implements BlockingListener {
         if (type.isOf(MessageType.controls)) {
             JetFighterProtocol.controlRead(clientIn, controls, type);
 
+        } else if (type == MessageType.PING) {
+            clientOut.write(MessageType.PONG.ordinal());
+            clientOut.flush();
+
         } else if (type == MessageType.START_GAME) {
             server.unPause();
 
@@ -118,10 +127,10 @@ public class ServerConnection implements BlockingListener {
     }
 
     /**
-     * reads a new player from the client
-     * @see ClientConnection#getPlayer()
+     * reads a new playerJet from the client
+     * @see ClientConnection#createPlayer()
      */
-    public MovingEntity getPlayer(GameEntity.State position) throws IOException {
+    private MovingEntity createPlayer(GameEntity.State position) throws IOException {
         // notify client
         clientOut.write(MessageType.CONFIRM_CONNECTION.ordinal());
         clientOut.flush();
@@ -138,4 +147,7 @@ public class ServerConnection implements BlockingListener {
         return player;
     }
 
+    public MovingEntity getPlayerJet() {
+        return playerJet;
+    }
 }
