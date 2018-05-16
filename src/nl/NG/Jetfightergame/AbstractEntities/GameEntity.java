@@ -1,11 +1,8 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Rendering.Interpolation.QuaternionInterpolator;
-import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
@@ -13,6 +10,9 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
+import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -20,6 +20,8 @@ import org.joml.Quaternionf;
 
 import java.util.*;
 import java.util.function.Consumer;
+
+import static java.lang.StrictMath.sqrt;
 
 /**
  * @author Geert van Ieperen created on 29-10-2017.
@@ -167,8 +169,7 @@ public abstract class GameEntity implements MovingEntity {
         position.set(extraPosition);
         rotation.set(extraRotation);
         velocity.set(extraVelocity);
-        positionInterpolator.add(new PosVector(position), currentTime);
-        rotationInterpolator.add(new Quaternionf(rotation), currentTime);
+        addStatePoint(currentTime, extraPosition, extraRotation);
 
         if (ServerSettings.DEBUG) {
             if ((position.x() == Float.NaN) || (position.y() == Float.NaN) || (position.z() == Float.NaN))
@@ -205,63 +206,8 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public RigidBody getFinalCollision(float deltaTime) {
-        if (deltaTime < 0f)
-            throw new RuntimeException("collisions of " + this + " added up to a moment in the future. Running " + -deltaTime + "behind");
-        if (nextCrash.get() == null)
-            throw new RuntimeException("tried calculating collision of " + this + " even though it did not collide");
-
-        final DirVector movement = position.to(extraPosition, new DirVector());
-
-
-        // global position of contact
-        final PosVector globalHitPos = nextCrash.get().hitPos;
-        // normal of the plane of contact
-        final DirVector contactNormal = nextCrash.get().normal;
-        // fraction of deltaTime until collision
-        final float timeScalar = nextCrash.get().timeScalar * 0.99f; // prevent rounding errors.
-        // object rotation when hitting
-        Quaternionf interRotation = new Quaternionf();
-        rotation.nlerp(extraRotation, timeScalar, interRotation);
-        // movement until collision
-        final DirVector interMovement = new DirVector();
-        if (movement.isScalable()) movement.scale(timeScalar, interMovement);
-        // object position when hitting
-        final PosVector interPosition = position.add(interMovement, new PosVector());
-        // 'interpolated' velocity when hitting
-        final DirVector interVelocity = new DirVector(extraVelocity);
-
-        return new RigidBody(timeScalar, interPosition, interVelocity, globalHitPos,
-                contactNormal, interRotation, rollSpeed, pitchSpeed, yawSpeed, this
-        );
-    }
-
-    @Override
     public int idNumber() {
         return thisID;
-    }
-
-    @Override
-    public void applyCollision(RigidBody newState, float deltaTime, float currentTime) {
-        rollSpeed = newState.rollSpeed();
-        pitchSpeed = newState.pitchSpeed();
-        yawSpeed = newState.yawSpeed();
-        extraVelocity.set(newState.velocity);
-
-        if (newState.isFinal()) return;
-
-        final float remainingTime = deltaTime * (1 - newState.timeScalar);
-        final DirVector bounceMovement = extraVelocity.scale(remainingTime, new DirVector());
-        newState.massCenterPosition.add(bounceMovement, extraPosition);
-        newState.rotation.rotate(rollSpeed * remainingTime, pitchSpeed * remainingTime, yawSpeed * remainingTime, extraRotation);
-
-        // add intermediate position/rotation to interpolation
-        final float collisionTimeStamp = currentTime - remainingTime;
-        positionInterpolator.add(new PosVector(newState.massCenterPosition), collisionTimeStamp);
-        rotationInterpolator.add(new Quaternionf(newState.rotation), collisionTimeStamp);
-
-        hitPoints = calculateHitpointMovement();
-        nextCrash = new Extreme<>(false);
     }
 
     /**
@@ -372,8 +318,16 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void applyMoment(DirVector momentum) {
-        extraVelocity.add(momentum.scale(1 / mass, new DirVector())); // TODO verification
+    public void applyJerk(DirVector direction, float energy) {
+        // e = 0.5*m*v*v
+        // >> v*v = e / 0.5m
+        // >> v = sqrt(2e / m)
+
+        float v = (float) sqrt((2 * energy) / mass);
+
+        DirVector dv = direction.scale(v, direction);
+        Toolbox.print(dv);
+        extraVelocity.add(dv); // TODO verification
     }
 
     @Override
@@ -406,16 +360,6 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void addPositionPoint(PosVector hitPosition, float currentTime) {
-        positionInterpolator.add(hitPosition, currentTime);
-    }
-
-    @Override
-    public void addRotationPoint(Quaternionf rotation, float currentTime) {
-        rotationInterpolator.add(rotation, currentTime);
-    }
-
-    @Override
     public float getMass() {
         return mass;
     }
@@ -423,6 +367,12 @@ public abstract class GameEntity implements MovingEntity {
     @Override
     public DirVector getVelocity() {
         return new DirVector(velocity);
+    }
+
+    @Override
+    public void addStatePoint(float currentTime, PosVector hitPosition, Quaternionf rotation) {
+        positionInterpolator.add(hitPosition, currentTime);
+        rotationInterpolator.add(rotation, currentTime);
     }
 
     @Override

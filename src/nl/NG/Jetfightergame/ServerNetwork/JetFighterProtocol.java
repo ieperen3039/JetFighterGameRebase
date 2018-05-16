@@ -56,8 +56,7 @@ public final class JetFighterProtocol {
             return null;
         }
 
-        target.addPositionPoint(pos, time);
-        target.addRotationPoint(rot, time);
+        target.addStatePoint(time, pos, rot);
         return target;
     }
 

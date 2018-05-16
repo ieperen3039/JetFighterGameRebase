@@ -109,5 +109,7 @@ public abstract class Vector extends Vector3f implements Serializable {
     public FloatBuffer toFloatBuffer() {
         return BufferUtils.createFloatBuffer(3).put(new float[]{x, y, z});
     }
+
+    public abstract Vector scale(float scalar);
 }
 

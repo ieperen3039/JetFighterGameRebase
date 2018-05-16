@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
@@ -65,11 +64,6 @@ public class StaticObject implements Touchable {
     @Override
     public void acceptCollision(Collision cause) {
 
-    }
-
-    @Override
-    public RigidBody getFinalCollision(float deltaTime) {
-        return new RigidBody(this);
     }
 
 }

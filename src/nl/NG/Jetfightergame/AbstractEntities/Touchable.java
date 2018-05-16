@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -54,10 +53,4 @@ public interface Touchable extends Drawable {
      * @param cause the data of the collision from causer's perspective
      */
     void acceptCollision(Collision cause);
-
-    /**
-     * returns the first collision of this object
-     * @deprecated
-     */
-    RigidBody getFinalCollision(float deltaTime);
 }

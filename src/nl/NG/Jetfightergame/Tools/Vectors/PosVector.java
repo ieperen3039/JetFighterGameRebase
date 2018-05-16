@@ -69,7 +69,7 @@ public class PosVector extends Vector {
      * @param dest
      * @return new vector with length equal to {@code this.length() * scalar}
      */
-    public Vector scale(float scalar, PosVector dest) {
+    public PosVector scale(float scalar, PosVector dest) {
         super.mul(scalar, dest);
         return dest;
     }
@@ -92,6 +92,12 @@ public class PosVector extends Vector {
 
     @Override
     public PosVector toPosVector() {
+        return this;
+    }
+
+    @Override
+    public PosVector scale(float scalar) {
+        mul(scalar);
         return this;
     }
 }

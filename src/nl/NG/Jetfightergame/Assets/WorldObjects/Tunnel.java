@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Assets.WorldObjects;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -58,8 +57,4 @@ public class Tunnel implements Touchable {
 
     }
 
-    @Override
-    public RigidBody getFinalCollision(float deltaTime) {
-        return null;
-    }
 }

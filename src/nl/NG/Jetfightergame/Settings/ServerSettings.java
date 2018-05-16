@@ -26,7 +26,7 @@ public final class ServerSettings {
     public static final boolean DO_COLLISION_RESPONSE = COLLISION_RESPONSE_LEVEL > 0;
     public static final int MAX_COLLISION_ITERATIONS = 250/TARGET_TPS;
     // force factor of how strong two colliding planes bump off
-    public static final float BUMP_POWER = 5;
+    public static final float BUMP_MULTIPLIER = 1f;
 
     /** miscellaneous */
     // universal random to be used everywhere

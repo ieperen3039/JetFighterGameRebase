@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;

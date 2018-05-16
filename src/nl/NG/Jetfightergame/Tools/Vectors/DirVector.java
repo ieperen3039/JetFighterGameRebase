@@ -125,4 +125,10 @@ public class DirVector extends Vector {
     public DirVector toDirVector() {
         return this;
     }
+
+    @Override
+    public DirVector scale(float scalar) {
+        mul(scalar);
+        return this;
+    }
 }

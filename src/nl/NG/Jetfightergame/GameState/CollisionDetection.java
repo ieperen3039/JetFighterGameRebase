@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -19,9 +18,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.DEBUG;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.MAX_COLLISION_ITERATIONS;
 
 /**
  * @author Geert van Ieperen
@@ -111,22 +110,23 @@ public class CollisionDetection implements EntityManagement {
                     .filter(p -> checkCollisionPair(p.left, p.right, deltaTime))
                     .collect(Collectors.toList());
 
-            if (DO_COLLISION_RESPONSE) {
-                // process the final collisions in pairs
-                List<RigidBody> postCollisions = collisionPairs.stream()
-                        // process collision, extract individual entities
-                        .flatMap(p -> processCollision(deltaTime, p))
-                        // every item once
-                        .distinct()
-                        // wait until all processing is finished
-                        .collect(Collectors.toList());
 
-                // apply the collisions to the objects
-                postCollisions.forEach(r -> r.apply(deltaTime, currentTime));
+            for (Pair<Touchable, MovingEntity> pair : collisionPairs) {
+                // if two entities collide
+                if (pair.left instanceof MovingEntity) {
+                    MovingEntity left = (MovingEntity) pair.left;
+                    MovingEntity right = pair.right;
 
-            } else {
-                gameCollision(collisionPairs, environment);
+                    bumpOff(left, right);
+
+                // if entity collides with terrain
+                } else {
+                    MovingEntity entity = pair.right;
+
+                    applyCorrection(entity, environment);
+                }
             }
+
 
         } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
@@ -136,49 +136,33 @@ public class CollisionDetection implements EntityManagement {
 
     }
 
-    private void gameCollision(List<Pair<Touchable, MovingEntity>> collisionPairs, PathDescription environment) {
-        Set<MovingEntity> uniqueValues = new HashSet<>();
-
-        for (Pair<Touchable, MovingEntity> pair : collisionPairs) {
-
-            // if two entities collide
-            if (pair.left instanceof MovingEntity) {
-                MovingEntity left = (MovingEntity) pair.left;
-                MovingEntity right = pair.right;
-
-                bumpOff(left, right);
-
-            // if entity collides with terrain
-            } else {
-                MovingEntity entity = pair.right;
-
-                if (uniqueValues.add(entity)) {
-                    applyCorrection(entity, environment);
-                }
-            }
-        }
-    }
-
     /**
      * move two entities away from each other
      * @param left one entity, which has collided with right
      * @param right another entity, which has collided with left
      */
     private void bumpOff(MovingEntity left, MovingEntity right) {
-        DirVector force = new DirVector();
-        force = left.getExpectedPosition().to(right.getExpectedPosition(), force);
+        DirVector leftToRight = new DirVector();
+        leftToRight = left.getExpectedPosition().to(right.getExpectedPosition(), leftToRight);
 
-        force.normalize(); // left to right
-        float leftSpeed = left.getVelocity().dot(force);
+        leftToRight.normalize();
+        DirVector rightToLeft = leftToRight.negate(new DirVector());
 
-        force.negate(force); // right to left
-        float rightSpeed = right.getVelocity().dot(force);
+        float rightEnergy = getKineticEnergy(right, rightToLeft);
+        float leftEnergy = getKineticEnergy(left, leftToRight);
+        float sharedEnergy = 0.5f * (leftEnergy + rightEnergy); // not quite but ok
 
-        force.scale(BUMP_POWER * (leftSpeed + rightSpeed) * 0.5f, force);
-        left.applyMoment(force);
+        right.applyJerk(leftToRight, sharedEnergy);
+        left.applyJerk(rightToLeft, sharedEnergy);
 
-        force.negate(); // left to right
-        right.applyMoment(force);
+    }
+
+    /**
+     * @return the kinetic energy of this entity in the direction of vector
+     */
+    private float getKineticEnergy(MovingEntity entity, DirVector vector) {
+        float leftSpeed = entity.getVelocity().dot(vector);
+        return 0.5f * leftSpeed * leftSpeed * entity.getMass();
     }
 
     /**
@@ -193,25 +177,9 @@ public class CollisionDetection implements EntityManagement {
 
         toMid.normalize();
         DirVector notMid = toMid.negate(new DirVector());
+        float targetEnergy = getKineticEnergy(target, notMid);
 
-        float targetSpeed = target.getVelocity().dot(notMid) * BUMP_POWER;
-        toMid.scale(targetSpeed, toMid);
-
-        target.applyMoment(toMid);
-    }
-
-    /**
-     * calculates the effect of the collision, on both elements of the pair
-     * @param deltaTime time difference since last gameloop
-     * @param p pair of entities that have their collision been confirmed
-     * @return a stream of the individual processed elements
-     */
-    private static Stream<? extends RigidBody> processCollision(float deltaTime, Pair<Touchable, MovingEntity> p) {
-        RigidBody left = p.left.getFinalCollision(deltaTime);
-        RigidBody right = p.right.getFinalCollision(deltaTime);
-        // collision response
-        RigidBody.process(left, right);
-        return Stream.of(left, right);
+        target.applyJerk(toMid, targetEnergy);
     }
 
     /**

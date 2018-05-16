@@ -76,13 +76,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
     @Override
     protected void update(float realDeltaTime) {
+        Toolbox.checkGLError();
+
         GameTimer timer = gameState.getTimer();
         timer.updateRenderTime();
         activeCamera.updatePosition(timer.getRenderTime().difference());
         frameNumber++;
 
-        Toolbox.checkGLError();
-
+        // shader preparation and background
         Color4f ambientLight = gameState.fogColor();
         float fog = Math.min(ClientSettings.Z_FAR, (1f /ambientLight.alpha)); // also considers div/0
         ambientLight = new Color4f(ambientLight, 1f);

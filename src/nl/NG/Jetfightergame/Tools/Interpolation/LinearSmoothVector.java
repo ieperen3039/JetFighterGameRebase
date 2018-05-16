@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Rendering.Interpolation;
+package nl.NG.Jetfightergame.Tools.Interpolation;
 
 import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;

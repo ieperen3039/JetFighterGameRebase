@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
-import nl.NG.Jetfightergame.Rendering.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
@@ -17,6 +16,7 @@ import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -213,8 +213,18 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
         // obtain current x-axis in worldspace
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-        forwardInterpolator.add(new DirVector(forward), currentTime);
-        velocityInterpolator.add(new DirVector(velocity), currentTime);
+        addJetStatePoint(currentTime, new DirVector(forward), new DirVector(velocity));
+    }
+
+    /** adds entries for forward and velocity interpolation */
+    public void addJetStatePoint(float currentTime, DirVector forward, DirVector velocity) {
+        forwardInterpolator.add(forward, currentTime);
+        velocityInterpolator.add(velocity, currentTime);
+    }
+
+    public void addJetStatePoint(float currentTime){
+        relativeStateDirection(DirVector.xVector()).normalize(forward);
+
     }
 
     @Override

@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Assets.WorldObjects;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -121,13 +120,6 @@ public class SimplexCave implements Touchable {
         collisions.add(new Vector2f(
                 pos.x(), pos.y()
         ));
-    }
-
-    @Override
-    public RigidBody getFinalCollision(float deltaTime) {
-        collisions.forEach(a -> {});
-        collisions.clear();
-        return new RigidBody(this);
     }
 
     public int idNumber() {

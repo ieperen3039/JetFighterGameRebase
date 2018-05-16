@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -56,28 +55,6 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
 
-    }
-
-    @Override
-    public RigidBody getFinalCollision(float deltaTime) {
-        // global position of contact
-        final PosVector globalHitPos = nextCrash.get().hitPos;
-        // fraction of deltaTime until collision
-        final float timeScalar = nextCrash.get().timeScalar * 0.99f; // 0.99f to prevent rounding errors.
-
-        return new RigidBody(
-                timeScalar, globalHitPos, extraVelocity, rotation.nlerp(extraRotation, timeScalar), this
-//                timeScalar, globalHitPos, extraVelocity, globalHitPos, nextCrash.get().normal, extraRotation, rollSpeed, pitchSpeed, yawSpeed, this
-        );
-    }
-
-    @Override
-    public void applyCollision(RigidBody newState, float deltaTime, float currentTime) {
-        // add final state before this projectile is gone
-        addPositionPoint(newState.hitPosition, currentTime);
-        addRotationPoint(newState.rotation, currentTime);
-
-        timeToLive = 0;
     }
 
     @Override

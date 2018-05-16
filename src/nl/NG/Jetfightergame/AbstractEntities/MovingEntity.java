@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.RigidBody;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
@@ -51,15 +50,6 @@ public interface MovingEntity extends Touchable {
     void update(float currentTime);
 
     /**
-     * applies the final collision after it has been processed to this object
-     * @param newState
-     * @param deltaTime
-     * @param currentTime
-     * @deprecated
-     */
-    void applyCollision(RigidBody newState, float deltaTime, float currentTime);
-
-    /**
      * checks the movement of the hitpoints of this object against the planes of
      * 'other'. the method implementing this must be thread-safe
      * @param other     an object that may hit this object
@@ -92,10 +82,7 @@ public interface MovingEntity extends Touchable {
     DirVector getVelocity();
 
     /** adds a position state for rendering on the specified time */
-    void addPositionPoint(PosVector hitPosition, float currentTime);
-
-    /** adds a rotation state for rendering on the specified time */
-    void addRotationPoint(Quaternionf rotation, float currentTime);
+    void addStatePoint(float currentTime, PosVector hitPosition, Quaternionf rotation);
 
     /**
      * @return the mass of this object in kilograms.
@@ -131,10 +118,11 @@ public interface MovingEntity extends Touchable {
      * applies a change in velocity by applying the given momentum to the velocity.
      * This may only be applied between calls to
      * {@link #preUpdate(float, DirVector)} and {@link #update(float)}
-     * @param momentum the momentum to be applied to the gravity center of this
-     *                 entity
+     * @param direction the normalized direction in which the force is applied
+     * @param energy the energy in Newton to be applied to the gravity center of this
+     *      *                 entity
      */
-    void applyMoment(DirVector momentum);
+    void applyJerk(DirVector direction, float energy);
 
     /** @return an unique number given by the server */
     int idNumber();
