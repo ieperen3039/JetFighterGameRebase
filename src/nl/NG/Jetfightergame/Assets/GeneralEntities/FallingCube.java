@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -21,10 +22,11 @@ import java.util.function.Consumer;
 public class FallingCube extends GameEntity {
 
     private final float range;
+    protected Material surfaceMaterial;
 
     /**
      * a cube that can be moved around, and has all physic properties
-     * @param id
+     * @param id the id of this gameEntity
      * @param renderTimer   the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
      *                      return the interpolated position
      * @param entityDeposit new entities are passed here
@@ -64,8 +66,9 @@ public class FallingCube extends GameEntity {
      */
     public FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
                        DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit) {
-        super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, renderTimer, entityDeposit);
+        super(id, initialPosition, initialVelocity, initialRotation, mass, scale, renderTimer, entityDeposit);
         this.range = (float) Math.sqrt(3 * scale * scale);
+        this.surfaceMaterial = surfaceMaterial;
     }
 
     /**
@@ -102,5 +105,10 @@ public class FallingCube extends GameEntity {
     @Override
     public float getRange() {
         return range;
+    }
+
+    @Override
+    public void preDraw(GL2 gl) {
+        gl.setMaterial(surfaceMaterial);
     }
 }

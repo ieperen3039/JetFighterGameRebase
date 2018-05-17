@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -62,6 +63,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     private final int maxHeath;
 
     protected transient Controller input;
+    protected Material surfaceMaterial;
     private DirVector forward;
 
     private VectorInterpolator forwardInterpolator;
@@ -106,7 +108,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
             MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, SpawnReceiver entityDeposit
     ) {
-        super(id, initialPosition, DirVector.zeroVector(), initialRotation, material, mass, scale, renderTimer, entityDeposit);
+        super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, renderTimer, entityDeposit);
 
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
@@ -123,6 +125,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         this.gunBeta = gunBeta;
         this.hitPoints = hitPoints;
         this.maxHeath = hitPoints;
+        this.surfaceMaterial = material;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
@@ -323,5 +326,10 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      */
     public void set(PosVector posVector) {
         set(posVector, velocity, rotation);
+    }
+
+    @Override
+    public void preDraw(GL2 gl) {
+        gl.setMaterial(surfaceMaterial);
     }
 }

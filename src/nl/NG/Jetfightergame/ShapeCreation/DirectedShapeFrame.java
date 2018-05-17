@@ -50,6 +50,11 @@ public class DirectedShapeFrame implements DirectedShape {
         object.render(lock);
     }
 
+    @Override
+    public void dispose() {
+        object.dispose();
+    }
+
     /**
      * draws the shape from {@code source} in the direction of {@code target}.
      * the drawObjects method of this class should be called in the worldspace of the ShadowMatrix

@@ -83,6 +83,11 @@ public class ShapeFromFile implements Shape {
         mesh.render(lock);
     }
 
+    @Override
+    public void dispose() {
+        mesh.dispose();
+    }
+
     /**
      * creates a triangle object, using the indices on the given lists
      *

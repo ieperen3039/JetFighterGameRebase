@@ -44,6 +44,11 @@ public class JetFire implements Updatable, Renderable {
 
     }
 
+    @Override
+    public void dispose() {
+
+    }
+
     private class Flame {
         private float timeToLive;
         private PosVector point;

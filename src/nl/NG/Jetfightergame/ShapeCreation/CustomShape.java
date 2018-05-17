@@ -366,5 +366,10 @@ public class CustomShape {
         public void render(GL2.Painter lock) {
             mesh.render(lock);
         }
+
+        @Override
+        public void dispose() {
+            mesh.dispose();
+        }
     }
 }

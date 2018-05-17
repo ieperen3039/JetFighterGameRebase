@@ -45,11 +45,9 @@ import static org.lwjgl.glfw.GLFW.*;
  *         a class that manages all game objects, and houses both the rendering- and the gameloop
  */
 public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
-    protected final ControllerManager playerInput;
-    protected AbstractGameLoop renderLoop;
-
-    private Environment environment;
+    private AbstractGameLoop renderLoop;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
+
     private ClientConnection connection;
 
     /** Shows a splash screen, and creates a window in which the game runs */
@@ -61,7 +59,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
 
         new InputDelegate(window);
-        playerInput = new ControllerManager();
+        ControllerManager playerInput = new ControllerManager();
 
 //        new SoundEngine();
 //        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
@@ -75,8 +73,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             // TODO get environment from the server
             Function<GameTimer, Environment> worldFactory = PlayerJetLaboratory::new;
-
-            environment = worldFactory.apply(globalGameTimer);
+            Environment environment = worldFactory.apply(globalGameTimer);
 
             if (ClientSettings.LOCAL_SERVER) {
                 Toolbox.print("Creating new local server");

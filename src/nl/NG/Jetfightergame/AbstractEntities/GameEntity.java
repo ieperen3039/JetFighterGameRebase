@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
@@ -64,7 +63,6 @@ public abstract class GameEntity implements MovingEntity {
 
     /** worldspace / localspace */
     protected final float scale;
-    protected Material surfaceMaterial;
     protected final float mass;
 
     /**
@@ -73,7 +71,6 @@ public abstract class GameEntity implements MovingEntity {
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
-     * @param surfaceMaterial material properties
      * @param mass            the mass of the object in kilograms.
      * @param scale           scalefactor applied to this object. the scale is in global space and executed in {@link
 *                        #toLocalSpace(MatrixStack, Runnable, boolean)}
@@ -81,7 +78,7 @@ public abstract class GameEntity implements MovingEntity {
      */
     public GameEntity(
             int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-            Material surfaceMaterial, float mass, float scale, GameTimer gameTimer, SpawnReceiver entityDeposit
+            float mass, float scale, GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         this.thisID = id;
         this.position = new PosVector(initialPosition);
@@ -91,7 +88,6 @@ public abstract class GameEntity implements MovingEntity {
         this.velocity = new DirVector(initialVelocity);
         this.extraVelocity = new DirVector(initialVelocity);
 
-        this.surfaceMaterial = surfaceMaterial;
         this.scale = scale;
         this.mass = mass;
         this.gameTimer = gameTimer;
@@ -327,12 +323,7 @@ public abstract class GameEntity implements MovingEntity {
 
         DirVector dv = direction.scale(v, direction);
         Toolbox.print(dv);
-        extraVelocity.add(dv); // TODO verification
-    }
-
-    @Override
-    public void preDraw(GL2 gl) {
-        gl.setMaterial(surfaceMaterial);
+        extraVelocity.add(dv);
     }
 
     @Override

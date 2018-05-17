@@ -93,19 +93,20 @@ public class Mesh implements Renderable {
         FloatBuffer normBuffer = MemoryUtil.memAllocFloat(vertexCount);
 
         try {
+            posBuffer.put(positions).flip();
+            normBuffer.put(normals).flip();
+
             vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);
 
             // Position VBO
             posVboID = glGenBuffers();
-            posBuffer.put(positions).flip();
             glBindBuffer(GL_ARRAY_BUFFER, posVboID);
             glBufferData(GL_ARRAY_BUFFER, posBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
             // Vertex normals VBO
             normVboID = glGenBuffers();
-            normBuffer.put(normals).flip();
             glBindBuffer(GL_ARRAY_BUFFER, normVboID);
             glBufferData(GL_ARRAY_BUFFER, normBuffer, GL_STATIC_DRAW);
             glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
@@ -114,12 +115,8 @@ public class Mesh implements Renderable {
             glBindVertexArray(0);
             
         } finally {
-            if (posBuffer != null) {
-                MemoryUtil.memFree(posBuffer);
-            }
-            if (normBuffer != null) {
-                MemoryUtil.memFree(normBuffer);
-            }
+            MemoryUtil.memFree(posBuffer);
+            MemoryUtil.memFree(normBuffer);
         }
     }
 
@@ -144,7 +141,8 @@ public class Mesh implements Renderable {
         Toolbox.checkGLError();
     }
 
-    protected void dispose() {
+    @Override
+    public void dispose() {
         glDisableVertexAttribArray(0);
 
         glDeleteBuffers(posVboID);

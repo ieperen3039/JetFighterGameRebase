@@ -1,72 +1,39 @@
 #version 330
 
-
-layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 vertexNormal;
-
-struct Material
-{
-    vec4 ambient;
-    vec4 diffuse;
-    vec4 specular;
-    float reflectance;
-};
-
-struct PointLight
-{
-    vec3 color;
-    // light position in view coördinates.
-    vec3 position;
-    float intensity;
-};
-
-const int MAX_POINT_LIGHTS = 10;
-
-uniform Material material;
-uniform PointLight pointLights[MAX_POINT_LIGHTS];
-uniform vec3 ambientLight;
+layout (location = 0) in vec3 relativePos;
+layout (location = 1) in vec3 middle;
+layout (location = 2) in vec4 rotation; // (x, y, z, angle)
+layout (location = 3) in vec3 movement;
+layout (location = 4) in vec4 color;
 
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
+uniform vec3 cameraPosition;
+uniform float time;
 
 smooth out vec4 fragColor;
 
-vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
-
-    vec3 result = vec3(0.0, 0.0, 0.0);
-
-	vec3 lightDirection = normalize(light.position.xyz - P); //vector towards light source
-    // diffuse component
-    float intensity = max(0.0, dot(N, lightDirection));
-    result += intensity * light.color.xyz * material.diffuse.xyz;
-
-	vec3 reflection = (reflect(lightDirection, N));
-	vec3 virtualLightPosition = normalize(-reflection);
-
-	// specular component
-    float shine = pow( max(0.0, dot(virtualLightPosition, eye)), material.reflectance);
-    //float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
-    result += shine * light.color.xyz;
-
-
-	return result;
-}
-
 void main()
 {
-    vec4 mvPosition4 = modelViewMatrix * vec4(position, 1.0);
+    // abbreviations
+    vec3 rot = rotation.xyz;
+    vec3 rel = relativePos;
+
+    // rotate the relative positions by angle
+    float angle = rotation.w * time;
+    float sin = sin(angle);
+    float cos = cos(angle);
+    float dot = dot(rel, rot.xyz);
+
+    rel = vec3(
+        rel.x * cos + sin * (rot.y * rel.z - rot.z * rel.y) + (1.0 - cos) * dot * rot.x,
+        rel.y * cos + sin * (rot.z * rel.x - rot.x * rel.z) + (1.0 - cos) * dot * rot.y,
+        rel.z * cos + sin * (rot.x * rel.y - rot.y * rel.x) + (1.0 - cos) * dot * rot.z
+    );
+
+    // calculate world-position and store
+    vec4 position = vec4(rel + middle, 1.0);
+    vec4 mvPosition4 = modelViewMatrix * position;
     gl_Position = projectionMatrix * mvPosition4;
-
-    vec3 mvPosition = mvPosition4.xyz;
-    vec3 mvNormal = normalize(modelViewMatrix * vec4(vertexNormal, 0.0)).xyz;
-    vec3 cameraPosition = normalize(-mvPosition); //position of camera in View space
-
-    vec3 diffuseSpecularComponent = vec3(0.0, 0.0, 0.0);
-    for (int i=0; i < MAX_POINT_LIGHTS; i++) {
-        if (pointLights[i].intensity > 0 ) {
-            diffuseSpecularComponent += calculateLighting(mvPosition, mvNormal, cameraPosition, pointLights[i]);
-        }
-    }
-
-    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
+    fragColor = color;
 }

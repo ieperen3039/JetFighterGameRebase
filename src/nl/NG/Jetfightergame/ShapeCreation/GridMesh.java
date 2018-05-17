@@ -124,7 +124,7 @@ public class GridMesh implements Shape {
 
         // for all planes in the region of the target line, and planes are coordinated by their minimum coord
         for(int x = leastX; x < mostX; x++){
-            for(int y = leastY; x < mostY; y++){
+            for(int y = leastY; y < mostY; y++){
 
                 Quad target = planeGrid[x][y];
                 firstCrash.check(target.getCollisionWith(linePosition, direction, endPoint));
@@ -137,6 +137,11 @@ public class GridMesh implements Shape {
     @Override
     public void render(GL2.Painter lock) {
         graphicalGrid.render(lock);
+    }
+
+    @Override
+    public void dispose() {
+        graphicalGrid.dispose();
     }
 
     private class PlaneIterator implements Iterator<Plane> {

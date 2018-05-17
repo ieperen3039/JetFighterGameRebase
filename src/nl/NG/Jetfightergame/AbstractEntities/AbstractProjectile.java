@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -15,6 +16,7 @@ import java.io.Serializable;
  */
 public abstract class AbstractProjectile extends GameEntity implements MortalEntity, Serializable {
 
+    protected Material surfaceMaterial;
     private DirVector forward;
     private final float airResistCoeff;
 
@@ -25,9 +27,10 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
             Quaternionf initialRotation, GameTimer gameTimer, float airResistCoeff, float timeToLive,
             SpawnReceiver particleDeposit, int id
     ) {
-        super(id, initialPosition, initialVelocity, initialRotation, surfaceMaterial, mass, scale, gameTimer, particleDeposit);
+        super(id, initialPosition, initialVelocity, initialRotation, mass, scale, gameTimer, particleDeposit);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
+        this.surfaceMaterial = surfaceMaterial;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
@@ -91,4 +94,9 @@ public abstract class AbstractProjectile extends GameEntity implements MortalEnt
             PosVector extraPosition, Quaternionf extraRotation, DirVector extraVelocity, DirVector forward, float deltaTime);
 
     protected abstract float getThrust(DirVector forward);
+
+    @Override
+    public void preDraw(GL2 gl) {
+        gl.setMaterial(surfaceMaterial);
+    }
 }

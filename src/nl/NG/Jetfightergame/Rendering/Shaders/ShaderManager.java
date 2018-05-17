@@ -64,19 +64,23 @@ public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderP
     public void initShader(Camera activeCamera, Color4f ambientLight, float fog) {
         instance.bind();
         PosVector eye = activeCamera.getEye();
+
         if (instance instanceof PhongShader){
             PhongShader shader = (PhongShader) instance;
             shader.setSpecular(1f);
             shader.setAmbientLight(ambientLight);
             shader.setFog(fog);
             shader.setCameraPosition(eye);
+
         } else if (instance instanceof GouraudShader) {
             GouraudShader shader = (GouraudShader) instance;
             shader.setAmbientLight(ambientLight);
             shader.setFog(fog);
             shader.setCameraPosition(eye);
+
         } else if (instance instanceof HeightShader) {
             ((HeightShader) instance).setCameraPosition(eye);
+
         } else {
             String name = instance.getClass().getSimpleName();
             Toolbox.printSpamless(name, "loaded shader without advanced parameters: " + name);

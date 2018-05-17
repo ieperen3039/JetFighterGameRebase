@@ -3,6 +3,8 @@ package nl.NG.Jetfightergame.Tools.Vectors;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import java.nio.FloatBuffer;
+
 import static java.lang.Math.min;
 
 /**
@@ -208,5 +210,9 @@ public class Color4f {
      */
     public Vector3f rawVector3f() {
         return new Vector3f(red, green, blue);
+    }
+
+    public FloatBuffer toFloatBuffer() {
+        return FloatBuffer.wrap(new float[]{red, green, blue, alpha});
     }
 }

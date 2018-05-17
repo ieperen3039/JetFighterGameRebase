@@ -46,12 +46,12 @@ public abstract class AbstractShader implements ShaderProgram {
 
         if (vertexPath != null) {
             final String shaderCode = Resources.loadText(shaders.pathOf(vertexPath));
-            vertexShaderId = createShader(shaderCode, GL_VERTEX_SHADER);
+            vertexShaderId = createShader(programId, GL_VERTEX_SHADER, shaderCode);
         }
 
         if (fragmentPath != null) {
             final String shaderCode = Resources.loadText(shaders.pathOf(fragmentPath));
-            fragmentShaderId = createShader(shaderCode, GL_FRAGMENT_SHADER);
+            fragmentShaderId = createShader(programId, GL_FRAGMENT_SHADER, shaderCode);
         }
 
         link();
@@ -205,12 +205,13 @@ public abstract class AbstractShader implements ShaderProgram {
     /**
      * Create a new shader and return the id of the newly created shader.
      *
-     * @param shaderCode The shaderCode as a String.
+     * @param programId
      * @param shaderType The type of shader, e.g. GL_VERTEX_SHADER.
+     * @param shaderCode The shaderCode as a String.
      * @return The id of the newly created shader.
      * @throws ShaderException If an error occurs during the creation of a shader.
      */
-    private int createShader(String shaderCode, int shaderType) throws ShaderException {
+    public static int createShader(int programId, int shaderType, String shaderCode) throws ShaderException {
         int shaderId = glCreateShader(shaderType);
         if (shaderId == 0) {
             throw new ShaderException("Error creating shader. Type: " + shaderType);
