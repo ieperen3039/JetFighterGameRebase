@@ -105,7 +105,7 @@ public class SoundEngine {
 
         try {
             Toolbox.print("Playing sound... Do you hear it?");
-            AudioFile audioData = Sounds.pulsePower;
+            AudioFile audioData = Sounds.explosion;
             AudioSource src = new AudioSource(audioData, PosVector.zeroVector(), 1f, 1f);
             Thread.sleep(5000);
             src.dispose();

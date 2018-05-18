@@ -1,8 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
-
-import java.util.Collection;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 
 /**
  * @author Geert van Ieperen
@@ -12,7 +10,7 @@ public interface MortalEntity {
     /**
      * @return particles resulting from this explosion
      */
-    Collection<Particle> explode();
+    ParticleCloud explode();
 
     /**
      * @return true iff this object should be removed

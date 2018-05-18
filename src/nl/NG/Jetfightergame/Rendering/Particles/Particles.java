@@ -1,15 +1,12 @@
-package nl.NG.Jetfightergame.Primitives.Particles;
+package nl.NG.Jetfightergame.Rendering.Particles;
 
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
 import java.util.ArrayList;
@@ -39,7 +36,7 @@ public final class Particles {
      * @param startVelocity
      * @return a collection of particles that covers the plane exactly once
      */
-    public static Collection<Particle> splitIntoParticles(Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor, Vector3fc startVelocity) {
+    public static ParticleCloud splitIntoParticles(Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor, Vector3fc startVelocity) {
 
         PosVector planeMiddle = ms.getPosition(plane.getMiddle());
         DirVector launchDir = entityPosition.to(planeMiddle, new DirVector());
@@ -47,69 +44,6 @@ public final class Particles {
 
         final float jitter = 0.4f;
         return splitIntoParticles(plane, ClientSettings.PARTICLE_SPLITS, launchDir, jitter, METAL_LINGER_TIME, launchSpeed, planeColor, ms);
-    }
-
-    /**
-     * @deprecated {@link FireParticle}
-     * create a fire-particle equivalent of this plane
-     * @param force average propagation speed of this fire in m/s
-     * @param sm a transformation matrix to map to world-space
-     * @param p target plane, is not changed
-     * @param lingerTime
-     * @return particles that replace the given plane
-     */
-    public static Collection<Particle> generateFireParticles(float force, ShadowMatrix sm, Plane p, float lingerTime) {
-        Collection<PosVector[]> triangles = asTriangles(p, sm);
-        Collection<PosVector[]> splittedTriangles = triangulate(triangles, FIRE_PARTICLE_SPLITS);
-
-        Collection<Particle> particles = new ArrayList<>();
-        for (PosVector[] t : splittedTriangles){
-            Color4f fire = new Color4f(1, ServerSettings.random.nextFloat(), 0);
-            float randFloat = ServerSettings.random.nextFloat();
-            final DirVector random = DirVector.randomOrb();
-            particles.add(generateParticle(
-                    t[0], t[1], t[2], random.scale(2*force, random),
-                    DirVector.random(), 2 + (2 * randFloat),
-                    randFloat * randFloat * randFloat * lingerTime, fire)
-            );
-        }
-        return particles;
-    }
-
-    /**
-     * factory for a particle based on world-space
-     * @param a one point in world-space
-     * @param b another point in wold-space
-     * @param c third point in world-space
-     * @param movement direction in which this particle is moving (m/s)
-     * @param angleVector vector orthogonal on the rotationSpeed of this particle
-     * @param rotationSpeed rotation speed of this particle (rad/s)
-     * @param timeToLive seconds before this particle should be destroyed
-     * @param particleColor color of the particle
-     */
-    public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, Vector3f angleVector, float rotationSpeed, float timeToLive, Color4f particleColor){
-        PosVector centroid = a.add(b, new PosVector()).add(c, new PosVector()).scale(1/3f, new PosVector()).toPosVector(); // works when (A+B+C < Float.MAX_VALUE)
-        DirVector A = centroid.to(a, new DirVector());
-        DirVector B = centroid.to(b, new DirVector());
-        DirVector C = centroid.to(c, new DirVector());
-        return new TriangleParticle(A, B, C, centroid, movement, angleVector, rotationSpeed, timeToLive, particleColor);
-    }
-
-    /**
-     * factory for a particle based on world-space.
-     * the particle receives a random rotation
-     * @param a one point in world-space
-     * @param b another point in wold-space
-     * @param c third point in world-space
-     * @param movement direction in which this particle is moving (m/s)
-     * @param timeToLive seconds before this particle should be destroyed
-     * @param particleColor color of the particle
-     */
-    public static Particle generateParticle(PosVector a, PosVector b, PosVector c, DirVector movement, float timeToLive, Color4f particleColor){
-        Vector3f angleVector = DirVector.random();
-        float rotationSpeed = ServerSettings.random.nextFloat();
-        rotationSpeed *= rotationSpeed * RANDOM_ROTATION;
-        return generateParticle(a, b, c, movement, angleVector, rotationSpeed, timeToLive, particleColor);
     }
 
     /**
@@ -126,7 +60,7 @@ public final class Particles {
      * @param ms translation matrix to world-space
      * @return a set of particles that completely fills the plane, without overlap and in random directions
      */
-    public static Collection<Particle> splitIntoParticles(
+    public static ParticleCloud splitIntoParticles(
             Plane targetPlane, int splits, DirVector launchDir, float jitter,
             int deprecationTime, float particleSpeed, Color4f planeColor, MatrixStack ms
     ) {
@@ -138,9 +72,9 @@ public final class Particles {
         return getParticles(splittedTriangles, launchDir, jitter, deprecationTime, particleSpeed, planeColor);
     }
 
-    private static Collection<Particle> getParticles(Collection<PosVector[]> splittedTriangles, DirVector launchDir, float jitter,
+    private static ParticleCloud getParticles(Collection<PosVector[]> splittedTriangles, DirVector launchDir, float jitter,
                                                      int deprecationTime, float speed, Color4f particleColor) {
-        Collection<Particle> particles = new ArrayList<>();
+        ParticleCloud particles = new ParticleCloud();
         for (PosVector[] p : splittedTriangles){
             DirVector movement = new DirVector();
             DirVector random = DirVector.random();
@@ -150,8 +84,8 @@ public final class Particles {
             launchDir.add(random.scale(jitter, random), movement)
                     .scale(speed * (1 - randFloat), movement);
 
-            particles.add(generateParticle(
-                    p[0], p[1], p[2], movement, randFloat * randFloat * randFloat * deprecationTime, particleColor)
+            particles.addParticle(
+                    p[0], p[1], p[2], movement, random, particleColor, randFloat, randFloat * randFloat * randFloat * deprecationTime
             );
         }
         return particles;
@@ -222,19 +156,5 @@ public final class Particles {
         particles.add(new PosVector[]{AtoB, AtoC, BtoC});
 
         return particles;
-    }
-
-    /**
-     * @deprecated {@link FireParticle}
-     * create a small batch of fire-particles. For good explosions, call this repeatedly
-     * @param force
-     * @param collector
-     * @param sm
-     */
-    public static void createFireEffect(float force, Collection<Particle> collector, ShadowMatrix sm) {
-        GeneralShapes.CUBE.getPlaneStream()
-//                .parallel()
-                .map(p -> generateFireParticles(force, sm, p, FIRE_LINGER_TIME))
-                .forEach(collector::addAll);
     }
 }

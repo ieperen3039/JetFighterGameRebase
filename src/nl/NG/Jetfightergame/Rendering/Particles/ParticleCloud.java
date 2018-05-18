@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Particles;
 
-import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -30,13 +30,53 @@ public class ParticleCloud {
     private int colorVboID;
 
     private ArrayList<Particle> bulk = new ArrayList<>();
+    private float timeUntilFade = 0;
+    private float initialTime;
 
-    private void addParticle(PosVector A, PosVector B, PosVector C, DirVector movement, Vector3f angVec, Color4f color, float rotationSpeed, float timeToLive) {
+    /**
+     * @throws NullPointerException if {@link #writeToGL(float)} has been called before this method
+     * @param A a vertex of the particle. Order doesn't matter
+     * @param B another vertex of the particle
+     * @param C another vertex of the particle
+     * @param movement the displacement of the middle of the particle in one second
+     * @param angVec the particle rotates around this angle
+     * @param color particle color
+     * @param rotationSpeed the particle makes (this/2pi) rotations per second
+     * @param timeToLive actual time to live
+     */
+    public void addParticle(PosVector A, PosVector B, PosVector C, DirVector movement, Vector3f angVec, Color4f color, float rotationSpeed, float timeToLive) {
         bulk.add(new Particle(A, B, C, movement, color, angVec, rotationSpeed, timeToLive));
+        timeToLive = Math.max(timeUntilFade, timeToLive);
     }
 
+    /**
+     *
+     * @throws NullPointerException if {@link #writeToGL(float)} has been called before this method
+     * @param position position of the middle of the particle
+     * @param power a maximum speed for the particle. The actual speed will be random linear distributed between this and 0
+     * @param maxTTL maximum time to live. Actual time will be random cubic distributed between this and 0
+     */
+    public void addParticle(PosVector position, float power, float maxTTL){
+        final Color4f fire = new Color4f(1, ServerSettings.random.nextFloat(), 0);
+        final float randFloat = ServerSettings.random.nextFloat();
+        final DirVector random = DirVector.randomOrb();
+        final float rotationSpeed = 2 + (2 / randFloat);
+        random.mul(power * randFloat);
+
+        addParticle(position, random, fire, DirVector.random(), rotationSpeed, randFloat * randFloat * randFloat * maxTTL);
+    }
+
+    public void addParticle(PosVector position, DirVector movement, Color4f color, DirVector rotationVector, float rotationSpeed, float timeToLive) {
+        bulk.add(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive));
+        timeToLive = Math.max(timeUntilFade, timeToLive);
+    }
+
+    /**
+     * @param currentTime initial time in seconds
+     */
     public void writeToGL(float currentTime) {
         int n = bulk.size();
+        initialTime = currentTime;
 
         FloatBuffer posRelBuffer = MemoryUtil.memAllocFloat(3 * 3 * n);
         FloatBuffer posMidBuffer = MemoryUtil.memAllocFloat(3 * 3 * n);
@@ -83,10 +123,10 @@ public class ParticleCloud {
             MemoryUtil.memFree(colorBuffer);
         }
 
-        bulk.clear();
+        bulk = null;
     }
 
-    public static int loadToGL(FloatBuffer buffer, int index, int itemSize) {
+    private static int loadToGL(FloatBuffer buffer, int index, int itemSize) {
         int vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
         glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
@@ -99,7 +139,7 @@ public class ParticleCloud {
     }
 
     /**
-     * renders all particles. The particle-shader must be linked first
+     * renders all particles. The particle-shader must be linked first, and writeToGl must be called
      */
     public void render() {
         glBindVertexArray(vaoId);
@@ -119,6 +159,18 @@ public class ParticleCloud {
         glBindVertexArray(0);
     }
 
+    public boolean hasFaded(float currentTime){
+        return timeUntilFade < (currentTime - initialTime);
+    }
+
+    public boolean disposeIfFaded(float currentTime) {
+        if (hasFaded(currentTime)){
+            dispose();
+            return true;
+        }
+        return false;
+    }
+
     public void dispose() {
         glDisableVertexAttribArray(0);
 
@@ -135,10 +187,19 @@ public class ParticleCloud {
         glDeleteVertexArrays(vaoId);
     }
 
+    /**
+     * merges the other queued particles into this particle
+     * Note! this only works before {@link #writeToGL(float)} is called
+     * @param other another particle cloud. The other will not be modified
+     * @throws NullPointerException if this or the other has called {@link #writeToGL(float)} previously
+     */
+    public void merge(ParticleCloud other) {
+        this.bulk.addAll(other.bulk);
+    }
+
     private class Particle {
         public final PosVector[] sides;
         public final PosVector position;
-        public final DirVector normal;
         public final DirVector movement;
         public final Color4f color;
         public final AxisAngle4f rotation;
@@ -148,12 +209,27 @@ public class ParticleCloud {
             this.sides = new PosVector[]{A, B, C};
             this.position = new PosVector();
             this.position.set(A).add(B).add(C).div(3);
-            this.normal = Triangle.getNormalVector(A, B, C);
             this.movement = movement;
             this.color = color;
             this.rotation = new AxisAngle4f(rotationSpeed, angVec);
             this.timeToLive = timeToLive;
         }
 
+        public Particle(PosVector position, DirVector movement, Color4f color, Vector3f angVec, float rotationSpeed, float timeToLive) {
+            this.position = position;
+            this.movement = movement;
+            this.color = color;
+            this.rotation = new AxisAngle4f(rotationSpeed, angVec);
+            this.timeToLive = timeToLive;
+
+            // random positions
+            PosVector A = new PosVector();
+            position.add(DirVector.random(), A);
+            PosVector B = new PosVector();
+            position.add(DirVector.random(), B);
+            PosVector C = new PosVector();
+            A.add(B, C).scale(-0.5f); // C = -1 * (A + B)/2
+            this.sides = new PosVector[]{A, B, C};
+        }
     }
 }

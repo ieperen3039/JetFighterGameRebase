@@ -70,7 +70,7 @@ public class ParticleShader {
      * Set the time uniform of this program
      * @param value The new value of the uniform.
      */
-    private void setTime(float value) {
+    public void setTime(float value) {
         glUniform1f(timeUniform, value);
     }
 }

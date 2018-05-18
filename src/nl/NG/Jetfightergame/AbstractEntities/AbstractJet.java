@@ -6,13 +6,12 @@ import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
-import nl.NG.Jetfightergame.Primitives.Particles.Particles;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -24,7 +23,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.Consumer;
 
@@ -225,11 +223,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         velocityInterpolator.add(velocity, currentTime);
     }
 
-    public void addJetStatePoint(float currentTime){
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
-
-    }
-
     @Override
     public void impact(PosVector impact, float power) {
         hitPoints -= power + 1;
@@ -285,23 +278,23 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * hitpoints to 0, so it will be scheduled for removal, if necessary.
      * @return the generated particles resulting from this entity
      */
-    public Collection<Particle> explode() {
+    public ParticleCloud explode() {
         hitPoints = 0;
 
         float force = EXPLOSION_POWER;
-        Collection<Particle> result = new ArrayList<>();
+        ParticleCloud result = new ParticleCloud();
         ShadowMatrix sm = new ShadowMatrix();
         Toolbox.print(getVelocity());
 
         Consumer<Shape> particleMapper = (shape) -> shape.getPlaneStream()
 //                .parallel()
                 .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.GREY, getVelocity()))
-                .forEach(result::addAll);
+                .forEach(result::merge);
 
         toLocalSpace(sm, () -> create(sm, particleMapper));
 
         for (int i = 0; i < ClientSettings.FIRE_PARTICLE_DENSITY; i++) {
-            result.add(FireParticle.randomParticle(getPosition(), force * 2, 2));
+            result.addParticle(getPosition(), force * 2, 2);
         }
 
         new AudioSource(Sounds.explosion, getPosition(), 1f, 1f);

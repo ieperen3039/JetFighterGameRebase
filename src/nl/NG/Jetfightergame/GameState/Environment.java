@@ -3,8 +3,8 @@ package nl.NG.Jetfightergame.GameState;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.util.Collection;
@@ -42,13 +42,13 @@ public interface Environment {
      */
     void drawObjects(GL2 gl);
 
-    void drawParticles(GL2 gl);
+    void drawParticles();
 
     default void addEntities(Collection<? extends MovingEntity> entities) {
         entities.forEach(this::addEntity);
     }
 
-    void addParticles(Collection<Particle> newParticles);
+    void addParticles(ParticleCloud newParticles);
 
     /**
      * allows this object to be cleaned.

@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
@@ -37,6 +38,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private ShaderManager shaderManager;
     private Environment gameState;
     private ScreenOverlay overlay;
+    private ParticleShader particleShader;
 
     private final String sessionName;
     private int frameNumber = 0;
@@ -57,6 +59,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.engine = engine;
 
         shaderManager = new ShaderManager();
+        particleShader = new ParticleShader();
 
         overlay = new ScreenOverlay(() -> engine.getCurrentGameMode() == MENU_MODE);
         overlay.addHudItem((hud) -> Toolbox.printOnline(hud::printRoll));
@@ -80,12 +83,15 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         GameTimer timer = gameState.getTimer();
         timer.updateRenderTime();
-        activeCamera.updatePosition(timer.getRenderTime().difference());
+        Float currentRenderTime = timer.getRenderTime().current();
+        Float deltaRenderTime = timer.getRenderTime().difference();
+
+        activeCamera.updatePosition(deltaRenderTime);
         frameNumber++;
 
         // shader preparation and background
         Color4f ambientLight = gameState.fogColor();
-        float fog = Math.min(ClientSettings.Z_FAR, (1f /ambientLight.alpha)); // also considers div/0
+        float fog = Math.min(ClientSettings.Z_FAR, (1f / ambientLight.alpha)); // also considers div/0
         ambientLight = new Color4f(ambientLight, 1f);
         window.setClearColor(ambientLight);
         shaderManager.initShader(activeCamera, ambientLight, fog);
@@ -113,19 +119,24 @@ public class JetFighterRenderer extends AbstractGameLoop {
         // TODO transparent meshes?
 
         // line highlighting
-        if (ClientSettings.HIGHLIGHT_LINE_WIDTH > 0){
+        if (ClientSettings.HIGHLIGHT_LINE_WIDTH > 0) {
             gl.setFill(false);
             gameState.drawObjects(gl);
             Toolbox.checkGLError();
             gl.setFill(true);
         }
 
-        // particles
-        glDisable(GL_CULL_FACE);
-        gameState.drawParticles(gl);
+        shaderManager.unbind();
         Toolbox.checkGLError();
 
-        shaderManager.unbind();
+        // particles
+        glDisable(GL_CULL_FACE);
+        particleShader.bind();
+        particleShader.setTime(currentRenderTime);
+        gameState.drawParticles();
+        particleShader.unbind();
+        Toolbox.checkGLError();
+
 
         // HUD / menu
         overlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen, activeCamera.getEye());
@@ -141,8 +152,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         if (window.shouldClose()) {
             engine.exitGame();
         }
-        Toolbox.checkGLError();
 
+        Toolbox.checkGLError();
     }
 
     @Override

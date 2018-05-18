@@ -8,8 +8,8 @@ import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
 import nl.NG.Jetfightergame.Assets.Scenarios.MissionSnake;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Manager;
@@ -48,7 +48,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void addParticles(Collection<Particle> newParticles) {
+    public void addParticles(ParticleCloud newParticles) {
         instance.addParticles(newParticles);
     }
 
@@ -96,8 +96,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void drawParticles(GL2 gl) {
-        instance.drawParticles(gl);
+    public void drawParticles() {
+        instance.drawParticles();
     }
 
     @Override

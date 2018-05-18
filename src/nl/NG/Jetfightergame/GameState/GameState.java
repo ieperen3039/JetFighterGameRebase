@@ -6,9 +6,9 @@ import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.PathDescription;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
@@ -28,7 +28,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
  */
 public abstract class GameState implements Environment, PathDescription, NetForceProvider {
 
-    protected final Collection<Particle> particles = new ConcurrentArrayList<>();
+    protected final Collection<ParticleCloud> particles = new ConcurrentArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
 
     private EntityManagement physicsEngine;
@@ -120,12 +120,10 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     }
 
     @Override
-    public void drawParticles(GL2 gl) {
-        final Float deltaTime = time.getRenderTime().difference();
-
-        particles.forEach(p -> p.updateRender(deltaTime));
-        particles.removeIf(Particle::isOverdue);
-        particles.forEach(p -> p.draw(gl));
+    public void drawParticles() {
+        float t = time.getRenderTime().current();
+        particles.removeIf(p -> p.disposeIfFaded(t));
+        particles.forEach(ParticleCloud::render);
     }
 
     public GameTimer getTimer() {
@@ -148,8 +146,10 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     }
 
     @Override
-    public void addParticles(Collection<Particle> newParticles) {
-        particles.addAll(newParticles);
+    public void addParticles(ParticleCloud newParticles) {
+        float currentRender = time.getRenderTime().current();
+        newParticles.writeToGL(currentRender);
+        particles.add(newParticles);
     }
 
     public void cleanUp() {

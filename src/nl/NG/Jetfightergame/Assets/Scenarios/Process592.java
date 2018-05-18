@@ -9,9 +9,9 @@ import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.GameState.EnvironmentManager.Worlds;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Player;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
@@ -39,7 +39,7 @@ public class Process592 implements Environment {
     private static final float OFFSET = 0.1f;
     private static final float SPACE = SCALE/2;
     private final Player player;//TODO
-    private final ArrayList<Particle> particles;
+    private final List<ParticleCloud> particles;
 
     private GameTimer time = new GameTimer(); // I know, time does not exist, but it is for user experience.
 
@@ -163,8 +163,10 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public void drawParticles(GL2 gl) {
-        particles.forEach(p -> p.draw(gl));
+    public void drawParticles() {
+        float t = time.getRenderTime().current();
+        particles.removeIf(p -> p.disposeIfFaded(t));
+        particles.forEach(ParticleCloud::render);
     }
 
     @Override
@@ -189,8 +191,8 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public void addParticles(Collection<Particle> newParticles) {
-        particles.addAll(newParticles);
+    public void addParticles(ParticleCloud newParticles) {
+        particles.add(newParticles);
     }
 
     /**

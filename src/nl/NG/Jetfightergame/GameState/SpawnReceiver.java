@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 
 import java.util.Collection;
 
@@ -34,7 +34,7 @@ public interface SpawnReceiver {
      * adds a collection of particles to the world
      * @param newParticles some particles
      */
-    void addParticles(Collection<Particle> newParticles);
+    void addParticles(ParticleCloud newParticles);
 
     GameTimer getTimer();
 }

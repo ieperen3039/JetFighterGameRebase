@@ -5,10 +5,9 @@ import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Primitives.Particles.FireParticle;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
@@ -16,9 +15,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -55,11 +51,11 @@ public class SimpleBullet extends AbstractProjectile {
     }
 
     @Override
-    public Collection<Particle> explode() {
-        List<Particle> result = new ArrayList<>(5);
+    public ParticleCloud explode() {
+        ParticleCloud result = new ParticleCloud();
 
         for (int i = 0; i < ClientSettings.SPARK_PARTICLE_DENSITY; i++) {
-            result.add(FireParticle.randomParticle(getPosition(), 10, 1));
+            result.addParticle(getPosition(), 10, 1);
         }
         timeToLive = 0;
 

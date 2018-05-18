@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.Primitives.Particles.Particle;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 
 import java.io.IOException;
@@ -64,8 +64,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     }
 
     @Override
-    public void addParticles(Collection<Particle> newParticles) {
-        world.addParticles(newParticles);
+    public void addParticles(ParticleCloud newParticles) {
+        // no
     }
 
     @Override
