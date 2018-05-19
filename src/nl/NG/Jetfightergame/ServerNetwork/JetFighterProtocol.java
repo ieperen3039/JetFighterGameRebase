@@ -180,7 +180,7 @@ public final class JetFighterProtocol {
     }
 
     /** sends an explosion or other effect to the client
-     * @see #explosionRead(DataInputStream)  */
+     * @see #explosionRead(InputStream)  */
     public static void explosionSend(OutputStream output, PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
         DataOutputStream DOS = new DataOutputStream(output);
         DataIO.writeVector(DOS, position);
@@ -192,7 +192,7 @@ public final class JetFighterProtocol {
 
     /** reads an explosion off the InputStream
      * @see #explosionSend(OutputStream, PosVector, DirVector, float, Color4f, Color4f)  */
-    public static ParticleCloud explosionRead(DataInputStream input) throws IOException {
+    public static ParticleCloud explosionRead(InputStream input) throws IOException {
         DataInputStream DIS = new DataInputStream(input);
         PosVector position = DataIO.readPosVector(DIS);
         DirVector direction = DataIO.readDirVector(DIS);

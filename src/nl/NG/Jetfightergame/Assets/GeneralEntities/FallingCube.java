@@ -26,7 +26,7 @@ public class FallingCube extends GameEntity {
 
     /**
      * a cube that can be moved around, and has all physic properties
-     * @param id the id of this gameEntity
+     * @param id            the id of this gameEntity
      * @param renderTimer   the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
      *                      return the interpolated position
      * @param entityDeposit new entities are passed here
@@ -37,12 +37,12 @@ public class FallingCube extends GameEntity {
 
     /**
      * a cube that can be moved around, and has all physic properties
-     * @param id
+     * @param id            the id of this gameEntity
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
-*                        return the interpolated position
+     *                        return the interpolated position
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
     public FallingCube(int id, PosVector initialPosition,
@@ -52,16 +52,16 @@ public class FallingCube extends GameEntity {
 
     /**
      * a cube that can be moved around, and has all physic properties
-     * @param id
+     * @param id            the id of this gameEntity
      * @param surfaceMaterial material properties
      * @param mass            in kg
      * @param scale           scalefactor applied to this object. the scale is in global space and executed in {@link
-*                        #toLocalSpace(MatrixStack, Runnable, boolean)}
+     *                        #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
-*                        return the interpolated position
+     *                        return the interpolated position
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
     public FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,

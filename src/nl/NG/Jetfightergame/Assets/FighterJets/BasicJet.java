@@ -30,7 +30,7 @@ public class BasicJet extends AbstractJet {
     public static final float YAW_POWER = 1f;
     public static final float PITCH_POWER = 2f;
     public static final float ROLL_POWER = 2f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.0002f;
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.002f;
     private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
     private static final MachineGun GUN = new MachineGun(0.1f);
 

@@ -319,7 +319,6 @@ public abstract class GameEntity implements MovingEntity {
         // e = 0.5*m*v*v
         // >> v*v = e / 0.5m
         // >> v = sqrt(2e / m)
-
         float v = (float) sqrt((2 * energy) / mass);
 
         DirVector dv = direction.scale(v, direction);

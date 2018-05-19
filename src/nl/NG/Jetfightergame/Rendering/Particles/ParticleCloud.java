@@ -28,10 +28,10 @@ public class ParticleCloud {
     private int rotVboID;
     private int moveVboID;
     private int colorVboID;
+    private int ttlVboID;
 
     private ArrayList<Particle> bulk = new ArrayList<>();
-    private float timeUntilFade = 0;
-    private float initialTime;
+    private float endTime = 0;
     private int vertexCount;
 
     /**
@@ -47,7 +47,7 @@ public class ParticleCloud {
      */
     public void addParticle(PosVector A, PosVector B, PosVector C, DirVector movement, Vector3f angVec, Color4f color, float rotationSpeed, float timeToLive) {
         bulk.add(new Particle(A, B, C, movement, color, angVec, rotationSpeed, timeToLive));
-        timeUntilFade = Math.max(timeUntilFade, timeToLive);
+        endTime = Math.max(endTime, timeToLive);
     }
 
     /**
@@ -61,18 +61,18 @@ public class ParticleCloud {
      * @param color
      */
     public void addParticle(PosVector position, DirVector direction, float jitter, float maxTTL, Color4f color){
-        final float randFloat = Toolbox.random.nextFloat();
+        final float randFloat = Toolbox.random.nextFloat();Toolbox.printFrom(2, "");
         final DirVector random = DirVector.randomOrb();
 
         final float rotationSpeed = 2 + (2 / randFloat);
         random.mul(jitter * randFloat).add(direction);
 
-        addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * randFloat * maxTTL);
+        addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * maxTTL);
     }
 
     public void addParticle(PosVector position, DirVector movement, Color4f color, DirVector rotationVector, float rotationSpeed, float timeToLive) {
         bulk.add(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive));
-        timeUntilFade = Math.max(timeUntilFade, timeToLive);
+        endTime = Math.max(endTime, timeToLive);
     }
 
     /**
@@ -81,7 +81,7 @@ public class ParticleCloud {
     public void writeToGL(float currentTime) {
         Toolbox.checkGLError();
         int n = bulk.size();
-        initialTime = currentTime;
+        endTime += currentTime;
 
         vertexCount = 3 * n;
         FloatBuffer posRelBuffer = MemoryUtil.memAllocFloat(3 * vertexCount);
@@ -102,12 +102,6 @@ public class ParticleCloud {
             }
         }
 
-        posRelBuffer.flip();
-        posMidBuffer.flip();
-        rotBuffer.flip();
-        moveBuffer.flip();
-        colorBuffer.flip();
-
         try {
             vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);
@@ -117,6 +111,7 @@ public class ParticleCloud {
             rotVboID = loadToGL(rotBuffer, 2, 4); // Rotation VBO
             moveVboID = loadToGL(moveBuffer, 3, 3); // Movement VBO
             colorVboID = loadToGL(colorBuffer, 4, 4); // Color VBO
+            ttlVboID = loadToGL(ttlBuffer, 5, 1);
             Toolbox.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -129,12 +124,14 @@ public class ParticleCloud {
             MemoryUtil.memFree(rotBuffer);
             MemoryUtil.memFree(moveBuffer);
             MemoryUtil.memFree(colorBuffer);
+            MemoryUtil.memFree(ttlBuffer);
         }
 
         bulk = null;
     }
 
     private static int loadToGL(FloatBuffer buffer, int index, int itemSize) {
+        buffer.flip();
         int vboID = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vboID);
         glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
@@ -156,6 +153,7 @@ public class ParticleCloud {
         glEnableVertexAttribArray(2); // Rotation VBO
         glEnableVertexAttribArray(3); // Movement VBO
         glEnableVertexAttribArray(4); // Color VBO
+        glEnableVertexAttribArray(5); // TTL VBO
 
         glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
@@ -164,16 +162,19 @@ public class ParticleCloud {
         glDisableVertexAttribArray(2);
         glDisableVertexAttribArray(3);
         glDisableVertexAttribArray(4);
+        glDisableVertexAttribArray(5);
         glBindVertexArray(0);
     }
 
     public boolean hasFaded(float currentTime){
-        return timeUntilFade < (currentTime - initialTime);
+        return endTime < currentTime;
     }
 
     public boolean disposeIfFaded(float currentTime) {
         if (hasFaded(currentTime)){
+            Toolbox.print(endTime, currentTime);
             dispose();
+            Toolbox.print("Faded!");
             return true;
         }
         return false;
@@ -189,6 +190,7 @@ public class ParticleCloud {
         glDeleteBuffers(rotVboID);
         glDeleteBuffers(moveVboID);
         glDeleteBuffers(colorVboID);
+        glDeleteBuffers(ttlVboID);
 
         // Delete the VAO
         glBindVertexArray(0);

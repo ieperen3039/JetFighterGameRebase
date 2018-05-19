@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -72,6 +73,7 @@ public class SimpleBullet extends AbstractJet implements Projectile {
     @Override
     public ParticleCloud explode() {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
+        Toolbox.print("#BOOM");
         return Particles.explosion(position, velocity, EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, IMPACT_POWER);
     }
 

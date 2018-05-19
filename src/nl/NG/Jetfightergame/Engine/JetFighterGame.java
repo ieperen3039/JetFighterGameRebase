@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
 import nl.NG.Jetfightergame.ServerNetwork.MessageType;
@@ -21,6 +22,7 @@ import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -93,6 +95,20 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
+
+            Toolbox.printError("testparticle");
+            ParticleCloud p = new ParticleCloud();
+            p.addParticle(
+                    new PosVector(50, 20, -20),
+                    new PosVector(50, -20, -20),
+                    new PosVector(50, 0, 20),
+                    DirVector.zeroVector(),
+                    DirVector.yVector(),
+                    Color4f.GREY,
+                    1, 50f
+            );
+            environment.addParticles(p);
+            environment.updateGameLoop();
 
             renderLoop = new JetFighterRenderer(
                     this, environment, window, camera, playerInput, playerJet

@@ -146,7 +146,7 @@ public class CollisionDetection implements EntityManagement {
      * move two entities away from each other
      * @param left  one entity, which has collided with right
      * @param right another entity, which has collided with left
-     * @param deltaTime
+     * @param deltaTime time differenct of this gameloop
      */
     private void bumpOff(MovingEntity left, MovingEntity right, float deltaTime) {
         DirVector leftToRight = new DirVector();
@@ -157,7 +157,7 @@ public class CollisionDetection implements EntityManagement {
 
         float rightEnergy = right.getKineticEnergy(rightToLeft);
         float leftEnergy = left.getKineticEnergy(leftToRight);
-        float sharedEnergy = 0.5f * (leftEnergy + rightEnergy); // not quite but ok
+        float sharedEnergy = (0.5f * (leftEnergy + rightEnergy)) + ServerSettings.BASE_BUMPOFF_ENERGY; // not quite but ok
 
         right.applyJerk(leftToRight, sharedEnergy, deltaTime);
         left.applyJerk(rightToLeft, sharedEnergy, deltaTime);
@@ -177,7 +177,7 @@ public class CollisionDetection implements EntityManagement {
 
         toMid.normalize();
         DirVector notMid = toMid.negate(new DirVector());
-        float targetEnergy = target.getKineticEnergy(notMid);
+        float targetEnergy = target.getKineticEnergy(notMid) + ServerSettings.BASE_BUMPOFF_ENERGY;
 
         target.applyJerk(toMid, targetEnergy, deltaTime);
     }

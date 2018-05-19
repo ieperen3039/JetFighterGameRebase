@@ -57,7 +57,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
-    private static final float BASE_SPEED = 1000f;
+    private static final float BASE_SPEED = 100f;
     private final float defaultThrustSquared;
 
     /**
@@ -177,10 +177,10 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         // in case of no guns
         if (gunAlpha == null) return;
 
-        final PosVector gunMount = new PosVector(position);
-        gunMount.add(relativeStateDirection(new DirVector(10, 0, -2)));
-        final PosVector gunMount2 = new PosVector(extraPosition);
-        gunMount2.add(relativeStateDirection(new DirVector(10, 0, -2)));
+        DirVector relativeGun = relativeStateDirection(new DirVector(5, 0, -1));
+
+        final PosVector gunMount = position.add(relativeGun, new PosVector());
+        final PosVector gunMount2 = extraPosition.add(relativeGun, new PosVector());
 
         State interpolator = new State(gunMount, gunMount2, rotation, extraRotation, velocity, forward);
 

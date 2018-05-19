@@ -129,6 +129,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         glDisable(GL_CULL_FACE);
         particleShader.bind();
         particleShader.setTime(currentRenderTime);
+        particleShader.setProjection(gl.getProjection());
         gameState.drawParticles();
         particleShader.unbind();
         Toolbox.checkGLError();

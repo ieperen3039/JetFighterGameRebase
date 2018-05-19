@@ -14,7 +14,6 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.ArrayList;
@@ -56,10 +55,6 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
             default:
                 throw new UnsupportedOperationException("unsupported collision detection level:" + collisionDetLevel);
         }
-
-        ParticleCloud c = new ParticleCloud();
-        c.addParticle(PosVector.zeroVector(), DirVector.zeroVector(), 0, 10, Color4f.WHITE);
-        newParticles.add(c);
     }
 
     @Override

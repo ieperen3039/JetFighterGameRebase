@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -28,7 +27,6 @@ import java.util.Collections;
 public class PlayerJetLaboratory extends GameState {
 
     private static final int LAB_SIZE = 300;
-    private Collection<HUDTargetable> cubeTargets = new ArrayList<>();
 
     public PlayerJetLaboratory(GameTimer time) {
         super(time);
@@ -59,6 +57,7 @@ public class PlayerJetLaboratory extends GameState {
                 }
             }
         }
+
         return dynamicEntities;
     }
 
@@ -67,7 +66,6 @@ public class PlayerJetLaboratory extends GameState {
     @Override
     public void cleanUp() {
         super.cleanUp();
-        cubeTargets.forEach(HUDTargetable::dispose);
     }
 
     @Override

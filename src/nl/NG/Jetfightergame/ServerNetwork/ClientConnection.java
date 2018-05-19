@@ -79,6 +79,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         } else if (type == MessageType.CONNECTION_CLOSE) {
             serverIn.close();
             return false;
+
+        } else if (type == MessageType.EXPLOSION_SPAWN) {
+            ParticleCloud cloud = JetFighterProtocol.explosionRead(serverIn);
+            game.addParticles(cloud);
+
+        } else {
+            Toolbox.print("unknown message: " + type);
         }
 
         return true;

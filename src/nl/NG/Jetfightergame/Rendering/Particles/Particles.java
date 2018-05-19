@@ -27,8 +27,8 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_PARTICLE_DE
  * created on 12-1-2018.
  */
 public final class Particles {
-    private static final float FIRE_LINGER_TIME = 2;
-    private static final int METAL_LINGER_TIME = 3;
+    private static final float FIRE_LINGER_TIME = 10;
+    private static final int METAL_LINGER_TIME = 10;
 
     public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power){
         ParticleCloud result = new ParticleCloud();

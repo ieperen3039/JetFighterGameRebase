@@ -54,6 +54,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
             connector.sendEntitySpawn(spawn, entity.idNumber());
         }
 
+
         world.addEntity(player);
         world.updateGameLoop();
     }

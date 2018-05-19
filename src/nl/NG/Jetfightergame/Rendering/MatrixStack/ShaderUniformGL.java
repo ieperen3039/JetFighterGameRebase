@@ -24,7 +24,7 @@ public class ShaderUniformGL implements GL2 {
     private Stack<Matrix4f> matrixStack;
 
     private Matrix4f modelMatrix;
-    private Matrix4f viewProjectionMatrix;
+    private final Matrix4f viewProjectionMatrix;
     private Matrix3f normalMatrix = new Matrix3f();
 
     private ShaderProgram currentShader;
@@ -194,6 +194,11 @@ public class ShaderUniformGL implements GL2 {
         viewProjectionMatrix.transformProject(pos);
         if (pos.z() > 1) return null;
         else return new Vector2f(pos.x(), pos.y());
+    }
+
+    /** @return the view-projection matrix */
+    public Matrix4fc getProjection(){
+        return viewProjectionMatrix;
     }
 
     @Override

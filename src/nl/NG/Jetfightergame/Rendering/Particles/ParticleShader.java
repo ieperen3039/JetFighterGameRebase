@@ -4,8 +4,11 @@ import nl.NG.Jetfightergame.Rendering.Shaders.AbstractShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import org.joml.Matrix4fc;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
 
 import static nl.NG.Jetfightergame.Tools.Directory.shaders;
 import static org.lwjgl.opengl.GL20.*;
@@ -20,6 +23,7 @@ public class ParticleShader {
     private final int fragmentShaderId;
 
     private final int timeUniform;
+    private final int projectionUniform;
 
     public ParticleShader() throws IOException {
         programId = glCreateProgram();
@@ -33,6 +37,7 @@ public class ParticleShader {
         link();
 
         timeUniform = glGetUniformLocation(programId, "time");
+        projectionUniform = glGetUniformLocation(programId, "viewProjectionMatrix");
     }
 
     public void bind() {
@@ -72,5 +77,14 @@ public class ParticleShader {
      */
     public void setTime(float value) {
         glUniform1f(timeUniform, value);
+    }
+
+    public void setProjection(Matrix4fc matrix) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            // Dump the matrix into a float buffer
+            FloatBuffer fb = stack.mallocFloat(16);
+            matrix.get(fb);
+            glUniformMatrix4fv(projectionUniform, false, fb);
+        }
     }
 }
