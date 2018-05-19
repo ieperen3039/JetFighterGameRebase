@@ -2,12 +2,15 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -20,7 +23,6 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 import static nl.NG.Jetfightergame.ServerNetwork.RemoteControlReceiver.toByte;
@@ -29,6 +31,7 @@ import static nl.NG.Jetfightergame.ServerNetwork.RemoteControlReceiver.toByte;
  * @author Geert van Ieperen created on 6-5-2018.
  */
 public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver {
+    private final Runnable finishUp;
     private final Controller input;
     private final BufferedOutputStream serverOut;
     private final InputStream serverIn;
@@ -37,8 +40,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     private Lock sendLock = new ReentrantLock();
 
-    public ClientConnection(Consumer<Exception> exceptionHandler, Controller playerInput, Socket connection, Environment game) throws IOException {
-        super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false, exceptionHandler);
+    public ClientConnection(Controller playerInput, Socket connection, Environment game, Runnable whenClosed) throws IOException {
+        super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
+        this.finishUp = whenClosed;
         this.input = playerInput;
         this.serverOut = new BufferedOutputStream(connection.getOutputStream());
         this.serverIn = connection.getInputStream();
@@ -60,10 +64,19 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         } else if (type == MessageType.ENTITY_UPDATE) {
             JetFighterProtocol.entityUpdateRead(serverIn, game.getEntities());
 
+        } else if (type == MessageType.ENTITY_REMOVE) {
+            int target = JetFighterProtocol.entityRemoveRead(serverIn);
+            MovingEntity entity = game.removeEntity(target);
+            if (entity instanceof MortalEntity) {
+                ParticleCloud explosion = ((MortalEntity) entity).explode();
+                game.addParticles(explosion);
+            }
+
         } else if (type == MessageType.SHUTDOWN_GAME) {
             stopLoop();
+            // triggers #cleanup()
 
-        } else if (type != MessageType.CONNECTION_CLOSE) {
+        } else if (type == MessageType.CONNECTION_CLOSE) {
             serverIn.close();
             return false;
         }
@@ -146,12 +159,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     protected void cleanup() {
         try {
-            sendLock.lock(); // lock sending forever
+            sendLock.lock();
             serverOut.write(CONNECTION_CLOSE.ordinal());
-            serverOut.close(); // also flushes
+            serverOut.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
+
+        } finally {
+            sendLock.unlock();
+            finishUp.run();
         }
     }
 
@@ -174,13 +191,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addExplosion(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
-        game.addParticles(newParticles);
+    public GameTimer getTimer() {
+        return game.getTimer();
     }
 
     @Override
-    public GameTimer getTimer() {
-        return game.getTimer();
+    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power) {
+        game.addParticles(Particles.explosion(position, direction, color1, color2, power));
     }
 
     public AbstractJet getPlayer() {

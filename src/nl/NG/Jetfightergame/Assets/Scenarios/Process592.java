@@ -192,6 +192,11 @@ public class Process592 implements Environment {
     }
 
     @Override
+    public MovingEntity removeEntity(int entityID) {
+        return null;
+    }
+
+    @Override
     public void addParticles(ParticleCloud newParticles) {
         particles.add(newParticles);
     }

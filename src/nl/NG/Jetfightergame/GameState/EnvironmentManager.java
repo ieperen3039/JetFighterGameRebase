@@ -43,6 +43,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
+    public MovingEntity removeEntity(int entityID) {
+        return instance.removeEntity(entityID);
+    }
+
+    @Override
     public void addEntities(Collection<? extends MovingEntity> entities) {
         instance.addEntities(entities);
     }

@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -26,7 +25,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public abstract class GameState implements Environment, PathDescription, NetForceProvider {
+public abstract class GameState implements Environment, NetForceProvider {
 
     protected final Collection<ParticleCloud> particles = new ConcurrentArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
@@ -83,9 +82,7 @@ public abstract class GameState implements Environment, PathDescription, NetForc
         if (deltaTime == 0f) return;
 
         if (ServerSettings.MAX_COLLISION_ITERATIONS != 0)
-            physicsEngine.analyseCollisions(currentTime, deltaTime, this);
-
-
+            physicsEngine.analyseCollisions(currentTime, deltaTime, this::getMiddleOfPath);
 
         // update new state
         physicsEngine.updateEntities(currentTime);
@@ -143,6 +140,17 @@ public abstract class GameState implements Environment, PathDescription, NetForc
     }
 
     @Override
+    public MovingEntity removeEntity(int entityID) {
+        for (MovingEntity entity : physicsEngine.getDynamicEntities()) {
+            if (entity.idNumber() == entityID){
+                physicsEngine.removeEntity(entity);
+                return entity;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void addEntities(Collection<? extends MovingEntity> entities) {
         physicsEngine.addEntities(entities);
     }
@@ -161,7 +169,6 @@ public abstract class GameState implements Environment, PathDescription, NetForc
         physicsEngine = null;
     }
 
-    @Override
     public PosVector getMiddleOfPath(PosVector position) {
         return PosVector.zeroVector();
     }

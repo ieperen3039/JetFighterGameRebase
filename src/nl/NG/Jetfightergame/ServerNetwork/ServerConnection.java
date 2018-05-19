@@ -159,11 +159,14 @@ public class ServerConnection implements BlockingListener {
      * a passive closing, doesnt actually close the connection yet
      */
     public void close() {
+        sendOutput.lock();
         try {
             clientOut.write(MessageType.SHUTDOWN_GAME.ordinal());
             clientOut.flush();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            sendOutput.unlock();
         }
     }
 
@@ -185,6 +188,20 @@ public class ServerConnection implements BlockingListener {
         try {
             clientOut.write(MessageType.EXPLOSION_SPAWN.ordinal());
             JetFighterProtocol.explosionSend(clientOut, position, direction, spread, color1, color2);
+
+        } catch (IOException ex) {
+            Toolbox.printError(ex);
+
+        } finally {
+            sendOutput.unlock();
+        }
+    }
+
+    public void sendEntityRemove(MovingEntity entity) {
+        sendOutput.lock();
+        try {
+            clientOut.write(MessageType.ENTITY_REMOVE.ordinal());
+            JetFighterProtocol.entityRemoveSend(clientOut, entity.idNumber());
 
         } catch (IOException ex) {
             Toolbox.printError(ex);

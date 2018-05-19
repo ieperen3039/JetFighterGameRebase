@@ -15,10 +15,7 @@ public final class ClientSettings {
     public static final int PHYSICS_TPS = 30;
     public static final boolean LOCAL_SERVER = true;
 
-    /** particles */
-    public static final int FIRE_PARTICLE_DENSITY = 1000; // actual particle count of plane explosion
-    public static final int SPARK_PARTICLE_DENSITY = 10;
-    public static final int EXPLOSION_PARTICLE_DENSITY = 1000;
+    public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles per degree of power
     public static final float FIRE_PARTICLE_SIZE = 0.3f;
     public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
     public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;

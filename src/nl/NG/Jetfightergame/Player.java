@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 
 /**
  * @author Geert van Ieperen
@@ -40,6 +41,11 @@ public class Player implements MortalEntity {
 
     public AbstractJet jet() {
         return jet;
+    }
+
+    @Override
+    public ParticleCloud explode() {
+        return jet.explode();
     }
 
     public boolean isDead() {

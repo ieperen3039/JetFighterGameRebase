@@ -21,7 +21,7 @@ public class MachineGun extends AbstractWeapon {
     @Override
     protected MovingEntity.Spawn newProjectile(float spawnTime, GameEntity.State source, SpawnReceiver entityDeposit) {
         DirVector vel = source.velocity();
-        vel.add(source.forward().mul(30));
+        vel.add(source.forward().mul(100));
         final PosVector pos = source.position(spawnTime);
         final Quaternionf rot = source.rotation(spawnTime);
         return new MovingEntity.Spawn(EntityClass.SIMPLE_BULLET, pos, rot, vel);

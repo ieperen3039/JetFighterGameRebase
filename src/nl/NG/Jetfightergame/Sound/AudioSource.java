@@ -18,6 +18,7 @@ public class AudioSource {
 
     protected int sourceID;
 
+    /** creates and plays the specified sound */
     public AudioSource(AudioFile data, PosVector sourcePos, float pitch, float gain) {
 
         int dataID = data.getID();

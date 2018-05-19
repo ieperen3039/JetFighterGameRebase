@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.Spawn;
 import nl.NG.Jetfightergame.Controllers.Controller;
@@ -15,7 +16,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Consumer;
 
 /**
  * mostly a controlling layer between server and an environment
@@ -27,8 +27,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     private final Environment world;
     private final Collection<ServerConnection> connections;
 
-    public ServerLoop(Environment world, Consumer<Exception> exceptionHandler) {
-        super("Server", ServerSettings.TARGET_TPS, true, exceptionHandler);
+    public ServerLoop(Environment world) {
+        super("Server", ServerSettings.TARGET_TPS, true);
         this.world = world;
         connections = new ArrayList<>();
     }
@@ -66,13 +66,13 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     }
 
     @Override
-    public void addExplosion(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
-        connections.forEach(c-> c.sendExplosionSpawn(position, direction, spread, color1, color2));
+    public GameTimer getTimer() {
+        return world.getTimer();
     }
 
     @Override
-    public GameTimer getTimer() {
-        return world.getTimer();
+    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power) {
+        connections.forEach(conn -> conn.sendExplosionSpawn(position, direction, power, color1, color2));
     }
 
     @Override
@@ -82,6 +82,12 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
         float time = world.getTimer().time();
         Collection<MovingEntity> entities = world.getEntities();
+
+        for (MovingEntity object : entities) {
+            if (MortalEntity.isDead(object)){
+                connections.forEach(conn -> conn.sendEntityRemove(object));
+            }
+        }
 
         connections.parallelStream()
                 .forEach(conn -> entities.forEach(e -> conn.sendEntityUpdate(e, time)));
@@ -109,6 +115,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     @Override
     protected void cleanup() {
         world.cleanUp();
+    }
+
+    @Override
+    protected void exceptionHandler(Exception ex) {
+        connections.forEach(ServerConnection::close);
     }
 
     public String entityList() {

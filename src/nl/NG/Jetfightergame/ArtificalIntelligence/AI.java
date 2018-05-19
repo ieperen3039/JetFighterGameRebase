@@ -9,6 +9,6 @@ import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
  */
 public abstract class AI extends AbstractGameLoop implements Controller {
     public AI(String name, int targetTps) {
-        super(name, targetTps, false, (ex) -> {});
+        super(name, targetTps, false);
     }
 }

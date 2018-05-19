@@ -225,4 +225,14 @@ public final class JetFighterProtocol {
         output.write(MessageType.PONG.ordinal());
         output.flush();
     }
+
+    public static void entityRemoveSend(OutputStream output, int id) throws IOException {
+        DataOutputStream DOS = new DataOutputStream(output);
+        DOS.writeInt(id);
+    }
+
+    public static int entityRemoveRead(InputStream input) throws IOException {
+        DataInputStream DIS = new DataInputStream(input);
+        return DIS.readInt();
+    }
 }

@@ -16,6 +16,8 @@ import org.joml.Quaternionf;
  */
 public interface MovingEntity extends Touchable {
 
+    float getKineticEnergy(DirVector vector);
+
     /**
      * moves the reference frame from global space to this object and executes
      * action. every create call should preserve the matrix stack.
@@ -121,8 +123,9 @@ public interface MovingEntity extends Touchable {
      * @param direction the normalized direction in which the force is applied
      * @param energy the energy in Newton to be applied to the gravity center of this
      *      *                 entity
+     * @param deltaTime
      */
-    void applyJerk(DirVector direction, float energy);
+    void applyJerk(DirVector direction, float energy, float deltaTime);
 
     /** @return an unique number given by the server */
     int idNumber();

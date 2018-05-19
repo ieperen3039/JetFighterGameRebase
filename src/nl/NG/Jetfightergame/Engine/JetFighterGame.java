@@ -85,7 +85,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             }
 
-            connection = new ClientConnection((ex) -> exitGame(), playerInput, socket, environment);
+            connection = new ClientConnection(playerInput, socket, environment, this::exitGame);
 
             otherLoops.add(connection);
             AbstractJet playerJet = connection.getPlayer();
@@ -242,7 +242,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         private final Environment world;
 
         public PhysicsLoop(Environment environment) {
-            super("Physics", ClientSettings.PHYSICS_TPS, true, (ex) -> {});
+            super("Physics", ClientSettings.PHYSICS_TPS, true);
             world = environment;
         }
 

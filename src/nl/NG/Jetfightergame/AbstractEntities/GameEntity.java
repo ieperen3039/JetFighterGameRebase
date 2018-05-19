@@ -316,7 +316,7 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void applyJerk(DirVector direction, float energy) {
+    public void applyJerk(DirVector direction, float energy, float deltaTime) {
         // e = 0.5*m*v*v
         // >> v*v = e / 0.5m
         // >> v = sqrt(2e / m)
@@ -326,6 +326,7 @@ public abstract class GameEntity implements MovingEntity {
         DirVector dv = direction.scale(v, direction);
         Toolbox.print(dv);
         extraVelocity.add(dv);
+        position.add(extraVelocity.scale(deltaTime, dv), extraPosition);
     }
 
     @Override
@@ -381,6 +382,15 @@ public abstract class GameEntity implements MovingEntity {
     public void resetCache() {
         positionInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, position);
         rotationInterpolator = new QuaternionInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, rotation);
+    }
+
+    /**
+     * @return the kinetic energy of this entity in the direction of vector
+     */
+    @Override
+    public float getKineticEnergy(DirVector vector) {
+        float leftSpeed = extraVelocity.dot(vector);
+        return 0.5f * leftSpeed * leftSpeed * mass;
     }
 
     public static class State {

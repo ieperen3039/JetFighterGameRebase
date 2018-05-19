@@ -22,15 +22,15 @@ public class EntityList implements EntityManagement {
     }
 
     @Override
-    public void preUpdateEntities(NetForceProvider gameState, float deltaTime) {
+    public void preUpdateEntities(NetForceProvider gravity, float deltaTime) {
         for (MovingEntity entity : dynamicEntities) {
-            DirVector netForce = gameState.entityNetforce(entity);
+            DirVector netForce = gravity.entityNetforce(entity);
             entity.preUpdate(deltaTime, netForce);
         }
     }
 
     @Override
-    public void analyseCollisions(float currentTime, float deltaTime, PathDescription environment) {
+    public void analyseCollisions(float currentTime, float deltaTime, PathDescription path) {
         // do nothing
     }
 
@@ -64,5 +64,10 @@ public class EntityList implements EntityManagement {
     @Override
     public void cleanUp() {
         dynamicEntities.clear();
+    }
+
+    @Override
+    public void removeEntity(MovingEntity entity) {
+        dynamicEntities.remove(entity);
     }
 }

@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -25,7 +24,6 @@ public abstract class AbstractGameLoop extends Thread {
     private boolean shouldStop;
     private boolean isPaused = true;
     private final boolean notifyDelay;
-    private Consumer<Exception> exceptionHandler;
 
     private AveragingQueue avgTPS;
     private AveragingQueue avgPoss;
@@ -37,12 +35,10 @@ public abstract class AbstractGameLoop extends Thread {
      * @param name the name as displayed in {@link #toString()}
      * @param targetTps the target number of executions of {@link #update(float)} per second
      * @param notifyDelay if true, an error message will be printed whenever the update method has encountered delay.
-     * @param exceptionHandler this is executed whenever any part of the system throws an uncaught exception
      */
-    public AbstractGameLoop(String name, int targetTps, boolean notifyDelay, Consumer<Exception> exceptionHandler) {
+    public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
         this.targetDeltaMillis = 1000f/targetTps;
         this.notifyDelay = notifyDelay;
-        this.exceptionHandler = exceptionHandler;
         loopName = name;
 
         avgTPS = new AveragingQueue(targetTps/2);
@@ -118,7 +114,7 @@ public abstract class AbstractGameLoop extends Thread {
         } catch (Exception ex) {
             System.err.println(loopName + " has Crashed! Blame Menno.");
             ex.printStackTrace();
-            exceptionHandler.accept(ex);
+            exceptionHandler(ex);
         } finally {
             Toolbox.removeOnlineUpdate(tickCounter);
             Toolbox.removeOnlineUpdate(possessionCounter);
@@ -128,6 +124,12 @@ public abstract class AbstractGameLoop extends Thread {
         // terminate engine
         Toolbox.print(loopName + " is stopped");
     }
+
+    /**
+     * is executed after printing the stacktrace
+     * @param ex the exception that caused the crash
+     */
+    protected void exceptionHandler(Exception ex){}
 
     public void unPause(){
         pauseBlock.countDown();

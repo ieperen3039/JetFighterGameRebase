@@ -19,6 +19,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_PARTICLE_DENSITY;
+
 /**
  * A utility-class for particles
  * @author Geert van Ieperen
@@ -28,10 +30,10 @@ public final class Particles {
     private static final float FIRE_LINGER_TIME = 2;
     private static final int METAL_LINGER_TIME = 3;
 
-    public static ParticleCloud explosion(PosVector position, Vector3fc direction, Color4f color1, Color4f color2, float power){
+    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power){
         ParticleCloud result = new ParticleCloud();
 
-        for (int i = 0; i < ClientSettings.EXPLOSION_PARTICLE_DENSITY; i++) {
+        for (int i = 0; i < (EXPLOSION_PARTICLE_DENSITY * power); i++) {
             DirVector movement = DirVector.random();
             movement.add(direction);
             float red = Toolbox.randomBetween(color1.red, color2.red);

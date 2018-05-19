@@ -13,18 +13,18 @@ public interface EntityManagement {
 
     /**
      * calls the pre-update on all entities
-     * @param gameState provides the netforce on the objects
+     * @param gravity provides the netforce on the objects
      * @param deltaTime the time difference since last update
      */
-    void preUpdateEntities(NetForceProvider gameState, float deltaTime);
+    void preUpdateEntities(NetForceProvider gravity, float deltaTime);
 
     /**
      * checks and resolves all collisions that occurred in the given timeperiod
      * @param currentTime the current game-loop time
      * @param deltaTime the in-game time difference from the last call to this method
-     * @param environment the path contained in the static parts of this
+     * @param path the path contained in the static parts of this
      */
-    void analyseCollisions(float currentTime, float deltaTime, PathDescription environment);
+    void analyseCollisions(float currentTime, float deltaTime, PathDescription path);
 
     /**
      * adds the new entities to the collision detection
@@ -51,4 +51,6 @@ public interface EntityManagement {
     void updateEntities(float currentTime);
 
     void cleanUp();
+
+    void removeEntity(MovingEntity entity);
 }

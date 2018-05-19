@@ -23,8 +23,7 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.DEBUG;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.MAX_COLLISION_ITERATIONS;
 
 /**
- * @author Geert van Ieperen
- * created on 10-3-2018.
+ * @author Geert van Ieperen created on 10-3-2018.
  */
 public class CollisionDetection implements EntityManagement {
     private List<HUDTargetable> debugs = new LinkedList<>();
@@ -39,10 +38,12 @@ public class CollisionDetection implements EntityManagement {
     private final Collection<Touchable> staticEntities;
     private Collection<MovingEntity> dynamicClones;
     private Collection<MovingEntity> newEntities;
+    private Collection<MovingEntity> removeEntities;
 
     public CollisionDetection(Collection<MovingEntity> dynamicEntities, Collection<Touchable> staticEntities) {
         this.staticEntities = Collections.unmodifiableCollection(staticEntities);
         this.newEntities = new ConcurrentArrayList<>();
+        this.removeEntities = new ConcurrentArrayList<>();
 
         collisionCounter = () -> String.format("Collision pair count average: %1.01f", avgCollision.average());
         Toolbox.addOnlineUpdate(collisionCounter);
@@ -68,7 +69,7 @@ public class CollisionDetection implements EntityManagement {
     }
 
     @Override
-    public void preUpdateEntities(NetForceProvider gameState, float deltaTime) {
+    public void preUpdateEntities(NetForceProvider gravity, float deltaTime) {
 
         // add new entities
         if (!newEntities.isEmpty()) {
@@ -76,9 +77,14 @@ public class CollisionDetection implements EntityManagement {
             newEntities.clear();
         }
 
+        if (!removeEntities.isEmpty()) {
+            deleteOldEntities(removeEntities);
+            removeEntities.clear();
+        }
+
         for (CollisionEntity e : entityArray()) {
             MovingEntity entity = e.entity;
-            DirVector netForce = gameState.entityNetforce(entity);
+            DirVector netForce = gravity.entityNetforce(entity);
             entity.preUpdate(deltaTime, netForce);
 
             e.update();
@@ -90,7 +96,7 @@ public class CollisionDetection implements EntityManagement {
     }
 
     @Override
-    public void analyseCollisions(float currentTime, float deltaTime, PathDescription environment) {
+    public void analyseCollisions(float currentTime, float deltaTime, PathDescription path) {
         int remainingLoops = MAX_COLLISION_ITERATIONS;
 
         // the pairs that have their collision been processed
@@ -117,13 +123,13 @@ public class CollisionDetection implements EntityManagement {
                     MovingEntity left = (MovingEntity) pair.left;
                     MovingEntity right = pair.right;
 
-                    bumpOff(left, right);
+                    bumpOff(left, right, deltaTime);
 
-                // if entity collides with terrain
+                    // if entity collides with terrain
                 } else {
                     MovingEntity entity = pair.right;
 
-                    applyCorrection(entity, environment);
+                    applyCorrection(entity, path, deltaTime);
                 }
             }
 
@@ -138,48 +144,42 @@ public class CollisionDetection implements EntityManagement {
 
     /**
      * move two entities away from each other
-     * @param left one entity, which has collided with right
+     * @param left  one entity, which has collided with right
      * @param right another entity, which has collided with left
+     * @param deltaTime
      */
-    private void bumpOff(MovingEntity left, MovingEntity right) {
+    private void bumpOff(MovingEntity left, MovingEntity right, float deltaTime) {
         DirVector leftToRight = new DirVector();
         leftToRight = left.getExpectedPosition().to(right.getExpectedPosition(), leftToRight);
 
         leftToRight.normalize();
         DirVector rightToLeft = leftToRight.negate(new DirVector());
 
-        float rightEnergy = getKineticEnergy(right, rightToLeft);
-        float leftEnergy = getKineticEnergy(left, leftToRight);
+        float rightEnergy = right.getKineticEnergy(rightToLeft);
+        float leftEnergy = left.getKineticEnergy(leftToRight);
         float sharedEnergy = 0.5f * (leftEnergy + rightEnergy); // not quite but ok
 
-        right.applyJerk(leftToRight, sharedEnergy);
-        left.applyJerk(rightToLeft, sharedEnergy);
+        right.applyJerk(leftToRight, sharedEnergy, deltaTime);
+        left.applyJerk(rightToLeft, sharedEnergy, deltaTime);
 
     }
 
     /**
-     * @return the kinetic energy of this entity in the direction of vector
-     */
-    private float getKineticEnergy(MovingEntity entity, DirVector vector) {
-        float leftSpeed = entity.getVelocity().dot(vector);
-        return 0.5f * leftSpeed * leftSpeed * entity.getMass();
-    }
-
-    /**
-     * gives a correcting momentum to the target entity, such that it restores its path.
-     * It may not happen that the momentum results in another collision
+     * gives a correcting momentum to the target entity, such that it restores its path. It may not happen that the
+     * momentum results in another collision
+     * @param deltaTime
      * @param target an entity that has collided with a solid entity
      */
-    private void applyCorrection(MovingEntity target, PathDescription path) {
+    private void applyCorrection(MovingEntity target, PathDescription path, float deltaTime) {
         PosVector jetPosition = target.getPosition();
         PosVector middle = path.getMiddleOfPath(jetPosition);
         DirVector toMid = jetPosition.to(middle, new DirVector());
 
         toMid.normalize();
         DirVector notMid = toMid.negate(new DirVector());
-        float targetEnergy = getKineticEnergy(target, notMid);
+        float targetEnergy = target.getKineticEnergy(notMid);
 
-        target.applyJerk(toMid, targetEnergy);
+        target.applyJerk(toMid, targetEnergy, deltaTime);
     }
 
     /**
@@ -195,10 +195,8 @@ public class CollisionDetection implements EntityManagement {
     }
 
     /**
-     * generate a list (possibly empty) of all objects that may have collided.
-     * this may include (parts of) the ground, but not an object with itself.
-     * one pair should not occur the other way around
-     *
+     * generate a list (possibly empty) of all objects that may have collided. this may include (parts of) the ground,
+     * but not an object with itself. one pair should not occur the other way around
      * @return a collection of pairs of objects that are close to each other
      */
     private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
@@ -228,7 +226,7 @@ public class CollisionDetection implements EntityManagement {
                 // count how often i hits j and how often j hits i.
                 int intervalAgreements = adjacencyMatrix[i][j];
 
-                if (intervalAgreements >= 3){
+                if (intervalAgreements >= 3) {
                     Pair<Touchable, MovingEntity> newPair = new Pair<>(entityArray[i].entity, entityArray[j].entity);
                     allEntityPairs.add(newPair);
                 }
@@ -256,8 +254,7 @@ public class CollisionDetection implements EntityManagement {
     }
 
     /**
-     * tests whether the invariant holds.
-     * Throws an error if any of the arrays is not correctly sorted
+     * tests whether the invariant holds. Throws an error if any of the arrays is not correctly sorted
      */
     public void testSort() {
         Toolbox.printSpamless("testSort", "\n" + Toolbox.getCallingMethod(1) + " Testing Sorting");
@@ -304,9 +301,9 @@ public class CollisionDetection implements EntityManagement {
     /**
      * iterating over xLowerSorted, increase the value of all pairs that have coinciding intervals
      * @param adjacencyMatrix the matrix where the pairs are marked using entity id's
-     * @param sortedArray an array sorted increasingly on the lower mapping
-     * @param lower a mapping that maps to the lower value of the interval of the entity
-     * @param upper a mapping that maps an entity to its upper interval
+     * @param sortedArray     an array sorted increasingly on the lower mapping
+     * @param lower           a mapping that maps to the lower value of the interval of the entity
+     * @param upper           a mapping that maps an entity to its upper interval
      */
     protected void checkOverlap(int[][] adjacencyMatrix, CollisionEntity[] sortedArray, Function<CollisionEntity, Float> lower, Function<CollisionEntity, Float> upper) {
         // INVARIANT:
@@ -346,7 +343,12 @@ public class CollisionDetection implements EntityManagement {
         newEntities.add(entity);
     }
 
-    private void mergeNewEntities(Collection<MovingEntity> newEntities){
+    @Override
+    public void removeEntity(MovingEntity entity) {
+        removeEntities.add(entity);
+    }
+
+    private void mergeNewEntities(Collection<MovingEntity> newEntities) {
         int nOfNewEntities = newEntities.size();
 
         CollisionEntity[] newXSort = new CollisionEntity[nOfNewEntities];
@@ -378,12 +380,40 @@ public class CollisionDetection implements EntityManagement {
     }
 
     /**
+     * remove the selected entities off the entity lists
+     * @param entities
+     */
+    private void deleteOldEntities(Collection<MovingEntity> entities) {
+        int nOfEntities = xLowerSorted.length;
+        int xMax = nOfEntities - 1;
+        int yMax = nOfEntities - 1;
+        int zMax = nOfEntities - 1;
+
+        for (int i = 0; i < nOfEntities; i++) {
+            // this method results in an (nOfEntities * entities.size()) running time for sorting
+            if (entities.contains(xLowerSorted[i].entity)) {
+                xLowerSorted[i] = xLowerSorted[xMax--];
+            }
+            if (entities.contains(yLowerSorted[i].entity)) {
+                yLowerSorted[i] = yLowerSorted[yMax--];
+            }
+            if (entities.contains(zLowerSorted[i].entity)) {
+                zLowerSorted[i] = zLowerSorted[zMax--];
+            }
+        }
+
+        xLowerSorted = Arrays.copyOf(xLowerSorted, xMax);
+        yLowerSorted = Arrays.copyOf(yLowerSorted, yMax);
+        zLowerSorted = Arrays.copyOf(zLowerSorted, zMax);
+    }
+
+    /**
      * casts a ray into the world and returns where it hits anything.
-     * @param source a point in world-space
+     * @param source    a point in world-space
      * @param direction a direction in world-space
      * @return the collision caused by this ray
      */
-    public Collision rayTrace(PosVector source, DirVector direction){
+    public Collision rayTrace(PosVector source, DirVector direction) {
         ShadowMatrix sm = new ShadowMatrix();
         PosVector sink = source.add(direction, new PosVector());
 
@@ -413,7 +443,7 @@ public class CollisionDetection implements EntityManagement {
     /**
      * @return an unsafe array of the entities. Should only be used for querying, otherwise it must be cloned
      */
-    private CollisionEntity[] entityArray(){
+    private CollisionEntity[] entityArray() {
         return xLowerSorted;
     }
 
@@ -458,7 +488,7 @@ public class CollisionDetection implements EntityManagement {
             update();
         }
 
-        public void update(){
+        public void update() {
             PosVector position = entity.getExpectedPosition();
             this.range = entity.getRange();
             x = position.x;

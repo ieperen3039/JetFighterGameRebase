@@ -27,6 +27,13 @@ public interface Environment {
     void addEntity(MovingEntity entity);
 
     /**
+     * removes an entity off this world. After returning, this world does not contain any entity with the given id
+     * @param entityID the id of the entity to be removed
+     * @return the entity removed, or null if it was not in this world
+     */
+    MovingEntity removeEntity(int entityID);
+
+    /**
      * update the physics of all game objects and check for collisions
      */
     @SuppressWarnings("ConstantConditions")

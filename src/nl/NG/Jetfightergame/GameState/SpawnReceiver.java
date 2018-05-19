@@ -32,15 +32,11 @@ public interface SpawnReceiver {
         }
     }
 
-    /**
-     * adds an explosion to the world
-     * @param position
-     * @param direction
-     * @param spread
-     * @param color1
-     * @param color2
-     */
-    void addExplosion(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2);
-
     GameTimer getTimer();
+
+    /**
+     * adds an explosion of given magnitude to the game's rendering
+     * @see nl.NG.Jetfightergame.Rendering.Particles.Particles#explosion(PosVector, DirVector, Color4f, Color4f, float)
+     */
+    void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power);
 }

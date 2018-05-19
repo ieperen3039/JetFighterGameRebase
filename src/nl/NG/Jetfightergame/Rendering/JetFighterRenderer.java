@@ -46,11 +46,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
                               Camera camera, ControllerManager controllerManager, AbstractJet player) throws IOException, ShaderException {
         super(
-                "Rendering", ClientSettings.TARGET_FPS, false,
-                (ex) -> {
-                    window.close();
-                    engine.exitGame();
-                }
+                "Rendering", ClientSettings.TARGET_FPS, false
         );
 
         this.gameState = gameState;
