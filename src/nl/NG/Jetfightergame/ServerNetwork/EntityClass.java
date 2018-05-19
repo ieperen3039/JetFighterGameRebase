@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
-import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
+import nl.NG.Jetfightergame.Assets.Weapons.SimpleBullet;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -48,7 +48,7 @@ public enum  EntityClass {
                 jet.set(position, velocity, rotation);
                 return jet;
             case SIMPLE_BULLET:
-                return new SimpleBullet(position, velocity, rotation, timer, game, id);
+                return new SimpleBullet(id, position, velocity, rotation, timer, game);
             case FALLING_CUBE_SMALL:
                 return new FallingCube(id, Material.SILVER, CUBE_MASS_SMALL, CUBE_SIZE_SMALL, position, velocity, rotation, timer, game);
             case FALLING_CUBE_LARGE:

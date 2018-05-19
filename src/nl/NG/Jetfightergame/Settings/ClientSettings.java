@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Settings;
 
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+
 /**
  * @author Geert van Ieperen created on 26-4-2018.
  */
@@ -12,12 +14,14 @@ public final class ClientSettings {
     public static final int COLLISION_DETECTION_LEVEL = 0;
     public static final int PHYSICS_TPS = 30;
     public static final boolean LOCAL_SERVER = true;
-    public static boolean FIXED_DELTA_TIME = false;
 
     /** particles */
     public static final int FIRE_PARTICLE_DENSITY = 1000; // actual particle count of plane explosion
     public static final int SPARK_PARTICLE_DENSITY = 10;
+    public static final int EXPLOSION_PARTICLE_DENSITY = 1000;
     public static final float FIRE_PARTICLE_SIZE = 0.3f;
+    public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
+    public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
     public static final int PARTICLE_SPLITS = 0;
 
     /** sound */

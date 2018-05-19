@@ -23,6 +23,8 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public final class Toolbox {
 
+    // universal random to be used everywhere
+    public static final Random random = new Random();
     private static Consumer<String> out = System.out::println;
     private static List<Supplier<String>> onlinePrints = new ArrayList<>();
 
@@ -118,7 +120,7 @@ public final class Toolbox {
     }
 
     /**
-     * prints the registered onlineUpdate using the given consumer
+     * puts a message on the debug screen, which is updated every frame
      * @param accepter a method that prints the given string, on the same position as a previous call to this method
      */
     public static void printOnline(Consumer<String> accepter){
@@ -316,8 +318,17 @@ public final class Toolbox {
         return new Quaternionf().rotateTo(DirVector.xVector(), direction);
     }
 
+    /**
+     * removes the specified updater off the debug screen
+     * @param source an per-frame updated debug message that has previously added to the debug screen
+     */
     public static void removeOnlineUpdate(Supplier<String> source) {
         onlinePrints.remove(source);
+    }
+
+    /** returns a  */
+    public static float randomBetween(float val1, float val2) {
+        return val1 + ((val2 - val1) * random.nextFloat());
     }
 
     /**

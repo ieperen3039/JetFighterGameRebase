@@ -4,10 +4,13 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.Quaternionf;
 
 import java.io.*;
@@ -28,8 +31,8 @@ public final class JetFighterProtocol {
         DOS.writeInt(thing.idNumber());
         DOS.writeFloat(currentTime);
         // state
-        writeVector(DOS, thing.getPosition());
-        writeQuaternion(DOS, thing.getRotation());
+        DataIO.writeVector(DOS, thing.getPosition());
+        DataIO.writeQuaternion(DOS, thing.getRotation());
     }
 
     /**
@@ -46,8 +49,8 @@ public final class JetFighterProtocol {
         int id = DIS.readInt();
         float time = DIS.readFloat();
         // state
-        PosVector pos = readPosVector(DIS);
-        Quaternionf rot = readQuaternion(DIS);
+        PosVector pos = DataIO.readPosVector(DIS);
+        Quaternionf rot = DataIO.readQuaternion(DIS);
         // set the entity state
         MovingEntity target = matchEntity(entities, id);
 
@@ -71,36 +74,6 @@ public final class JetFighterProtocol {
         return null;
     }
 
-    /** writes the given rotation to the given output stream */
-    private static void writeQuaternion(DataOutputStream DOS, Quaternionf rot) throws IOException {
-        DOS.writeFloat(rot.x);
-        DOS.writeFloat(rot.y);
-        DOS.writeFloat(rot.z);
-        DOS.writeFloat(rot.w);
-    }
-
-    /** reads the next 4 floats on the stream as quaternion */
-    private static Quaternionf readQuaternion(DataInputStream DIS) throws IOException {
-        return new Quaternionf(DIS.readFloat(), DIS.readFloat(), DIS.readFloat(), DIS.readFloat());
-    }
-
-    /** writes the given vector to the given output stream */
-    private static void writeVector(DataOutputStream DOS, Vector p) throws IOException {
-        DOS.writeFloat(p.x);
-        DOS.writeFloat(p.y);
-        DOS.writeFloat(p.z);
-    }
-
-    /** reads the next 3 floats on the stream as vector */
-    private static PosVector readPosVector(DataInputStream DOS) throws IOException {
-        return new PosVector(DOS.readFloat(), DOS.readFloat(), DOS.readFloat());
-    }
-
-    /** reads the next 3 floats on the stream as vector */
-    private static DirVector readDirVector(DataInputStream DOS) throws IOException {
-        return new DirVector(DOS.readFloat(), DOS.readFloat(), DOS.readFloat());
-    }
-
     /**
      * client sending a request of spawing a new entity.
      * @see #spawnRequestRead(InputStream)
@@ -109,9 +82,9 @@ public final class JetFighterProtocol {
         output.write(spawn.type.ordinal());
         DataOutputStream DOS = new DataOutputStream(output);
         // state
-        writeVector(DOS, spawn.position);
-        writeQuaternion(DOS, spawn.rotation);
-        writeVector(DOS, spawn.velocity);
+        DataIO.writeVector(DOS, spawn.position);
+        DataIO.writeQuaternion(DOS, spawn.rotation);
+        DataIO.writeVector(DOS, spawn.velocity);
     }
 
     /**
@@ -123,9 +96,9 @@ public final class JetFighterProtocol {
         EntityClass type = EntityClass.get(input.read());
         DataInputStream DIS = new DataInputStream(input);
         // state
-        PosVector position = readPosVector(DIS);
-        Quaternionf rotation = readQuaternion(DIS);
-        DirVector velocity = readDirVector(DIS);
+        PosVector position = DataIO.readPosVector(DIS);
+        Quaternionf rotation = DataIO.readQuaternion(DIS);
+        DirVector velocity = DataIO.readDirVector(DIS);
 
         return new MovingEntity.Spawn(type, position, rotation, velocity);
     }
@@ -137,9 +110,9 @@ public final class JetFighterProtocol {
         // identity number
         DOS.writeInt(id);
         // state
-        writeVector(DOS, entity.position);
-        writeQuaternion(DOS, entity.rotation);
-        writeVector(DOS, entity.velocity);
+        DataIO.writeVector(DOS, entity.position);
+        DataIO.writeQuaternion(DOS, entity.rotation);
+        DataIO.writeVector(DOS, entity.velocity);
     }
 
     /** client reading an entity off the InputStream and creates an instance of it */
@@ -149,9 +122,9 @@ public final class JetFighterProtocol {
         // identity number
         int id = DIS.readInt();
         // state
-        PosVector position = readPosVector(DIS);
-        Quaternionf rotation = readQuaternion(DIS);
-        DirVector velocity = readDirVector(DIS);
+        PosVector position = DataIO.readPosVector(DIS);
+        Quaternionf rotation = DataIO.readQuaternion(DIS);
+        DirVector velocity = DataIO.readDirVector(DIS);
 
         return type.construct(id, world, controller, position, rotation, velocity);
     }
@@ -204,6 +177,30 @@ public final class JetFighterProtocol {
         DataInputStream DIS = new DataInputStream(input);
         float serverTime = DIS.readFloat();
         timer.set(serverTime);
+    }
+
+    /** sends an explosion or other effect to the client
+     * @see #explosionRead(DataInputStream)  */
+    public static void explosionSend(OutputStream output, PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
+        DataOutputStream DOS = new DataOutputStream(output);
+        DataIO.writeVector(DOS, position);
+        DataIO.writeVector(DOS, direction);
+        DOS.writeFloat(spread);
+        DataIO.writeColor(DOS, color1);
+        DataIO.writeColor(DOS, color2);
+    }
+
+    /** reads an explosion off the InputStream
+     * @see #explosionSend(OutputStream, PosVector, DirVector, float, Color4f, Color4f)  */
+    public static ParticleCloud explosionRead(DataInputStream input) throws IOException {
+        DataInputStream DIS = new DataInputStream(input);
+        PosVector position = DataIO.readPosVector(DIS);
+        DirVector direction = DataIO.readDirVector(DIS);
+        float power = DIS.readFloat();
+        Color4f color1 = DataIO.readColor(DIS);
+        Color4f color2 = DataIO.readColor(DIS);
+
+        return Particles.explosion(position, direction, color1, color2, power);
     }
 
     /** @return the RTT in seconds */

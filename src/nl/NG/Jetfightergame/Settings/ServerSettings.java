@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Settings;
 
-import java.util.Random;
-
 /**
  * a class that harbours the variables that may or may not be changed by the player
  * @see MenuStyleSettings
@@ -29,11 +27,10 @@ public final class ServerSettings {
     public static final float BUMP_MULTIPLIER = 1f;
 
     /** miscellaneous */
-    // universal random to be used everywhere
-    public static final Random random = new Random();
     public static final int INTERPOLATION_QUEUE_SIZE = 10;
     public static boolean RENDER_ENABLED = false;
 
+    /** shape constants */
     public static final int CUBE_SIZE_SMALL = 2;
     public static final int CUBE_SIZE_LARGE = 50;
     public static final float CUBE_MASS_SMALL = CUBE_SIZE_SMALL * CUBE_SIZE_SMALL * CUBE_SIZE_SMALL * 0.001f;

@@ -85,6 +85,8 @@ public abstract class GameState implements Environment, PathDescription, NetForc
         if (ServerSettings.MAX_COLLISION_ITERATIONS != 0)
             physicsEngine.analyseCollisions(currentTime, deltaTime, this);
 
+
+
         // update new state
         physicsEngine.updateEntities(currentTime);
     }

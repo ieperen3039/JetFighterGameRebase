@@ -3,6 +3,9 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -171,6 +174,20 @@ public class ServerConnection implements BlockingListener {
 
         } catch (IOException e) {
             e.printStackTrace();
+
+        } finally {
+            sendOutput.unlock();
+        }
+    }
+
+    public void sendExplosionSpawn(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
+        sendOutput.lock();
+        try {
+            clientOut.write(MessageType.EXPLOSION_SPAWN.ordinal());
+            JetFighterProtocol.explosionSend(clientOut, position, direction, spread, color1, color2);
+
+        } catch (IOException ex) {
+            Toolbox.printError(ex);
 
         } finally {
             sendOutput.unlock();

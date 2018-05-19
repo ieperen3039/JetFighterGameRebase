@@ -19,6 +19,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.*;
@@ -66,7 +67,7 @@ public class Process592 implements Environment {
 
     @Override
     public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
-        player.jet().set();
+        player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
     }
 
     @Override

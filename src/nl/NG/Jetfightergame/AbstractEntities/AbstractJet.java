@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
 import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
@@ -9,22 +8,13 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
-import nl.NG.Jetfightergame.Rendering.Particles.Particles;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 
 /**
  * @author Geert van Ieperen created on 30-10-2017.
@@ -83,7 +73,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
      * @param liftFactor               arbitrary factor of the lift-effect of the wings in gravitational situations.
      *                                 This is applied only on the vector of external influences, thus not in
      *                                 zero-gravity.
-     * @param airResistanceCoefficient 0.5 * A * Cw. This is a factor that should be experimentally found
+     * @param airResistanceCoefficient 0.5 * A * Cw.
      * @param throttlePower            force of the engines at full power in Newton
      * @param brakePower               air resistance is multiplied with this value when braking
      * @param yawAcc                   acceleration over the Z-axis when moving right at full power in rad/ss
@@ -132,9 +122,55 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         defaultThrustSquared = BASE_SPEED * BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
     }
 
+    /**
+     * constructor for creating projectiles
+     * @param id              unique identifier for this entity
+     * @param controller      a possible control of this object, or use an {@link Controller.EmptyController}
+     * @param initialPosition position of spawning (of the origin) in world coordinates
+     * @param initialRotation the initial rotation of spawning
+     * @param initialVelocity the initial movement per second of this projectile
+     * @param scale           scale factor applied to this object. the scale is in global space and executed in {@link
+     *                        #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param material        the default material properties of the whole object.
+     * @param mass            the mass of the object in kilograms.
+     * @param airResistCoeff  0.5 * A * Cw.
+     * @param straightening   the reduction factor of sideward movement
+     * @param gameTimer       the timer that determines the "current rendering time" for {@link *
+     *                        MovingEntity#interpolatedPosition()}
+     * @param entityDeposit   the class that allows new entities and particles to be added to the environment
+     * @param thrustSquared the thrust value of this projectile
+     */
+    public AbstractJet(
+            int id, Controller controller, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity,
+            float scale, Material material, float mass, float airResistCoeff,
+            float straightening, GameTimer gameTimer, SpawnReceiver entityDeposit, float thrustSquared
+    ) {
+        super(id, initialPosition, initialVelocity, initialRotation, mass, scale, gameTimer, entityDeposit);
+        this.airResistCoeff = airResistCoeff;
+        this.surfaceMaterial = material;
+        this.input = controller;
+
+        liftFactor = 0;
+        throttlePower = 0;
+        brakePower = 0;
+        yawAcc = 0;
+        pitchAcc = 0;
+        rollAcc = 0;
+        yPreservation = 1 - straightening;
+        zPreservation = 1 - straightening;
+        rotationPreserveFactor = 0.9f;
+        gunAlpha = null;
+        gunBeta = null;
+        maxHeath = 1;
+        defaultThrustSquared = thrustSquared;
+    }
+
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
         gyroPhysics(deltaTime, netForce, velocity);
+
+        // in case of no guns
+        if (gunAlpha == null) return;
 
         final PosVector gunMount = new PosVector(position);
         gunMount.add(relativeStateDirection(new DirVector(10, 0, -2)));
@@ -224,9 +260,8 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     @Override
-    public void impact(PosVector impact, float power) {
+    public void impact(float power) {
         hitPoints -= power + 1;
-        if (isDead()) entityDeposit.addParticles(this.explode());
     }
 
     public boolean isDead() {
@@ -271,46 +306,10 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     /**
      * @return current position of the pilot's eyes in world-space
      */
-    public abstract DirVector getPilotEyePosition();
-
-    /**
-     * #BOOM This method does not remove this entity, only generate particles. It does however set the number of
-     * hitpoints to 0, so it will be scheduled for removal, if necessary.
-     * @return the generated particles resulting from this entity
-     */
-    public ParticleCloud explode() {
-        hitPoints = 0;
-
-        float force = EXPLOSION_POWER;
-        ParticleCloud result = new ParticleCloud();
-        ShadowMatrix sm = new ShadowMatrix();
-        Toolbox.print(getVelocity());
-
-        Consumer<Shape> particleMapper = (shape) -> shape.getPlaneStream()
-//                .parallel()
-                .map(p -> Particles.splitIntoParticles(p, sm, this.getPosition(), force, Color4f.GREY, getVelocity()))
-                .forEach(result::merge);
-
-        toLocalSpace(sm, () -> create(sm, particleMapper));
-
-        for (int i = 0; i < ClientSettings.FIRE_PARTICLE_DENSITY; i++) {
-            result.addParticle(getPosition(), force * 2, 2);
-        }
-
-        new AudioSource(Sounds.explosion, getPosition(), 1f, 1f);
-
-        return result;
-    }
+    public abstract PosVector getPilotEyePosition();
 
     private static float instantPreserveFraction(float rotationPreserveFactor, float deltaTime) {
         return (float) (StrictMath.pow(rotationPreserveFactor, deltaTime));
-    }
-
-    /**
-     * sets this jet to the middle of the world
-     */
-    public void set() {
-        set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
     }
 
     /**

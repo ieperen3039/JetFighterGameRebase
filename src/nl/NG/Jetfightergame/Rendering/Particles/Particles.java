@@ -1,9 +1,12 @@
 package nl.NG.Jetfightergame.Rendering.Particles;
 
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -13,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -21,10 +25,43 @@ import java.util.stream.Collectors;
  * created on 12-1-2018.
  */
 public final class Particles {
-    private static final float RANDOM_ROTATION = 0.2f;
-    private static final int FIRE_LINGER_TIME = 2;
+    private static final float FIRE_LINGER_TIME = 2;
     private static final int METAL_LINGER_TIME = 3;
-    private static final int FIRE_PARTICLE_SPLITS = 2;
+
+    public static ParticleCloud explosion(PosVector position, Vector3fc direction, Color4f color1, Color4f color2, float power){
+        ParticleCloud result = new ParticleCloud();
+
+        for (int i = 0; i < ClientSettings.EXPLOSION_PARTICLE_DENSITY; i++) {
+            DirVector movement = DirVector.random();
+            movement.add(direction);
+            float red = Toolbox.randomBetween(color1.red, color2.red);
+            float green = Toolbox.randomBetween(color1.green, color2.green);
+            float blue = Toolbox.randomBetween(color1.blue, color2.blue);
+            float alpha = Toolbox.randomBetween(color1.alpha, color2.alpha);
+            result.addParticle(position, movement, power, FIRE_LINGER_TIME, new Color4f(red, green, blue, alpha));
+        }
+
+        return result;
+    }
+
+    /**
+     * splits the target entity into particles.
+     * @param target an entity. It is not modified in the process
+     * @param force the force of how much the particles spread
+     * @return a cloud of particles, not loaded.
+     */
+    public static ParticleCloud splitIntoParticles(MovingEntity target, float force){
+        ParticleCloud result = new ParticleCloud();
+        ShadowMatrix sm = new ShadowMatrix();
+
+        Consumer<Shape> particleMapper = (shape) -> shape.getPlaneStream()
+//                .parallel()
+                .map(p -> Particles.splitIntoParticles(p, sm, target.getPosition(), force, Color4f.GREY, target.getVelocity()))
+                .forEach(result::addAll);
+
+        target.toLocalSpace(sm, () -> target.create(sm, particleMapper));
+        return result;
+    }
 
     /**
      * generate particles for the given plane
@@ -79,7 +116,7 @@ public final class Particles {
             DirVector movement = new DirVector();
             DirVector random = DirVector.random();
 
-            float randFloat = ServerSettings.random.nextFloat();
+            float randFloat = Toolbox.random.nextFloat();
 
             launchDir.add(random.scale(jitter, random), movement)
                     .scale(speed * (1 - randFloat), movement);

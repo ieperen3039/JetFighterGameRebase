@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Particles;
 
-import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -46,29 +46,32 @@ public class ParticleCloud {
      */
     public void addParticle(PosVector A, PosVector B, PosVector C, DirVector movement, Vector3f angVec, Color4f color, float rotationSpeed, float timeToLive) {
         bulk.add(new Particle(A, B, C, movement, color, angVec, rotationSpeed, timeToLive));
-        timeToLive = Math.max(timeUntilFade, timeToLive);
+        timeUntilFade = Math.max(timeUntilFade, timeToLive);
     }
 
     /**
      *
      * @throws NullPointerException if {@link #writeToGL(float)} has been called before this method
      * @param position position of the middle of the particle
-     * @param power a maximum speed for the particle. The actual speed will be random linear distributed between this and 0
+     * @param direction the direction where this particle moves to
+     * @param jitter a random speed at which this particle actual direction is offset to direction.
+*               If direction is the zero vector, the actual speed will be random linear distributed between this and 0
      * @param maxTTL maximum time to live. Actual time will be random cubic distributed between this and 0
+     * @param color
      */
-    public void addParticle(PosVector position, float power, float maxTTL){
-        final Color4f fire = new Color4f(1, ServerSettings.random.nextFloat(), 0);
-        final float randFloat = ServerSettings.random.nextFloat();
+    public void addParticle(PosVector position, DirVector direction, float jitter, float maxTTL, Color4f color){
+        final float randFloat = Toolbox.random.nextFloat();
         final DirVector random = DirVector.randomOrb();
-        final float rotationSpeed = 2 + (2 / randFloat);
-        random.mul(power * randFloat);
 
-        addParticle(position, random, fire, DirVector.random(), rotationSpeed, randFloat * randFloat * randFloat * maxTTL);
+        final float rotationSpeed = 2 + (2 / randFloat);
+        random.mul(jitter * randFloat).add(direction);
+
+        addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * randFloat * maxTTL);
     }
 
     public void addParticle(PosVector position, DirVector movement, Color4f color, DirVector rotationVector, float rotationSpeed, float timeToLive) {
         bulk.add(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive));
-        timeToLive = Math.max(timeUntilFade, timeToLive);
+        timeUntilFade = Math.max(timeUntilFade, timeToLive);
     }
 
     /**
@@ -106,8 +109,8 @@ public class ParticleCloud {
             vaoId = glGenVertexArrays();
             glBindVertexArray(vaoId);
 
-            posRelVboID = loadToGL(posRelBuffer, 0, 3); // Position VBO
-            posMidVboID = loadToGL(posMidBuffer, 1, 3); // Vertex normals VBO
+            posRelVboID = loadToGL(posRelBuffer, 0, 3); // Position relative to middle VBO
+            posMidVboID = loadToGL(posMidBuffer, 1, 3); // Position of triangle middle VBO
             rotVboID = loadToGL(rotBuffer, 2, 4); // Rotation VBO
             moveVboID = loadToGL(moveBuffer, 3, 3); // Movement VBO
             colorVboID = loadToGL(colorBuffer, 4, 4); // Color VBO
@@ -143,11 +146,11 @@ public class ParticleCloud {
      */
     public void render() {
         glBindVertexArray(vaoId);
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3);
-        glEnableVertexAttribArray(4);
+        glEnableVertexAttribArray(0); // Position relative to middle VBO
+        glEnableVertexAttribArray(1); // Position of triangle middle VBO
+        glEnableVertexAttribArray(2); // Rotation VBO
+        glEnableVertexAttribArray(3); // Movement VBO
+        glEnableVertexAttribArray(4); // Color VBO
 
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 
@@ -193,7 +196,7 @@ public class ParticleCloud {
      * @param other another particle cloud. The other will not be modified
      * @throws NullPointerException if this or the other has called {@link #writeToGL(float)} previously
      */
-    public void merge(ParticleCloud other) {
+    public void addAll(ParticleCloud other) {
         this.bulk.addAll(other.bulk);
     }
 

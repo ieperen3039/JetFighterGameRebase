@@ -6,8 +6,10 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -64,8 +66,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     }
 
     @Override
-    public void addParticles(ParticleCloud newParticles) {
-        // no
+    public void addExplosion(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
+        connections.forEach(c-> c.sendExplosionSpawn(position, direction, spread, color1, color2));
     }
 
     @Override

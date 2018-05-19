@@ -6,10 +6,10 @@ import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.GridMesh;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.OpenSimplexNoise;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector2f;
@@ -82,7 +82,7 @@ public class SimplexCave implements Touchable {
 
     /** @return random between -scatter and scatter */
     private static float getRandom(float scatter) {
-        return ((2 * ServerSettings.random.nextFloat()) - 1f) * scatter;
+        return ((2 * Toolbox.random.nextFloat()) - 1f) * scatter;
     }
 
     @Override

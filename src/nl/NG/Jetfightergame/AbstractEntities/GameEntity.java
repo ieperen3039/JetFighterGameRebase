@@ -177,6 +177,9 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public boolean checkCollisionWith(Touchable other, float deltaTime) {
+        // projectiles cannot be hit
+        if (other instanceof Projectile) return false;
+
         Collision newCollision = hitPoints.stream()
                 // see which points collide with the other
                 .map(point -> getPointCollision(point, other, deltaTime))
@@ -253,17 +256,16 @@ public abstract class GameEntity implements MovingEntity {
         return firstHit.get();
     }
 
-    private List<TrackedVector<PosVector>> calculateHitpointMovement() {
-        // we consider from extrapolated perspective
+    protected List<TrackedVector<PosVector>> calculateHitpointMovement() {
         final List<PosVector> previous = getPointPositions(false);
-        final List<PosVector> current = getPointPositions(true);
+        final List<PosVector> next = getPointPositions(true);
 
         // combine both lists into one list
         List<TrackedVector<PosVector>> points = new ArrayList<>(previous.size());
         Iterator<PosVector> previousPoints = previous.iterator();
-        Iterator<PosVector> currentPoints = current.iterator();
+        Iterator<PosVector> nextPoints = next.iterator();
         while (previousPoints.hasNext()) {
-            points.add(new TrackedVector<>(previousPoints.next(), currentPoints.next()));
+            points.add(new TrackedVector<>(previousPoints.next(), nextPoints.next()));
         }
         return points;
     }
@@ -375,13 +377,6 @@ public abstract class GameEntity implements MovingEntity {
     public String toString() {
         return getClass().getSimpleName() + "(" + idNumber() + ")";
     }
-
-    /**
-     * react on collision
-     * @param impact hitPosition of the incoming object
-     * @param power  magnitude of the impact
-     */
-    public abstract void impact(PosVector impact, float power);
 
     public void resetCache() {
         positionInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, position);

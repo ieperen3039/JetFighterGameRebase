@@ -2,7 +2,9 @@ package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Collection;
 
@@ -31,10 +33,14 @@ public interface SpawnReceiver {
     }
 
     /**
-     * adds a collection of particles to the world
-     * @param newParticles some particles
+     * adds an explosion to the world
+     * @param position
+     * @param direction
+     * @param spread
+     * @param color1
+     * @param color2
      */
-    void addParticles(ParticleCloud newParticles);
+    void addExplosion(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2);
 
     GameTimer getTimer();
 }

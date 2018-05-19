@@ -8,9 +8,9 @@ import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -174,7 +174,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addParticles(ParticleCloud newParticles) {
+    public void addExplosion(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
         game.addParticles(newParticles);
     }
 

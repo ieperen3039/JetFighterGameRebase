@@ -65,8 +65,8 @@ public class BasicJet extends AbstractJet {
     }
 
     @Override
-    public DirVector getPilotEyePosition() {
-        return relativeInterpolatedDirection(new DirVector(3, 0, 1));
+    public PosVector getPilotEyePosition() {
+        return relativeInterpolatedDirection(new DirVector(3, 0, 1)).toPosVector();
     }
 
     @Override

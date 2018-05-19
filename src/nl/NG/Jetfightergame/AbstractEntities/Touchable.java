@@ -53,4 +53,10 @@ public interface Touchable extends Drawable {
      * @param cause the data of the collision from causer's perspective
      */
     void acceptCollision(Collision cause);
+
+    /**
+     * react on collision
+     * @param power  magnitude of the impact
+     */
+    void impact(float power);
 }

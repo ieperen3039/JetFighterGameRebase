@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Vectors;
 
-import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
 
@@ -42,9 +42,9 @@ public abstract class Vector extends Vector3f implements Serializable {
      */
     public static DirVector random() {
         return new DirVector(
-                (2 * ServerSettings.random.nextFloat()) - 1,
-                (2 * ServerSettings.random.nextFloat()) - 1,
-                (2 * ServerSettings.random.nextFloat()) - 1
+                (2 * Toolbox.random.nextFloat()) - 1,
+                (2 * Toolbox.random.nextFloat()) - 1,
+                (2 * Toolbox.random.nextFloat()) - 1
         );
     }
 
@@ -93,11 +93,11 @@ public abstract class Vector extends Vector3f implements Serializable {
      * @return a vector with length < 1 that is universally distributed. Would form a solid sphere when created points
      */
     public static DirVector randomOrb() {
-        float phi = ServerSettings.random.nextFloat() * 6.2832f;
-        float costheta = (ServerSettings.random.nextFloat() * 2) - 1;
+        float phi = Toolbox.random.nextFloat() * 6.2832f;
+        float costheta = (Toolbox.random.nextFloat() * 2) - 1;
 
         float theta = (float) Math.acos(costheta);
-        float r = (float) Math.cbrt(ServerSettings.random.nextFloat());
+        float r = (float) Math.cbrt(Toolbox.random.nextFloat());
 
         float x = (float) (r * sin(theta) * cos(phi));
         float y = (float) (r * sin(theta) * sin(phi));

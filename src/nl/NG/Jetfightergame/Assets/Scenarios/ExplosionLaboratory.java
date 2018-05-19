@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Assets.GeneralEntities.SimpleBullet;
+import nl.NG.Jetfightergame.Assets.Weapons.SimpleBullet;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -48,7 +48,7 @@ public class ExplosionLaboratory extends GameState {
             final DirVector vel = new DirVector(0, 1, 0);
             pos.negate(vel).add(DirVector.random(), vel);
             dynamicEntities.add(
-                    new SimpleBullet(pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer(), deposit, Identity.next())
+                    new SimpleBullet(Identity.next(), pos, vel.reducedTo(10, vel), new Quaternionf(), getTimer(), deposit)
             );
         }
 
