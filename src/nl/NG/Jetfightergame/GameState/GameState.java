@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -13,10 +14,12 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
@@ -25,10 +28,11 @@ import static org.lwjgl.opengl.GL11.glDisable;
  * @author Geert van Ieperen
  * created on 11-12-2017.
  */
-public abstract class GameState implements Environment, NetForceProvider {
+public abstract class GameState implements Environment, NetForceProvider, PathDescription {
 
     protected final Collection<ParticleCloud> particles = new ConcurrentArrayList<>();
-    protected final Collection<Pair<PosVector, Color4f>> lights = new ConcurrentArrayList<>();
+    protected final Collection<ParticleCloud> newParticles = new CopyOnWriteArrayList<>();
+    protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
 
     private EntityManagement physicsEngine;
     private final GameTimer time;
@@ -52,6 +56,10 @@ public abstract class GameState implements Environment, NetForceProvider {
             default:
                 throw new UnsupportedOperationException("unsupported collision detection level:" + collisionDetLevel);
         }
+
+        ParticleCloud c = new ParticleCloud();
+        c.addParticle(PosVector.zeroVector(), DirVector.zeroVector(), 0, 10, Color4f.WHITE);
+        newParticles.add(c);
     }
 
     @Override
@@ -82,7 +90,7 @@ public abstract class GameState implements Environment, NetForceProvider {
         if (deltaTime == 0f) return;
 
         if (ServerSettings.MAX_COLLISION_ITERATIONS != 0)
-            physicsEngine.analyseCollisions(currentTime, deltaTime, this::getMiddleOfPath);
+            physicsEngine.analyseCollisions(currentTime, deltaTime, this);
 
         // update new state
         physicsEngine.updateEntities(currentTime);
@@ -121,6 +129,13 @@ public abstract class GameState implements Environment, NetForceProvider {
     @Override
     public void drawParticles() {
         float t = time.getRenderTime().current();
+
+        if (!newParticles.isEmpty()) {
+            newParticles.forEach(p -> p.writeToGL(t));
+            particles.addAll(newParticles);
+            newParticles.clear();
+        }
+
         particles.removeIf(p -> p.disposeIfFaded(t));
         particles.forEach(ParticleCloud::render);
     }
@@ -156,10 +171,8 @@ public abstract class GameState implements Environment, NetForceProvider {
     }
 
     @Override
-    public void addParticles(ParticleCloud newParticles) {
-        float currentRender = time.getRenderTime().current();
-        newParticles.writeToGL(currentRender);
-        particles.add(newParticles);
+    public void addParticles(ParticleCloud cloud) {
+        newParticles.add(cloud);
     }
 
     public void cleanUp() {

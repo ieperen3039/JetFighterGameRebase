@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -324,7 +323,6 @@ public abstract class GameEntity implements MovingEntity {
         float v = (float) sqrt((2 * energy) / mass);
 
         DirVector dv = direction.scale(v, direction);
-        Toolbox.print(dv);
         extraVelocity.add(dv);
         position.add(extraVelocity.scale(deltaTime, dv), extraPosition);
     }

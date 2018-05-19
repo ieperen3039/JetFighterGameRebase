@@ -32,6 +32,7 @@ public class ParticleCloud {
     private ArrayList<Particle> bulk = new ArrayList<>();
     private float timeUntilFade = 0;
     private float initialTime;
+    private int vertexCount;
 
     /**
      * @throws NullPointerException if {@link #writeToGL(float)} has been called before this method
@@ -78,15 +79,17 @@ public class ParticleCloud {
      * @param currentTime initial time in seconds
      */
     public void writeToGL(float currentTime) {
+        Toolbox.checkGLError();
         int n = bulk.size();
         initialTime = currentTime;
 
-        FloatBuffer posRelBuffer = MemoryUtil.memAllocFloat(3 * 3 * n);
-        FloatBuffer posMidBuffer = MemoryUtil.memAllocFloat(3 * 3 * n);
-        FloatBuffer rotBuffer = MemoryUtil.memAllocFloat(3 * 4 * n);
-        FloatBuffer moveBuffer = MemoryUtil.memAllocFloat(3 * 3 * n);
-        FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(3 * 4 * n);
-        FloatBuffer ttlBuffer = MemoryUtil.memAllocFloat(3 * n);
+        vertexCount = 3 * n;
+        FloatBuffer posRelBuffer = MemoryUtil.memAllocFloat(3 * vertexCount);
+        FloatBuffer posMidBuffer = MemoryUtil.memAllocFloat(3 * vertexCount);
+        FloatBuffer rotBuffer = MemoryUtil.memAllocFloat(4* vertexCount);
+        FloatBuffer moveBuffer = MemoryUtil.memAllocFloat(3 * vertexCount);
+        FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(4 * vertexCount);
+        FloatBuffer ttlBuffer = MemoryUtil.memAllocFloat(vertexCount);
 
         for (Particle p : bulk) {
             for (int i = 0; i < 3; i++) { // every vertex must have its own copy of the attributes
@@ -114,9 +117,11 @@ public class ParticleCloud {
             rotVboID = loadToGL(rotBuffer, 2, 4); // Rotation VBO
             moveVboID = loadToGL(moveBuffer, 3, 3); // Movement VBO
             colorVboID = loadToGL(colorBuffer, 4, 4); // Color VBO
+            Toolbox.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
+            Toolbox.checkGLError();
 
         } finally {
             MemoryUtil.memFree(posRelBuffer);
@@ -152,7 +157,7 @@ public class ParticleCloud {
         glEnableVertexAttribArray(3); // Movement VBO
         glEnableVertexAttribArray(4); // Color VBO
 
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);

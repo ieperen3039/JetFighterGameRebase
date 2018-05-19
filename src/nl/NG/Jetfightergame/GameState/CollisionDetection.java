@@ -385,26 +385,33 @@ public class CollisionDetection implements EntityManagement {
      */
     private void deleteOldEntities(Collection<MovingEntity> entities) {
         int nOfEntities = xLowerSorted.length;
-        int xMax = nOfEntities - 1;
-        int yMax = nOfEntities - 1;
-        int zMax = nOfEntities - 1;
+        int xi = 0;
+        int yi = 0;
+        int zi = 0;
 
-        for (int i = 0; i < nOfEntities; i++) {
+        CollisionEntity[] xList = new CollisionEntity[nOfEntities];
+        CollisionEntity[] yList = new CollisionEntity[nOfEntities];
+        CollisionEntity[] zList = new CollisionEntity[nOfEntities];
+
+        for (CollisionEntity target : entityArray()) {
             // this method results in an (nOfEntities * entities.size()) running time for sorting
-            if (entities.contains(xLowerSorted[i].entity)) {
-                xLowerSorted[i] = xLowerSorted[xMax--];
+            if (!entities.contains(target.entity)) {
+                target.setId(xi);
+                xList[xi++] = target;
             }
-            if (entities.contains(yLowerSorted[i].entity)) {
-                yLowerSorted[i] = yLowerSorted[yMax--];
+            if (!entities.contains(target.entity)) {
+                target.setId(yi);
+                yList[yi++] = target;
             }
-            if (entities.contains(zLowerSorted[i].entity)) {
-                zLowerSorted[i] = zLowerSorted[zMax--];
+            if (!entities.contains(target.entity)) {
+                target.setId(zi);
+                zList[zi++] = target;
             }
         }
 
-        xLowerSorted = Arrays.copyOf(xLowerSorted, xMax);
-        yLowerSorted = Arrays.copyOf(yLowerSorted, yMax);
-        zLowerSorted = Arrays.copyOf(zLowerSorted, zMax);
+        xLowerSorted = Arrays.copyOf(xList, xi);
+        yLowerSorted = Arrays.copyOf(yList, yi);
+        zLowerSorted = Arrays.copyOf(zList, zi);
     }
 
     /**

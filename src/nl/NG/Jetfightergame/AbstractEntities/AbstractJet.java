@@ -163,6 +163,11 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         gunBeta = null;
         maxHeath = 1;
         defaultThrustSquared = thrustSquared;
+
+        forward = new DirVector();
+        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
+        velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
     }
 
     @Override

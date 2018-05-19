@@ -153,6 +153,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
     }
 
     @Override
+    protected void exceptionHandler(Exception ex) {
+        engine.exitGame();
+    }
+
+    @Override
     public void cleanup() {
         shaderManager.cleanup();
         overlay.removeHudItem(gravityHud);

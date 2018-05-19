@@ -86,11 +86,13 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         for (MovingEntity object : entities) {
             if (MortalEntity.isDead(object)){
                 connections.forEach(conn -> conn.sendEntityRemove(object));
+                world.removeEntity(object.idNumber());
+
+            } else {
+                connections.forEach(conn -> conn.sendEntityUpdate(object, time));
             }
         }
 
-        connections.parallelStream()
-                .forEach(conn -> entities.forEach(e -> conn.sendEntityUpdate(e, time)));
         connections.forEach(ServerConnection::flush);
     }
 
