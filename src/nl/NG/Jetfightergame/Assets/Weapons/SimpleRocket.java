@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -22,22 +21,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_1;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
 
 /**
  * @author Geert van Ieperen
  * created on 28-1-2018.
  */
-public class SimpleBullet extends AbstractJet implements Projectile {
+public class SimpleRocket extends AbstractJet implements Projectile {
 
-    private static final int SPARK_DENSITY = 10;
     private static final float MASS = 0.1f;
     private static final float AIR_RESIST_COEFF = 0f;
     private static final float DIRECTION_STRAIGHTEN = 0.01f;
-    private static final float IMPACT_POWER = 5f;
-    private float timeToLive = 2f;
+    private static final float IMPACT_POWER = 100f;
+    private static final int DENSITY = 100;
+    private float timeToLive = 5f;
 
-    public SimpleBullet(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
+    public SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
                         GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         super(
@@ -73,7 +73,10 @@ public class SimpleBullet extends AbstractJet implements Projectile {
     @Override
     public ParticleCloud explode() {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
-        return Particles.explosion(interpolatedPosition(), DirVector.zeroVector(), Color4f.WHITE, EXPLOSION_COLOR_2, IMPACT_POWER, SPARK_DENSITY);
+        return Particles.explosion(
+                interpolatedPosition(), DirVector.zeroVector(),
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, IMPACT_POWER, DENSITY
+        );
     }
 
     @Override

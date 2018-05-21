@@ -203,8 +203,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power) {
-        game.addParticles(Particles.explosion(position, direction, color1, color2, power));
+    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density) {
+        game.addParticles(Particles.explosion(position, direction, color1, color2, power, density));
     }
 
     public AbstractJet getPlayer() {

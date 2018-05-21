@@ -36,7 +36,7 @@ public interface SpawnReceiver {
 
     /**
      * adds an explosion of given magnitude to the game's rendering
-     * @see nl.NG.Jetfightergame.Rendering.Particles.Particles#explosion(PosVector, DirVector, Color4f, Color4f, float)
+     * @see nl.NG.Jetfightergame.Rendering.Particles.Particles#explosion(PosVector, DirVector, Color4f, Color4f, float, int)
      */
-    void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power);
+    void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density);
 }

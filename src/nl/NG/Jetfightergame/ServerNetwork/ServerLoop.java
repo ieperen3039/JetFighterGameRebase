@@ -72,7 +72,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     }
 
     @Override
-    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power) {
+    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density) {
         connections.forEach(conn -> conn.sendExplosionSpawn(position, direction, power, color1, color2));
     }
 

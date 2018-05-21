@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Weapons.SimpleBullet;
+import nl.NG.Jetfightergame.Assets.Weapons.SimpleRocket;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -19,7 +20,7 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
  * @author Geert van Ieperen created on 10-5-2018.
  */
 public enum  EntityClass {
-    BASIC_JET, SIMPLE_BULLET, FALLING_CUBE_SMALL, FALLING_CUBE_LARGE;
+    BASIC_JET, SIMPLE_BULLET, FALLING_CUBE_SMALL, FALLING_CUBE_LARGE, SIMPLE_ROCKET;
 
     /**
      * @param id a number n corresponing to an enum ordinal
@@ -49,6 +50,8 @@ public enum  EntityClass {
                 return jet;
             case SIMPLE_BULLET:
                 return new SimpleBullet(id, position, velocity, rotation, timer, game);
+            case SIMPLE_ROCKET:
+                return new SimpleRocket(id, position, velocity, rotation, timer, game);
             case FALLING_CUBE_SMALL:
                 return new FallingCube(id, Material.SILVER, CUBE_MASS_SMALL, CUBE_SIZE_SMALL, position, velocity, rotation, timer, game);
             case FALLING_CUBE_LARGE:

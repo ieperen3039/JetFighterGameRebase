@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.AxisAngle4f;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryUtil;
@@ -61,7 +62,7 @@ public class ParticleCloud {
      * @param color
      */
     public void addParticle(PosVector position, DirVector direction, float jitter, float maxTTL, Color4f color){
-        final float randFloat = Toolbox.random.nextFloat();Toolbox.printFrom(2, "");
+        final float randFloat = Toolbox.random.nextFloat();
         final DirVector random = DirVector.randomOrb();
 
         final float rotationSpeed = 2 + (2 / randFloat);
@@ -89,7 +90,7 @@ public class ParticleCloud {
         FloatBuffer rotBuffer = MemoryUtil.memAllocFloat(4* vertexCount);
         FloatBuffer moveBuffer = MemoryUtil.memAllocFloat(3 * vertexCount);
         FloatBuffer colorBuffer = MemoryUtil.memAllocFloat(4 * vertexCount);
-        FloatBuffer ttlBuffer = MemoryUtil.memAllocFloat(vertexCount);
+        FloatBuffer ttlBuffer = MemoryUtil.memAllocFloat(2 * vertexCount);
 
         for (Particle p : bulk) {
             for (int i = 0; i < 3; i++) { // every vertex must have its own copy of the attributes
@@ -98,7 +99,8 @@ public class ParticleCloud {
                 addAxisAngle(rotBuffer, p.rotation);
                 moveBuffer.put(p.movement.toFloatBuffer());
                 colorBuffer.put(p.color.toFloatBuffer());
-                ttlBuffer.put(p.timeToLive + currentTime);
+                ttlBuffer.put(currentTime);
+                ttlBuffer.put(currentTime + p.timeToLive);
             }
         }
 
@@ -111,7 +113,7 @@ public class ParticleCloud {
             rotVboID = loadToGL(rotBuffer, 2, 4); // Rotation VBO
             moveVboID = loadToGL(moveBuffer, 3, 3); // Movement VBO
             colorVboID = loadToGL(colorBuffer, 4, 4); // Color VBO
-            ttlVboID = loadToGL(ttlBuffer, 5, 1);
+            ttlVboID = loadToGL(ttlBuffer, 5, 2); // beginTime-endTime VBO
             Toolbox.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -167,14 +169,12 @@ public class ParticleCloud {
     }
 
     public boolean hasFaded(float currentTime){
-        return endTime < currentTime;
+        return currentTime > endTime;
     }
 
     public boolean disposeIfFaded(float currentTime) {
         if (hasFaded(currentTime)){
-            Toolbox.print(endTime, currentTime);
             dispose();
-            Toolbox.print("Faded!");
             return true;
         }
         return false;
@@ -208,7 +208,7 @@ public class ParticleCloud {
     }
 
     private class Particle {
-        public final PosVector[] sides;
+        public final PosVector[] sides; // positions relative to middle
         public final PosVector position;
         public final DirVector movement;
         public final Color4f color;
@@ -216,9 +216,12 @@ public class ParticleCloud {
         public final float timeToLive;
 
         public Particle(PosVector A, PosVector B, PosVector C, DirVector movement, Color4f color, Vector3f angVec, float rotationSpeed, float timeToLive) {
-            this.sides = new PosVector[]{A, B, C};
             this.position = new PosVector();
             this.position.set(A).add(B).add(C).div(3);
+            A.sub(position);
+            B.sub(position);
+            C.sub(position);
+            this.sides = new PosVector[]{A, B, C};
             this.movement = movement;
             this.color = color;
             this.rotation = new AxisAngle4f(rotationSpeed, angVec);
@@ -233,12 +236,9 @@ public class ParticleCloud {
             this.timeToLive = timeToLive;
 
             // random positions
-            PosVector A = new PosVector();
-            position.add(DirVector.random(), A);
-            PosVector B = new PosVector();
-            position.add(DirVector.random(), B);
-            PosVector C = new PosVector();
-            A.add(B, C).scale(-0.5f); // C = -1 * (A + B)/2
+            PosVector A = Vector.random().toPosVector();
+            PosVector B = Vector.random().toPosVector();
+            PosVector C = A.add(B, new PosVector()).scale(-0.5f); // C = -1 * (A + B)/2
             this.sides = new PosVector[]{A, B, C};
         }
     }

@@ -15,12 +15,6 @@ public final class ClientSettings {
     public static final int PHYSICS_TPS = 30;
     public static final boolean LOCAL_SERVER = true;
 
-    public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles per degree of power
-    public static final float FIRE_PARTICLE_SIZE = 0.3f;
-    public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
-    public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
-    public static final int PARTICLE_SPLITS = 0;
-
     /** sound */
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
@@ -45,4 +39,11 @@ public final class ClientSettings {
     public static int ANTIALIAS = 3;
     public static final int MAX_POINT_LIGHTS = 10;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
+
+    /** particle settings */
+    public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles in total
+    public static final float FIRE_PARTICLE_SIZE = 0.3f;
+    public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
+    public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
+    public static final int PARTICLE_SPLITS = 0;
 }

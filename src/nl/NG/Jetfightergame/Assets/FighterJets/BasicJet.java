@@ -32,7 +32,7 @@ public class BasicJet extends AbstractJet {
     public static final float ROLL_POWER = 2f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.002f;
     private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
-    private static final MachineGun GUN = new MachineGun(0.1f);
+    private static final MachineGun GUN = new MachineGun(0.2f);
 
     private final Shape shape;
 
@@ -41,11 +41,14 @@ public class BasicJet extends AbstractJet {
     }
 
     public BasicJet(int id, PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,
-                    SpawnReceiver entityDeposit, SpecialWeapon specialWeapon) {
+                    SpawnReceiver entityDeposit, SpecialWeapon specialWeapon
+    ) {
         super(id, input, initialPosition, initialRotation, 1f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.8f, renderTimer, 0.3f, 0.3f, GUN, specialWeapon, 1000, entityDeposit);
+                0.8f, renderTimer, 0.3f, 0.3f,
+                GUN, specialWeapon, 1000, entityDeposit
+        );
 
         shape = ShapeFromFile.CONCEPT_BLUEPRINT;
 

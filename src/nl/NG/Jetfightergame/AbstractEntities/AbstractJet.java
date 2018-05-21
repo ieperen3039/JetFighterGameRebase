@@ -18,8 +18,7 @@ import org.joml.Quaternionf;
 
 import java.util.Collection;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_1;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
 
 /**
  * @author Geert van Ieperen created on 30-10-2017.
@@ -266,13 +265,17 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
 
     @Override
     public void impact(float power) {
-        entityDeposit.addExplosion(position, DirVector.zeroVector(), EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, power);
         hitPoints -= power + 1;
     }
 
     @Override
     public ParticleCloud explode() {
-        return Particles.splitIntoParticles(this, 1f);
+        ParticleCloud cloud = Particles.splitIntoParticles(this, 1f);
+        cloud.addAll(
+                Particles.explosion(interpolatedPosition(), DirVector.zeroVector(),
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, 10f, EXPLOSION_PARTICLE_DENSITY)
+        );
+        return cloud;
     }
 
     public boolean isDead() {

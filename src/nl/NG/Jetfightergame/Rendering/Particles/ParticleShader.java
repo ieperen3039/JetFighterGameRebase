@@ -36,7 +36,7 @@ public class ParticleShader {
 
         link();
 
-        timeUniform = glGetUniformLocation(programId, "time");
+        timeUniform = glGetUniformLocation(programId, "currentTime");
         projectionUniform = glGetUniformLocation(programId, "viewProjectionMatrix");
     }
 

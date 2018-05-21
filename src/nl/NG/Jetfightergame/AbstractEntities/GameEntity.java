@@ -414,8 +414,8 @@ public abstract class GameEntity implements MovingEntity {
             this.secondPos = secondPos;
             this.firstRot = firstRot;
             this.secondRot = secondRot;
-            this.velocity = velocity;
-            this.forward = forward;
+            this.velocity = new DirVector(velocity);
+            this.forward = new DirVector(forward);
         }
 
         public PosVector position(float timeFraction) {
@@ -427,11 +427,11 @@ public abstract class GameEntity implements MovingEntity {
         }
 
         public DirVector velocity() {
-            return new DirVector(velocity);
+            return velocity;
         }
 
         public DirVector forward() {
-            return new DirVector(forward);
+            return forward;
         }
     }
 }

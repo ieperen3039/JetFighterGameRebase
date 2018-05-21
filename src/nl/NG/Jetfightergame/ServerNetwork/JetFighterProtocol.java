@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -200,7 +201,7 @@ public final class JetFighterProtocol {
         Color4f color1 = DataIO.readColor(DIS);
         Color4f color2 = DataIO.readColor(DIS);
 
-        return Particles.explosion(position, direction, color1, color2, power);
+        return Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY);
     }
 
     /** @return the RTT in seconds */

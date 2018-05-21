@@ -157,7 +157,7 @@ public class CollisionDetection implements EntityManagement {
 
         float rightEnergy = right.getKineticEnergy(rightToLeft);
         float leftEnergy = left.getKineticEnergy(leftToRight);
-        float sharedEnergy = (0.5f * (leftEnergy + rightEnergy)) + ServerSettings.BASE_BUMPOFF_ENERGY; // not quite but ok
+        float sharedEnergy = (0.3f * (leftEnergy + rightEnergy)) + ServerSettings.BASE_BUMPOFF_ENERGY; // not quite but ok
 
         right.applyJerk(leftToRight, sharedEnergy, deltaTime);
         left.applyJerk(rightToLeft, sharedEnergy, deltaTime);
