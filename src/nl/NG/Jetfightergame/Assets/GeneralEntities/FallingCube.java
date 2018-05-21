@@ -93,11 +93,6 @@ public class FallingCube extends GameEntity {
     }
 
     @Override
-    public void impact(float power) {
-
-    }
-
-    @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
         action.accept(GeneralShapes.CUBE);
     }

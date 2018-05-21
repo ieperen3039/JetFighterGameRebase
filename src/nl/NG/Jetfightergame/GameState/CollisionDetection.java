@@ -46,7 +46,7 @@ public class CollisionDetection implements EntityManagement {
         this.removeEntities = new ConcurrentArrayList<>();
 
         collisionCounter = () -> String.format("Collision pair count average: %1.01f", avgCollision.average());
-        Toolbox.addOnlineUpdate(collisionCounter);
+        Toolbox.printOnline(collisionCounter);
 
         xLowerSorted = new CollisionEntity[dynamicEntities.size()];
         yLowerSorted = new CollisionEntity[dynamicEntities.size()];
@@ -118,18 +118,12 @@ public class CollisionDetection implements EntityManagement {
 
 
             for (Pair<Touchable, MovingEntity> pair : collisionPairs) {
-                // if two entities collide
-                if (pair.left instanceof MovingEntity) {
+                if (pair.left instanceof MovingEntity) { // if two entities collide
                     MovingEntity left = (MovingEntity) pair.left;
-                    MovingEntity right = pair.right;
+                    bumpOff(left, pair.right, deltaTime);
 
-                    bumpOff(left, right, deltaTime);
-
-                    // if entity collides with terrain
-                } else {
-                    MovingEntity entity = pair.right;
-
-                    applyCorrection(entity, path, deltaTime);
+                } else { // if entity collides with terrain
+                    applyCorrection(pair.right, path, deltaTime);
                 }
             }
 
@@ -139,7 +133,6 @@ public class CollisionDetection implements EntityManagement {
         if (!collisionPairs.isEmpty()) {
             Toolbox.printError(collisionPairs.size() + " collisions not resolved");
         }
-
     }
 
     /**
@@ -173,13 +166,14 @@ public class CollisionDetection implements EntityManagement {
     private void applyCorrection(MovingEntity target, PathDescription path, float deltaTime) {
         PosVector jetPosition = target.getPosition();
         PosVector middle = path.getMiddleOfPath(jetPosition);
-        DirVector toMid = jetPosition.to(middle, new DirVector());
+        DirVector targetToMid = jetPosition.to(middle, new DirVector());
 
-        toMid.normalize();
-        DirVector notMid = toMid.negate(new DirVector());
-        float targetEnergy = target.getKineticEnergy(notMid) + ServerSettings.BASE_BUMPOFF_ENERGY;
+        targetToMid.normalize();
+        DirVector midToTarget = targetToMid.negate(new DirVector());
 
-        target.applyJerk(toMid, targetEnergy, deltaTime);
+        float targetEnergy = target.getKineticEnergy(midToTarget) + ServerSettings.BASE_BUMPOFF_ENERGY;
+
+        target.applyJerk(targetToMid, targetEnergy, deltaTime);
     }
 
     /**

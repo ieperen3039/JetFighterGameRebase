@@ -56,7 +56,7 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
-    private static final float BASE_SPEED = 100f;
+    public static final float BASE_SPEED = 100f;
     private final float defaultThrustSquared;
 
     /**

@@ -71,8 +71,8 @@ public abstract class AbstractGameLoop extends Thread {
         if (ServerSettings.DEBUG) Toolbox.print(loopName + " enabled");
         float deltaTime = 0;
 
-        Toolbox.addOnlineUpdate(tickCounter);
-        Toolbox.addOnlineUpdate(possessionCounter);
+        Toolbox.printOnline(tickCounter);
+        Toolbox.printOnline(possessionCounter);
 
         try {
             pauseBlock.await();

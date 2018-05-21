@@ -13,6 +13,7 @@ import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.Pair;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -135,6 +136,13 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         particles.forEach(ParticleCloud::render);
     }
 
+    public int getParticleCount() {
+        Float t = getTimer().getRenderTime().current();
+        return particles.stream()
+                .mapToInt(p -> p.estParticlesAt(t))
+                .sum();
+    }
+
     public GameTimer getTimer() {
         return time;
     }
@@ -167,7 +175,11 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
 
     @Override
     public void addParticles(ParticleCloud cloud) {
-        newParticles.add(cloud);
+        if (cloud.readyToLoad()) {
+            newParticles.add(cloud);
+        } else {
+            Toolbox.printError("Tried adding particles that are either loaded, or without particles");
+        }
     }
 
     public void cleanUp() {

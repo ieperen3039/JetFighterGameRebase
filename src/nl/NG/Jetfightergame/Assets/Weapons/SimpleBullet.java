@@ -42,7 +42,7 @@ public class SimpleBullet extends AbstractJet implements Projectile {
     ) {
         super(
                 id, Controller.EMPTY, initialPosition, initialRotation, initialVelocity, 1f, Material.SILVER, MASS,
-                AIR_RESIST_COEFF, DIRECTION_STRAIGHTEN,
+                AIR_RESIST_COEFF, 0,
                 gameTimer, entityDeposit, 0
         );
     }

@@ -33,8 +33,8 @@ public class SimpleRocket extends AbstractJet implements Projectile {
     private static final float MASS = 0.1f;
     private static final float AIR_RESIST_COEFF = 0f;
     private static final float DIRECTION_STRAIGHTEN = 0.01f;
-    private static final float IMPACT_POWER = 100f;
-    private static final int DENSITY = 100;
+    private static final float IMPACT_POWER = 20;
+    private static final int DENSITY = 1000;
     private float timeToLive = 5f;
 
     public SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,

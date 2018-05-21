@@ -112,7 +112,11 @@ public final class Toolbox {
         out = newOutput;
     }
 
-    public static void addOnlineUpdate(Supplier<String> source){
+    /**
+     * adds a line to the online output roll
+     * @param source
+     */
+    public static void printOnline(Supplier<String> source){
         if (source == null) {
             Toolbox.printError("source is null");
         }
@@ -123,7 +127,7 @@ public final class Toolbox {
      * puts a message on the debug screen, which is updated every frame
      * @param accepter a method that prints the given string, on the same position as a previous call to this method
      */
-    public static void printOnline(Consumer<String> accepter){
+    public static void setOnlineOutput(Consumer<String> accepter){
         for (Supplier<String> source : onlinePrints) {
             String message = source.get();
             accepter.accept(message);

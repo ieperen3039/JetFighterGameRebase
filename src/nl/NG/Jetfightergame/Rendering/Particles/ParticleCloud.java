@@ -12,6 +12,8 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLECLOUD_MIN_TIME;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLECLOUD_SPLIT_SIZE;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -32,7 +34,8 @@ public class ParticleCloud {
     private int ttlVboID;
 
     private ArrayList<Particle> bulk = new ArrayList<>();
-    private float endTime = 0;
+    private float maxTTL = 0;
+    private float minTTL = Float.MAX_VALUE;
     private int vertexCount;
 
     /**
@@ -47,8 +50,7 @@ public class ParticleCloud {
      * @param timeToLive actual time to live
      */
     public void addParticle(PosVector A, PosVector B, PosVector C, DirVector movement, Vector3f angVec, Color4f color, float rotationSpeed, float timeToLive) {
-        bulk.add(new Particle(A, B, C, movement, color, angVec, rotationSpeed, timeToLive));
-        endTime = Math.max(endTime, timeToLive);
+        addParticle(new Particle(A, B, C, movement, color, angVec, rotationSpeed, timeToLive));
     }
 
     /**
@@ -58,8 +60,8 @@ public class ParticleCloud {
      * @param direction the direction where this particle moves to
      * @param jitter a random speed at which this particle actual direction is offset to direction.
 *               If direction is the zero vector, the actual speed will be random linear distributed between this and 0
-     * @param maxTTL maximum time to live. Actual time will be random cubic distributed between this and 0
-     * @param color
+     * @param maxTTL maximum time to live. Actual time will be random quadratic distributed between this and 0
+     * @param color color of this particle
      */
     public void addParticle(PosVector position, DirVector direction, float jitter, float maxTTL, Color4f color){
         final float randFloat = Toolbox.random.nextFloat();
@@ -72,17 +74,30 @@ public class ParticleCloud {
     }
 
     public void addParticle(PosVector position, DirVector movement, Color4f color, DirVector rotationVector, float rotationSpeed, float timeToLive) {
-        bulk.add(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive));
-        endTime = Math.max(endTime, timeToLive);
+        addParticle(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive));
+    }
+
+    private void addParticle(Particle p) {
+        bulk.add(p);
+        maxTTL = Math.max(maxTTL, p.timeToLive);
+        minTTL = Math.min(minTTL, p.timeToLive);
     }
 
     /**
      * @param currentTime initial time in seconds
      */
     public void writeToGL(float currentTime) {
+        float despawnPeriod = maxTTL - minTTL;
+
+        if ((despawnPeriod > PARTICLECLOUD_MIN_TIME) && (bulk.size() > PARTICLECLOUD_SPLIT_SIZE)) {
+            float mid = minTTL + (despawnPeriod / 2);
+            splitOff(mid, currentTime);
+        }
+
         Toolbox.checkGLError();
         int n = bulk.size();
-        endTime += currentTime;
+        maxTTL += currentTime;
+        minTTL += currentTime;
 
         vertexCount = 3 * n;
         FloatBuffer posRelBuffer = MemoryUtil.memAllocFloat(3 * vertexCount);
@@ -113,7 +128,7 @@ public class ParticleCloud {
             rotVboID = loadToGL(rotBuffer, 2, 4); // Rotation VBO
             moveVboID = loadToGL(moveBuffer, 3, 3); // Movement VBO
             colorVboID = loadToGL(colorBuffer, 4, 4); // Color VBO
-            ttlVboID = loadToGL(ttlBuffer, 5, 2); // beginTime-endTime VBO
+            ttlVboID = loadToGL(ttlBuffer, 5, 2); // beginTime-maxTTL VBO
             Toolbox.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -130,6 +145,39 @@ public class ParticleCloud {
         }
 
         bulk = null;
+    }
+
+    public int estParticlesAt(float currentTime){
+        if (bulk != null) return 0;
+
+        float fraction = 1 - ((currentTime - minTTL) / (maxTTL - minTTL));
+        if (fraction < 0) return 0;
+        if (fraction > 1) fraction = 1;
+
+        return (int) ((vertexCount / 3) * fraction * fraction); // assuming quadratic despawn
+    }
+
+    /**
+     * splits off all particles with timeToLive more than the given TTL
+     * @param newTTL the new maximum ttl of these particles
+     * @param currentTime
+     */
+    private void splitOff(float newTTL, float currentTime) {
+        ParticleCloud newCloud = new ParticleCloud();
+        ArrayList<Particle> newBulk = new ArrayList<>();
+
+        for (Particle p : bulk) {
+            if (p.timeToLive > newTTL){
+                newCloud.addParticle(p);
+            } else {
+                newBulk.add(p);
+            }
+        }
+
+        newCloud.writeToGL(currentTime);
+
+        maxTTL = newTTL;
+        bulk = newBulk;
     }
 
     private static int loadToGL(FloatBuffer buffer, int index, int itemSize) {
@@ -169,7 +217,7 @@ public class ParticleCloud {
     }
 
     public boolean hasFaded(float currentTime){
-        return currentTime > endTime;
+        return currentTime > maxTTL;
     }
 
     public boolean disposeIfFaded(float currentTime) {
@@ -205,6 +253,14 @@ public class ParticleCloud {
      */
     public void addAll(ParticleCloud other) {
         this.bulk.addAll(other.bulk);
+    }
+
+    /**
+     * @return true if particles will be loaded to the GPU after a call to writeToGl()
+     * This returns false if there are no particles loaded, or writeToGl has already been called
+     */
+    public boolean readyToLoad() {
+        return (bulk != null) && !bulk.isEmpty();
     }
 
     private class Particle {

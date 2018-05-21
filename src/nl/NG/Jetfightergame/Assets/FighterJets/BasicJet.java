@@ -32,12 +32,12 @@ public class BasicJet extends AbstractJet {
     public static final float ROLL_POWER = 2f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.002f;
     private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
-    private static final MachineGun GUN = new MachineGun(0.2f);
+    private static final MachineGun GUN = new MachineGun(0.1f);
 
     private final Shape shape;
 
     public BasicJet(int id, Controller input, GameTimer renderTimer, SpawnReceiver entityDeposit) {
-        this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(5));
+        this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(1));
     }
 
     public BasicJet(int id, PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,

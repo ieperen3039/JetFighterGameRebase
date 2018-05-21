@@ -1,5 +1,8 @@
 package nl.NG.Jetfightergame.Settings;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
+
 /**
  * a class that harbours the variables that may or may not be changed by the player
  * @see MenuStyleSettings
@@ -19,11 +22,9 @@ public final class ServerSettings {
     /** connection settings */
     public static final int SERVER_PORT = 3039;
 
-    /** collision settings */
-    public static final short COLLISION_RESPONSE_LEVEL = 0;
-    public static final boolean DO_COLLISION_RESPONSE = COLLISION_RESPONSE_LEVEL > 0;
+    /** collision detection */
     public static final int MAX_COLLISION_ITERATIONS = 250/TARGET_TPS;
-    public static final float BASE_BUMPOFF_ENERGY = 100f; // in joule
+    public static final float BASE_BUMPOFF_ENERGY = (BasicJet.MASS * AbstractJet.BASE_SPEED * AbstractJet.BASE_SPEED * 0.1f); // in joule
 
     /** miscellaneous */
     public static final int INTERPOLATION_QUEUE_SIZE = 10;

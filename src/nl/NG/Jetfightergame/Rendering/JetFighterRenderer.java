@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
@@ -54,11 +55,15 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.activeCamera = camera;
         this.engine = engine;
 
+        if (gameState instanceof GameState) {
+            Toolbox.printOnline(() -> "Particles: " + ((GameState) gameState).getParticleCount());
+        }
+
         shaderManager = new ShaderManager();
         particleShader = new ParticleShader();
 
         overlay = new ScreenOverlay(() -> engine.getCurrentGameMode() == MENU_MODE);
-        overlay.addHudItem((hud) -> Toolbox.printOnline(hud::printRoll));
+        overlay.addHudItem((hud) -> Toolbox.setOnlineOutput(hud::printRoll));
 
         new JetFighterMenu(
                 window::getWidth, window::getHeight,
@@ -130,10 +135,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
         particleShader.bind();
         particleShader.setTime(currentRenderTime);
         particleShader.setProjection(gl.getProjection());
+
         gameState.drawParticles();
         particleShader.unbind();
         Toolbox.checkGLError();
-
 
         // HUD / menu
         overlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen, activeCamera.getEye());

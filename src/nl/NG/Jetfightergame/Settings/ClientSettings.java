@@ -46,4 +46,6 @@ public final class ClientSettings {
     public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
     public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
     public static final int PARTICLE_SPLITS = 0;
+    public static final int PARTICLECLOUD_SPLIT_SIZE = 5000;
+    public static final float PARTICLECLOUD_MIN_TIME = 0.5f;
 }

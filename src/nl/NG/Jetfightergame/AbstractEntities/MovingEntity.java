@@ -15,6 +15,10 @@ import org.joml.Quaternionf;
  */
 public interface MovingEntity extends Touchable {
 
+    /**
+     * @param vector a normalized vector
+     * @return the kinetic energy of this entity over the axis given by the vector
+     */
     float getKineticEnergy(DirVector vector);
 
     /**

@@ -323,7 +323,8 @@ public abstract class GameEntity implements MovingEntity {
 
         DirVector dv = direction.scale(v, direction);
         extraVelocity.add(dv);
-        position.add(extraVelocity.scale(deltaTime, dv), extraPosition);
+        position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
+        hitPoints = calculateHitpointMovement();
     }
 
     @Override
