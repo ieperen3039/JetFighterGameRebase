@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
@@ -16,6 +15,8 @@ import java.net.Socket;
 import java.util.function.Function;
 
 import static nl.NG.Jetfightergame.ServerNetwork.JetFighterServer.Phase.*;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
 
 /**
  * @author Geert van Ieperen created on 26-4-2018.
@@ -24,7 +25,6 @@ public class JetFighterServer {
 
     private final int portNumber;
     private ServerSocket socket;
-    private Socket terminalSocket;
 
     private Phase currentPhase;
     private ServerLoop game;
@@ -48,10 +48,10 @@ public class JetFighterServer {
     private JetFighterServer(Environment environment, boolean loadModels) throws IOException {
         currentPhase = BOOTING;
 
-        this.socket = new ServerSocket(ServerSettings.SERVER_PORT);
+        this.socket = new ServerSocket(SERVER_PORT);
         this.game = new ServerLoop(environment);
 
-        environment.buildScene(game, ServerSettings.COLLISION_DETECTION_LEVEL, true);
+        environment.buildScene(game, COLLISION_DETECTION_LEVEL, true);
         portNumber = socket.getLocalPort();
 
         if (loadModels) {
@@ -68,11 +68,11 @@ public class JetFighterServer {
      * @param client the connection between front-end and back-end
      * @throws IOException if the initialisation runs into problems
      */
-    public static AbstractGameLoop createOfflineServer(Function<GameTimer, Environment> worldCreator, Socket client) throws IOException {
+    public static AbstractGameLoop createOfflineServer(Function<GameTimer, Environment> worldCreator, Socket client) throws IOException, InterruptedException {
         Environment world = worldCreator.apply(new GameTimer());
 
         JetFighterServer server = new JetFighterServer(world, false);
-        // internal connect
+        // internal connect, this thread will soon terminate
         new Thread(server::listenForHost).start();
         client.connect(new InetSocketAddress(server.portNumber));
 
@@ -83,7 +83,6 @@ public class JetFighterServer {
     /**
      * blocks until one connection is made.
      * The host of this server is set to the next connection.
-     * If {@link #terminateListen()} is called, it will break, reverting to the state as before calling the method
      */
     public void listenForHost() {
         if ((currentPhase != WAITING_FOR_HOST) && (currentPhase != PREPARATION)) {
@@ -102,7 +101,7 @@ public class JetFighterServer {
 
     /**
      * listens to the predefined port, adding all incoming requests to clients.
-     * blocks while listening, and only stops when {@link #terminateListen()} is called
+     * blocks while listening.
      * @throws IOException if an I/O error occurs when waiting for a connection
      */
     public void listen() throws IOException {
@@ -117,7 +116,6 @@ public class JetFighterServer {
 
     public boolean acceptConnection(boolean asAdmin) throws IOException {
         Socket client = socket.accept();
-        if (client == terminalSocket) return false;
 
         Toolbox.print("Connection made with " + client + (asAdmin ? " with admin privileges": ""));
         game.connectToPlayer(client, asAdmin);
@@ -132,19 +130,6 @@ public class JetFighterServer {
         if (currentPhase != STARTING) throw new IllegalStateException("getGameLoop() was called in " + currentPhase + " phase");
         currentPhase = RUNNING;
         return game;
-    }
-
-    /**
-     * sends a terminal message to the current port,
-     * terminating any thread waiting in {@link #listen()} or {@link #listenForHost()}
-     */
-    private void terminateListen() {
-        try {
-            terminalSocket = new Socket((String) null, portNumber);
-            terminalSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /** @return what the server is doing ATM */

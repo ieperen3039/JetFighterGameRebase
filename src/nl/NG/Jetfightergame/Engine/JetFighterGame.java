@@ -10,6 +10,8 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
+import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
 import nl.NG.Jetfightergame.ServerNetwork.MessageType;
@@ -34,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
@@ -85,17 +88,19 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             }
 
-            connection = new ClientConnection(playerInput, socket, environment, this::exitGame);
-
+            connection = new ClientConnection(playerInput, socket, environment);
             otherLoops.add(connection);
+
             AbstractJet playerJet = connection.getPlayer();
             Toolbox.print("Received " + playerJet + " from the server");
 
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
 
+            Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
+
             renderLoop = new JetFighterRenderer(
-                    this, environment, window, camera, playerInput, playerJet
+                    this, environment, window, camera, playerInput, hud
             );
 
             camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), playerJet, DirVector.zVector());
@@ -130,14 +135,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     }
 
     @Override
-    public void cleanUp() {
-        Mesh.cleanAll();
-        AudioFile.cleanAll();
-        SoundEngine.closeDevices();
-        KeyTracker.getInstance().removeKeyListener(this);
-    }
-
-    @Override
     public void setMenuMode() {
         connection.getTimer().pause();
         connection.sendCommand(MessageType.PAUSE_GAME);
@@ -157,7 +154,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     /**
      * basic keybindings.
      * Should be moved to testInstance in later stage
-     * @param key
      */
     @Override
     public void keyPressed(int key) {
@@ -182,6 +178,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                     Toolbox.print("Saved screenshot as \"" + name + "\"");
                 }
         }
+    }
+
+    @Override
+    public void cleanUp() {
+        Mesh.cleanAll();
+        AudioFile.cleanAll();
+        SoundEngine.closeDevices();
+        KeyTracker.getInstance().removeKeyListener(this);
     }
 
     /**
@@ -232,29 +236,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         @Override
         public void run() {
             setVisible(true);
-        }
-    }
-
-    /**
-     * runs the updateGameLoop of the given environment
-     */
-    private class PhysicsLoop extends AbstractGameLoop {
-        private final Environment world;
-
-        public PhysicsLoop(Environment environment) {
-            super("Physics", ClientSettings.PHYSICS_TPS, true);
-            world = environment;
-        }
-
-        @Override
-        protected void update(float deltaTime) throws Exception {
-            world.getTimer().updateGameTime();
-            world.updateGameLoop();
-        }
-
-        @Override
-        protected void cleanup() {
-            world.cleanUp();
         }
     }
 }

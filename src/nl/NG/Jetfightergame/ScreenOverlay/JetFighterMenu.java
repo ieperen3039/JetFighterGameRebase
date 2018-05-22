@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 /**
@@ -37,50 +38,50 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
 
     public JetFighterMenu(Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier,
                           Runnable startGame, Runnable exitGame, ControllerManager input,
-                          ShaderManager shaderManager, ScreenOverlay hud
+                          ShaderManager shaderManager, BooleanSupplier isMenuMode
     ) {
-        super(widthSupplier, heightSupplier, hud);
+        super(widthSupplier, heightSupplier, isMenuMode);
 
-        MenuClickable startGameButton = new MenuButton("Start Game", startGame);
-        MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
-        {
-            MenuClickable graphics = graphicsMenu(shaderManager);
-            MenuClickable controls = controlMenu(input);
-            MenuClickable backOptions = new MenuButton("Back", () -> switchContentTo(mainMenu));
-            optionMenu = new MenuClickable[]{graphics, controls, backOptions};
-        }
-        MenuClickable credits = new MenuButton("Credits", () -> switchContentTo(creditScreen));
-        {
-            UIElement credit = new MenuTitledText("Credits", creditTextfield, TEXTFIELD_WIDTH);
-            MenuButton creditBackButton = new MenuButton("Back", () -> switchContentTo(mainMenu));
-            creditScreen = new UIElement[]{credit, creditBackButton};
-        }
-        MenuClickable exitGameButton = new MenuButton("Exit Game", exitGame);
-        mainMenu = new MenuClickable[]{startGameButton, options, credits, exitGameButton};
+        UIElement credit = new MenuTitledText("Credits", creditTextfield, TEXTFIELD_WIDTH);
+        MenuButton creditBackButton = new MenuButton("Back", () -> switchContentTo(mainMenu));
+        creditScreen = new UIElement[]{credit, creditBackButton};
+
+        graphicsMenu = getGraphics(shaderManager);
+        optionMenu = getOptions();
+        controlsMenu = getControlMenu(input);
+        mainMenu = getMainMenu(startGame, exitGame);
 
         switchContentTo(mainMenu);
     }
 
-    private MenuClickable controlMenu(ControllerManager control) {
-        MenuClickable controls = new MenuButton("Controls", () -> switchContentTo(controlsMenu));
-        {
-            MenuClickable invertX = new MenuToggle("Invert camera-x", (b) ->
-                    ClientSettings.INVERT_CAMERA_ROTATION = !ClientSettings.INVERT_CAMERA_ROTATION);
-            MenuClickable controllerType = new MenuToggleMultiple("Controller", control.names(), control::switchTo);
-            MenuClickable backControls = new MenuButton("Back", () -> switchContentTo(optionMenu));
-            controlsMenu = new MenuClickable[]{invertX, controllerType, backControls};
-        }
-        return controls;
+    private MenuClickable[] getGraphics(ShaderManager shaderManager) {
+        MenuToggleMultiple shader = new MenuToggleMultiple("Shader", shaderManager.names(), shaderManager::switchTo);
+        MenuClickable backGraphics = new MenuButton("Back", () -> switchContentTo(optionMenu));
+        return new MenuClickable[]{shader, backGraphics};
     }
 
-    private MenuClickable graphicsMenu(ShaderManager shaders) {
-        MenuClickable graphics = new MenuButton("Graphics", () -> switchContentTo(graphicsMenu));
-        {
-            MenuToggleMultiple shader = new MenuToggleMultiple("Shader", shaders.names(), shaders::switchTo);
-            MenuClickable backGraphics = new MenuButton("Back", () -> switchContentTo(optionMenu));
-            graphicsMenu = new MenuClickable[]{shader, backGraphics};
-        }
-        return graphics;
+    private MenuClickable[] getMainMenu(Runnable startGame, Runnable exitGame) {
+        MenuClickable startGameButton = new MenuButton("Start Game", startGame);
+        MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
+        MenuClickable credits = new MenuButton("Credits", () -> switchContentTo(creditScreen));
+        MenuClickable exitGameButton = new MenuButton("Exit Game", exitGame);
+       return new MenuClickable[]{startGameButton, options, credits, exitGameButton};
+    }
+
+    private MenuClickable[] getOptions() {
+        MenuClickable graphics1 = new MenuButton("Graphics", () -> switchContentTo(graphicsMenu));
+        MenuClickable controls1 = new MenuButton("Controls", () -> switchContentTo(controlsMenu));
+        MenuClickable backOptions = new MenuButton("Back", () -> switchContentTo(mainMenu));
+        return new MenuClickable[]{graphics1, controls1, backOptions};
+    }
+
+    private MenuClickable[] getControlMenu(ControllerManager input) {
+        MenuClickable invertX = new MenuToggle("Invert camera-x", (b) ->
+                ClientSettings.INVERT_CAMERA_ROTATION = !ClientSettings.INVERT_CAMERA_ROTATION
+        );
+        MenuClickable controllerType = new MenuToggleMultiple("Controller", input.names(), input::switchTo);
+        MenuClickable backControls = new MenuButton("Back", () -> switchContentTo(optionMenu));
+        return new MenuClickable[]{invertX, controllerType, backControls};
     }
 
 }

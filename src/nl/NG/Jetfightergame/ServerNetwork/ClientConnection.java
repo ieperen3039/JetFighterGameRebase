@@ -31,7 +31,6 @@ import static nl.NG.Jetfightergame.ServerNetwork.RemoteControlReceiver.toByte;
  * @author Geert van Ieperen created on 6-5-2018.
  */
 public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver {
-    private final Runnable finishUp;
     private final Controller input;
     private final BufferedOutputStream serverOut;
     private final InputStream serverIn;
@@ -40,9 +39,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     private Lock sendLock = new ReentrantLock();
 
-    public ClientConnection(Controller playerInput, Socket connection, Environment game, Runnable whenClosed) throws IOException {
+    public ClientConnection(Controller playerInput, Socket connection, Environment game) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
-        this.finishUp = whenClosed;
         this.input = playerInput;
         this.serverOut = new BufferedOutputStream(connection.getOutputStream());
         this.serverIn = connection.getInputStream();
@@ -67,6 +65,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         } else if (type == MessageType.ENTITY_REMOVE) {
             int target = JetFighterProtocol.entityRemoveRead(serverIn);
             MovingEntity entity = game.removeEntity(target);
+
             if (entity instanceof MortalEntity) {
                 ParticleCloud explosion = ((MortalEntity) entity).explode();
                 game.addParticles(explosion);
@@ -77,7 +76,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             // triggers #cleanup()
 
         } else if (type == MessageType.CONNECTION_CLOSE) {
-            serverIn.close();
             return false;
 
         } else if (type == MessageType.EXPLOSION_SPAWN) {
@@ -139,7 +137,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
      * @throws IllegalArgumentException if the number of value arguments is invalid
      * @throws IllegalArgumentException if any value is out of range
      */
-    public synchronized void sendControl(MessageType type, byte value) throws IOException, IllegalArgumentException {
+    public void sendControl(MessageType type, byte value) throws IOException, IllegalArgumentException {
         sendLock.lock();
         try {
             serverOut.write(type.ordinal());
@@ -151,31 +149,57 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
+    // this block is not required if an active controller is used
     protected void update(float deltaTime) throws Exception {
-        // this block is not required if an active controller is used
-        sendControl(THROTTLE, toByte(input.throttle()));
-        sendControl(PITCH, toByte(input.pitch()));
-        sendControl(YAW, toByte(input.yaw()));
-        sendControl(ROLL, toByte(input.roll()));
-        sendControl(PRIMARY_FIRE, input.primaryFire() ? (byte) 1 : (byte) 0);
-        sendControl(SECONDARY_FIRE, input.secondaryFire() ? (byte) 1 : (byte) 0);
+        sendLock.lock();
+        try {
+            // rotation controls
+            serverOut.write(THROTTLE.ordinal());
+            JetFighterProtocol.controlSend(serverOut, toByte(input.throttle()));
+            serverOut.write(PITCH.ordinal());
+            JetFighterProtocol.controlSend(serverOut, toByte(input.pitch()));
+            serverOut.write(YAW.ordinal());
+            JetFighterProtocol.controlSend(serverOut, toByte(input.yaw()));
+            serverOut.write(ROLL.ordinal());
+            JetFighterProtocol.controlSend(serverOut, toByte(input.roll()));
+            // binary controls
+            byte doPrimary = input.primaryFire() ? (byte) 1 : (byte) 0;
+            serverOut.write(PRIMARY_FIRE.ordinal());
+            JetFighterProtocol.controlSend(serverOut, doPrimary);
+            byte doSecondary = input.secondaryFire() ? (byte) 1 : (byte) 0;
+            serverOut.write(SECONDARY_FIRE.ordinal());
+            JetFighterProtocol.controlSend(serverOut, doSecondary);
+
+        } finally {
+            sendLock.unlock();
+        }
 
         serverOut.flush();
     }
 
     @Override
-    protected void cleanup() {
+    public void stopLoop() {
+        sendLock.lock();
         try {
-            sendLock.lock();
             serverOut.write(CONNECTION_CLOSE.ordinal());
             serverOut.flush();
 
         } catch (IOException e) {
             e.printStackTrace();
-
         } finally {
             sendLock.unlock();
-            finishUp.run();
+        }
+
+        super.stopLoop();
+    }
+
+    @Override
+    protected void cleanup() {
+        try {
+            serverIn.close();
+            Toolbox.print(this + " connection close");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

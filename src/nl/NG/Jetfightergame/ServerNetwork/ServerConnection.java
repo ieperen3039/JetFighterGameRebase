@@ -91,8 +91,9 @@ public class ServerConnection implements BlockingListener {
             return true;
 
         } else if (type == MessageType.CONNECTION_CLOSE) {
-            clientOut.write(type.ordinal()); // reflect
+            clientOut.write(MessageType.CONNECTION_CLOSE.ordinal()); // reflect
             clientOut.close();
+            Toolbox.print(clientName + " connection close");
             return false;
         }
 

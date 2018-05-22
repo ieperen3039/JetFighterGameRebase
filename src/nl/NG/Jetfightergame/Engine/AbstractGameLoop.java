@@ -39,7 +39,7 @@ public abstract class AbstractGameLoop extends Thread {
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
         this.targetDeltaMillis = 1000f/targetTps;
         this.notifyDelay = notifyDelay;
-        loopName = name;
+        this.loopName = name;
 
         avgTPS = new AveragingQueue(targetTps/2);
         avgPoss = new AveragingQueue(targetTps/10);
@@ -130,6 +130,11 @@ public abstract class AbstractGameLoop extends Thread {
      * @param ex the exception that caused the crash
      */
     protected void exceptionHandler(Exception ex){}
+
+    @Override
+    public String toString() {
+        return String.format("%s @%.01fTPS", loopName, avgTPS.average());
+    }
 
     public void unPause(){
         pauseBlock.countDown();

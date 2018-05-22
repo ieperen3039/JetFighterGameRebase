@@ -50,8 +50,8 @@ public class Timer {
     }
 
     /**
-     * set loopTimer to current system time
-     * should only be called by Engine, exactly once per loop step
+     * set loopTimer to current system time.
+     * Should only be called by Engine, exactly once per loop step
      */
     public void updateLoopTime(){
         time.update(System.currentTimeMillis());

@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -12,7 +11,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -22,6 +20,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Engine.GLFWGameEngine.GameMode.MENU_MODE;
 import static org.lwjgl.opengl.GL11.*;
@@ -32,7 +31,7 @@ import static org.lwjgl.opengl.GL11.*;
  */
 public class JetFighterRenderer extends AbstractGameLoop {
 
-    private final GravityHud gravityHud;
+    private final Consumer<ScreenOverlay.Painter> gravityHud;
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
@@ -45,7 +44,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
-                              Camera camera, ControllerManager controllerManager, AbstractJet player) throws IOException, ShaderException {
+                              Camera camera, ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> gravityHud) throws IOException, ShaderException {
         super(
                 "Rendering", ClientSettings.TARGET_FPS, false
         );
@@ -65,13 +64,15 @@ public class JetFighterRenderer extends AbstractGameLoop {
         overlay = new ScreenOverlay(() -> engine.getCurrentGameMode() == MENU_MODE);
         overlay.addHudItem((hud) -> Toolbox.setOnlineOutput(hud::printRoll));
 
-        new JetFighterMenu(
+        JetFighterMenu menu = new JetFighterMenu(
                 window::getWidth, window::getHeight,
                 engine::setPlayMode, engine::exitGame,
-                controllerManager, shaderManager, overlay
+                controllerManager, shaderManager, overlay::isMenuMode
         );
 
-        gravityHud = new GravityHud(player, camera);
+        overlay.addMenuItem(menu);
+
+        this.gravityHud = gravityHud;
         overlay.addHudItem(gravityHud);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yymmdd_hhmmss");

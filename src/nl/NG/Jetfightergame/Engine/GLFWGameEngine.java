@@ -73,12 +73,6 @@ public abstract class GLFWGameEngine {
         System.out.println();
         Toolbox.printFrom(2, "Stopping game...");
 
-        new TimeOutTimer("Interrupt Threads", 1000, () -> {
-            renderingLoop().interrupt();
-            secondaryGameLoops().forEach(Thread::interrupt);
-        });
-        new TimeOutTimer("Kill Threads", 1500, () -> System.exit(-1));
-
         renderingLoop().stopLoop();
         secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);
     }

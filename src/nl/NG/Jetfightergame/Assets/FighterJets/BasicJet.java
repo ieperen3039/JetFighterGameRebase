@@ -37,7 +37,7 @@ public class BasicJet extends AbstractJet {
     private final Shape shape;
 
     public BasicJet(int id, Controller input, GameTimer renderTimer, SpawnReceiver entityDeposit) {
-        this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(1));
+        this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(0.1f));
     }
 
     public BasicJet(int id, PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,

@@ -32,7 +32,7 @@ public class JetFighterServerTest {
     private Exception tryConnect(Socket client) {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
-            ClientConnection cc = new ClientConnection(Controller.EMPTY, client, new CollisionLaboratory(new GameTimer()), () -> {});
+            ClientConnection cc = new ClientConnection(Controller.EMPTY, client, new CollisionLaboratory(new GameTimer()));
             Toolbox.print("received a " + cc.getPlayer());
         } catch (IOException e) {
             return e;

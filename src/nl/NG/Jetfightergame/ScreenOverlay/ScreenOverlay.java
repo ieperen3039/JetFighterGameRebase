@@ -168,9 +168,9 @@ public final class ScreenOverlay {
     }
 
     public class Painter {
-        private static final int PRINTROLLSIZE = 24;
-        private final int yPrintRoll = PRINTROLLSIZE + 5;
-        private final int xPrintRoll = 5;
+        private final int printRollSize;
+        private final int yPrintRoll;
+        private final int xPrintRoll;
         private int printRollEntry = 0;
         /** maps a position in world-space to a position on the screen */
         private final Function<PosVector, Vector2f> mapper;
@@ -183,13 +183,22 @@ public final class ScreenOverlay {
          * @param windowWidth width of this hud display iteration
          * @param windowHeight height of ''
          * @param mapper maps a world-space vector to relative position ([-1, 1], [-1, 1]) in the view.
-         * @param cameraPosition
+         * @param cameraPosition renderposition of camera in worldspace
+         * @param xPrintRoll x position of where to start the printRoll
+         * @param yPrintRoll y position of where to start the printRoll
+         * @param printRollSize fontsize of printRoll
          */
-        public Painter(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
+        public Painter(
+                int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition,
+                int xPrintRoll, int yPrintRoll, int printRollSize
+        ) {
             this.windowWidth = windowWidth;
             this.windowHeight = windowHeight;
             this.mapper = mapper;
             this.cameraPosition = cameraPosition;
+            this.printRollSize = printRollSize;
+            this.yPrintRoll = printRollSize + yPrintRoll;
+            this.xPrintRoll = xPrintRoll;
         }
 
         /**
@@ -324,9 +333,9 @@ public final class ScreenOverlay {
         }
 
         public void printRoll(String text){
-            int y = yPrintRoll + ((PRINTROLLSIZE + 5) * printRollEntry);
+            int y = yPrintRoll + ((printRollSize + 5) * printRollEntry);
 
-            text(xPrintRoll, y, PRINTROLLSIZE, Font.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
+            text(xPrintRoll, y, printRollSize, Font.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
             printRollEntry++;
         }
 
@@ -374,23 +383,48 @@ public final class ScreenOverlay {
         }
     }
 
-    public synchronized void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
+    /**
+     * @param windowWidth width of the current window drawn on
+     * @param windowHeight height of the current window
+     * @param mapper maps a world-space vector to relative position ([-1, 1], [-1, 1]) in the view.
+     * @param cameraPosition position of camera
+     */
+    public void draw(int windowWidth, int windowHeight, Function<PosVector, Vector2f> mapper, PosVector cameraPosition) {
+        Painter vanGogh = new Painter(windowWidth, windowHeight, mapper, cameraPosition, 5, 5, 24);
+        draw(windowWidth, windowHeight, vanGogh);
+    }
+
+    /**
+     * @param windowWidth width of the current window drawn on
+     * @param windowHeight height of the current window
+     * @param xRoll x position of the debug printroll screen
+     * @param yRoll y position of ''
+     * @param rollSize font size of ''
+     */
+    public void draw(int windowWidth, int windowHeight, int xRoll, int yRoll, int rollSize){
+        Painter bobRoss = new Painter(windowWidth, windowHeight, (v) -> new Vector2f(), PosVector.zVector(), xRoll, yRoll, rollSize);
+        draw(windowWidth, windowHeight, bobRoss);
+    }
+
+    /**
+     * draw using the given painter
+     */
+    private synchronized void draw(int windowWidth, int windowHeight, Painter painter) {
         // Begin NanoVG frame
         nvgBeginFrame(vg, windowWidth, windowHeight, 1);
 
-        Painter vanGogh = new Painter(windowWidth, windowHeight, mapper, cameraPosition);
         // Draw the right drawhandlers
         if (isMenuMode()) {
             menuBufferLock.lock();
             try {
-                menuDrawBuffer.forEach(m -> m.accept(vanGogh));
+                menuDrawBuffer.forEach(m -> m.accept(painter));
             } finally {
                 menuBufferLock.unlock();
             }
         } else {
             hudBufferLock.lock();
             try {
-                hudDrawBuffer.forEach(m -> m.accept(vanGogh));
+                hudDrawBuffer.forEach(m -> m.accept(painter));
             } finally {
                 hudBufferLock.unlock();
             }

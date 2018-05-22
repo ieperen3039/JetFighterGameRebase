@@ -7,6 +7,8 @@ import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuPositionerCenter;
 
 import java.util.Arrays;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -14,17 +16,24 @@ import java.util.function.Supplier;
  * @author Geert van Ieperen
  */
 
-public abstract class HudMenu implements TrackerClickListener {
+public abstract class HudMenu implements TrackerClickListener, Consumer<ScreenOverlay.Painter> {
     private final Supplier<Integer> width;
     private final Supplier<Integer> height;
     private UIElement[] activeElements;
-    private ScreenOverlay hud;
+    private BooleanSupplier menuMode;
 
-    public HudMenu(Supplier<Integer> width, Supplier<Integer> height, ScreenOverlay hud) {
+    public HudMenu(Supplier<Integer> width, Supplier<Integer> height, BooleanSupplier isMenuMode) {
         this.width = width;
         this.height = height;
-        this.hud = hud;
+        this.menuMode = isMenuMode;
         MouseTracker.getInstance().addClickListener(this, false);
+    }
+
+    @Override
+    public void accept(ScreenOverlay.Painter hud) {
+        for (UIElement element : activeElements) {
+            element.draw(hud);
+        }
     }
 
     /**
@@ -34,22 +43,17 @@ public abstract class HudMenu implements TrackerClickListener {
     public void switchContentTo(UIElement[] newElements) {
         activeElements = newElements.clone();
 
-        // destroy the current entries of the hud
-        hud.removeMenuItem();
-
-        // correct positions of buttons
+        // set positions
         MenuPositioner caret = new MenuPositionerCenter(width.get());
         for (UIElement element : activeElements) {
             caret.place(element);
-            hud.addMenuItem(element::draw);
         }
-
     }
 
     // note that these can only fire when mouse is not in capture mode
     @Override
     public void clickEvent(int x, int y) {
-        if (!hud.isMenuMode()) return;
+        if (!menuMode.getAsBoolean()) return;
 
         Arrays.stream(activeElements)
                 // take all clickable elements
