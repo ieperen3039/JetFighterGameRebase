@@ -1,11 +1,19 @@
 package nl.NG.Jetfightergame.Controllers.InputHandling;
 
+import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedInteger;
+import org.joml.Vector2i;
+import org.lwjgl.glfw.GLFWCursorPosCallback;
+import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
+
+import static nl.NG.Jetfightergame.Settings.KeyBindings.*;
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 /**
  * singleton design
@@ -39,8 +47,8 @@ public class MouseTracker {
     private boolean rightMouse = false;
     private boolean middleMouse = false;
     private boolean menuClick = false;
-
-    private TrackedInteger mouseDragX, mouseDragY;
+    private TrackedInteger mouseX;
+    private TrackedInteger mouseY;
 
     /** to decide between menu-mode and ingame-mode */
     private BooleanSupplier inPlayMode = () -> false;
@@ -52,19 +60,8 @@ public class MouseTracker {
         inGameScrollListener = new ArrayList<>();
         menuDragListener = new ArrayList<>();
         menuScrollListener = new ArrayList<>();
-
-        menuClickListeners.add(
-                new TrackerClickListener() {
-                    @Override
-                    public void clickEvent(int x, int y) {
-                        mouseDragX = new TrackedInteger(x);
-                        mouseDragY = new TrackedInteger(y);
-                    }
-
-                    @Override
-                    public void cleanUp() {}
-                }
-        );
+        mouseX = new TrackedInteger(0);
+        mouseY = new TrackedInteger(0);
     }
 
     public static MouseTracker getInstance() {
@@ -73,11 +70,11 @@ public class MouseTracker {
     }
 
     /**
-     *
-     * @param isInGame should return true if the mouse is captured. and listeners in gamemode should receive notifications
-     *                 if it returns false, mouse is not captured, and listeners of menumode will receive notifications
+     * @param isInGame should return true if the mouse is captured. and listeners in gamemode should receive
+     *                 notifications if it returns false, mouse is not captured, and listeners of menumode will receive
+     *                 notifications
      */
-    public void setGameModeDecision(BooleanSupplier isInGame){
+    public void setGameModeDecision(BooleanSupplier isInGame) {
         this.inPlayMode = isInGame;
     }
 
@@ -85,10 +82,10 @@ public class MouseTracker {
 
     /**
      * clicklisteners will receive an updateGameLoop whenever there is right-clicked with the mouse
-     * @param joiner the class that will receive updates whenever an MouseClickEvent should occur
+     * @param joiner        the class that will receive updates whenever an MouseClickEvent should occur
      * @param inCaptureMode whether this listener should receive his update during or outside capture mode
      */
-    public void addClickListener(TrackerClickListener joiner, boolean inCaptureMode){
+    public void addClickListener(TrackerClickListener joiner, boolean inCaptureMode) {
         if (inCaptureMode) {
             inGameClickListeners.add(joiner);
         } else {
@@ -96,7 +93,7 @@ public class MouseTracker {
         }
     }
 
-    public void removeClickListener(TrackerClickListener leaver, boolean inCaptureMode){
+    public void removeClickListener(TrackerClickListener leaver, boolean inCaptureMode) {
         if (inCaptureMode) {
             inGameClickListeners.remove(leaver);
         } else {
@@ -116,41 +113,38 @@ public class MouseTracker {
         return middleMouse;
     }
 
-    public void mousePressed(MouseEvent e) {
-        // prepare calling the method
-        final Consumer<TrackerClickListener> notify = l -> l.clickEvent(e.x, e.y);
-
+    private void mousePressed(MouseEvent e) {
         if (inPlayMode.getAsBoolean()) {
             switch (e.button) {
-                case BUTTON_LEFT:
+                case MOUSE_BUTTON_LEFT:
                     leftMouse = true;
                     break;
-                case BUTTON_MIDDLE:
+                case MOUSE_BUTTON_MIDDLE:
                     middleMouse = true;
                     break;
-                case BUTTON_RIGHT:
+                case MOUSE_BUTTON_RIGHT:
                     rightMouse = true;
                     break;
             }
-            inGameClickListeners.forEach(notify);
+            inGameClickListeners.forEach(l -> l.clickEvent(e.x, e.y));
 
-        } else if (e.button == MouseButton.BUTTON_LEFT) {
+        } else if (e.button == MOUSE_BUTTON_LEFT) {
             menuClick = true;
             // call if button is left and in menu-mode
-            menuClickListeners.forEach(notify);
+            menuClickListeners.forEach(l -> l.clickEvent(e.x, e.y));
         }
     }
 
-    public void mouseReleased(MouseEvent e) {
-        switch (e.button){
-            case BUTTON_LEFT:
+    private void mouseReleased(MouseEvent e) {
+        switch (e.button) {
+            case MOUSE_BUTTON_LEFT:
                 leftMouse = false;
                 menuClick = false;
                 break;
-            case BUTTON_MIDDLE:
+            case MOUSE_BUTTON_MIDDLE:
                 middleMouse = false;
                 break;
-            case BUTTON_RIGHT:
+            case MOUSE_BUTTON_RIGHT:
                 rightMouse = false;
                 break;
         }
@@ -162,16 +156,16 @@ public class MouseTracker {
      * motionListeners will receive an update whenever a mouse event occurs in game_mode
      * @param joiner the class that will receive updates whenever an MouseMotionEvent should occur
      */
-    public void addMotionListener(TrackerMoveListener joiner){
+    public void addMotionListener(TrackerMoveListener joiner) {
         inGameMotionListeners.add(joiner);
     }
 
-    public void removeMotionListener(TrackerMoveListener leaver){
+    public void removeMotionListener(TrackerMoveListener leaver) {
         inGameMotionListeners.remove(leaver);
     }
 
     /**
-     * motionListeners will receive an update whenever a mouse event occurs in game_mode
+     * dragListeners will receive an update whenever a mouse event occurs in game_mode while a button is held
      * @param joiner the class that will receive updates whenever an MouseMotionEvent should occur
      */
     public void addDragListener(TrackerDragListener joiner) {
@@ -182,28 +176,21 @@ public class MouseTracker {
         menuDragListener.remove(leaver);
     }
 
-    public void mouseMoved(MouseEvent e) {
-        if (inPlayMode.getAsBoolean()){
-            passToMoveListeners(e);
+    private void mouseMoved(MouseEvent e) {
+        mouseX.update(e.x);
+        mouseY.update(e.y);
+        Integer dx = mouseX.difference();
+        Integer dy = mouseY.difference();
+
+        // mostly for mouse capture
+        if ((dx == 0) && (dy == 0)) return;
+
+        if (inPlayMode.getAsBoolean()) {
+            inGameMotionListeners.forEach(l -> l.mouseMoved(dx, dy));
+
+        } else if (e.button == MOUSE_BUTTON_LEFT) { // note that only left is enabled in menu (yet)
+            menuDragListener.forEach(l -> l.mouseDragged(dx, dy));
         }
-    }
-
-    public void mouseDragged(MouseEvent e) {
-        if (inPlayMode.getAsBoolean()){
-            passToMoveListeners(e);
-        } else {
-            mouseDragX.update(e.x);
-            mouseDragY.update(e.y);
-            menuDragListener.forEach(l -> l.mouseDragged(mouseDragX.difference(), mouseDragY.difference()));
-        }
-    }
-
-    private void passToMoveListeners(MouseEvent mouse) {
-        int deltaX = mouse.x;
-        int deltaY = mouse.y;
-        if (deltaX == 0 && deltaY == 0) return;
-
-        inGameMotionListeners.forEach(l -> l.mouseMoved(deltaX, deltaY));
     }
 
     // scroll listener part
@@ -229,8 +216,7 @@ public class MouseTracker {
         }
     }
 
-    public void mouseWheelMoved(MouseWheelEvent e) {
-        final float scroll = e.scroll;
+    private void mouseWheelMoved(float scroll) {
         if (inPlayMode.getAsBoolean()) {
             inGameScrollListener.forEach(l -> l.mouseWheelMoved(scroll));
         } else {
@@ -238,8 +224,15 @@ public class MouseTracker {
         }
     }
 
-    public enum MouseButton {
-        BUTTON_RIGHT, BUTTON_MIDDLE, BUTTON_UNDEFINED, BUTTON_LEFT
+    /** starts listening to the given windows until the window is disposed */
+    public void listenTo(GLFWWindow window) {
+        window.registerListener(new MouseButtonEventHandler());
+        window.registerListener(new MouseMoveEventHandler());
+        window.registerListener(new MouseScrollEventHandler());
+
+        Vector2i pos = window.getMousePosition();
+        mouseX.update(pos.x);
+        mouseY.update(pos.y);
     }
 
     /**
@@ -249,30 +242,55 @@ public class MouseTracker {
 
         /** position relative to the upper left corner of the active area */
         public final int x, y;
-        public final MouseButton button;
+        public final int button;
 
         /**
          * an event of the mouse, either movement or click or both
          * @param x pixels from left; if in capture mode, relative to previous, otherwise relative to upperleft corner
          * @param y pixels from top; if in capture mode, relative to previous, otherwise relative to upperleft corner
          */
-        public MouseEvent(int x, int y, MouseButton pressedButton) {
+        public MouseEvent(int x, int y, int pressedButton) {
             this.x = x;
             this.y = y;
             this.button = pressedButton;
         }
     }
 
-    public static class MouseWheelEvent {
+    private class MouseButtonEventHandler extends GLFWMouseButtonCallback {
+        @Override
+        public void invoke(long windowHandle, int button, int action, int mods) {
+            MouseEvent event = new MouseEvent(mouseX.current(), mouseY.current(), button);
 
-        public final float scroll;
-
-        public MouseWheelEvent(float scroll) {
-            this.scroll = scroll;
+            if (action == GLFW_PRESS) {
+                mousePressed(event);
+            } else if (action == GLFW_RELEASE) {
+                mouseReleased(event);
+            }
         }
+    }
 
-        public MouseWheelEvent(double yScroll) {
-            scroll = (float) yScroll;
+    private class MouseMoveEventHandler extends GLFWCursorPosCallback {
+        @Override
+        public void invoke(long windowHandle, double xPos, double yPos) {
+            int button;
+            if (leftButton()) {
+                button = MOUSE_BUTTON_LEFT;
+            } else if (rightMouse) {
+                button = MOUSE_BUTTON_RIGHT;
+            } else if (middleMouse) {
+                button = MOUSE_BUTTON_MIDDLE;
+            } else {
+                button = MOUSE_BUTTON_NONE;
+            }
+
+            mouseMoved(new MouseEvent((int) xPos, (int) yPos, button));
+        }
+    }
+
+    private class MouseScrollEventHandler extends GLFWScrollCallback {
+        @Override
+        public void invoke(long windowHandle, double xScroll, double yScroll) {
+            mouseWheelMoved((float) yScroll);
         }
     }
 }

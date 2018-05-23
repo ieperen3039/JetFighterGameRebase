@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Tools.DataStructures;
 
 /**
  * a Collection that accepts floats and can only return the average of the last n entries (in constant time)

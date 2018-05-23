@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Tools.DataStructures;
 
 /**
  * @author Geert van Ieperen

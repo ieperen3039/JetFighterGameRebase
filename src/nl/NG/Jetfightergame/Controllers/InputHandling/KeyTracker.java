@@ -1,9 +1,13 @@
 package nl.NG.Jetfightergame.Controllers.InputHandling;
 
+import nl.NG.Jetfightergame.Rendering.GLFWWindow;
+import org.lwjgl.glfw.GLFWKeyCallback;
+
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Map;
+
+import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
+import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 /**
  * Singleton Design
@@ -15,10 +19,9 @@ public class KeyTracker {
 
     private static KeyTracker instance;
     private final Collection<TrackerKeyListener> eventListeners;
-    private Map<Integer, Boolean> registeredKeys;
+    private GLFWWindow window;
 
     private KeyTracker() {
-        registeredKeys = new Hashtable<>(8);
         eventListeners = new ArrayList<>();
     }
 
@@ -41,43 +44,34 @@ public class KeyTracker {
         eventListeners.remove(leaver);
     }
 
-    public void keyPressed(KeyEvent e) {
-        final int keyCode = e.getKeyCode();
-//        Toolbox.print("pressed key", keyCode);
-        registeredKeys.replace(keyCode, true);
+    public void keyPressed(int keyCode) {
         eventListeners.forEach(l -> l.keyPressed(keyCode));
-    }
-
-    public void keyReleased(KeyEvent e) {
-        registeredKeys.replace(e.getKeyCode(), false);
-    }
-
-    /** @see #isPressed(int) */
-    public void addKey(int key) {
-        registeredKeys.putIfAbsent(key, false);
     }
 
     /**
      * @param key keycode of the key of which the button should be get.
-     *            The correct code depends on with which code {@link #keyPressed(KeyEvent)} is called
      * @return  true    if the key is pressed
      *          false   if the key is not pressed
-     *          null    if the key is not registered by {@link #addKey(int)}
      */
     public Boolean isPressed(int key) {
-        return registeredKeys.get(key);
+        return window.isKeyPressed(key);
     }
 
-    public static class KeyEvent {
+    public void listenTo(GLFWWindow window) {
+        this.window = window;
+        window.registerListener(new KeyEventHandler());
+    }
 
-        private final int keyCode;
+    private class KeyEventHandler extends GLFWKeyCallback {
+        @Override
+        public void invoke(long windowHandle, int keyCode, int scancode, int action, int mods) {
+            if (keyCode < 0) return;
 
-        public KeyEvent(int keyCode) {
-            this.keyCode = keyCode;
-        }
+            if (action == GLFW_PRESS) {
+                keyPressed(keyCode);
+            } else if (action == GLFW_RELEASE) {
 
-        public int getKeyCode() {
-            return keyCode;
+            }
         }
     }
 }

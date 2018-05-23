@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Tools.DataStructures;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;

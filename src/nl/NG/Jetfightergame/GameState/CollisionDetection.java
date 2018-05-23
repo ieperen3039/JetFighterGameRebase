@@ -9,7 +9,11 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.*;
+import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
+import nl.NG.Jetfightergame.Tools.DataStructures.ConcurrentArrayList;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 

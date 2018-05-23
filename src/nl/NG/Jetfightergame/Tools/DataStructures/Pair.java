@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Tools.DataStructures;
 
 /**
  * Pair class that simply holds two variables.
@@ -22,8 +22,8 @@ public class Pair<L, R> {
 
         Pair<?, ?> pair = (Pair<?, ?>) o;
 
-        if ((left != null) ? left.equals(pair.left) : (pair.left == null))
-            if ((right != null) ? right.equals(pair.right) : (pair.right == null)) return true;
+        boolean leftEquals = (left != null) ? left.equals(pair.left) : (pair.left == null);
+        if (leftEquals) return (right != null) ? right.equals(pair.right) : (pair.right == null);
         return false;
     }
 

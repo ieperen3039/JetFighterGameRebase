@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Jetfightergame.Tools.DataStructures;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +20,9 @@ public class ConcurrentArrayList<T> implements Collection<T> {
     private Lock writeLock;
     private ArrayList<T> list;
 
+    /**
+     * an array that is completely thread-safe, with separate locks for reading and writing
+     */
     public ConcurrentArrayList() {
         ReadWriteLock master = new ReentrantReadWriteLock(false);
         readLock = master.readLock();

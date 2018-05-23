@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Interpolation;
 
-import nl.NG.Jetfightergame.Tools.TimedArrayDeque;
+import nl.NG.Jetfightergame.Tools.DataStructures.TimedArrayDeque;
 
 /**
  * @author Geert van Ieperen

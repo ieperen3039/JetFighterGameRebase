@@ -48,7 +48,9 @@ public class ShaderUniformGL implements GL2 {
         glEnable(GL_LINE_SMOOTH);
         Toolbox.checkGLError();
 //
-        glLineWidth(ClientSettings.HIGHLIGHT_LINE_WIDTH); // throws errors with any other value than 1f
+        if (ClientSettings.HIGHLIGHT_LINE_WIDTH > 0) {
+            glLineWidth(ClientSettings.HIGHLIGHT_LINE_WIDTH); // throws errors with any other value than 1f
+        }
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         Toolbox.checkGLError();

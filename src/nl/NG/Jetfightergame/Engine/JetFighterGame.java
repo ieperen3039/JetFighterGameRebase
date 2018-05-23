@@ -4,7 +4,6 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
-import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
@@ -58,10 +57,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         super();
         ShapeFromFile.init(true);
         GeneralShapes.init(true);
+
         KeyTracker.getInstance().addKeyListener(this);
         MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
+        MouseTracker.getInstance().listenTo(window);
+        KeyTracker.getInstance().listenTo(window);
 
-        new InputDelegate(window);
         ControllerManager playerInput = new ControllerManager();
 
 //        new SoundEngine();

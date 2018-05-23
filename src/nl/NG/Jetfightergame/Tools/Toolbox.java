@@ -48,9 +48,9 @@ public final class Toolbox {
     public static void printError(Object... o) {
         int level = 1;
         StackTraceElement caller;
-        Exception ex = new Exception();
+        StackTraceElement[] stackTrace = new Exception().getStackTrace();
         do {
-            caller = ex.getStackTrace()[level++];
+            caller = stackTrace[level++];
         } while (caller.isNativeMethod());
 
         System.err.println(caller + ": " + concatenate(o));

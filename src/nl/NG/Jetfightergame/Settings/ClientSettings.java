@@ -12,14 +12,13 @@ public final class ClientSettings {
     // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
     public static final float RENDER_DELAY = 2f/ ServerSettings.TARGET_TPS;
     public static final int COLLISION_DETECTION_LEVEL = 0;
-    public static final int PHYSICS_TPS = 30;
     public static final boolean LOCAL_SERVER = true;
 
     /** sound */
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
-    public static float HIGHLIGHT_LINE_WIDTH = 1f;
+    public static float HIGHLIGHT_LINE_WIDTH = 0f;
     public static boolean SAVE_PLAYBACK = false;
 
     /** controller settings; these modifiers are also used to inverse direction */

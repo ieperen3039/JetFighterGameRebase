@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Client;
 
-import nl.NG.Jetfightergame.Controllers.InputHandling.InputDelegate;
+import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
@@ -36,8 +36,6 @@ public class JetFighterClient {
         rendering = new ScreenOverlay(() -> true);
         HudMenu menu = new Menu(this::startGame, this::getWidth, this::getHeight);
         rendering.addMenuItem(menu);
-
-        MouseTracker.getInstance().setGameModeDecision(() -> true);
     }
 
     private Integer getHeight() {
@@ -50,10 +48,11 @@ public class JetFighterClient {
 
 
     private GLFWWindow newWindow() {
-        GLFWWindow glfwWindow = new GLFWWindow(ServerSettings.GAME_NAME + " Client", 1000, 600, true);
-        new InputDelegate(glfwWindow);
-        glfwWindow.setClearColor(Color4f.WHITE);
-        return glfwWindow;
+        GLFWWindow window = new GLFWWindow(ServerSettings.GAME_NAME + " Client", 1000, 600, true);
+        MouseTracker.getInstance().listenTo(window);
+        KeyTracker.getInstance().listenTo(window);
+        window.setClearColor(Color4f.WHITE);
+        return window;
     }
 
     private void display() throws Exception {

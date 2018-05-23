@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.AveragingQueue;
+import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.Timer;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 

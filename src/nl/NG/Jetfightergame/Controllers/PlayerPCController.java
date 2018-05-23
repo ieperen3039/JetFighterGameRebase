@@ -26,10 +26,6 @@ public abstract class PlayerPCController implements TrackerMoveListener, Tracker
 
         mouse.addMotionListener(this);
         mouse.addClickListener(this, true);
-        keyboard.addKey(KeyBindings.THROTTLE_UP);
-        keyboard.addKey(KeyBindings.THROTTLE_DOWN);
-        keyboard.addKey(KeyBindings.YAW_UP);
-        keyboard.addKey(KeyBindings.YAW_DOWN);
     }
 
     @Override

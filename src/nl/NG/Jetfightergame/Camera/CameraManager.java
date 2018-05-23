@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> {
     private GameEntity target = null;
-    private Camera instance = new PointCenteredCamera();
+    private Camera instance = null;
 
     @Override
     public CameraImpl[] implementations() {

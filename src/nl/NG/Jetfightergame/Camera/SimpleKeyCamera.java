@@ -15,10 +15,6 @@ public class SimpleKeyCamera implements Camera {
     private static final KeyTracker input = KeyTracker.getInstance();
 
     static {
-        input.addKey(VK_LEFT);
-        input.addKey(VK_RIGHT);
-        input.addKey(VK_UP);
-        input.addKey(VK_DOWN);
     }
 
     /**
