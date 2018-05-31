@@ -22,4 +22,11 @@ public class QuaternionInterpolator extends LinearInterpolator<Quaternionf> {
         firstElt.nlerp(secondElt, fraction, result);
         return result;
     }
+
+    @Override
+    public Quaternionf getDerivative() {
+        Quaternionf dx = activeElement.difference(nextElement(), new Quaternionf());
+        float dy = getTimeDifference();
+        return dx.scale(1 / dy);
+    }
 }

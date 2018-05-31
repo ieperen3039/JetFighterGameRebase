@@ -161,8 +161,6 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public void update(float currentTime) {
-        position.set(extraPosition);
-        rotation.set(extraRotation);
         velocity.set(extraVelocity);
         addStatePoint(currentTime, extraPosition, extraRotation);
 
@@ -339,11 +337,13 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public PosVector interpolatedPosition() {
+        positionInterpolator.updateTime(renderTime());
         return positionInterpolator.getInterpolated(renderTime()).toPosVector();
     }
 
     @Override
     public Quaternionf interpolatedRotation() {
+        rotationInterpolator.updateTime(renderTime());
         return rotationInterpolator.getInterpolated(renderTime());
     }
 
@@ -362,9 +362,11 @@ public abstract class GameEntity implements MovingEntity {
     }
 
     @Override
-    public void addStatePoint(float currentTime, PosVector hitPosition, Quaternionf rotation) {
-        positionInterpolator.add(hitPosition, currentTime);
-        rotationInterpolator.add(rotation, currentTime);
+    public void addStatePoint(float currentTime, PosVector newPosition, Quaternionf newRotation) {
+        position.set(newPosition);
+        rotation.set(newRotation);
+        positionInterpolator.add(newPosition, currentTime);
+        rotationInterpolator.add(newRotation, currentTime);
     }
 
     @Override
@@ -389,6 +391,11 @@ public abstract class GameEntity implements MovingEntity {
     public float getKineticEnergy(DirVector vector) {
         float leftSpeed = extraVelocity.dot(vector);
         return 0.5f * leftSpeed * leftSpeed * mass;
+    }
+
+    protected DirVector renderVelocity() {
+        positionInterpolator.updateTime(renderTime());
+        return positionInterpolator.getDerivative();
     }
 
     public static class State {

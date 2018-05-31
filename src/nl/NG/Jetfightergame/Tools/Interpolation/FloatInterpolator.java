@@ -17,4 +17,9 @@ public class FloatInterpolator extends LinearInterpolator<Float> {
         return firstElt + (difference * fraction);
     }
 
+    @Override
+    public Float getDerivative() {
+        float dx = nextElement() - activeElement;
+        return dx / getTimeDifference();
+    }
 }

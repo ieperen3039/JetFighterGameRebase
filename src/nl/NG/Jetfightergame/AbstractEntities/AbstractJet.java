@@ -249,18 +249,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }
 
-    public void update(float currentTime) {
-        super.update(currentTime);
-
-        // obtain current x-axis in worldspace
+    @Override
+    public void addStatePoint(float currentTime, PosVector newPosition, Quaternionf newRotation) {
+        super.addStatePoint(currentTime, newPosition, newRotation);
         relativeStateDirection(DirVector.xVector()).normalize(forward);
-        addJetStatePoint(currentTime, new DirVector(forward), new DirVector(velocity));
-    }
-
-    /** adds entries for forward and velocity interpolation */
-    public void addJetStatePoint(float currentTime, DirVector forward, DirVector velocity) {
-        forwardInterpolator.add(forward, currentTime);
-        velocityInterpolator.add(velocity, currentTime);
+        forwardInterpolator.add(new DirVector(forward), currentTime);
+        velocityInterpolator.add(super.renderVelocity(), currentTime);
     }
 
     @Override
@@ -290,10 +284,12 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     }
 
     public DirVector interpolatedForward() {
+        forwardInterpolator.updateTime(renderTime());
         return forwardInterpolator.getInterpolated(renderTime()).toDirVector();
     }
 
     public DirVector interpolatedVelocity() {
+        velocityInterpolator.updateTime(renderTime());
         return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
     }
 

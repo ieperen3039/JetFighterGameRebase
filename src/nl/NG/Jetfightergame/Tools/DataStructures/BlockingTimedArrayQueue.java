@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * A timedQueue that uses ArrayDeque for implementation.
  * Includes synchoronized adding and deletion
  */
-public class TimedArrayDeque<T> implements TimedQueue<T>, Serializable {
+public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
 
     /** prevents race-conditions upon adding and removing */
     private Lock changeGuard;
@@ -25,7 +25,7 @@ public class TimedArrayDeque<T> implements TimedQueue<T>, Serializable {
     /**
      * @param capacity the initial expected maximum number of entries
      */
-    public TimedArrayDeque(int capacity){
+    public BlockingTimedArrayQueue(int capacity) {
         timeStamps = new ArrayDeque<>(capacity);
         elements = new ArrayDeque<>(capacity);
         changeGuard = new ReentrantLock();
@@ -41,14 +41,12 @@ public class TimedArrayDeque<T> implements TimedQueue<T>, Serializable {
 
     @Override
     public T getActive(double timeStamp) {
-        updateTime(timeStamp);
         // if (activeTimeStamp < timeStamp), there is no element available
         return (nextTimeStamp() < timeStamp) ? null : nextElement();
     }
 
     @Override
     public double timeUntilNext(double timeStamp) {
-        updateTime(timeStamp);
         return (nextTimeStamp() - timeStamp);
     }
 
@@ -56,7 +54,7 @@ public class TimedArrayDeque<T> implements TimedQueue<T>, Serializable {
      * upon returning, nextTimeStamp > timeStamp or there exist no item with such timestamp.
      * @param timeStamp the time until where the state of the queue should be updated.
      */
-    protected void updateTime(double timeStamp) {
+    public void updateTime(double timeStamp) {
         changeGuard.lock();
 
         while ((timeStamps.size() > 1) && (timeStamp > nextTimeStamp())) {

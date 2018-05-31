@@ -74,7 +74,7 @@ public class JetFighterServer {
         JetFighterServer server = new JetFighterServer(world, false);
         // internal connect, this thread will soon terminate
         new Thread(server::listenForHost).start();
-        client.connect(new InetSocketAddress(server.portNumber));
+        client.connect(new InetSocketAddress(server.portNumber), 1000);
 
         server.currentPhase = STARTING;
         return server.getGameLoop();

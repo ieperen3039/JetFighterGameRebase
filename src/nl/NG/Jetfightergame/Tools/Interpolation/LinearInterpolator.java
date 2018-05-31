@@ -1,14 +1,14 @@
 package nl.NG.Jetfightergame.Tools.Interpolation;
 
-import nl.NG.Jetfightergame.Tools.DataStructures.TimedArrayDeque;
+import nl.NG.Jetfightergame.Tools.DataStructures.BlockingTimedArrayQueue;
 
 /**
  * @author Geert van Ieperen
  * created on 15-12-2017.
  */
-public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
+public abstract class LinearInterpolator<T> extends BlockingTimedArrayQueue<T> {
     private double activeTime;
-    private T activeElement;
+    protected T activeElement;
 
     /**
      * @param capacity the initial expected maximum number of entries
@@ -24,8 +24,6 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
      * @return the interpolated object defined by implementation
      */
     public T getInterpolated(float timeStamp){
-        updateTime(timeStamp);
-
         double firstTime = activeTime;
         T firstElt = activeElement;
         double secondTime = nextTimeStamp();
@@ -58,5 +56,14 @@ public abstract class LinearInterpolator<T> extends TimedArrayDeque<T> {
     public String toString() {
         final String backend = super.toString();
         return backend.replaceFirst("\n", "\n" + String.format("%1.04f", activeTime) + " > " + activeElement + "\n");
+    }
+
+    /**
+     * @return the derivative of the most recent returned value of getInterpolated()
+     */
+    public abstract T getDerivative();
+
+    protected float getTimeDifference() {
+        return (float) (nextTimeStamp() - activeTime);
     }
 }

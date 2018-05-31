@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Interpolation;
 
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 /**
@@ -15,4 +16,12 @@ public class VectorInterpolator extends LinearInterpolator<Vector> {
     protected Vector interpolate(Vector firstElt, Vector secondElt, float fraction) {
         return firstElt.interpolateTo(secondElt, fraction);
     }
+
+    @Override
+    public DirVector getDerivative() {
+        DirVector dx = activeElement.to(nextElement(), new DirVector());
+        float dy = getTimeDifference();
+        return dx.scale(1 / dy);
+    }
+
 }

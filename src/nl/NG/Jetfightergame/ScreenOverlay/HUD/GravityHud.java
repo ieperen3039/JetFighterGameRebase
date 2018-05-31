@@ -56,7 +56,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
                     xPosVelocityBar, (int) (height * inverseBarMargin)
             );
 
-            final float currentVelocity = target.getVelocity().length() * 10f; // TODO add interpolation derivative?
+            final float currentVelocity = target.interpolatedVelocity().length() * 10f;
 
             float[] velocityTicks = ticks(currentVelocity, 25, 100);
             for (float tick : velocityTicks) {
@@ -97,7 +97,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
         }
 
         { // boresight / direction
-            final DirVector forward = target.getForward();
+            final DirVector forward = target.interpolatedForward();
 
             final float xComp = lookRight.dot(forward);
             final float yComp = -(lookUp.dot(forward));
