@@ -14,6 +14,7 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
@@ -55,14 +56,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.engine = engine;
 
         if (gameState instanceof GameState) {
-            Toolbox.printOnline(() -> "Particles: " + ((GameState) gameState).getParticleCount());
+            Logger.printOnline(() -> "Particles: " + ((GameState) gameState).getParticleCount());
         }
 
         shaderManager = new ShaderManager();
         particleShader = new ParticleShader();
 
         overlay = new ScreenOverlay(() -> engine.getCurrentGameMode() == MENU_MODE);
-        overlay.addHudItem((hud) -> Toolbox.setOnlineOutput(hud::printRoll));
+        overlay.addHudItem((hud) -> Logger.setOnlineOutput(hud::printRoll));
 
         JetFighterMenu menu = new JetFighterMenu(
                 window::getWidth, window::getHeight,

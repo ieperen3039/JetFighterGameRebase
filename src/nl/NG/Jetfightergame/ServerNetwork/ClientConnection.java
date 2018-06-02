@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -83,7 +84,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             game.addParticles(cloud);
 
         } else {
-            Toolbox.print("unknown message: " + type);
+            Logger.print("unknown message: " + type);
         }
 
         return true;
@@ -96,7 +97,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             serverOut.flush();
 
         } catch (IOException ex) {
-            Toolbox.printError(ex);
+            Logger.printError(ex);
 
         } finally {
             sendLock.unlock();
@@ -111,7 +112,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             JetFighterProtocol.spawnRequestSend(serverOut, spawn);
 
         } catch (IOException e) {
-            Toolbox.printError(e);
+            Logger.printError(e);
 
         } finally {
             sendLock.unlock();
@@ -197,7 +198,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     protected void cleanup() {
         try {
             serverIn.close();
-            Toolbox.print(this + " connection close");
+            Logger.print(this + " connection close");
         } catch (IOException e) {
             e.printStackTrace();
         }

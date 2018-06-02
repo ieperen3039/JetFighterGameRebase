@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -178,7 +178,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         if (cloud.readyToLoad()) {
             newParticles.add(cloud);
         } else {
-            Toolbox.printError("Tried adding particles that are either loaded, or without particles");
+            Logger.printError("Tried adding particles that are either loaded, or without particles");
         }
     }
 

@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Sound;
 import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Rendering.GLException;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.lwjgl.BufferUtils;
@@ -104,7 +104,7 @@ public class SoundEngine {
         checkALError();
 
         try {
-            Toolbox.print("Playing sound... Do you hear it?");
+            Logger.print("Playing sound... Do you hear it?");
             AudioFile audioData = Sounds.explosion;
             AudioSource src = new AudioSource(audioData, PosVector.zeroVector(), 1f, 1f);
             Thread.sleep(5000);

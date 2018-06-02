@@ -52,7 +52,7 @@ public class Extreme<T extends Comparable<T>> {
     }
 
     public void updateAndPrint(String name, T newItem, String unit) {
-        if (check(newItem)) Toolbox.printFrom(2, name + ": " + newItem + " " + unit);
+        if (check(newItem)) Logger.printFrom(2, name + ": " + newItem + " " + unit);
     }
 
     public void reset(){
@@ -60,6 +60,6 @@ public class Extreme<T extends Comparable<T>> {
     }
 
     public void print(String name, String unit) {
-        Toolbox.printFrom(2, name + ": " + get() + " " + unit);
+        Logger.printFrom(2, name + ": " + get() + " " + unit);
     }
 }

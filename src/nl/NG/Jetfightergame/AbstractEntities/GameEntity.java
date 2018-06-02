@@ -14,7 +14,9 @@ import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -396,6 +398,26 @@ public abstract class GameEntity implements MovingEntity {
     protected DirVector renderVelocity() {
         positionInterpolator.updateTime(renderTime());
         return positionInterpolator.getDerivative();
+    }
+
+    @Override
+    public void elasticCollision() {
+        // calculate inverse inertia tensor
+        Matrix3f inertTensor = new Matrix3f().scale(1 / mass);
+        Matrix3f rotMatrix = rotation.get(new Matrix3f());
+        Matrix3f rotInert = rotMatrix.mul(inertTensor, inertTensor);
+        Matrix3f rotTranspose = rotMatrix.transpose();
+        Matrix3f invInertTensor = rotInert.mul(rotTranspose).invert();
+
+        Collision coll = nextCrash.get();
+        if (velocity.dot(coll.normal) < 0) velocity.reflect(coll.normal);
+
+        Vector3f angVelChange = coll.normal.cross(coll.hitPos, new Vector3f());
+        invInertTensor.transform(angVelChange);
+        angVelChange.add(rollSpeed, pitchSpeed, yawSpeed).mul(0.8f); // *0.8 to prevent objects from extreme spinning
+        rollSpeed = angVelChange.x;
+        pitchSpeed = angVelChange.y;
+        yawSpeed = angVelChange.z;
     }
 
     public static class State {

@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -33,7 +33,7 @@ public class JetFighterServerTest {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             ClientConnection cc = new ClientConnection(Controller.EMPTY, client, new CollisionLaboratory(new GameTimer()));
-            Toolbox.print("received a " + cc.getPlayer());
+            Logger.print("received a " + cc.getPlayer());
         } catch (IOException e) {
             return e;
         }

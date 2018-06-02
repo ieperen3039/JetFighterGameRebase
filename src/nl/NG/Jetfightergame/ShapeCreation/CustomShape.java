@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -296,7 +296,7 @@ public class CustomShape {
         PrintWriter writer = new PrintWriter(filename + ".obj", "UTF-8");
 
         writer.println("# created using a simple obj writer by Geert van Ieperen");
-        writer.println("# calling method: " + Toolbox.getCallingMethod(2));
+        writer.println("# calling method: " + Logger.getCallingMethod(2));
         writer.println("mtllib arrow.mtl");
 
         PosVector[] sortedVertices = new PosVector[points.size()];
@@ -320,7 +320,7 @@ public class CustomShape {
 
         writer.close();
 
-        Toolbox.print("Successfully created obj file: " + filename);
+        Logger.print("Successfully created obj file: " + filename);
     }
 
     private static String readVertex(Pair<Integer, Integer> vertex) {

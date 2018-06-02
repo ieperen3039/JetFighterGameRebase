@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Camera.CameraManager;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Collection;
@@ -58,7 +59,7 @@ public abstract class GLFWGameEngine {
             window.cleanup();
         }
 
-        Toolbox.print("Game has stopped! Bye ~");
+        Logger.print("Game has stopped! Bye ~");
         // Finish execution
     }
 
@@ -71,7 +72,7 @@ public abstract class GLFWGameEngine {
         try { Thread.sleep(10); } catch (InterruptedException ignored) {} // wait for possible error-printing
 
         System.out.println();
-        Toolbox.printFrom(2, "Stopping game...");
+        Logger.printFrom(2, "Stopping game...");
 
         renderingLoop().stopLoop();
         secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);
@@ -145,7 +146,7 @@ public abstract class GLFWGameEngine {
         public void run() {
             try {
                 Thread.sleep(millis);
-                Toolbox.printError(name + " timed out!");
+                Logger.printError(name + " timed out!");
                 action.run();
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -57,7 +57,7 @@ public enum  EntityClass {
             case FALLING_CUBE_LARGE:
                 return new FallingCube(id, Material.SILVER, CUBE_MASS_LARGE, CUBE_SIZE_LARGE, position, velocity, rotation, timer, game);
             default:
-                Toolbox.printError("Construction of entity class " + this + " is not defined!");
+                Logger.printError("Construction of entity class " + this + " is not defined!");
                 return null;
         }
     }

@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Quad;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.Extreme;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector3f;
@@ -66,7 +66,7 @@ public class GridMesh implements Shape {
 
         this.graphicalGrid = frame.asMesh();
 
-        Toolbox.print("created Grid [ " + xSize + " x " + ySize + " ]");
+        Logger.print("created Grid [ " + xSize + " x " + ySize + " ]");
     }
 
     public GridMesh(float[][] heightMap, float xStep, float yStep) {

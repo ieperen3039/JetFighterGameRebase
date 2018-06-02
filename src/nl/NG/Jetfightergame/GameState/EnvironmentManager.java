@@ -12,8 +12,8 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Manager;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
@@ -145,7 +145,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
                 instance = new MissionSnake(time);
                 break;
             default:
-                Toolbox.printError("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
+                Logger.printError("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
                 instance = new Void();
         }
 

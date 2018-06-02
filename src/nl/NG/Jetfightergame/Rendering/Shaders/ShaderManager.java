@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Rendering.Shaders;
 
 import nl.NG.Jetfightergame.Camera.Camera;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Manager;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Matrix3f;
@@ -83,7 +83,7 @@ public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderP
 
         } else {
             String name = instance.getClass().getSimpleName();
-            Toolbox.printSpamless(name, "loaded shader without advanced parameters: " + name);
+            Logger.printSpamless(name, "loaded shader without advanced parameters: " + name);
         }
     }
 

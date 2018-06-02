@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
 import nl.NG.Jetfightergame.GameState.CollisionDetection;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -28,7 +29,7 @@ public class CollisionDetectionTest extends CollisionDetection {
         int id = 1;
         Pair[] nums = {new Pair(1f, id++), new Pair(2f, id++), new Pair(3f, id++), new Pair(2f, id++), new Pair(2.01f, id++), new Pair(4f, id++)};
         Toolbox.insertionSort(nums, p -> (Float) p.left);
-        Toolbox.print(Arrays.asList(nums));
+        Logger.print(Arrays.asList(nums));
     }
 
     @Test

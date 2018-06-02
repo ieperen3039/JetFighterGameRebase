@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -56,7 +56,7 @@ public class ServerConnection implements BlockingListener {
             // no flush
 
         } catch (IOException ex) {
-            Toolbox.printError(ex);
+            Logger.printError(ex);
 
         } finally {
             sendOutput.unlock();
@@ -75,7 +75,7 @@ public class ServerConnection implements BlockingListener {
             clientOut.flush();
 
         } catch (IOException ex) {
-            Toolbox.printError(ex);
+            Logger.printError(ex);
 
         } finally {
             sendOutput.unlock();
@@ -87,13 +87,13 @@ public class ServerConnection implements BlockingListener {
         MessageType type = MessageType.get(clientIn.read());
 
         if (type.isOf(MessageType.adminOnly) && !hasAdminCapabilities) {
-            Toolbox.printError(this + " sent an " + type + " command, while it has no access to it");
+            Logger.printError(this + " sent an " + type + " command, while it has no access to it");
             return true;
 
         } else if (type == MessageType.CONNECTION_CLOSE) {
             clientOut.write(MessageType.CONNECTION_CLOSE.ordinal()); // reflect
             clientOut.close();
-            Toolbox.print(clientName + " connection close");
+            Logger.print(clientName + " connection close");
             return false;
         }
 
@@ -120,7 +120,7 @@ public class ServerConnection implements BlockingListener {
 
         } else {
             long bits = clientIn.skip(type.nOfArgs());
-            Toolbox.printError("Message caused an error: " + type, "skipping " + bits + " bits");
+            Logger.printError("Message caused an error: " + type, "skipping " + bits + " bits");
         }
 
         return true;
@@ -191,7 +191,7 @@ public class ServerConnection implements BlockingListener {
             JetFighterProtocol.explosionSend(clientOut, position, direction, spread, color1, color2);
 
         } catch (IOException ex) {
-            Toolbox.printError(ex);
+            Logger.printError(ex);
 
         } finally {
             sendOutput.unlock();
@@ -205,7 +205,7 @@ public class ServerConnection implements BlockingListener {
             JetFighterProtocol.entityRemoveSend(clientOut, entity.idNumber());
 
         } catch (IOException ex) {
-            Toolbox.printError(ex);
+            Logger.printError(ex);
 
         } finally {
             sendOutput.unlock();

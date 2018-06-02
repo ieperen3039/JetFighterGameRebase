@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Rendering.Particles;
 
 import nl.NG.Jetfightergame.Rendering.Shaders.AbstractShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Resources;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.joml.Matrix4fc;
 import org.lwjgl.system.MemoryStack;
 
@@ -67,7 +67,7 @@ public class ParticleShader {
 
         glValidateProgram(programId);
         if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
-            Toolbox.printError("Warning validating Shader code: " + glGetProgramInfoLog(programId, 1024));
+            Logger.printError("Warning validating Shader code: " + glGetProgramInfoLog(programId, 1024));
         }
     }
 

@@ -21,7 +21,7 @@ import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -80,12 +80,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             Environment environment = worldFactory.apply(globalGameTimer);
 
             if (ClientSettings.LOCAL_SERVER) {
-                Toolbox.print("Creating new local server");
+                Logger.print("Creating new local server");
                 // a second (new) environment is created, as the server runs separately from the client
                 otherLoops.add(JetFighterServer.createOfflineServer(worldFactory, socket));
 
             } else {
-                Toolbox.print("Searching local server");
+                Logger.print("Searching local server");
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             }
 
@@ -93,7 +93,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             otherLoops.add(connection);
 
             AbstractJet playerJet = connection.getPlayer();
-            Toolbox.print("Received " + playerJet + " from the server");
+            Logger.print("Received " + playerJet + " from the server");
 
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
@@ -118,7 +118,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
         // reclaim all space used for initialisation
         System.gc();
-        Toolbox.print("Initialisation complete\n");
+        Logger.print("Initialisation complete\n");
     }
 
     @Override
@@ -166,7 +166,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 break;
 
             case GLFW_KEY_F11:
-                Toolbox.print("Switching fullscreen");
+                Logger.print("Switching fullscreen");
                 window.toggleFullScreen();
                 break;
 
@@ -176,7 +176,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
                 boolean success = window.printScreen(name);
                 if (success){
-                    Toolbox.print("Saved screenshot as \"" + name + "\"");
+                    Logger.print("Saved screenshot as \"" + name + "\"");
                 }
         }
     }

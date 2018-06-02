@@ -13,6 +13,7 @@ import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.DataStructures.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Extreme;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -50,7 +51,7 @@ public class CollisionDetection implements EntityManagement {
         this.removeEntities = new ConcurrentArrayList<>();
 
         collisionCounter = () -> String.format("Collision pair count average: %1.01f", avgCollision.average());
-        Toolbox.printOnline(collisionCounter);
+        Logger.printOnline(collisionCounter);
 
         xLowerSorted = new CollisionEntity[dynamicEntities.size()];
         yLowerSorted = new CollisionEntity[dynamicEntities.size()];
@@ -112,8 +113,6 @@ public class CollisionDetection implements EntityManagement {
              * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
              * On the other hand, we may assume collisions of that magnitude appear seldom
              */
-            // check for collisions, remove items that did not collide
-
             collisionPairs = getIntersectingPairs()
                     .parallelStream()
                     // check for collisions, remove items that did not collide
@@ -135,7 +134,7 @@ public class CollisionDetection implements EntityManagement {
         } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
 
         if (!collisionPairs.isEmpty()) {
-            Toolbox.printError(collisionPairs.size() + " collisions not resolved");
+            Logger.printError(collisionPairs.size() + " collisions not resolved");
         }
     }
 
@@ -143,7 +142,7 @@ public class CollisionDetection implements EntityManagement {
      * move two entities away from each other
      * @param left  one entity, which has collided with right
      * @param right another entity, which has collided with left
-     * @param deltaTime time differenct of this gameloop
+     * @param deltaTime time difference of this gameloop
      */
     private void bumpOff(MovingEntity left, MovingEntity right, float deltaTime) {
         DirVector leftToRight = new DirVector();
@@ -168,6 +167,7 @@ public class CollisionDetection implements EntityManagement {
      * @param target an entity that has collided with a solid entity
      */
     private void applyCorrection(MovingEntity target, PathDescription path, float deltaTime) {
+//        if (target instanceof AbstractJet) {
         PosVector jetPosition = target.getPosition();
         PosVector middle = path.getMiddleOfPath(jetPosition);
         DirVector targetToMid = jetPosition.to(middle, new DirVector());
@@ -178,6 +178,10 @@ public class CollisionDetection implements EntityManagement {
         float targetEnergy = target.getKineticEnergy(midToTarget) + ServerSettings.BASE_BUMPOFF_ENERGY;
 
         target.applyJerk(targetToMid, targetEnergy, deltaTime);
+
+//        } else {
+//            target.elasticCollision();
+//        }
     }
 
     /**
@@ -241,9 +245,9 @@ public class CollisionDetection implements EntityManagement {
         // run some checks
         if (DEBUG) {
             long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
-            if (nulls > 0) Toolbox.print("nulls found in intersecting pairs: " + nulls);
+            if (nulls > 0) Logger.print("nulls found in intersecting pairs: " + nulls);
             long equals = allEntityPairs.stream().filter(p -> p.left.equals(p.right)).count();
-            if (equals > 0) Toolbox.print("duplicates found in intersecting pairs: " + equals);
+            if (equals > 0) Logger.print("duplicates found in intersecting pairs: " + equals);
         }
 
         avgCollision.add(allEntityPairs.size());
@@ -255,15 +259,13 @@ public class CollisionDetection implements EntityManagement {
      * tests whether the invariant holds. Throws an error if any of the arrays is not correctly sorted
      */
     public void testSort() {
-        Toolbox.printSpamless("testSort", "\n" + Toolbox.getCallingMethod(1) + " Testing Sorting");
+        Logger.printSpamless("testSort", "\n" + Logger.getCallingMethod(1) + " Testing Sorting");
         float init = -Float.MAX_VALUE;
         for (int i = 0; i < xLowerSorted.length; i++) {
             CollisionEntity collisionEntity = xLowerSorted[i];
             if (collisionEntity.xLower() < init) {
-                Toolbox.printError("Sorting error on x = " + i);
-                for (CollisionEntity entity : xLowerSorted) {
-                    System.out.print(entity.xLower() + ", ");
-                }
+                Logger.printError("Sorting error on x = " + i);
+                Logger.printError(Arrays.toString(xLowerSorted));
                 Toolbox.exitJava();
             }
             init = collisionEntity.xLower();
@@ -273,11 +275,8 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < yLowerSorted.length; i++) {
             CollisionEntity collisionEntity = yLowerSorted[i];
             if (collisionEntity.yLower() < init) {
-                Toolbox.printError("Sorting error on y = " + i);
-                for (CollisionEntity entity : yLowerSorted) {
-                    System.out.print(entity.yLower() + ", ");
-                }
-                Toolbox.exitJava();
+                Logger.printError("Sorting error on y = " + i);
+                Logger.printError(Arrays.toString(yLowerSorted));
             }
             init = collisionEntity.yLower();
         }
@@ -286,11 +285,8 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < zLowerSorted.length; i++) {
             CollisionEntity collisionEntity = zLowerSorted[i];
             if (collisionEntity.zLower() < init) {
-                Toolbox.printError("Sorting error on z = " + i);
-                for (CollisionEntity entity : zLowerSorted) {
-                    System.out.print(entity.zLower() + ", ");
-                }
-                Toolbox.exitJava();
+                Logger.printError("Sorting error on z = " + i);
+                Logger.printError(Arrays.toString(zLowerSorted));
             }
             init = collisionEntity.zLower();
         }
@@ -475,7 +471,7 @@ public class CollisionDetection implements EntityManagement {
         xLowerSorted = new CollisionEntity[0];
         yLowerSorted = new CollisionEntity[0];
         zLowerSorted = new CollisionEntity[0];
-        Toolbox.removeOnlineUpdate(collisionCounter);
+        Logger.removeOnlineUpdate(collisionCounter);
         debugs.forEach(HUDTargetable::dispose);
     }
 

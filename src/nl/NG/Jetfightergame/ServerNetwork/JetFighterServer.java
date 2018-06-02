@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -90,12 +90,12 @@ public class JetFighterServer {
         }
 
         try {
-            Toolbox.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
+            Logger.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
             acceptConnection(true);
             currentPhase = PREPARATION;
 
         } catch (IOException ex){
-            Toolbox.printError(ex);
+            Logger.printError(ex);
         }
     }
 
@@ -106,18 +106,18 @@ public class JetFighterServer {
      */
     public void listen() throws IOException {
         if (currentPhase != PREPARATION) throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
-        Toolbox.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
+        Logger.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
 
         while ((currentPhase == PREPARATION) && acceptConnection(false));
 
-        Toolbox.print("Stopped listening for new players");
+        Logger.print("Stopped listening for new players");
         currentPhase = STARTING;
     }
 
     public boolean acceptConnection(boolean asAdmin) throws IOException {
         Socket client = socket.accept();
 
-        Toolbox.print("Connection made with " + client + (asAdmin ? " with admin privileges": ""));
+        Logger.print("Connection made with " + client + (asAdmin ? " with admin privileges" : ""));
         game.connectToPlayer(client, asAdmin);
         return true;
     }

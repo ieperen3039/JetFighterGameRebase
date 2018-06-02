@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -32,7 +32,7 @@ public class ShapeFromFile implements Shape {
      */
     public static void init(boolean loadMesh){
         if (isLoaded) {
-            Toolbox.printError("Tried loading shapes while they where already loaded");
+            Logger.printError("Tried loading shapes while they where already loaded");
             return;
         }
         CONCEPT_BLUEPRINT = new ShapeFromFile("ConceptBlueprint.obj", loadMesh);
@@ -52,7 +52,8 @@ public class ShapeFromFile implements Shape {
     private ShapeFromFile(ShapeParameters model, boolean loadMesh) {
         this(model.vertices, model.normals, model.faces, loadMesh);
 
-        if (ServerSettings.DEBUG) Toolbox.print("loaded model " + model.name + ": [Faces: " + model.faces.size() + ", vertices: " + model.vertices.size() + "]");
+        if (ServerSettings.DEBUG)
+            Logger.print("loaded model " + model.name + ": [Faces: " + model.faces.size() + ", vertices: " + model.vertices.size() + "]");
     }
 
     /**

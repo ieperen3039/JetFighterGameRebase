@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Timer;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Supplier;
@@ -68,11 +68,11 @@ public abstract class AbstractGameLoop extends Thread {
      * start the loop, running until {@link #stopLoop()} is called.
      */
     public void run() {
-        if (ServerSettings.DEBUG) Toolbox.print(loopName + " enabled");
+        if (ServerSettings.DEBUG) Logger.print(loopName + " enabled");
         float deltaTime = 0;
 
-        Toolbox.printOnline(tickCounter);
-        Toolbox.printOnline(possessionCounter);
+        Logger.printOnline(tickCounter);
+        Logger.printOnline(possessionCounter);
 
         try {
             pauseBlock.await();
@@ -116,13 +116,13 @@ public abstract class AbstractGameLoop extends Thread {
             ex.printStackTrace();
             exceptionHandler(ex);
         } finally {
-            Toolbox.removeOnlineUpdate(tickCounter);
-            Toolbox.removeOnlineUpdate(possessionCounter);
+            Logger.removeOnlineUpdate(tickCounter);
+            Logger.removeOnlineUpdate(possessionCounter);
             cleanup();
         }
 
         // terminate engine
-        Toolbox.print(loopName + " is stopped");
+        Logger.print(loopName + " is stopped");
     }
 
     /**
@@ -138,12 +138,12 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void unPause(){
         pauseBlock.countDown();
-        if (ServerSettings.DEBUG) Toolbox.printFrom(2, "unpaused " + loopName);
+        if (ServerSettings.DEBUG) Logger.printFrom(2, "unpaused " + loopName);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        if (ServerSettings.DEBUG) Toolbox.printFrom(2, "paused " + loopName);
+        if (ServerSettings.DEBUG) Logger.printFrom(2, "paused " + loopName);
     }
 
     /**

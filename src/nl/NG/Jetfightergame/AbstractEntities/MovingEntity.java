@@ -121,6 +121,11 @@ public interface MovingEntity extends Touchable {
     int idNumber();
 
     /**
+     * reacts on the last collision as a full elastic collision
+     */
+    void elasticCollision();
+
+    /**
      * a description of a moving entity
      */
     class Spawn {

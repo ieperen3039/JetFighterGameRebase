@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
 
@@ -19,7 +19,7 @@ public interface BlockingListener {
             while (handleMessage());
 
         } catch (IOException ex) {
-            Toolbox.printError(ex);
+            Logger.printError(ex);
             return ex;
         }
 

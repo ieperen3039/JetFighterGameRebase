@@ -7,8 +7,8 @@ import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.ScreenOverlay.HudMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Timer;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.io.IOException;
@@ -96,7 +96,7 @@ public class JetFighterClient {
     /** schedules the game to start at the next loop*/
     private void startGame() {
         try {
-            Toolbox.print("Starting your game...");
+            Logger.print("Starting your game...");
             action.set(START_GAME);
             window.close();
 

@@ -8,7 +8,7 @@ import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -56,7 +56,7 @@ public final class JetFighterProtocol {
         MovingEntity target = matchEntity(entities, id);
 
         if (target == null) {
-            Toolbox.printError("Entity with id " + id + " not found among " + entities.size() + " entities.");
+            Logger.printError("Entity with id " + id + " not found among " + entities.size() + " entities.");
             return null;
         }
 
@@ -211,7 +211,7 @@ public final class JetFighterProtocol {
         long start = System.nanoTime();
 
         int reply = input.read();
-        if (reply != MessageType.PONG.ordinal()) Toolbox.printError("unexpected reply: " + MessageType.get(reply));
+        if (reply != MessageType.PONG.ordinal()) Logger.printError("unexpected reply: " + MessageType.get(reply));
 
         int deltaNanos = (int) (System.nanoTime() - start);
         return deltaNanos * 1E-9f;
