@@ -147,6 +147,7 @@ public class ParticleCloud {
         bulk = null;
     }
 
+    /** a rough estimate of the number of visible particles, assuming a quadratic despawn rate */
     public int estParticlesAt(float currentTime){
         if (bulk != null) return 0;
 
@@ -158,7 +159,8 @@ public class ParticleCloud {
     }
 
     /**
-     * splits off all particles with timeToLive more than the given TTL
+     * splits off all particles with timeToLive more than the given TTL.
+     * The new particles are written to GL
      * @param newTTL the new maximum ttl of these particles
      * @param currentTime
      */
@@ -253,6 +255,8 @@ public class ParticleCloud {
      */
     public void addAll(ParticleCloud other) {
         this.bulk.addAll(other.bulk);
+        this.maxTTL = Math.max(this.maxTTL, other.maxTTL);
+        this.minTTL = Math.min(this.minTTL, other.minTTL);
     }
 
     /**

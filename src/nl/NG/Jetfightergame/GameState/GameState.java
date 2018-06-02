@@ -31,7 +31,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
 public abstract class GameState implements Environment, NetForceProvider, PathDescription {
 
     protected final Collection<ParticleCloud> particles = new ConcurrentArrayList<>();
-    protected final Collection<ParticleCloud> newParticles = new CopyOnWriteArrayList<>();
+    protected ParticleCloud newParticles = new ParticleCloud();
     protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
 
     private EntityManagement physicsEngine;
@@ -126,10 +126,10 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     public void drawParticles() {
         float t = time.getRenderTime().current();
 
-        if (!newParticles.isEmpty()) {
-            newParticles.forEach(p -> p.writeToGL(t));
-            particles.addAll(newParticles);
-            newParticles.clear();
+        if (newParticles.readyToLoad()) {
+            newParticles.writeToGL(t);
+            particles.add(newParticles);
+            newParticles = new ParticleCloud();
         }
 
         particles.removeIf(p -> p.disposeIfFaded(t));
@@ -137,7 +137,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     }
 
     public int getParticleCount() {
-        Float t = getTimer().getRenderTime().current();
+        Float t = time.getRenderTime().current();
         return particles.stream()
                 .mapToInt(p -> p.estParticlesAt(t))
                 .sum();
@@ -176,9 +176,9 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     @Override
     public void addParticles(ParticleCloud cloud) {
         if (cloud.readyToLoad()) {
-            newParticles.add(cloud);
+            newParticles.addAll(cloud);
         } else {
-            Logger.printError("Tried adding particles that are either loaded, or without particles");
+            Logger.printError("Tried adding particles that are either already loaded, or without particles");
         }
     }
 
