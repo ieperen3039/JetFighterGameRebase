@@ -93,7 +93,7 @@ public class JetFighterClient {
         }
     }
 
-    /** schedules the game to start at the next loop*/
+    /** schedules the game to start at the next loop */
     private void startGame() {
         try {
             Logger.print("Starting your game...");
