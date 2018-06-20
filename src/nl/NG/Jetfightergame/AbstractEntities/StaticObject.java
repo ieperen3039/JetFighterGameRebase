@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.Assets.WorldObjects.WorldObject;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
@@ -16,7 +17,7 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen
  * created on 2-3-2018.
  */
-public class StaticObject implements Touchable {
+public class StaticObject implements WorldObject {
 
     private final Shape source;
     private final Material material;
@@ -66,4 +67,8 @@ public class StaticObject implements Touchable {
 
     }
 
+    @Override
+    public void postWeldProcessing() {
+
+    }
 }

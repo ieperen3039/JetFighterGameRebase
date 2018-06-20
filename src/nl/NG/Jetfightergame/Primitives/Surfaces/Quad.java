@@ -28,6 +28,16 @@ public class Quad extends Plane {
         DARef = A.sub(D, tempAlpha).cross(C.sub(D, tempBeta), new PosVector());
     }
 
+    public static Quad createQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector direction) {
+        DirVector currentNormal = getNormalVector(A, B, C);
+
+        if (currentNormal.dot(direction) >= 0) {
+            return new Quad(A, B, C, D, direction);
+        } else {
+            return new Quad(D, C, B, A, direction);
+        }
+    }
+
     @Override
     protected boolean encapsules(PosVector hitPos) {
         PosVector A = boundary[0];

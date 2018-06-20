@@ -1,60 +1,78 @@
 package nl.NG.Jetfightergame.Assets.WorldObjects;
 
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.AxisAngle4f;
 
-import java.util.function.Consumer;
+/** one curve of a Tunnel */
+public class Tunnel extends StaticObject {
+    private final PosVector startPosition;
 
-/**
- * @author Geert van Ieperen created on 25-4-2018.
- */
-public class Tunnel implements Touchable {
+    public Tunnel(PosVector begin, PosVector bDir, PosVector eDir, PosVector end, float radius, int nOfSlices, int radialParts, boolean loadMesh) {
+        super(
+                makeTunnel(begin, bDir, eDir, end, radius, nOfSlices, radialParts, loadMesh),
+                Material.ROUGH, Color4f.BLUE
+        );
+        startPosition = begin;
+    }
 
-    public Tunnel(PosVector ... path) {
-         if ((path.length % 3) != 0){
-             throw new IllegalStateException("Path must be a multiple of 3");
-         }
+    private static Shape makeTunnel(PosVector begin, PosVector bDir, PosVector eDir, PosVector end, float radius, int nOfSlices, int radialParts, boolean loadMesh) {
+        CustomShape frame = new CustomShape();
 
-        for (int i = 0; (i + 3) < path.length; i += 3) {
-            createPathSegment(path[0], path[1], path[2], path[3]);
+        PosVector[] lastSlice = null;
+        PosVector[] currentSlice = new PosVector[radialParts];
+        for (int i = 0; i < nOfSlices; i++) {
+            double t = 1.0 / nOfSlices; // TODO make linear based on real length
+            PosVector point = Plane.bezierPoint(begin, bDir, eDir, end, t).toPosVector();
+            DirVector direction = Plane.bezierDerivative(begin, bDir, eDir, end, t);
+            direction.normalize();
+
+            // our beloved random vector
+            DirVector henk = DirVector.yVector();
+            if (direction.equals(henk)) henk = DirVector.zVector();
+
+            // a vector orthogonal to the direction
+            DirVector orthogonal = direction.cross(henk, henk);
+            orthogonal.reducedTo(radius, orthogonal);
+
+            float angle = (float) ((2 * Math.PI) / radialParts);
+            AxisAngle4f axis = new AxisAngle4f(angle, direction);
+
+            PosVector next = new PosVector();
+            PosVector current = new PosVector(orthogonal);
+
+            for (int j = 0; j < (radialParts - 1); j++) {
+                axis.transform(current, next);
+
+                PosVector cPos = current.add(point, new PosVector());
+                if (lastSlice != null) {
+                    DirVector normal = new DirVector(current);
+                    normal.negate();
+                    PosVector nPos = next.add(point, new PosVector());
+                    frame.addQuad(cPos, nPos, lastSlice[j + 1], lastSlice[j], normal);
+                }
+
+                currentSlice[j] = cPos;
+                current = next;
+            }
+            currentSlice[radialParts - 1] = current.add(point, new PosVector());
+
+            if (lastSlice != null) {
+                DirVector normal = orthogonal.negate(new DirVector());
+                frame.addQuad(current, orthogonal.toPosVector(), lastSlice[radialParts - 1], lastSlice[0], normal);
+            }
+
+            lastSlice = currentSlice;
         }
+
+        Logger.print(frame);
+        return frame.wrapUp(loadMesh);
     }
-
-    private static void createPathSegment(PosVector begin, PosVector bDir, PosVector eDir, PosVector end) {
-        DirVector direction = Plane.bezierDerivative(begin, bDir, end, eDir, 0);
-
-        // our beloved random vector
-        DirVector henk = DirVector.zVector();
-        if (direction.equals(henk)) henk = DirVector.yVector();
-
-        DirVector orthogonal = direction.cross(henk, henk);
-
-    }
-
-    @Override
-    public void create(MatrixStack ms, Consumer<Shape> action) {
-
-    }
-
-    @Override
-    public void toLocalSpace(MatrixStack ms, Runnable action) {
-
-    }
-
-    @Override
-    public void preDraw(GL2 gl) {
-
-    }
-
-    @Override
-    public void acceptCollision(Collision cause) {
-
-    }
-
 }

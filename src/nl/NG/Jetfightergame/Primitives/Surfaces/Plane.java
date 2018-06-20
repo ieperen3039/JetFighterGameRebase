@@ -7,7 +7,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.stream.Stream;
 
 /**
  * @author Geert van Ieperen
@@ -143,8 +142,8 @@ public abstract class Plane {
      * @see #getVertices()
      * @return a stream of the vertices of this object in counterclockwise order
      */
-    public Stream<PosVector> getBorderAsStream() {
-        return Arrays.stream(boundary);
+    public Iterable<PosVector> getBorder() {
+        return Arrays.asList(boundary);
     }
 
     public DirVector getNormal() {

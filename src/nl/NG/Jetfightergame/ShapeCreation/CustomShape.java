@@ -331,6 +331,11 @@ public class CustomShape {
         this.middle = middle;
     }
 
+    @Override
+    public String toString() {
+        return points.keySet().toString();
+    }
+
     /**
      * the object returned after calling {@link #wrapUp(boolean)}
      */

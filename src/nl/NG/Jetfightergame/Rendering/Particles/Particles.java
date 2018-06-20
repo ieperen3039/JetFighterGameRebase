@@ -152,7 +152,7 @@ public final class Particles {
      */
     private static Collection<PosVector[]> asTriangles(Plane targetPlane, MatrixStack ms) {
         Collection<PosVector[]> triangles = new ArrayList<>();
-        Iterator<PosVector> border = targetPlane.getBorderAsStream().iterator();
+        Iterator<PosVector> border = targetPlane.getBorder().iterator();
 
         // split into triangles and add those
         PosVector A, B, C;

@@ -17,14 +17,6 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
             ("Main producer:\n" +
                     "Geert van Ieperen\n" +
                     "\n" +
-                    "With thanks to:\n" +
-                    "Tim Beurskens\n" +
-                    "Daan Drijver\n" +
-                    "Daan de Graaf\n" +
-                    "Jorren Hendriks\n" +
-                    "Tom Peters\n" +
-                    "Yoeri Poels\n" +
-                    "\n" +
                     "A production of TU/entertainment"
             ).split("\n");
 
@@ -36,9 +28,10 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
     private MenuClickable[] controlsMenu;
     private UIElement[] creditScreen;
 
-    public JetFighterMenu(Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier,
-                          Runnable startGame, Runnable exitGame, ControllerManager input,
-                          ShaderManager shaderManager, BooleanSupplier isMenuMode
+    public JetFighterMenu(
+            Supplier<Integer> widthSupplier, Supplier<Integer> heightSupplier,
+            Runnable startGame, Runnable exitGame, ControllerManager input,
+            ShaderManager shaderManager, BooleanSupplier isMenuMode
     ) {
         super(widthSupplier, heightSupplier, isMenuMode);
 
@@ -65,7 +58,7 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         MenuClickable options = new MenuButton("Options", () -> switchContentTo(optionMenu));
         MenuClickable credits = new MenuButton("Credits", () -> switchContentTo(creditScreen));
         MenuClickable exitGameButton = new MenuButton("Exit Game", exitGame);
-       return new MenuClickable[]{startGameButton, options, credits, exitGameButton};
+        return new MenuClickable[]{startGameButton, options, credits, exitGameButton};
     }
 
     private MenuClickable[] getOptions() {
@@ -83,5 +76,4 @@ public class JetFighterMenu extends HudMenu { // TODO generalize the return butt
         MenuClickable backControls = new MenuButton("Back", () -> switchContentTo(optionMenu));
         return new MenuClickable[]{invertX, controllerType, backControls};
     }
-
 }

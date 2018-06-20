@@ -44,10 +44,12 @@ public interface Shape extends Renderable {
                 .orElse(null);
     }
 
+    /** @see #getPlanes() */
     default Stream<? extends Plane> getPlaneStream() {
         return StreamSupport.stream(getPlanes().spliterator(), false);
     }
 
+    /** @see #getPoints() */
     default Stream<? extends PosVector> getPointStream() {
         return StreamSupport.stream(getPoints().spliterator(), false);
     }

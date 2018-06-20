@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Assets.WorldObjects.Tunnel;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -18,7 +19,6 @@ import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * @author Geert van Ieperen
@@ -34,7 +34,22 @@ public class PlayerJetLaboratory extends GameState {
 
     @Override
     protected Collection<Touchable> createWorld() {
-        return Collections.singleton(new StaticObject(GeneralShapes.makeInverseCube(0, ServerSettings.RENDER_ENABLED), Material.ROUGH, Color4f.ORANGE, LAB_SIZE));
+        ArrayList<Touchable> entities = new ArrayList<>();
+
+        PosVector m = new PosVector(0, 0, 0);
+        PosVector s = new PosVector(LAB_SIZE, 0, 0);
+        PosVector sm = m.middleTo(s);
+        PosVector smm = sm.middleTo(m);
+        PosVector ssm = sm.middleTo(s);
+
+        entities.add(new Tunnel(
+                smm, sm, sm, ssm, 10, 8, 8, ServerSettings.RENDER_ENABLED
+        ));
+        entities.add(new StaticObject(
+                GeneralShapes.makeInverseCube(0, ServerSettings.RENDER_ENABLED),
+                Material.ROUGH, Color4f.ORANGE, LAB_SIZE
+        ));
+        return entities;
     }
 
     @Override
