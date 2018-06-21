@@ -75,7 +75,7 @@ public class PosVector extends Vector {
     }
 
     /**
-     * @return vector to the middle of this vector and given vector
+     * @return vector to the middle of this vector and given vector as a new vector.
      * equals (this + (1/2)*(that - this)), or (this.interpolateTo(that, 0.5f))
      */
     public PosVector middleTo(Vector that) {
