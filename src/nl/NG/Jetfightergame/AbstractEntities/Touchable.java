@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.function.Consumer;
 
@@ -59,4 +60,16 @@ public interface Touchable extends Drawable {
      * @param power magnitude of the impact
      */
     default void impact(float power) {}
+
+    /**
+     * distance of the farthest vertex of this object
+     * @return the vertex P for which P.to(getPosition()) is maximized in world-space
+     */
+    float getRange();
+
+    /**
+     * @return the position of this object in the next timestamp. This value is bound to change after calls to {@link
+     *         nl.NG.Jetfightergame.GameState.CollisionDetection}
+     */
+    PosVector getExpectedPosition();
 }

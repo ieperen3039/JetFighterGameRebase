@@ -100,4 +100,14 @@ public class Tunnel implements Touchable {
     public void acceptCollision(Collision cause) {
 
     }
+
+    @Override
+    public float getRange() {
+        return 0;
+    }
+
+    @Override
+    public PosVector getExpectedPosition() {
+        return null;
+    }
 }

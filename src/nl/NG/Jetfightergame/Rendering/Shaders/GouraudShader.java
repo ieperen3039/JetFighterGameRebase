@@ -38,7 +38,7 @@ public class GouraudShader extends AbstractShader {
      * inversely to the range.
      */
     public void setFog(float range){
-//        setUniform("fogThickness", value);
+//        setUniform("fogThickness", value);//TODO implement fog
     }
 
     public void setCameraPosition(Vector3f mPosition){

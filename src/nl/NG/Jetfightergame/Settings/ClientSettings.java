@@ -31,7 +31,7 @@ public final class ClientSettings {
     public static float FOV = (float) Math.toRadians(60);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
-    public static float Z_FAR = 2000.0f;
+    public static float Z_FAR = 4000.0f;
     public static final boolean CULL_FACES = true;
     public static Boolean INVERT_CAMERA_ROTATION = false;
     public static boolean V_SYNC = true;

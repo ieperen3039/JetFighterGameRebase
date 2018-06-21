@@ -122,6 +122,16 @@ public class SimplexCave implements Touchable {
         ));
     }
 
+    @Override
+    public float getRange() {
+        return Float.POSITIVE_INFINITY;
+    }
+
+    @Override
+    public PosVector getExpectedPosition() {
+        return PosVector.zeroVector();
+    }
+
     public int idNumber() {
         return thisID;
     }

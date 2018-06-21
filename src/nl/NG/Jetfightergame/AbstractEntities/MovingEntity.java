@@ -97,18 +97,6 @@ public interface MovingEntity extends Touchable {
     Quaternionf getRotation();
 
     /**
-     * distance of the farthest vertex of this object
-     * @return the vertex P for which P.to(getPosition()) is maximized in world-space
-     */
-    float getRange();
-
-    /**
-     * @return the position of this object in the next timestamp. This value is bound to change after calls to {@link
-     *         nl.NG.Jetfightergame.GameState.CollisionDetection}
-     */
-    PosVector getExpectedPosition();
-
-    /**
      * applies a change in velocity by applying the given momentum to the velocity. This may only be applied between
      * calls to {@link #preUpdate(float, DirVector)} and {@link #update(float)}
      * @param direction the normalized direction in which the force is applied

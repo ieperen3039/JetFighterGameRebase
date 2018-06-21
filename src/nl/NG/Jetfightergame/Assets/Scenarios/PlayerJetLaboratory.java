@@ -25,7 +25,7 @@ import java.util.Collection;
  */
 public class PlayerJetLaboratory extends GameState {
 
-    private static final int LAB_SIZE = 300;
+    private static final int LAB_SIZE = 200;
 
     public PlayerJetLaboratory(GameTimer time) {
         super(time);
@@ -60,7 +60,9 @@ public class PlayerJetLaboratory extends GameState {
             // for y = -1 and y = 1
             for (int y : vals) {
                 // etc.
-                for (int z : vals) {
+//                for (int z : vals) {
+                {
+                    int z = 2;
                     MovingEntity cube = EntityClass.FALLING_CUBE_LARGE.construct(
                             Identity.next(), deposit, null,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
