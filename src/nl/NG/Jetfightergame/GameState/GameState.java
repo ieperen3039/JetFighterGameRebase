@@ -20,6 +20,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
@@ -36,6 +38,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
 
     private EntityManagement physicsEngine;
     private final GameTimer time;
+    private Lock addParticleLock = new ReentrantLock();
 
     public GameState(GameTimer time) {
         this.time = time;
@@ -127,9 +130,11 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         float t = time.getRenderTime().current();
 
         if (newParticles.readyToLoad()) {
+            addParticleLock.lock();
             newParticles.writeToGL(t);
             particles.add(newParticles);
             newParticles = new ParticleCloud();
+            addParticleLock.unlock();
         }
 
         particles.removeIf(p -> p.disposeIfFaded(t));
@@ -176,7 +181,13 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     @Override
     public void addParticles(ParticleCloud cloud) {
         if (cloud.readyToLoad()) {
-            newParticles.addAll(cloud);
+            addParticleLock.lock();
+            try {
+                newParticles.addAll(cloud);
+            } finally {
+                addParticleLock.unlock();
+            }
+
         } else {
             Logger.printError("Tried adding particles that are either already loaded, or without particles");
         }

@@ -8,7 +8,9 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,39 +19,17 @@ import java.util.stream.Collectors;
  *         created on 11-11-2017.
  */
 @SuppressWarnings("unchecked")
-public class ShapeFromFile implements Shape {
-
-    /** an arrow along the Z-axis, 1 long */
-    private static boolean isLoaded = false;
-    public static ShapeFromFile ARROW;
-    public static ShapeFromFile CONCEPT_BLUEPRINT;
-
-    /**
-     * loads the shapes into memory.
-     * This method may be split into several selections of models
-     * @param loadMesh whether the meshes should be loaded. If this is false, calling
-     * {@link #render(GL2.Painter)} will result in a {@link NullPointerException}
-     */
-    public static void init(boolean loadMesh){
-        if (isLoaded) {
-            Logger.printError("Tried loading shapes while they where already loaded");
-            return;
-        }
-        CONCEPT_BLUEPRINT = new ShapeFromFile("ConceptBlueprint.obj", loadMesh);
-        ARROW = new ShapeFromFile("arrow.obj", loadMesh);
-        isLoaded = true;
-    }
-
+public class BasicShape implements Shape {
 
     private List<PosVector> vertices = Collections.EMPTY_LIST;
     private List<Plane> triangles = Collections.EMPTY_LIST;
     private Mesh mesh;
 
-    private ShapeFromFile(String fileName, boolean loadMesh) {
+    public BasicShape(String fileName, boolean loadMesh) {
         this(new ShapeParameters(fileName), loadMesh);
     }
 
-    private ShapeFromFile(ShapeParameters model, boolean loadMesh) {
+    private BasicShape(ShapeParameters model, boolean loadMesh) {
         this(model.vertices, model.normals, model.faces, loadMesh);
 
         if (ServerSettings.DEBUG)
@@ -61,12 +41,59 @@ public class ShapeFromFile implements Shape {
      * @param loadMesh if true, load a mesh of this file to the GPU. If this is false, calling
      *      * {@link #render(GL2.Painter)} will result in a {@link NullPointerException}
      */
-    public ShapeFromFile(List<PosVector> vertices, List<DirVector> normals, List<Mesh.Face> faces, boolean loadMesh) {
+    public BasicShape(List<PosVector> vertices, List<DirVector> normals, List<Mesh.Face> faces, boolean loadMesh) {
         this.vertices = Collections.unmodifiableList(vertices);
-        triangles = faces.stream()
-                .map(f -> ShapeFromFile.toTriangle(f, this.vertices, normals))
+        this.triangles = faces.stream()
+                .map(f -> BasicShape.toTriangle(f, this.vertices, normals))
                 .collect(Collectors.toList());
-        mesh = loadMesh ? new Mesh(this.vertices, normals, faces): null;
+        this.mesh = loadMesh ? new Mesh(this.vertices, normals, faces) : null;
+    }
+
+    private BasicShape(List<Plane> triangles, Mesh mesh) {
+        vertices = new ArrayList<>();
+        this.triangles = triangles;
+        this.mesh = mesh;
+
+        for (Plane t : triangles) {
+            for (PosVector posVector : t.getBorder()) {
+                vertices.add(posVector);
+            }
+        }
+    }
+
+    public static List<Shape> loadSplit(String fileName, boolean loadMesh, float containerSize) {
+        ShapeParameters file = new ShapeParameters(fileName);
+        HashMap<int[], CustomShape> world = new HashMap<>();
+
+        for (Mesh.Face f : file.faces) {
+            final PosVector alpha = file.vertices.get(f.A.left);
+            final PosVector beta = file.vertices.get(f.B.left);
+            final PosVector gamma = file.vertices.get(f.C.left);
+
+            // take average normal as normal of plane, or use default method if none are registered
+            float xMin = minimum(alpha.x, beta.x, gamma.x);
+            float yMin = minimum(alpha.y, beta.y, gamma.y);
+            float zMin = minimum(alpha.z, beta.z, gamma.z);
+
+            int x = (int) (xMin / containerSize);
+            int y = (int) (yMin / containerSize);
+            int z = (int) (zMin / containerSize);
+
+            int[] key = {x, y, z};
+            CustomShape container = world.computeIfAbsent(key, k -> new CustomShape(new PosVector(x, y, -Float.MAX_VALUE)));
+            container.addTriangle(alpha, beta, gamma);
+        }
+
+        return world.values().stream()
+                .map(s -> s.wrapUp(loadMesh))
+                .collect(Collectors.toList());
+    }
+
+    private static float minimum(float a, float b, float c) {
+        if (a < b)
+            return (a < c) ? a : c;
+        else
+            return (b < c) ? b : c;
     }
 
     @Override

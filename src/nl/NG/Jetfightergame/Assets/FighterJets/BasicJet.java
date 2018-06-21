@@ -8,8 +8,8 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -50,7 +50,7 @@ public class BasicJet extends AbstractJet {
                 GUN, specialWeapon, 1000, entityDeposit
         );
 
-        shape = ShapeFromFile.CONCEPT_BLUEPRINT;
+        shape = BasicShape.CONCEPT_BLUEPRINT;
 
     }
 

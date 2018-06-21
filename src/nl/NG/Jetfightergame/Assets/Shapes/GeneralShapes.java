@@ -1,41 +1,50 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+
+import java.util.List;
 
 /**
  * @author Geert van Ieperen
  *         created on 7-11-2017.
  */
 public final class GeneralShapes {
-
-    /** a triangle with vertices [a(1, 0, 0), b(0, 1, 0), c(0, 0, 0)] */
-    public static Shape TRIANGLE;
-
-    public static void init(boolean loadMesh){
-        TRIANGLE = makeTriangle(loadMesh);
-        INVERSE_CUBE = makeInverseCube(0, loadMesh);
-        CUBE = makeCube(loadMesh);
-    }
+    private static boolean isLoaded = false;
 
     /** a 2*2*2 cube with center on (0, 0, 0) */
     public static Shape CUBE;
-
     public static Shape INVERSE_CUBE;
 
-    private static Shape makeTriangle(boolean loadMesh) {
-        CustomShape frame = new CustomShape(new PosVector(0, 0, -1));
+    /** an arrow along the Z-axis, 1 long */
+    public static Shape ARROW;
+    public static Shape CONCEPT_BLUEPRINT;
 
-        frame.addTriangle(
-                new PosVector(1, 0, 0),
-                new PosVector(0, 1, 0),
-                new PosVector(0, 0, 0),
-                new DirVector(0, 0, 1)
-        );
+    public static List<Shape> ISLAND1;
 
-        return frame.wrapUp(loadMesh);
+
+    /**
+     * loads the shapes into memory. This method may be split into several selections of models
+     * @param loadMesh whether the meshes should be loaded. If this is false, calling {@link Shape#render(GL2.Painter)}
+     *                 will result in a {@link NullPointerException}
+     */
+    public static void init(boolean loadMesh) {
+        if (isLoaded) {
+            Logger.printError("Tried loading shapes while they where already loaded");
+            return;
+        }
+        isLoaded = true;
+
+        CONCEPT_BLUEPRINT = new BasicShape("ConceptBlueprint.obj", loadMesh);
+        ARROW = new BasicShape("arrow.obj", loadMesh);
+        INVERSE_CUBE = makeInverseCube(0, loadMesh);
+        CUBE = makeCube(loadMesh);
+        ISLAND1 = BasicShape.loadSplit("", loadMesh, 50);
     }
 
     private static Shape makeCube(boolean loadMesh) {

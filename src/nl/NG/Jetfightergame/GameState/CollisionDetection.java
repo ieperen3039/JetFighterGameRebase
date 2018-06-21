@@ -387,16 +387,19 @@ public class CollisionDetection implements EntityManagement {
         CollisionEntity[] yList = new CollisionEntity[nOfEntities];
         CollisionEntity[] zList = new CollisionEntity[nOfEntities];
 
-        for (CollisionEntity target : entityArray()) {
-            // this method results in an (nOfEntities * entities.size()) running time for sorting
+        for (CollisionEntity target : xLowerSorted) {
             if (!entities.contains(target.entity)) {
                 target.setId(xi);
                 xList[xi++] = target;
             }
+        }
+        for (CollisionEntity target : yLowerSorted) {
             if (!entities.contains(target.entity)) {
                 target.setId(yi);
                 yList[yi++] = target;
             }
+        }
+        for (CollisionEntity target : zLowerSorted) {
             if (!entities.contains(target.entity)) {
                 target.setId(zi);
                 zList[zi++] = target;

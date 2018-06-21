@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.ShapeCreation;
 
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;
@@ -13,9 +12,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
-import java.util.stream.Collectors;
-
-import static nl.NG.Jetfightergame.ShapeCreation.Mesh.EMPTY_MESH;
 
 /**
  * defines a custom, static object shape
@@ -282,11 +278,11 @@ public class CustomShape {
 
     /**
      * convert this object to a Shape
-     * @return a shape with hardware-accelerated graphics using the {@link ShapeFromFile} object
+     * @return a shape with hardware-accelerated graphics using the {@link BasicShape} object
      * @param loadMesh
      */
     public Shape wrapUp(boolean loadMesh) {
-        return new ShapeFromFile(getSortedVertices(), normals, faces, loadMesh);
+        return new BasicShape(getSortedVertices(), normals, faces, loadMesh);
     }
 
     /**
@@ -349,50 +345,20 @@ public class CustomShape {
         this.middle = middle;
     }
 
+    public void addAll(CustomShape other) {
+        List<PosVector> vertices = other.getSortedVertices();
+        for (Mesh.Face face : other.faces) {
+            PosVector A = vertices.get(face.A.left);
+            PosVector B = vertices.get(face.B.left);
+            PosVector C = vertices.get(face.C.left);
+            DirVector norm = other.normals.get(face.A.right);
+            addFinalTriangle(A, B, C, norm);
+        }
+    }
+
     @Override
     public String toString() {
         return getSortedVertices().toString();
     }
 
-    /**
-     * the object returned after calling {@link #wrapUp(boolean)}
-     */
-    private static class WrappedCustomShape implements Shape {
-        private final List<PosVector> vertices;
-        private final List<Plane> triangles;
-        private final Mesh mesh;
-
-        private WrappedCustomShape(List<PosVector> sortedVertices, List<DirVector> normals, List<Mesh.Face> faces, boolean loadMesh) {
-            vertices = sortedVertices;
-            triangles = faces.stream()
-                    .map(f -> ShapeFromFile.toTriangle(f, vertices, normals))
-                    .collect(Collectors.toList());
-
-            if (loadMesh) {
-                mesh = new Mesh(sortedVertices, normals, faces);
-            } else {
-                mesh = EMPTY_MESH;
-            }
-        }
-
-        @Override
-        public Iterable<? extends Plane> getPlanes() {
-            return Collections.unmodifiableList(triangles);
-        }
-
-        @Override
-        public Iterable<PosVector> getPoints() {
-            return Collections.unmodifiableList(vertices);
-        }
-
-        @Override
-        public void render(GL2.Painter lock) {
-            mesh.render(lock);
-        }
-
-        @Override
-        public void dispose() {
-            mesh.dispose();
-        }
-    }
 }

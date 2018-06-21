@@ -16,8 +16,8 @@ import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
 import nl.NG.Jetfightergame.ServerNetwork.MessageType;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
@@ -55,7 +55,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
     /** Shows a splash screen, and creates a window in which the game runs */
     public JetFighterGame() throws Exception {
         super();
-        ShapeFromFile.init(true);
+        BasicShape.init(true);
         GeneralShapes.init(true);
 
         KeyTracker.getInstance().addKeyListener(this);

@@ -18,7 +18,7 @@ public final class ClientSettings {
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
-    public static float HIGHLIGHT_LINE_WIDTH = 0f;
+    public static float HIGHLIGHT_LINE_WIDTH = 1f;
     public static boolean SAVE_PLAYBACK = false;
 
     /** controller settings; these modifiers are also used to inverse direction */

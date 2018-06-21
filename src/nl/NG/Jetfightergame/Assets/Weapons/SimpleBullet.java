@@ -10,8 +10,8 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeFromFile;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -53,7 +53,7 @@ public class SimpleBullet extends AbstractJet implements Projectile {
         {
             ms.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
             ms.translate(-0.5f, 0, 0);
-            action.accept(ShapeFromFile.ARROW);
+            action.accept(BasicShape.ARROW);
         }
         ms.popMatrix();
     }

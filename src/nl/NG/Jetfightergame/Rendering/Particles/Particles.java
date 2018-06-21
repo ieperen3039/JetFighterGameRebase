@@ -40,7 +40,6 @@ public final class Particles {
             float alpha = Toolbox.randomBetween(color1.alpha, color2.alpha);
             result.addParticle(position, movement, power, FIRE_LINGER_TIME, new Color4f(red, green, blue, alpha));
         }
-
         return result;
     }
 
