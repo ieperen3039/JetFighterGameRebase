@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
+
 /**
  * defines a custom, static object shape
  *
@@ -155,7 +157,7 @@ public class CustomShape {
         int bInd = addHitpoint(B);
         int cInd = addHitpoint(C);
         int nInd = addNormal(normal);
-        faces.add(new Mesh.Face(aInd, bInd, cInd, nInd));
+        faces.add(new Mesh.Face(new int[]{aInd, bInd, cInd}, nInd));
     }
 
     private int addNormal(DirVector normal) {
@@ -282,7 +284,7 @@ public class CustomShape {
      * @param loadMesh
      */
     public Shape wrapUp(boolean loadMesh) {
-        return new BasicShape(getSortedVertices(), normals, faces, loadMesh);
+        return new BasicShape(getSortedVertices(), normals, faces, loadMesh, GL_TRIANGLES);
     }
 
     /**
@@ -290,7 +292,7 @@ public class CustomShape {
      * @return a hardware-accelerated Mesh object
      */
     public Mesh asMesh() {
-        return new Mesh(getSortedVertices(), normals, faces);
+        return new Mesh(getSortedVertices(), normals, faces, GL_TRIANGLES);
     }
 
     private List<PosVector> getSortedVertices() {
@@ -311,7 +313,7 @@ public class CustomShape {
 
         writer.println("# created using a simple obj writer by Geert van Ieperen");
         writer.println("# calling method: " + Logger.getCallingMethod(2));
-        writer.println("mtllib arrow.mtl");
+        writer.println("mtllib arrow.mtl"); // TODO is this necessary?
 
         PosVector[] sortedVertices = new PosVector[points.size()];
         points.forEach((v, i) -> sortedVertices[i] = v);
@@ -329,7 +331,10 @@ public class CustomShape {
         writer.println("");
 
         for (Mesh.Face face : faces) {
-            writer.println("f " + readVertex(face.A) + " " + readVertex(face.B) + " " + readVertex(face.C));
+            writer.print("f ");
+            for (int i = 0; i < face.vert.length; i++) {
+                writer.print(" " + readVertex(face.vert[i], face.norm[i]));
+            }
         }
 
         writer.close();
@@ -337,23 +342,12 @@ public class CustomShape {
         Logger.print("Successfully created obj file: " + filename);
     }
 
-    private static String readVertex(Pair<Integer, Integer> vertex) {
-        return String.format("%d//%d", vertex.left + 1, vertex.right + 1);
+    private static String readVertex(int vertex, int normal) {
+        return String.format("%d//%d", vertex + 1, normal + 1);
     }
 
     public void setMiddle(PosVector middle) {
         this.middle = middle;
-    }
-
-    public void addAll(CustomShape other) {
-        List<PosVector> vertices = other.getSortedVertices();
-        for (Mesh.Face face : other.faces) {
-            PosVector A = vertices.get(face.A.left);
-            PosVector B = vertices.get(face.B.left);
-            PosVector C = vertices.get(face.C.left);
-            DirVector norm = other.normals.get(face.A.right);
-            addFinalTriangle(A, B, C, norm);
-        }
     }
 
     @Override
@@ -361,4 +355,24 @@ public class CustomShape {
         return getSortedVertices().toString();
     }
 
+    /**
+     * Adds an arbitrary polygon to the object. For correct rendering, the plane should be flat
+     * @param normal the direction of the normal of this plane. When null, it is calculated using the middle
+     * @param edges  the edges of this plane
+     */
+    public void addPlane(DirVector normal, PosVector... edges) {
+        switch (edges.length) {
+            case 3:
+                if (normal == null) addTriangle(edges[0], edges[1], edges[2]);
+                else addTriangle(edges[0], edges[1], edges[2], normal);
+                return;
+            case 4:
+                if (normal == null) addQuad(edges[0], edges[1], edges[2], edges[3]);
+                else addQuad(edges[0], edges[1], edges[2], edges[3], normal);
+                return;
+        }
+        for (int i = 1; i < (edges.length - 2); i++) {
+            addTriangle(edges[0], edges[i], edges[i + 2]);
+        }
+    }
 }

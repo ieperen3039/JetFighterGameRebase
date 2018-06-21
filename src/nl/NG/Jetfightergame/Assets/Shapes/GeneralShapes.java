@@ -44,7 +44,8 @@ public final class GeneralShapes {
         ARROW = new BasicShape("arrow.obj", loadMesh);
         INVERSE_CUBE = makeInverseCube(0, loadMesh);
         CUBE = makeCube(loadMesh);
-        ISLAND1 = BasicShape.loadSplit("", loadMesh, 50);
+        ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", loadMesh, 200, 40f);
+//        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));
     }
 
     private static Shape makeCube(boolean loadMesh) {

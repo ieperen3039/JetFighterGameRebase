@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.FighterJets;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
 import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Controllers.Controller;
@@ -8,7 +9,6 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -50,7 +50,7 @@ public class BasicJet extends AbstractJet {
                 GUN, specialWeapon, 1000, entityDeposit
         );
 
-        shape = BasicShape.CONCEPT_BLUEPRINT;
+        shape = GeneralShapes.CONCEPT_BLUEPRINT;
 
     }
 

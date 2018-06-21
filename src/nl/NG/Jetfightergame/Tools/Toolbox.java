@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import org.joml.Quaternionf;
@@ -44,13 +43,13 @@ public final class Toolbox {
         gl.pushMatrix();
         {
             gl.setMaterial(mat, Color4f.BLUE);
-            gl.draw(BasicShape.ARROW);
+            gl.draw(GeneralShapes.ARROW);
             gl.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
             gl.setMaterial(mat, Color4f.RED);
-            gl.draw(BasicShape.ARROW);
+            gl.draw(GeneralShapes.ARROW);
             gl.rotate((float) Math.toRadians(-90), 1f, 0f, 0f);
             gl.setMaterial(mat, Color4f.GREEN);
-            gl.draw(BasicShape.ARROW);
+            gl.draw(GeneralShapes.ARROW);
             gl.scale(0.2f);
             gl.setMaterial(Material.ROUGH, Color4f.WHITE);
             gl.draw(GeneralShapes.CUBE);

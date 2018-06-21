@@ -10,7 +10,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -35,10 +35,18 @@ public class PlayerJetLaboratory extends GameState {
     protected Collection<Touchable> createWorld() {
         ArrayList<Touchable> entities = new ArrayList<>();
 
-        entities.add(new StaticObject(
-                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
-                Material.ROUGH, Color4f.ORANGE, LAB_SIZE
-        ));
+        for (Shape shape : GeneralShapes.ISLAND1) {
+            entities.add(new StaticObject(
+                    shape,
+                    Material.ROUGH, Color4f.GREY, 1
+            ));
+        }
+
+//        entities.add(new StaticObject(
+//                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
+//                Material.PLASTIC, Color4f.ORANGE, LAB_SIZE
+//        ));
+
         return entities;
     }
 

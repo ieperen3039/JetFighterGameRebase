@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
@@ -55,7 +54,6 @@ public class JetFighterServer {
         portNumber = socket.getLocalPort();
 
         if (loadModels) {
-            BasicShape.init(false);
             GeneralShapes.init(false);
         }
 

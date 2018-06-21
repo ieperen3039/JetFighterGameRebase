@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Assets.Weapons;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.Projectile;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -10,7 +11,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
-import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -53,7 +53,7 @@ public class SimpleBullet extends AbstractJet implements Projectile {
         {
             ms.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
             ms.translate(-0.5f, 0, 0);
-            action.accept(BasicShape.ARROW);
+            action.accept(GeneralShapes.ARROW);
         }
         ms.popMatrix();
     }

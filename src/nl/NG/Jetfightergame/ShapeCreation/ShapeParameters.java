@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ShapeCreation;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Directory;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -34,7 +35,7 @@ public class ShapeParameters {
      * @param XYZ      determines the definition of the axes. maps {forward, right, up} for X=1, Y=2, Z=3.
      * @param scale    the scale standard applied to this object, to let it correspond to its contract
      */
-    private ShapeParameters(String fileName, PosVector offSet, int[] XYZ, float scale) {
+    public ShapeParameters(String fileName, PosVector offSet, int[] XYZ, float scale) {
         name = asName(fileName);
         vertices = new ArrayList<>();
         normals = new ArrayList<>();
@@ -65,7 +66,7 @@ public class ShapeParameters {
                     normals.add(vec3fNorm);
                     break;
                 case "f":
-                    faces.add(makeFace(tokens[1], tokens[2], tokens[3]));
+                    faces.add(makeFace(tokens));
                     break;
                 default:
                     // Ignore other lines
@@ -74,7 +75,7 @@ public class ShapeParameters {
         }
 
         if (vertices.isEmpty() || faces.isEmpty()) {
-            System.err.println("Empty mesh loaded: "+fileName+" (this may result in errors)");
+            Logger.printError("Empty mesh loaded: " + fileName + " (this may result in errors)");
         }
     }
 
@@ -95,11 +96,17 @@ public class ShapeParameters {
     /**
      * for storage of vertex-indices face == plane
      */
-    private static Mesh.Face makeFace(String v1, String v2, String v3) {
-        Pair<Integer, Integer> a = (parseVertex(v1));
-        Pair<Integer, Integer> b = (parseVertex(v2));
-        Pair<Integer, Integer> c = (parseVertex(v3));
-        return new Mesh.Face(a, b, c);
+    private static Mesh.Face makeFace(String... faces) {
+        int nOfFaces = faces.length - 1;
+        int[] vert = new int[nOfFaces];
+        int[] norm = new int[nOfFaces];
+        for (int i = 0; i < nOfFaces; i++) {
+            Pair<Integer, Integer> c = (parseVertex(faces[i + 1]));
+            vert[i] = c.left;
+            norm[i] = c.right;
+        }
+
+        return new Mesh.Face(vert, norm);
     }
 
     /**

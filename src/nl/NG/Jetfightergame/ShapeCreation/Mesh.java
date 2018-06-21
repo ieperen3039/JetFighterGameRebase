@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ShapeCreation;
 
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.Renderable;
-import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -27,6 +27,7 @@ public class Mesh implements Renderable {
     private static Collection<Mesh> loadedMeshes = new ArrayList<>(20);
     public static Mesh EMPTY_MESH = new EmptyMesh();
 
+    private final int drawMethod;
     private int vaoId;
     private int vertexCount;
     private int posVboID;
@@ -35,10 +36,13 @@ public class Mesh implements Renderable {
     /**
      * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.
      */
-    public Mesh(List<PosVector> posList, List<DirVector> normList, List<Face> facesList) {
+    public Mesh(List<PosVector> posList, List<DirVector> normList, List<Face> facesList, final int drawMethod) {
+        final int nOfEdges = nOfEdges(drawMethod);
+        this.drawMethod = drawMethod;
+
         // Create position array in the order it has been declared. faces have 3 vertices of 3 indices
-        float[] posArr = new float[facesList.size() * 9];
-        float[] normArr = new float[facesList.size() * 9];
+        float[] posArr = new float[facesList.size() * 3 * nOfEdges];
+        float[] normArr = new float[facesList.size() * 3 * nOfEdges];
 
         for (int i = 0; i < facesList.size(); i++) {
             Face face = facesList.get(i);
@@ -50,18 +54,31 @@ public class Mesh implements Renderable {
         loadedMeshes.add(this);
     }
 
+    private static int nOfEdges(int drawMethod) {
+        switch (drawMethod) {
+            case GL_TRIANGLES:
+            case GL_TRIANGLE_STRIP:
+                return 3;
+            case GL_QUADS:
+            case GL_QUAD_STRIP:
+                return 4;
+        }
+        Logger.printError("Could not determine number of edges of draw method " + glGetString(drawMethod));
+        return 3;
+    }
+
     private void readFaceVertex(List<PosVector> posList, float[] posArr, int faceNumber, Face face) {
-        int indices = faceNumber * 3;
-        readVector(indices, posList, posArr, face.A.left);
-        readVector(indices + 1, posList, posArr, face.B.left);
-        readVector(indices + 2, posList, posArr, face.C.left);
+        int indices = faceNumber * face.size();
+        for (int i = 0; i < face.size(); i++) {
+            readVector(indices + i, posList, posArr, face.vert[i]);
+        }
     }
 
     private void readFaceNormals(List<DirVector> normList, float[] normArr, int faceNumber, Face face) {
-        int indices = faceNumber * 3;
-        readVector(indices, normList, normArr, face.A.right);
-        readVector(indices + 1, normList, normArr, face.B.right);
-        readVector(indices + 2, normList, normArr, face.C.right);
+        int indices = faceNumber * face.size();
+        for (int i = 0; i < face.size(); i++) {
+            readVector(indices + i, normList, normArr, face.norm[i]);
+        }
     }
 
     private static void readVector(int vectorNumber, List<? extends Vector> sourceList, float[] targetArray, int index) {
@@ -126,7 +143,7 @@ public class Mesh implements Renderable {
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
 
-        glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+        glDrawArrays(drawMethod, 0, vertexCount);
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
@@ -154,37 +171,33 @@ public class Mesh implements Renderable {
     }
 
     /** allows for an empty mesh */
-    private Mesh(){}
+    private Mesh() {
+        drawMethod = 0;
+    }
 
     /**
      * a record class to describe a plane by indices
-     * {@link #Face(int, int, int, int)}
      */
     public static class Face {
-        /**
-         * boundary in no particular order. each pair consists of (left vertex index, right normal index)
-         */
-        Pair<Integer, Integer> A, B, C;
-
-        /**
-         * a description of a plane
-         * this constructor takes 3 vertex indices and a single normal index.
-         * @param normal the index for the normal of each of these vertices
-         */
-        public Face(int a, int b, int c, int normal){
-            this(new Pair<>(a, normal), new Pair<>(b, normal), new Pair<>(c, normal));
-        }
+        int[] vert;
+        int[] norm;
 
         /**
          * a description of a plane.
-         * Every parameter has on left the index of a vertex in some list,
-         * on right the index of a normal in some list.
-         * it has no value to combine these lists
+         * The parameters should alternate pairs of (vertex, normal)
          */
-        public Face(Pair<Integer, Integer> a, Pair<Integer, Integer> b, Pair<Integer, Integer> c) {
-            A = a;
-            B = b;
-            C = c;
+        public Face(int[] vertices, int[] normals) {
+            vert = vertices;
+            norm = normals;
+        }
+
+        public Face(int[] vertices, int nInd) {
+            vert = vertices;
+            norm = new int[]{nInd, nInd, nInd};
+        }
+
+        public int size() {
+            return vert.length;
         }
     }
 
