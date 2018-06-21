@@ -18,33 +18,48 @@ import java.util.stream.Collectors;
 import static nl.NG.Jetfightergame.ShapeCreation.Mesh.EMPTY_MESH;
 
 /**
- * Created by Geert van Ieperen on 1-3-2017.
  * defines a custom, static object shape
+ *
+ * Created by Geert van Ieperen on 1-3-2017.
  */
 public class CustomShape {
 
     private PosVector middle;
+    private final boolean invertMiddle;
 
     private final Map<PosVector, Integer> points;
     private final List<DirVector> normals;
     private final List<Mesh.Face> faces;
 
+    /**
+     * custom shape with middle on (0, 0, 0) and non-inverted
+     * @see #CustomShape(PosVector, boolean)
+     */
     public CustomShape() {
         this(PosVector.zeroVector());
     }
 
     /**
-     * a shape that may be defined by the client code using methods of this class. When the shape is finished, call
-     * {@link #wrapUp(boolean)} to load it into the GPU. The returned shape should be re-used as a static mesh for any future
-     * calls to such shape.
+     * @param middle the middle of this object.
+     * @see #CustomShape(PosVector, boolean)
+     */
+    public CustomShape(PosVector middle) {
+        this(middle, false);
+    }
+
+    /**
+     * A shape that may be defined by the client code using methods of this class. When the shape is finished, call
+     * {@link #wrapUp(boolean)} to load it into the GPU. The returned shape should be re-used as a static mesh for any
+     * future calls to such shape.
      * @param middle the middle of this object. More specifically, from this point, all normal vectors point outward
      *               except maybe for those that have their normal explicitly defined.
      */
-    public CustomShape(PosVector middle) {
+    public CustomShape(PosVector middle, boolean invertMiddle) {
         this.middle = middle;
-        faces = new ArrayList<>();
-        points = new Hashtable<>();
-        normals = new ArrayList<>();
+        this.faces = new ArrayList<>();
+        this.points = new Hashtable<>();
+        this.normals = new ArrayList<>();
+        this.invertMiddle = invertMiddle;
     }
 
     /**
@@ -60,9 +75,9 @@ public class CustomShape {
         DirVector currentNormal = Triangle.getNormalVector(A, B, C);
 
         if (currentNormal.dot(normal) >= 0) {
-            addFinalQuad(A, B, C, D, normal);
+            addFinalQuad(A, B, C, D, currentNormal);
         } else {
-            addFinalQuad(D, C, B, A, normal);
+            addFinalQuad(D, C, B, A, currentNormal);
         }
     }
 
@@ -87,7 +102,8 @@ public class CustomShape {
         DirVector normal = Plane.getNormalVector(A, B, C);
 
         final DirVector direction = middle.to(B, new DirVector());
-        if (normal.dot(direction) >= 0) {
+
+        if ((normal.dot(direction) >= 0) != invertMiddle) {
             addFinalQuad(A, B, C, D, normal);
         } else {
             normal.negate();
@@ -115,7 +131,7 @@ public class CustomShape {
         DirVector normal = Plane.getNormalVector(A, B, C);
         final DirVector direction = middle.to(B, new DirVector());
 
-        if (normal.dot(direction) >= 0) {
+        if ((normal.dot(direction) >= 0) != invertMiddle) {
             addFinalTriangle(A, B, C, normal);
         } else {
             normal.negate();
@@ -128,9 +144,9 @@ public class CustomShape {
         DirVector currentNormal = Triangle.getNormalVector(A, B, C);
 
         if (currentNormal.dot(normal) >= 0) {
-            addFinalTriangle(A, B, C, normal);
+            addFinalTriangle(A, B, C, currentNormal);
         } else {
-            addFinalTriangle(C, B, A, normal);
+            addFinalTriangle(C, B, A, currentNormal);
         }
     }
 
@@ -183,7 +199,9 @@ public class CustomShape {
                                                                  double slices) {
 
         DirVector startNormal = Plane.bezierDerivative(A2, B2, C2, D2, 0);
-        if (startNormal.dot(A2.to(middle, new DirVector())) > 0) startNormal = startNormal.scale(-1, new DirVector());
+        if ((startNormal.dot(A2.to(middle, new DirVector())) > 0) != invertMiddle) {
+            startNormal = startNormal.scale(-1, new DirVector());
+        }
         TrackedObject<DirVector> normal = new TrackedVector<>(startNormal);
 
         List<PosVector> leftVertices = new ArrayList<>();
@@ -333,7 +351,7 @@ public class CustomShape {
 
     @Override
     public String toString() {
-        return points.keySet().toString();
+        return getSortedVertices().toString();
     }
 
     /**

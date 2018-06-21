@@ -36,14 +36,13 @@ public class PlayerJetLaboratory extends GameState {
     protected Collection<Touchable> createWorld() {
         ArrayList<Touchable> entities = new ArrayList<>();
 
-        PosVector m = new PosVector(0, 0, 0);
-        PosVector s = new PosVector(LAB_SIZE, 0, 0);
-        PosVector sm = m.middleTo(s);
-        PosVector smm = sm.middleTo(m);
-        PosVector ssm = sm.middleTo(s);
+        PosVector A = new PosVector(-100, 0, 0);
+        PosVector B = new PosVector(-100, 50, 0);
+        PosVector C = new PosVector(0, 100, 50);
+        PosVector D = new PosVector(50, 100, 50);
 
         entities.add(new Tunnel(
-                smm, sm, sm, ssm, 10, 8, 8, ServerSettings.RENDER_ENABLED
+                A, B, C, D, 20, 10, 16, ServerSettings.RENDER_ENABLED
         ));
         entities.add(new StaticObject(
                 GeneralShapes.makeInverseCube(0, ServerSettings.RENDER_ENABLED),
