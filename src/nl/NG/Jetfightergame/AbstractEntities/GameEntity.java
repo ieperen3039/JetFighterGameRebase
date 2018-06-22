@@ -177,7 +177,7 @@ public abstract class GameEntity implements MovingEntity {
     @Override
     public boolean checkCollisionWith(Touchable other, float deltaTime) {
         // projectiles cannot be hit
-        if (other instanceof Projectile) return false;
+        if (other instanceof AbstractProjectile) return false;
 
         Collision newCollision = hitPoints.stream()
                 // see which points collide with the other

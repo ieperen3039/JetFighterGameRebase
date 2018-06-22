@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
@@ -203,8 +203,8 @@ public class CollisionDetection implements EntityManagement {
     @SuppressWarnings("SimplifiableIfStatement")
     private boolean checkCollisionPair(Touchable either, MovingEntity moving, float deltaTime) {
         // the isDead checks are for entities that die in a previous collision iteration
-        if ((moving instanceof MortalEntity) && ((MortalEntity) moving).isDead()) return false;
-        if ((either instanceof MortalEntity) && ((MortalEntity) either).isDead()) return false;
+        if (TemporalEntity.isOverdue(moving)) return false;
+        if (TemporalEntity.isOverdue(either)) return false;
         if (moving.checkCollisionWith(either, deltaTime)) return true;
         return (either instanceof MovingEntity) && ((MovingEntity) either).checkCollisionWith(moving, deltaTime);
     }
@@ -377,7 +377,7 @@ public class CollisionDetection implements EntityManagement {
         zLowerSorted = Toolbox.mergeAndClean(zLowerSorted, newZSort, CollisionEntity::zLower);
 
         dynamicEntities.addAll(newEntities);
-        dynamicEntities.removeIf(e -> (e instanceof MortalEntity) && ((MortalEntity) e).isDead());
+        dynamicEntities.removeIf(TemporalEntity::isOverdue);
     }
 
     /**

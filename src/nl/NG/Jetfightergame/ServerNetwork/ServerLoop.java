@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -85,7 +85,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         Collection<MovingEntity> entities = world.getEntities();
 
         for (MovingEntity object : entities) {
-            if (MortalEntity.isDead(object)){
+            if (TemporalEntity.isOverdue(object)) {
                 connections.forEach(conn -> conn.sendEntityRemove(object));
                 world.removeEntity(object.idNumber());
 

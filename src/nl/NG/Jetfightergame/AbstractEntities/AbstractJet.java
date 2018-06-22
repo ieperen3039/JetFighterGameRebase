@@ -8,8 +8,6 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
-import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -18,12 +16,10 @@ import org.joml.Quaternionf;
 
 import java.util.Collection;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
-
 /**
  * @author Geert van Ieperen created on 30-10-2017.
  */
-public abstract class AbstractJet extends GameEntity implements MortalEntity {
+public abstract class AbstractJet extends GameEntity {
 
     protected final float liftFactor;
     protected final float airResistCoeff;
@@ -260,20 +256,6 @@ public abstract class AbstractJet extends GameEntity implements MortalEntity {
     @Override
     public void impact(float power) {
         hitPoints -= power + 1;
-    }
-
-    @Override
-    public ParticleCloud explode() {
-        ParticleCloud cloud = Particles.splitIntoParticles(this, 1f);
-        cloud.addAll(
-                Particles.explosion(interpolatedPosition(), DirVector.zeroVector(),
-                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, 10f, EXPLOSION_PARTICLE_DENSITY)
-        );
-        return cloud;
-    }
-
-    public boolean isDead() {
-        return hitPoints <= 0;
     }
 
     /**

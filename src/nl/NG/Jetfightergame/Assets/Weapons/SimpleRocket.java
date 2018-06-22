@@ -1,10 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Weapons;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.Projectile;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -28,22 +26,20 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
  * @author Geert van Ieperen
  * created on 28-1-2018.
  */
-public class SimpleRocket extends AbstractJet implements Projectile {
+public class SimpleRocket extends AbstractProjectile {
 
     private static final float MASS = 0.1f;
-    private static final float AIR_RESIST_COEFF = 0f;
-    private static final float DIRECTION_STRAIGHTEN = 0.01f;
+    private static final float AIR_RESIST_COEFF = 0.001f;
     private static final float IMPACT_POWER = 20;
     private static final int DENSITY = 1000;
-    private float timeToLive = 5f;
 
     public SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
                         GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         super(
-                id, Controller.EMPTY, initialPosition, initialRotation, initialVelocity, 1f, Material.SILVER, MASS,
-                AIR_RESIST_COEFF, DIRECTION_STRAIGHTEN,
-                gameTimer, entityDeposit, 0
+                id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
+                AIR_RESIST_COEFF, 10,
+                gameTimer, entityDeposit
         );
     }
 
@@ -80,13 +76,8 @@ public class SimpleRocket extends AbstractJet implements Projectile {
     }
 
     @Override
-    public boolean isDead() {
+    public boolean isOverdue() {
         return timeToLive <= 0;
-    }
-
-    @Override
-    public PosVector getPilotEyePosition() {
-        return interpolatedPosition();
     }
 
     @Override
@@ -102,5 +93,15 @@ public class SimpleRocket extends AbstractJet implements Projectile {
     @Override
     public float getRange() {
         return 0;
+    }
+
+    @Override
+    protected void adjustOrientation(PosVector extraPosition, Quaternionf extraRotation, DirVector extraVelocity, DirVector forward, float deltaTime) {
+
+    }
+
+    @Override
+    protected float getThrust(DirVector forward) {
+        return 100;
     }
 }

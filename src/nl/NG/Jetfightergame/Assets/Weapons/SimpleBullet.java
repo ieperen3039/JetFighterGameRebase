@@ -1,19 +1,14 @@
 package nl.NG.Jetfightergame.Assets.Weapons;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.Projectile;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
-import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -22,28 +17,21 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
-
 /**
  * @author Geert van Ieperen
  * created on 28-1-2018.
  */
-public class SimpleBullet extends AbstractJet implements Projectile {
+public class SimpleBullet extends AbstractProjectile {
 
-    private static final int SPARK_DENSITY = 10;
     private static final float MASS = 0.1f;
     private static final float AIR_RESIST_COEFF = 0f;
-    private static final float DIRECTION_STRAIGHTEN = 0.01f;
-    private static final float IMPACT_POWER = 5f;
-    private float timeToLive = 2f;
 
     public SimpleBullet(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
                         GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         super(
-                id, Controller.EMPTY, initialPosition, initialRotation, initialVelocity, 1f, Material.SILVER, MASS,
-                AIR_RESIST_COEFF, 0,
-                gameTimer, entityDeposit, 0
+                id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
+                AIR_RESIST_COEFF, 10, gameTimer, entityDeposit
         );
     }
 
@@ -71,33 +59,21 @@ public class SimpleBullet extends AbstractJet implements Projectile {
     }
 
     @Override
-    public ParticleCloud explode() {
-//        new AudioSource(Sounds.explosion, position, 1f, 1f);
-        return Particles.explosion(interpolatedPosition(), DirVector.zeroVector(), Color4f.WHITE, EXPLOSION_COLOR_2, IMPACT_POWER, SPARK_DENSITY);
-    }
-
-    @Override
-    public boolean isDead() {
-        return timeToLive <= 0;
-    }
-
-    @Override
-    public PosVector getPilotEyePosition() {
-        return interpolatedPosition();
-    }
-
-    @Override
-    protected void updateShape(float deltaTime) {
-        timeToLive -= deltaTime;
-    }
-
-    @Override
     protected List<TrackedVector<PosVector>> calculateHitpointMovement() {
         return Collections.singletonList(new TrackedVector<>(position, extraPosition));
     }
 
     @Override
     public float getRange() {
+        return 0;
+    }
+
+    @Override
+    protected void adjustOrientation(PosVector extraPosition, Quaternionf extraRotation, DirVector extraVelocity, DirVector forward, float deltaTime) {
+    }
+
+    @Override
+    protected float getThrust(DirVector forward) {
         return 0;
     }
 }

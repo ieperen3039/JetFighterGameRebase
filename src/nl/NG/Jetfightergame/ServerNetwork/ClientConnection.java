@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -67,8 +67,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             int target = JetFighterProtocol.entityRemoveRead(serverIn);
             MovingEntity entity = game.removeEntity(target);
 
-            if (entity instanceof MortalEntity) {
-                ParticleCloud explosion = ((MortalEntity) entity).explode();
+            if (entity instanceof TemporalEntity) {
+                ParticleCloud explosion = ((TemporalEntity) entity).explode();
                 game.addParticles(explosion);
             }
 

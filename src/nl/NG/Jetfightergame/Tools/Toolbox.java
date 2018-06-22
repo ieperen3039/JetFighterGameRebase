@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -132,8 +132,8 @@ public final class Toolbox {
     }
 
     /**
-     * merges a joining array into this array, and removes {@link MortalEntity}
-     * entities that are overdue as in {@link MortalEntity#isDead()}
+     * merges a joining array into this array, and removes {@link TemporalEntity}
+     * entities that are overdue as in {@link TemporalEntity#isOverdue()}
      * @param host the sorted largest of the arrays to merge, entities in this
      *             array will be checked for relevance.
      * @param join the sorted other array to merge
@@ -160,7 +160,7 @@ public final class Toolbox {
                 Type hostItem = host[hIndex];
 
                 // check whether it is alive
-                if ((hostItem instanceof MortalEntity) && ((MortalEntity) hostItem).isDead()) {
+                if (TemporalEntity.isOverdue(hostItem)) {
                     // skip adding this source to the resulting array, effectively deleting it.
                     hIndex++;
 

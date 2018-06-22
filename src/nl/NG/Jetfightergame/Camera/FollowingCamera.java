@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -66,7 +66,7 @@ public class FollowingCamera implements Camera {
         final PosVector targetEye = jetPosition(eyeRelative, target);
         final DirVector targetFocus;
 
-        if ((target instanceof MortalEntity) && ((MortalEntity) target).isDead()){
+        if (TemporalEntity.isOverdue(target)) {
             targetFocus = new DirVector(eye.current());
             targetFocus.negate();
         } else {

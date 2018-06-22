@@ -1,15 +1,16 @@
 package nl.NG.Jetfightergame;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.MortalEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 
 /**
  * @author Geert van Ieperen
  * created on 1-2-2018.
  */
-public class Player implements MortalEntity {
+public class Player implements TemporalEntity {
 
     private Controller override;
     private Controller input;
@@ -45,10 +46,10 @@ public class Player implements MortalEntity {
 
     @Override
     public ParticleCloud explode() {
-        return jet.explode();
+        return Particles.splitIntoParticles(jet, 20);
     }
 
-    public boolean isDead() {
+    public boolean isOverdue() {
         return health <= 0;
     }
 }
