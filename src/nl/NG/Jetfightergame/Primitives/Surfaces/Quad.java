@@ -13,8 +13,8 @@ public class Quad extends Plane {
     /** ABRef, BCRef, CDRef, DARef are four reference vectors for collision detection */
     private PosVector ABRef, BCRef, CDRef, DARef;
 
-    private static PosVector tempAlpha = new PosVector();
-    private static PosVector tempBeta = new PosVector();
+    private PosVector tempAlpha = new PosVector();
+    private PosVector tempBeta = new PosVector();
 
     /**
      * the vectors must be supplied in counterclockwise ordering

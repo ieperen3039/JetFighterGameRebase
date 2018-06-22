@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.ScreenOverlay.HUD.HUDTargetable;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
@@ -32,8 +31,6 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.MAX_COLLISION_ITERATI
  * @author Geert van Ieperen created on 10-3-2018.
  */
 public class CollisionDetection implements EntityManagement {
-    private List<HUDTargetable> debugs = new LinkedList<>();
-
     private CollisionEntity[] xLowerSorted;
     private CollisionEntity[] yLowerSorted;
     private CollisionEntity[] zLowerSorted;
@@ -235,8 +232,6 @@ public class CollisionDetection implements EntityManagement {
         checkOverlap(adjacencyMatrix, zLowerSorted, CollisionEntity::zLower, CollisionEntity::zUpper);
 
         Collection<Pair<Touchable, MovingEntity>> allEntityPairs = new ArrayList<>();
-        debugs.forEach(HUDTargetable::dispose);
-        debugs.clear();
 
         // select all source pairs that are 'close' in three coordinates
         for (int i = 0; i < nOfEntities; i++) {
@@ -497,7 +492,6 @@ public class CollisionDetection implements EntityManagement {
         yLowerSorted = new CollisionEntity[0];
         zLowerSorted = new CollisionEntity[0];
         Logger.removeOnlineUpdate(collisionCounter);
-        debugs.forEach(HUDTargetable::dispose);
     }
 
     protected class CollisionEntity {

@@ -64,7 +64,7 @@ public class BasicShape implements Shape {
 
     public static List<Shape> loadSplit(String fileName, boolean loadMesh, float containerSize, float scale) {
         // TODO position == (0, 0, 0)
-        ShapeParameters file = new ShapeParameters(fileName, new PosVector(0, 0, -400), new int[]{3, 1, 2}, scale);
+        ShapeParameters file = new ShapeParameters(fileName, new PosVector(0, 0, -400), scale);
         HashMap<Vector3i, CustomShape> world = new HashMap<>();
 
         for (Mesh.Face f : file.faces) {
@@ -72,7 +72,7 @@ public class BasicShape implements Shape {
             float xMin = Float.MAX_VALUE;
             float yMin = Float.MAX_VALUE;
             float zMin = Float.MAX_VALUE;
-            for (int i = 0; i < edges.length; i++) {
+            for (int i = 0; i < f.size(); i++) {
                 PosVector p = file.vertices.get(f.vert[i]);
                 xMin = Math.min(p.x, xMin);
                 yMin = Math.min(p.y, yMin);
@@ -86,25 +86,29 @@ public class BasicShape implements Shape {
 
             Vector3i key = new Vector3i(x, y, z);
             CustomShape container = world.computeIfAbsent(key, k -> new CustomShape(new PosVector(x, y, -Float.MAX_VALUE)));
-            container.addPlane(null, edges);
+
+            DirVector normal = new DirVector();
+            for (int ind : f.norm) {
+                if (ind < 0) continue;
+                normal.add(file.normals.get(ind));
+            }
+            if (normal.isScalable()) {
+                normal.div(f.size());
+            } else {
+                normal = DirVector.zVector();
+            }
+
+            container.addPlane(normal, edges);
         }
 
         Collection<CustomShape> containers = world.values();
         Logger.print("Loaded model " + file.name + " in " + containers.size() + " parts");
-//        Logger.print(world);
-        return containers.stream()
-                .map(s -> s.wrapUp(loadMesh))
-                .collect(Collectors.toList());
-    }
 
-    private static float minimum(float... items) {
-        float min = -Float.MAX_VALUE;
-        for (float item : items) {
-            if (item < min) {
-                min = item;
-            }
+        List<Shape> shapes = new ArrayList<>();
+        for (CustomShape frame : containers) {
+            shapes.add(frame.wrapUp(loadMesh));
         }
-        return min;
+        return shapes;
     }
 
     @Override
@@ -130,19 +134,17 @@ public class BasicShape implements Shape {
     /**
      * creates a plane object, using the indices on the given lists
      *
-     * @param posVectors a list where the vertex indices of A, B and C refer to
+     * @param vertices a list where the vertex indices of A, B and C refer to
      * @param normals    a list where the normal indices of A, B and C refer to
      * @return a triangle whose normal is the average of those of A, B and C, in Shape-space
      */
-    public static Plane toPlanes(Mesh.Face face, List<PosVector> posVectors, List<DirVector> normals) {
+    public static Plane toPlanes(Mesh.Face face, List<PosVector> vertices, List<DirVector> normals) {
         final PosVector[] border = new PosVector[face.size()];
-        Arrays.setAll(border, i -> posVectors.get(face.vert[i]));
+        Arrays.setAll(border, i -> vertices.get(face.vert[i]));
         // take average normal as normal of plane, or use default method if none are registered
         DirVector normal = new DirVector();
         for (int index : face.norm) {
-            if (index >= 0) {
-                normal.add(normals.get(index));
-            }
+            normal.add((index < 0) ? DirVector.zeroVector() : normals.get(index));
         }
 
         switch (face.size()) {
@@ -153,10 +155,6 @@ public class BasicShape implements Shape {
             default:
                 throw new UnsupportedOperationException("polygons with " + face.size() + " edges are not supported");
         }
-    }
-
-    private static DirVector fetchDir(List<DirVector> normals, int index) {
-        return (index < 0) ? DirVector.zeroVector() : normals.get(index);
     }
 
 }

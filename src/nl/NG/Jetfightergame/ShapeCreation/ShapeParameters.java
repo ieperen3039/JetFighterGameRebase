@@ -26,16 +26,15 @@ public class ShapeParameters {
      * @param fileName path to the .obj file
      */
     public ShapeParameters(String fileName) {
-        this(fileName, PosVector.zeroVector(), new int[]{3, 1, 2}, 1f);
+        this(fileName, PosVector.zeroVector(), 1f);
     }
 
     /**
      * @param fileName path from the directory main to the .obj file
      * @param offSet   offset of the gravity middle in this mesh as {@code GM * -1}
-     * @param XYZ      determines the definition of the axes. maps {forward, right, up} for X=1, Y=2, Z=3.
      * @param scale    the scale standard applied to this object, to let it correspond to its contract
      */
-    public ShapeParameters(String fileName, PosVector offSet, int[] XYZ, float scale) {
+    public ShapeParameters(String fileName, PosVector offSet, float scale) {
         name = asName(fileName);
         vertices = new ArrayList<>();
         normals = new ArrayList<>();
@@ -50,9 +49,9 @@ public class ShapeParameters {
                     // Geometric vertex
                     PosVector vec3f = new PosVector();
                     new PosVector(
-                            Float.parseFloat(tokens[XYZ[0]]),
-                            Float.parseFloat(tokens[XYZ[1]]),
-                            Float.parseFloat(tokens[XYZ[2]]))
+                            Float.parseFloat(tokens[3]),
+                            Float.parseFloat(tokens[1]),
+                            Float.parseFloat(tokens[2]))
                             .scale(scale, vec3f)
                             .add(offSet, vec3f);
                     vertices.add(vec3f);
@@ -60,9 +59,9 @@ public class ShapeParameters {
                 case "vn":
                     // Vertex normal
                     DirVector vec3fNorm = new DirVector(
-                            Float.parseFloat(tokens[XYZ[0]]),
-                            Float.parseFloat(tokens[XYZ[1]]),
-                            Float.parseFloat(tokens[XYZ[2]]));
+                            Float.parseFloat(tokens[3]),
+                            Float.parseFloat(tokens[1]),
+                            Float.parseFloat(tokens[2]));
                     normals.add(vec3fNorm);
                     break;
                 case "f":

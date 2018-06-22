@@ -46,8 +46,8 @@ public class Mesh implements Renderable {
 
         for (int i = 0; i < facesList.size(); i++) {
             Face face = facesList.get(i);
-            readFaceVertex(posList, posArr, i, face);
-            readFaceNormals(normList, normArr, i, face);
+            readFaceVertex(face, posList, i, posArr);
+            readFaceNormals(face, normList, i, normArr);
         }
 
         writeToGL(posArr, normArr);
@@ -67,16 +67,17 @@ public class Mesh implements Renderable {
         return 3;
     }
 
-    private void readFaceVertex(List<PosVector> posList, float[] posArr, int faceNumber, Face face) {
+    private void readFaceVertex(Face face, List<PosVector> posList, int faceNumber, float[] posArr) {
         int indices = faceNumber * face.size();
         for (int i = 0; i < face.size(); i++) {
             readVector(indices + i, posList, posArr, face.vert[i]);
         }
     }
 
-    private void readFaceNormals(List<DirVector> normList, float[] normArr, int faceNumber, Face face) {
+    private void readFaceNormals(Face face, List<DirVector> normList, int faceNumber, float[] normArr) {
         int indices = faceNumber * face.size();
         for (int i = 0; i < face.size(); i++) {
+
             readVector(indices + i, normList, normArr, face.norm[i]);
         }
     }

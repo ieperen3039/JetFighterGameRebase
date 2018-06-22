@@ -25,11 +25,11 @@ public class BasicJet extends AbstractJet {
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 1000f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
-    public static final float MASS = 50f;
+    public static final float MASS = 40f;
     public static final Material MATERIAL = Material.SILVER;
-    public static final float YAW_POWER = 1f;
-    public static final float PITCH_POWER = 2f;
-    public static final float ROLL_POWER = 2f;
+    public static final float YAW_POWER = 2f;
+    public static final float PITCH_POWER = 3f;
+    public static final float ROLL_POWER = 3f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.002f;
     private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
     private static final MachineGun GUN = new MachineGun(0.1f);
@@ -43,14 +43,14 @@ public class BasicJet extends AbstractJet {
     public BasicJet(int id, PosVector initialPosition, Controller input, Quaternionf initialRotation, GameTimer renderTimer,
                     SpawnReceiver entityDeposit, SpecialWeapon specialWeapon
     ) {
-        super(id, input, initialPosition, initialRotation, 1f,
+        super(id, input, initialPosition, initialRotation, 0.5f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.8f, renderTimer, 0.3f, 0.3f,
+                0.7f, renderTimer, 0.3f, 0.3f,
                 GUN, specialWeapon, 1000, entityDeposit
         );
 
-        shape = GeneralShapes.CONCEPT_BLUEPRINT;
+        shape = GeneralShapes.CONCEPT_BLUEPRINT; // SCALE IS 0.5
 
     }
 

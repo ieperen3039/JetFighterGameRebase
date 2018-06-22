@@ -35,10 +35,11 @@ public class PlayerJetLaboratory extends GameState {
     protected Collection<Touchable> createWorld() {
         ArrayList<Touchable> entities = new ArrayList<>();
 
+        int ind = 0;
         for (Shape shape : GeneralShapes.ISLAND1) {
             entities.add(new StaticObject(
                     shape,
-                    Material.ROUGH, Color4f.GREY, 1
+                    Material.ROUGH, getColor(ind++), 1
             ));
         }
 
@@ -48,6 +49,24 @@ public class PlayerJetLaboratory extends GameState {
 //        ));
 
         return entities;
+    }
+
+    private Color4f getColor(int ind) {
+//        switch (ind % 5){
+//            case 0:
+//                return Color4f.BLUE;
+//            case 1:
+//                return Color4f.RED;
+//            case 2:
+//                return Color4f.YELLOW;
+//            case 3:
+//                return Color4f.CYAN;
+//            case 4:
+//                return Color4f.GREY;
+//        }
+//        return Color4f.INVISIBLE;
+
+        return new Color4f((ind * 36) % 255, (ind * 52) % 255, (ind * 11) % 255, 1);
     }
 
     @Override

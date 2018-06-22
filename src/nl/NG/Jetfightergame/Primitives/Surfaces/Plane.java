@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 import java.util.Arrays;
-import java.util.Collection;
 
 /**
  * @author Geert van Ieperen
@@ -73,7 +72,6 @@ public abstract class Plane {
         if (!isInfinite && asideHitbox(linePosition, endPoint)) return null;
 
         float scalar = hitScalar(linePosition, direction);
-
         if (!isInfinite && (scalar > 1.0f)) return null;
 
         DirVector hitDir = direction.scale(scalar, new DirVector());
@@ -134,12 +132,7 @@ public abstract class Plane {
         return upper / lower;
     }
 
-    public Collection<PosVector> getVertices() {
-        return Arrays.asList(boundary);
-    }
-
     /**
-     * @see #getVertices()
      * @return a stream of the vertices of this object in counterclockwise order
      */
     public Iterable<PosVector> getBorder() {
@@ -187,7 +180,7 @@ public abstract class Plane {
                 middle.add(boundary[i]);
                 i++;
             }
-            middle.scale(1f/i, middle);
+            middle.div(i);
         }
         return middle;
     }
@@ -238,12 +231,13 @@ public abstract class Plane {
      */
     public static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {
         DirVector direction = new DirVector();
+        PosVector temp = new PosVector();
         final PosVector point = new PosVector();
         //(B-A)*3*(1-u)^2 + (C-B)*6*(1-u)*u + (D-C)*3*u^2
         (B.sub(A, point))
                 .scale((float) (3 * (1 - u) * (1 - u)), point)
-                .add(C.sub(B, new PosVector()).scale((float) (6 * (1 - u) * u), new PosVector()), direction)
-                .add(D.sub(C, new PosVector()).scale((float) (3 * u * u), new PosVector()), direction);
+                .add(C.sub(B, temp).scale((float) (6 * (1 - u) * u), temp), direction)
+                .add(D.sub(C, temp).scale((float) (3 * u * u), temp), direction);
         return direction;
     }
 
