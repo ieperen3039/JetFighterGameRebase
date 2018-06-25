@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -14,7 +13,6 @@ import java.net.Socket;
 import java.util.function.Function;
 
 import static nl.NG.Jetfightergame.ServerNetwork.JetFighterServer.Phase.*;
-import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
 
 /**
@@ -49,8 +47,6 @@ public class JetFighterServer {
 
         this.socket = new ServerSocket(SERVER_PORT);
         this.game = new ServerLoop(environment);
-
-        environment.buildScene(game, COLLISION_DETECTION_LEVEL, true);
         portNumber = socket.getLocalPort();
 
         if (loadModels) {
@@ -74,8 +70,7 @@ public class JetFighterServer {
         new Thread(server::listenForHost).start();
         client.connect(new InetSocketAddress(server.portNumber), 1000);
 
-        server.currentPhase = STARTING;
-        return server.getGameLoop();
+        return server.game;
     }
 
     /**
@@ -121,31 +116,16 @@ public class JetFighterServer {
     }
 
     /**
-     * initialises the physics engine and returns it
-     * @return the gameloop, paused and not started
+     * Stop accepting connections, and open a portal to the new world. Possible delay between these two actions should be handeled in the lobby world.
+     * @param world the world to start
      */
-    public AbstractGameLoop getGameLoop() {
-        if (currentPhase != STARTING) throw new IllegalStateException("getGameLoop() was called in " + currentPhase + " phase");
-        currentPhase = RUNNING;
-        return game;
+    public void upgrade(Environment world) {
+        currentPhase = STARTING; // TODO stop listen() calls connections
+        game.startMap(world);
     }
 
     /** @return what the server is doing ATM */
     public Phase getPhase() {
         return currentPhase;
-    }
-
-    /** starts a test-server */
-    public static void main(String[] args) throws IOException {
-        GameTimer time = new GameTimer();
-        Environment world = new PlayerJetLaboratory(time);
-        JetFighterServer server = new JetFighterServer(world, true);
-        server.listenForHost();
-
-//        server.listen();
-        server.currentPhase = STARTING;
-
-        AbstractGameLoop game = server.getGameLoop();
-        game.run();
     }
 }

@@ -17,21 +17,28 @@ import java.util.Collection;
  */
 public interface Environment {
 
-    /** @see #addEntity(MovingEntity) */
+    /** all entities added by the constructor or using {@link #addEntity(MovingEntity) */
     Collection<MovingEntity> getEntities();
 
     /**
      * adds an entity to this world
      * @param entity an entity, set in the appropriate position, not being controlled by outside resources
+     * @see #getEntity(int)
      */
     void addEntity(MovingEntity entity);
 
     /**
-     * removes an entity off this world. After returning, this world does not contain any entity with the given id
-     * @param entityID the id of the entity to be removed
-     * @return the entity removed, or null if it was not in this world
+     * searches the entity corresponding to the given ID, or null if no such entity exists
+     * @param entityID the ID number of an existing entity
+     * @return the entity with the given entityID, or null if no such entity exists
      */
-    MovingEntity removeEntity(int entityID);
+    MovingEntity getEntity(int entityID);
+
+    /**
+     * removes an entity off this world.
+     * @param entity the entity to be removed
+     */
+    void removeEntity(MovingEntity entity);
 
     /**
      * update the physics of all game objects and check for collisions

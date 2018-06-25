@@ -6,7 +6,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.GameState.EnvironmentManager.Worlds;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -192,8 +191,13 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public MovingEntity removeEntity(int entityID) {
+    public MovingEntity getEntity(int entityID) {
         return null;
+    }
+
+    @Override
+    public void removeEntity(MovingEntity entity) {
+        throw new UnsupportedOperationException("removeEntity");
     }
 
     @Override
@@ -204,7 +208,7 @@ public class Process592 implements Environment {
     /**
      * creates menuPanels for selecting worlds
      * @param sceneSelector switches the current world to the given world
-     * @return a new menu with all values defined in {@link nl.NG.Jetfightergame.GameState.EnvironmentManager.Worlds}
+     * @return a new menu with all possible worlds
      */
     private static MenuPanel[] worldSelectionMenu(Consumer<Worlds> sceneSelector) {
         final Worlds[] allScenes = Worlds.values();

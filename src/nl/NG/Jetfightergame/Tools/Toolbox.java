@@ -27,8 +27,7 @@ public final class Toolbox {
     private static final float ROUNDINGERROR = 1E-6F;
 
     /**
-     * Draws the x-axis (red), y-axis (green), z-axis (blue), and origin
-     * (yellow).
+     * Draws the x-axis (red), y-axis (green), z-axis (blue), and origin (yellow).
      */
     public static void drawAxisFrame(GL2 gl) {
         if (!ServerSettings.DEBUG) return;
@@ -105,8 +104,7 @@ public final class Toolbox {
     }
 
     /**
-     * performs an incremental insertion-sort on (preferably nearly-sorted)
-     * array entities
+     * performs an incremental insertion-sort on (preferably nearly-sorted) array entities
      * @param items the array to sort
      * @param map   maps a moving source to the value to be sorted upon
      * @modifies items
@@ -132,60 +130,46 @@ public final class Toolbox {
     }
 
     /**
-     * merges a joining array into this array, and removes {@link TemporalEntity}
-     * entities that are overdue as in {@link TemporalEntity#isOverdue()}
-     * @param host the sorted largest of the arrays to merge, entities in this
-     *             array will be checked for relevance.
+     * merges a joining array into this array, and removes {@link TemporalEntity} entities that are overdue as in {@link
+     * TemporalEntity#isOverdue()}
+     * @param host the sorted largest of the arrays to merge, entities in this array will be checked for relevance.
      * @param join the sorted other array to merge
      * @param map  maps a moving source to the value to be sorted upon
-     * @return a sorted array of living entities from both host and join
-     *         combined.
+     * @return a sorted array of living entities from both host and join combined.
      */
-    public static <Type> Type[] mergeAndClean(Type[] host, Type[] join, Function<Type, Float> map) {
+    public static <Type> Type[] mergeArrays(Type[] host, Type[] join, Function<Type, Float> map) {
         Type[] results = Arrays.copyOf(host, host.length + join.length);
 
         int hIndex = 0;
         int jIndex = 0;
+        Type hostItem = host[0];
+        Type joinItem = join[0];
 
-        // we let the final number of iterations i be available after the loop ends
-        int i = 0;
-
-        // while loop, so i++ indexing is required
-        while (i < results.length) {
+        for (int i = 0; i < results.length; i++) {
             // all host items must be checked for isDead, so first see if there are any left
             if (hIndex >= host.length) {
-                results[i++] = join[jIndex++];
+                results[i] = joinItem;
+                joinItem = join[jIndex++];
+
+            } else if (jIndex >= join.length) {
+                results[i] = hostItem;
+                hostItem = host[hIndex++];
 
             } else {
-                Type hostItem = host[hIndex];
-
-                // check whether it is alive
-                if (TemporalEntity.isOverdue(hostItem)) {
-                    // skip adding this source to the resulting array, effectively deleting it.
-                    hIndex++;
-
-                } else if (jIndex >= join.length) {
-                    results[i++] = hostItem;
-                    hIndex++;
+                // select the smallest
+                if (map.apply(hostItem) < map.apply(joinItem)) {
+                    results[i] = hostItem;
+                    hostItem = host[hIndex++];
 
                 } else {
-                    Type joinItem = join[jIndex];
-
-                    // select the smallest
-                    if (map.apply(hostItem) < map.apply(joinItem)) {
-                        results[i++] = hostItem;
-                        hIndex++;
-
-                    } else {
-                        results[i++] = joinItem;
-                        jIndex++;
-                    }
+                    results[i] = joinItem;
+                    joinItem = join[jIndex++];
                 }
+
             }
         }
 
-        // loop automatically ends after at most (i = alpha.length + beta.length) iterations
-        return Arrays.copyOf(results, i);
+        return results;
     }
 
     /** @return a rotation that maps the x-vector to the given direction, with up in direction of z */
@@ -193,14 +177,14 @@ public final class Toolbox {
         return new Quaternionf().rotateTo(DirVector.xVector(), direction);
     }
 
-    /** returns a  */
+    /** returns a */
     public static float randomBetween(float val1, float val2) {
         return val1 + ((val2 - val1) * random.nextFloat());
     }
 
     /**
-     * runs the specified action after the given delay. This may be cancelled,
-     * upon which this thread will not do anything after the delay ends.
+     * runs the specified action after the given delay. This may be cancelled, upon which this thread will not do
+     * anything after the delay ends.
      */
     public static class DelayedAction extends Thread {
         private final long delay;

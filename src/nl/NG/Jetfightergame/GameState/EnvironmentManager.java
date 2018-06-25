@@ -26,6 +26,8 @@ import java.util.Collections;
  *
  * possibly we make this an instance of GameState, empty the lists upon changing world, separate GameState from Environment
  * and reduce the Environment interface to #buildScene(). This removes a little overhead of the world instances.
+ *
+ * @deprecated This is not usable for usage in a server-client model
  */
 public class EnvironmentManager implements Environment, Manager<EnvironmentManager.Worlds> {
 
@@ -43,8 +45,13 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public MovingEntity removeEntity(int entityID) {
-        return instance.removeEntity(entityID);
+    public MovingEntity getEntity(int entityID) {
+        return instance.getEntity(entityID);
+    }
+
+    @Override
+    public void removeEntity(MovingEntity entity) {
+        instance.removeEntity(entity);
     }
 
     @Override

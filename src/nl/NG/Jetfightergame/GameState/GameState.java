@@ -142,7 +142,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     }
 
     public int getParticleCount() {
-        Float t = time.getRenderTime().current();
+        float t = time.getRenderTime().current();
         return particles.stream()
                 .mapToInt(p -> p.estParticlesAt(t))
                 .sum();
@@ -163,14 +163,18 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     }
 
     @Override
-    public MovingEntity removeEntity(int entityID) {
+    public MovingEntity getEntity(int entityID) {
         for (MovingEntity entity : physicsEngine.getDynamicEntities()) {
             if (entity.idNumber() == entityID){
-                physicsEngine.removeEntity(entity);
                 return entity;
             }
         }
         return null;
+    }
+
+    @Override
+    public void removeEntity(MovingEntity entity) {
+        physicsEngine.removeEntity(entity);
     }
 
     @Override

@@ -17,6 +17,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
+
 /**
  * mostly a controlling layer between server and an environment
  * @author Geert van Ieperen
@@ -24,12 +26,18 @@ import java.util.Collection;
  */
 public class ServerLoop extends AbstractGameLoop implements GameServer {
 
-    private final Environment world;
+    private final Environment lobby;
     private final Collection<ServerConnection> connections;
+
+    /** the world that will eventually host the race. */
+    private Environment gameWorld = null;
+    private int playersInLobby;
 
     public ServerLoop(Environment world) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        this.world = world;
+        this.lobby = world;
+
+        world.buildScene(this, COLLISION_DETECTION_LEVEL, true);
         connections = new ArrayList<>();
     }
 
@@ -41,34 +49,34 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
      */
     public void connectToPlayer(Socket socket, boolean asAdmin) throws IOException {
         // establish communication handler
-        ServerConnection connector = new ServerConnection(socket, asAdmin, this, world.getNewSpawn());
+        ServerConnection connector = new ServerConnection(socket, asAdmin, this, lobby.getNewSpawn());
         // first thing to do is creating a player
         MovingEntity player = connector.getPlayerJet();
         connections.add(connector);
         new Thread(connector::listen).start();
 
-        // send all entities until this point (excluding the player itself)
-        for (MovingEntity entity : world.getEntities()) {
+        // send all entities until this point (excluding the player himself)
+        for (MovingEntity entity : lobby.getEntities()) {
             EntityClass type = EntityClass.get(entity);
             Spawn spawn = new Spawn(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
             connector.sendEntitySpawn(spawn, entity.idNumber());
         }
 
-
-        world.addEntity(player);
-        world.updateGameLoop();
+        playersInLobby++;
+        lobby.addEntity(player);
+        lobby.updateGameLoop();
     }
 
     @Override
     public void addSpawn(Spawn spawn){
         MovingEntity entity = spawn.construct(this, Controller.EMPTY);
-        world.addEntity(entity);
+        lobby.addEntity(entity);
         connections.forEach(c -> c.sendEntitySpawn(spawn, entity.idNumber()));
     }
 
     @Override
     public GameTimer getTimer() {
-        return world.getTimer();
+        return lobby.getTimer();
     }
 
     @Override
@@ -78,6 +86,13 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     @Override
     protected void update(float deltaTime) {
+        if (playersInLobby != 0) update(lobby);
+        if (gameWorld != null) update(gameWorld);
+
+        connections.forEach(ServerConnection::flush);
+    }
+
+    private void update(Environment world) {
         world.getTimer().updateGameTime();
         world.updateGameLoop();
 
@@ -87,25 +102,23 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         for (MovingEntity object : entities) {
             if (TemporalEntity.isOverdue(object)) {
                 connections.forEach(conn -> conn.sendEntityRemove(object));
-                world.removeEntity(object.idNumber());
+                world.removeEntity(object);
 
             } else {
                 connections.forEach(conn -> conn.sendEntityUpdate(object, time));
             }
         }
-
-        connections.forEach(ServerConnection::flush);
     }
 
     @Override
     public void unPause() {
-        world.getTimer().unPause();
+        lobby.getTimer().unPause();
         super.unPause();
     }
 
     @Override
     public void pause() {
-        world.getTimer().pause();
+        lobby.getTimer().pause();
         super.pause();
     }
 
@@ -117,7 +130,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     @Override
     protected void cleanup() {
-        world.cleanUp();
+        lobby.cleanUp();
     }
 
     @Override
@@ -127,7 +140,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     public String entityList() {
         StringBuilder s = new StringBuilder();
-        world.getEntities().forEach(e -> s.append("\n").append(e));
+        lobby.getEntities().forEach(e -> s.append("\n").append(e));
         return s.toString();
+    }
+
+    public void startMap(Environment world) {
+        gameWorld = world;
     }
 }

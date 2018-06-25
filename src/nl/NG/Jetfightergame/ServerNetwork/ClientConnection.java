@@ -65,7 +65,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         } else if (type == MessageType.ENTITY_REMOVE) {
             int target = JetFighterProtocol.entityRemoveRead(serverIn);
-            MovingEntity entity = game.removeEntity(target);
+            MovingEntity entity = game.getEntity(target);
+            game.removeEntity(entity);
 
             if (entity instanceof TemporalEntity) {
                 ParticleCloud explosion = ((TemporalEntity) entity).explode();
