@@ -46,8 +46,8 @@ public class BasicJet extends AbstractJet {
         super(id, input, initialPosition, initialRotation, 0.5f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.7f, renderTimer, 0.3f, 0.3f,
-                GUN, specialWeapon, 1000, entityDeposit
+                0.7f, renderTimer, 0.3f, 0.5f,
+                GUN, specialWeapon, entityDeposit
         );
 
         shape = GeneralShapes.CONCEPT_BLUEPRINT; // SCALE IS 0.5

@@ -36,18 +36,14 @@ public abstract class AbstractJet extends GameEntity {
     protected final MachineGun gunAlpha;
     protected final SpecialWeapon gunBeta;
 
-    /**
-     * lose it all, and you're dead
-     */
-    protected int hitPoints;
-    /**
-     * the number of hitpoints cannot exceed this number
-     */
-    private final int maxHeath;
-
-    protected transient Controller input;
+    protected Controller input;
     protected Material surfaceMaterial;
     private DirVector forward;
+
+    /** time left in slow */
+    protected float slowTimeLeft = 0;
+    /** fraction of speed lost by slow. higher slow factor is more slow */
+    protected float slowFactor = 0;
 
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
@@ -81,7 +77,6 @@ public abstract class AbstractJet extends GameEntity {
      * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
      * @param gunAlpha                 the primary firing method
      * @param gunBeta                  the secondary gun. If this gun can be switched, this should be a GunManager.
-     * @param hitPoints                the amount of damage this plane can take before exploding
      * @param entityDeposit            the class that allows new entities and particles to be added to the environment
      */
     public AbstractJet(
@@ -89,7 +84,7 @@ public abstract class AbstractJet extends GameEntity {
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
-            MachineGun gunAlpha, SpecialWeapon gunBeta, int hitPoints, SpawnReceiver entityDeposit
+            MachineGun gunAlpha, SpecialWeapon gunBeta, SpawnReceiver entityDeposit
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, renderTimer, entityDeposit);
 
@@ -106,67 +101,23 @@ public abstract class AbstractJet extends GameEntity {
         this.zPreservation = 1 - zReduction;
         this.gunAlpha = gunAlpha;
         this.gunBeta = gunBeta;
-        this.hitPoints = hitPoints;
-        this.maxHeath = hitPoints;
         this.surfaceMaterial = material;
 
-        forward = new DirVector();
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        forward = DirVector.xVector();
+        relativeStateDirection(forward).normalize(forward);
         forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
         velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
         defaultThrustSquared = BASE_SPEED * BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
     }
 
-    /**
-     * constructor for creating projectiles
-     * @param id              unique identifier for this entity
-     * @param controller      a possible control of this object, or use an {@link Controller.EmptyController}
-     * @param initialPosition position of spawning (of the origin) in world coordinates
-     * @param initialRotation the initial rotation of spawning
-     * @param initialVelocity the initial movement per second of this projectile
-     * @param scale           scale factor applied to this object. the scale is in global space and executed in {@link
-     *                        #toLocalSpace(MatrixStack, Runnable, boolean)}
-     * @param material        the default material properties of the whole object.
-     * @param mass            the mass of the object in kilograms.
-     * @param airResistCoeff  0.5 * A * Cw.
-     * @param straightening   the reduction factor of sideward movement
-     * @param gameTimer       the timer that determines the "current rendering time" for {@link *
-     *                        MovingEntity#interpolatedPosition()}
-     * @param entityDeposit   the class that allows new entities and particles to be added to the environment
-     * @param thrustSquared the thrust value of this projectile
-     */
-    public AbstractJet(
-            int id, Controller controller, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity,
-            float scale, Material material, float mass, float airResistCoeff,
-            float straightening, GameTimer gameTimer, SpawnReceiver entityDeposit, float thrustSquared
-    ) {
-        super(id, initialPosition, initialVelocity, initialRotation, mass, scale, gameTimer, entityDeposit);
-        this.airResistCoeff = airResistCoeff;
-        this.surfaceMaterial = material;
-        this.input = controller;
-
-        liftFactor = 0;
-        throttlePower = 0;
-        brakePower = 0;
-        yawAcc = 0;
-        pitchAcc = 0;
-        rollAcc = 0;
-        yPreservation = 1 - straightening;
-        zPreservation = 1 - straightening;
-        rotationPreserveFactor = 0.9f;
-        gunAlpha = null;
-        gunBeta = null;
-        maxHeath = 1;
-        defaultThrustSquared = thrustSquared;
-
-        forward = new DirVector();
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
-        forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
-        velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
-    }
-
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
+        slowTimeLeft -= deltaTime;
+        if (slowTimeLeft <= 0) {
+            slowTimeLeft = 0;
+            slowFactor = 0;
+        }
+
         gyroPhysics(deltaTime, netForce, velocity);
 
         // in case of no guns
@@ -233,12 +184,14 @@ public abstract class AbstractJet extends GameEntity {
         DirVector airResistance = new DirVector();
         float speed = velocity.length();
         float brake = (throttle < 0) ? (-throttle * brakePower) : 1;
-        velocity.reducedTo(speed * speed * (airResistCoeff * brake) * -1, airResistance);
+        float resistance = airResistCoeff * brake;
+        velocity.reducedTo(speed * speed * resistance * -1, airResistance);
         extraVelocity.add(airResistance.scale(deltaTime, temp));
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
-        extraVelocity.add(netForce.scale(deltaTime / mass, temp), extraVelocity);
+        extraVelocity.add(netForce.scale(deltaTime / mass, temp));
+        extraVelocity.scale(1 - slowFactor);
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, temp), extraPosition);
@@ -255,14 +208,15 @@ public abstract class AbstractJet extends GameEntity {
 
     @Override
     public void impact(float power) {
-        hitPoints -= power + 1;
+        slowTimeLeft += power;
+        slowFactor = 0.5f;
     }
 
     /**
-     * @return forward in world-space
+     * @return forward in world-space (safe copy)
      */
     public DirVector getForward() {
-        return forward;
+        return new DirVector(forward);
     }
 
     public DirVector interpolatedForward() {
@@ -291,7 +245,7 @@ public abstract class AbstractJet extends GameEntity {
         pitchSpeed = 0f;
         rollSpeed = 0f;
 
-        hitPoints = maxHeath;
+        slowTimeLeft = 0;
         resetCache();
     }
 

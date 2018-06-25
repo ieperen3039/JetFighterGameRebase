@@ -67,15 +67,15 @@ public abstract class GameEntity implements MovingEntity {
     protected final float mass;
 
     /**
-     * any object that may be moved and hit other objects, is a game object. All vectors are newly instantiated.
-     * @param id an unique identifier for this entity
+     * any object that may be moved and may hit other objects, is a game object. All vectors are newly instantiated.
+     * @param id              an unique identifier for this entity
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param mass            the mass of the object in kilograms.
-     * @param scale           scalefactor applied to this object. the scale is in global space and executed in {@link
-*                        #toLocalSpace(MatrixStack, Runnable, boolean)}
-     * @param gameTimer       A timer that defines rendering, in order to let {@link MovingEntity#interpolatedPosition()}
+     * @param scale           scale factor applied to this object. The scale is in global space and executed in {@link
+     *                        #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param gameTimer       A timer that defines rendering, for use in {@link MovingEntity#interpolatedPosition()}
      */
     public GameEntity(
             int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
@@ -103,7 +103,6 @@ public abstract class GameEntity implements MovingEntity {
 
     @Override
     public void preUpdate(float deltaTime, DirVector netForce) {
-
         nextCrash = new Extreme<>(false);
 
         extraPosition.set(position);
@@ -117,7 +116,6 @@ public abstract class GameEntity implements MovingEntity {
 
         hitPoints = calculateHitpointMovement();
     }
-
 
     /**
      * entities may include animations. These animations are updated here.
@@ -217,7 +215,6 @@ public abstract class GameEntity implements MovingEntity {
      * @return the first collision caused by this point on the other object
      */
     private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other, float deltaTime) {
-
         Extreme<Collision> firstHit = new Extreme<>(false);
         // copy previous, because we may want to temporarily override it.
         final PosVector previous = new PosVector(point.previous());
@@ -283,6 +280,7 @@ public abstract class GameEntity implements MovingEntity {
         return list;
     }
 
+    @Override
     public void toLocalSpace(MatrixStack ms, Runnable action, boolean extrapolate) {
         PosVector currPos = extrapolate ? extraPosition : position;
         Quaternionf currRot = extrapolate ? extraRotation : rotation;
@@ -305,6 +303,7 @@ public abstract class GameEntity implements MovingEntity {
      * returns the latest calculated position for rendering, one should preferably use {@link
      * MovingEntity#interpolatedPosition()}
      */
+    @Override
     public PosVector getPosition() {
         return new PosVector(position);
     }
