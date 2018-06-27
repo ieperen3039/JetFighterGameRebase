@@ -85,7 +85,9 @@ public class BasicShape implements Shape {
             int z = (int) (zMin / containerSize);
 
             Vector3i key = new Vector3i(x, y, z);
-            CustomShape container = world.computeIfAbsent(key, k -> new CustomShape(new PosVector(x, y, -Float.MAX_VALUE)));
+            CustomShape container = world.computeIfAbsent(key, k ->
+                    new CustomShape(new PosVector(x + 0.5f, y + 0.5f, -Float.MAX_VALUE))
+            );
 
             DirVector normal = new DirVector();
             for (int ind : f.norm) {
@@ -93,9 +95,10 @@ public class BasicShape implements Shape {
                 normal.add(file.normals.get(ind));
             }
             if (normal.isScalable()) {
-                normal.div(f.size());
+                normal.normalize();
             } else {
-                normal = DirVector.zVector();
+                normal = null;
+                Logger.printSpamless(fileName, fileName + " has at least one not-computed normal");
             }
 
             container.addPlane(normal, edges);

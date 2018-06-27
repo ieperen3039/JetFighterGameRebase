@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 import java.util.function.Consumer;
@@ -25,37 +26,51 @@ public class StaticObject implements Touchable {
     private final Color4f color;
     private final Vector offSet;
     private final Vector3f scaling;
+    private final Quaternionf rotation;
 
     private final PosVector middle;
     private final float range;
 
-    public StaticObject(Shape source, Material material, Color4f color, float scaling) {
-        this(source, material, color, DirVector.zeroVector(), new Vector3f(scaling, scaling, scaling));
+    /** @see #StaticObject(Shape, Material, Color4f, Vector, Vector3f, Quaternionf) */
+    public StaticObject(Shape source, PosVector position, Material material, Color4f color, float scaling) {
+        this(source, material, color, position, new Vector3f(scaling, scaling, scaling), null);
     }
 
+    /** @see #StaticObject(Shape, Material, Color4f, Vector, Vector3f, Quaternionf) */
     public StaticObject(Shape source, Material material, Color4f color) {
-        this(source, material, color, null, null);
+        this(source, material, color, null, null, null);
     }
 
-    public StaticObject(Shape source, Material material, Color4f color, Vector offSet, Vector3f scaling) {
+    /**
+     * creates an entity with the given shape. The entity is not movable, but implements collision detection.
+     * @param source   the shape to represent
+     * @param material the surface material
+     * @param color    the color modifier
+     * @param offSet   the position of the origin of the shape, or null for (0, 0, 0)
+     * @param scaling  the scaling factor, in xyz directions, or null for (0, 0, 0)
+     * @param rotation the rotation of the object, or null for no rotation
+     */
+    public StaticObject(Shape source, Material material, Color4f color, Vector offSet, Vector3f scaling, Quaternionf rotation) {
         this.source = source;
         this.material = material;
         this.color = color;
-        this.offSet = offSet;
-        this.scaling = scaling;
+        this.offSet = ((offSet != null) && offSet.isScalable()) ? offSet : null;
+        this.scaling = ((scaling != null) && (scaling.lengthSquared() != 0)) ? scaling : null;
+        this.rotation = ((rotation != null) && (rotation.lengthSquared() != 0)) ? rotation : null;
 
-        Pair<PosVector, Float> result = getMinimalCircle(source.getPoints());
+        Pair<PosVector, Float> hitbox = getMinimalCircle(source.getPoints());
 
-        this.middle = result.left;
-        this.range = result.right;
+        this.middle = hitbox.left;
+        this.range = hitbox.right;
     }
 
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
         ms.pushMatrix();
         {
-            if (scaling != null) ms.scale(scaling);
+            if (rotation != null) ms.rotate(rotation);
             if (offSet != null) ms.translate(offSet);
+            if (scaling != null) ms.scale(scaling);
             action.accept(source);
         }
         ms.popMatrix();

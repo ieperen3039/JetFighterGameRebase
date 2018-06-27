@@ -66,7 +66,7 @@ public class CustomShape {
      * @param B      (0, 1)
      * @param C      (1, 1)
      * @param D      (1, 0)
-     * @param normal the normal of this plane
+     * @param normal the direction of the normal of this plane
      * @throws NullPointerException if any of the vectors is null
      */
     public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal) {
@@ -94,7 +94,7 @@ public class CustomShape {
     }
 
     /**
-     * @see CustomShape#addFinalQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
+     * @see CustomShape#addQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addQuad(PosVector A, PosVector B, PosVector C, PosVector D) {
         DirVector normal = Plane.getNormalVector(A, B, C);
@@ -372,7 +372,8 @@ public class CustomShape {
                 return;
         }
         for (int i = 1; i < (edges.length - 2); i++) {
-            addTriangle(edges[0], edges[i], edges[i + 2]);
+            if (normal == null) addTriangle(edges[i], edges[i + 1], edges[i + 2]);
+            else addTriangle(edges[i], edges[i + 1], edges[i + 2], normal);
         }
     }
 }

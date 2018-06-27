@@ -52,7 +52,7 @@ public class CollisionLaboratory extends GameState {
     @Override
     protected Collection<Touchable> createWorld() {
 //        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.3f)));
-        return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, Material.ROUGH, Color4f.ORANGE, labSize));
+        return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, null, Material.ROUGH, Color4f.ORANGE, labSize));
     }
 
     @Override

@@ -2,6 +2,8 @@ package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Tools.DataStructures.TimedQueue;
 import nl.NG.Jetfightergame.Tools.Interpolation.FloatInterpolator;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
+import org.joml.Vector3f;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,4 +71,8 @@ public class FloatInterpolatorTest {
         assert queue.getActive(5) == null : "time = 5 did not return null";
     }
 
+    @Test
+    public void equals() {
+        assert new Vector3f() instanceof Vector;
+    }
 }

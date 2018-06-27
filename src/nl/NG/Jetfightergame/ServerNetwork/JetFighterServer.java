@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -127,5 +128,17 @@ public class JetFighterServer {
     /** @return what the server is doing ATM */
     public Phase getPhase() {
         return currentPhase;
+    }
+
+    /** starts a test-server */
+    public static void main(String[] args) throws IOException {
+        GameTimer time = new GameTimer();
+        Environment world = new PlayerJetLaboratory(time);
+        JetFighterServer server = new JetFighterServer(world, true);
+        server.listenForHost();
+
+//        server.listen();
+        server.currentPhase = STARTING;
+        server.game.run();
     }
 }

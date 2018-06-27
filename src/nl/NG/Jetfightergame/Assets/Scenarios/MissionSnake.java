@@ -70,12 +70,14 @@ public class MissionSnake extends GameState {
         for (int x = 0; x < (LEVEL_SQUARE_DIM + 1); x++) {
             for (int y = 0; y < (LEVEL_SQUARE_DIM + 1); y++) {
                 final Vector offSet = new DirVector(LEVEL_SQUARE_SIZE * x, LEVEL_SQUARE_SIZE * y, 0);
-                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet, null));
+                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet, null, null));
             }
         }
 
         final float offSet = LEVEL_SQUARE_SIZE * LEVEL_SQUARE_DIM;
-        staticEntities.add(new StaticObject(gameFloor, WORLD_MATERIAL, Color4f.BLUE, new DirVector(offSet, 0, LEVEL_HEIGHT), new Vector3f(-1, 1, 1)));
+        staticEntities.add(new StaticObject(
+                gameFloor, WORLD_MATERIAL, Color4f.BLUE, new DirVector(offSet, 0, LEVEL_HEIGHT), new Vector3f(-1, 1, 1), null
+        ));
 
         return staticEntities;
     }
