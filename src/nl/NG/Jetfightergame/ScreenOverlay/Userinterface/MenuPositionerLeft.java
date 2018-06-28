@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
+package nl.NG.Jetfightergame.ScreenOverlay.Userinterface;
 
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 

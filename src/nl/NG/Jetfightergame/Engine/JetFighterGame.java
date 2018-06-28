@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
@@ -61,8 +61,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         MouseTracker.getInstance().listenTo(window);
         KeyTracker.getInstance().listenTo(window);
 
-        ControllerManager playerInput = new ControllerManager();
-
 //        new SoundEngine();
 //        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
 
@@ -87,10 +85,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             }
 
-            connection = new ClientConnection(playerInput, socket, environment);
+            connection = new ClientConnection(socket, environment);
             otherLoops.add(connection);
 
-            AbstractJet playerJet = connection.getPlayer();
+            Player player = connection.getPlayer();
+            AbstractJet playerJet = player.jet();
             Logger.print("Received " + playerJet + " from the server");
 
             environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
@@ -99,7 +98,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
 
             renderLoop = new JetFighterRenderer(
-                    this, environment, window, camera, playerInput, hud
+                    this, environment, window, camera, player.getInputControl(), hud
             );
 
             camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), playerJet, DirVector.zVector());

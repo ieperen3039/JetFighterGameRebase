@@ -11,7 +11,7 @@ import nl.NG.Jetfightergame.Settings.KeyBindings;
  *         created on 31-10-2017.
  *         TODO multiply output with how long the button was pressed in respect to deltaTime
  */
-public abstract class PlayerPCController implements TrackerMoveListener, TrackerClickListener, Controller {
+public abstract class PassivePCController implements TrackerMoveListener, TrackerClickListener, Controller {
 
     private KeyTracker keyboard;
     private MouseTracker mouse;
@@ -20,7 +20,7 @@ public abstract class PlayerPCController implements TrackerMoveListener, Tracker
     private boolean stickyButtonLeft = false;
     private boolean stickyButtonRight = false;
 
-    protected PlayerPCController() {
+    protected PassivePCController() {
         keyboard = KeyTracker.getInstance();
         mouse = MouseTracker.getInstance();
 

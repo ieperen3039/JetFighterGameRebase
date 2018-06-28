@@ -1,10 +1,10 @@
-package nl.NG.Jetfightergame.ScreenOverlay.userinterface;
+package nl.NG.Jetfightergame.ScreenOverlay.Userinterface;
 
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuTextField.TEXT_DIFF;
+import static nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuTextField.TEXT_DIFF;
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.TEXT_SIZE_LARGE;
 
 /**

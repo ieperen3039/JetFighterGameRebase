@@ -16,7 +16,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
  * considers the position of the mouse to be relative to the middle (initial position)
  * Not moving the mouse will result in a continuous roll/pitch of the plane
  */
-public class PlayerPCControllerRelative extends PlayerPCController {
+public class PassivePCControllerRelative extends PassivePCController {
     private static final float SENSITIVITY = 0.2f;
     private final int INDICATOR_SENSITIVITY = 3;
 

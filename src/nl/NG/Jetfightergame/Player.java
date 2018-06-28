@@ -1,30 +1,27 @@
 package nl.NG.Jetfightergame;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 
 /**
  * @author Geert van Ieperen
  * created on 1-2-2018.
  */
-public class Player implements TemporalEntity {
+public class Player {
+    private final SubControl input;
 
-    private Controller override;
-    private Controller input;
-    /** health in percentage */
-    private int health;
-
+    public final String name;
     private AbstractJet jet;
-    private boolean isEnabled;
 
-    public Player(Controller input, AbstractJet jet) {
-        this.input = input;
-        this.jet = jet;
-        override = new Controller.EmptyController();
-        health = 100;
+    public Player(String name) {
+        this.input = new SubControl(EmptyController);
+        this.input.switchTo(0);
+        this.name = name;
     }
 
     /**
@@ -33,23 +30,58 @@ public class Player implements TemporalEntity {
      *                If true, controls are overridden.
      */
     public void setControl(boolean enabled){
-        isEnabled = enabled;
+        if (enabled) {
+            input.enable();
+        } else {
+            input.disable();
+        }
+    }
+
+    public void setJet(AbstractJet jet) {
+        this.jet = jet;
     }
 
     public Controller getInput() {
-        return isEnabled ? input : override;
+        return input;
+    }
+
+    public ControllerManager getInputControl() {
+        return input;
     }
 
     public AbstractJet jet() {
         return jet;
     }
 
-    @Override
     public ParticleCloud explode() {
         return Particles.splitIntoParticles(jet, 20);
     }
 
-    public boolean isOverdue() {
-        return health <= 0;
+    @Override
+    public String toString() {
+        return name;
+    }
+
+    private static class SubControl extends ControllerManager {
+        private final ControllerImpl secondary;
+        ControllerImpl active;
+
+        public SubControl(ControllerImpl secondary) {
+            this.secondary = secondary;
+        }
+
+        @Override
+        public void switchTo(ControllerImpl type) {
+            active = type;
+            super.switchTo(type);
+        }
+
+        public void disable() {
+            super.switchTo(secondary);
+        }
+
+        public void enable() {
+            switchTo(active);
+        }
     }
 }

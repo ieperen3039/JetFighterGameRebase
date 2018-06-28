@@ -9,11 +9,11 @@ import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -32,24 +32,26 @@ import static nl.NG.Jetfightergame.ServerNetwork.RemoteControlReceiver.toByte;
  * @author Geert van Ieperen created on 6-5-2018.
  */
 public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver {
-    private final Controller input;
+    private final Player player;
+
     private final BufferedOutputStream serverOut;
     private final InputStream serverIn;
     private final Environment game;
-    private final AbstractJet playerJet;
 
     private Lock sendLock = new ReentrantLock();
 
-    public ClientConnection(Controller playerInput, Socket connection, Environment game) throws IOException {
+    public ClientConnection(Socket connection, Environment game) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
-        this.input = playerInput;
         this.serverOut = new BufferedOutputStream(connection.getOutputStream());
         this.serverIn = connection.getInputStream();
         this.game = game;
 
         JetFighterProtocol.syncTimerTarget(serverIn, serverOut, game.getTimer());
 
-        this.playerJet = createPlayer();
+        String name = connection.getInetAddress().getHostName();
+        player = new Player(name);
+        AbstractJet playerJet = getPlayerJet(player.getInput());
+        player.setJet(playerJet);
     }
 
     @Override
@@ -74,8 +76,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             }
 
         } else if (type == MessageType.SHUTDOWN_GAME) {
+            /* triggers {@link #cleanup()}*/
             stopLoop();
-            // triggers #cleanup()
 
         } else if (type == MessageType.CONNECTION_CLOSE) {
             return false;
@@ -91,6 +93,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         return true;
     }
 
+    /**
+     * sends a single command to the server
+     */
     public void sendCommand(MessageType type) {
         sendLock.lock();
         try {
@@ -107,33 +112,12 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public void addSpawn(MovingEntity.Spawn spawn) {
-        sendLock.lock();
-        try {
-            serverOut.write(MessageType.ENTITY_SPAWN.ordinal());
-            JetFighterProtocol.spawnRequestSend(serverOut, spawn);
-
-        } catch (IOException e) {
-            Logger.printError(e);
-
-        } finally {
-            sendLock.unlock();
-        }
+        game.addEntity(spawn.construct(this, null));
     }
 
     /**
-     * creates a new entity in the server. This entity will be sent back, and can be caught by {@link #handleMessage()}
-     * @param type type of entity
-     * @param position world-space position of spawning
-     * @param forward forward-position of the entity, makes most sense when spawning planes
-     * @param velocity world-space movement of the plane
-     */
-    public void createEntity(EntityClass type, PosVector position, DirVector forward, DirVector velocity){
-        addSpawn(new MovingEntity.Spawn(type, position, Toolbox.xTo(forward), velocity));
-    }
-
-    /**
-     * sends a message to the server
-     * @param type the message to send
+     * sends a single control message to the server
+     * @param type the control to adapt
      * @param value the value of this message
      * @throws IOException if there is a problem with the connection to the server
      * @throws IllegalArgumentException if the number of value arguments is invalid
@@ -144,6 +128,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         try {
             serverOut.write(type.ordinal());
             JetFighterProtocol.controlSend(serverOut, value);
+            serverOut.flush();
 
         } finally {
             sendLock.unlock();
@@ -153,9 +138,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     // this block is not required if an active controller is used
     protected void update(float deltaTime) throws Exception {
+        Controller input = player.getInput();
         sendLock.lock();
         try {
-            // rotation controls
+            // axis controls
             serverOut.write(THROTTLE.ordinal());
             JetFighterProtocol.controlSend(serverOut, toByte(input.throttle()));
             serverOut.write(PITCH.ordinal());
@@ -208,8 +194,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     /**
      * sends a request for a jet to the server and reads the final entity
      * @see ServerConnection#createPlayer(GameEntity.State)
+     * @param input
      */
-    private AbstractJet createPlayer() throws IOException {
+    private AbstractJet getPlayerJet(Controller input) throws IOException {
         // wait for confirmation of connection
         int reply = serverIn.read();
         if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
@@ -233,7 +220,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         game.addParticles(Particles.explosion(position, direction, color1, color2, power, density));
     }
 
-    public AbstractJet getPlayer() {
-        return playerJet;
+    public Player getPlayer() {
+        return player;
     }
 }

@@ -1,7 +1,7 @@
-package nl.NG.Jetfightergame.Client;
+package nl.NG.Jetfightergame.Launcher;
 
 import nl.NG.Jetfightergame.ScreenOverlay.HudMenu;
-import nl.NG.Jetfightergame.ScreenOverlay.userinterface.MenuButton;
+import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuButton;
 
 import java.util.function.Supplier;
 

@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
-import nl.NG.Jetfightergame.ScreenOverlay.userinterface.*;
+import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 
 import java.util.function.BooleanSupplier;

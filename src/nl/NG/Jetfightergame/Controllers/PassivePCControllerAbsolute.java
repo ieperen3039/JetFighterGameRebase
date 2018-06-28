@@ -9,7 +9,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
  * this controller considers the mouse to give absolute roll and pitch values.
  * Not moving the mouse will result in not rolling/pitching the plane
  */
-public class PlayerPCControllerAbsolute extends PlayerPCController {
+public class PassivePCControllerAbsolute extends PassivePCController {
     private static final float SENSITIVITY = 1.0f;
 
     @Override

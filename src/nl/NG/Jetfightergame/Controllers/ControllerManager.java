@@ -14,13 +14,14 @@ import java.util.function.Consumer;
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
     private ScreenOverlay hud = null;
-    private Controller instance = new PlayerPCControllerAbsolute();
+    private Controller instance = new PassivePCControllerAbsolute();
 
     /**
      * all control types available for the player. This logically excludes AI.
      */
     public enum ControllerImpl {
-        MouseAbsolute, MouseRelative
+        MouseAbsolute, MouseRelative, XboxController,
+        EmptyController,
     }
 
     @Override
@@ -37,10 +38,16 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
 
         switch (type){
             case MouseAbsolute:
-                instance = new PlayerPCControllerAbsolute();
+                instance = new PassivePCControllerAbsolute();
                 break;
             case MouseRelative:
-                instance = new PlayerPCControllerRelative();
+                instance = new PassivePCControllerRelative();
+                break;
+            case XboxController:
+                instance = new XBoxController();
+                break;
+            case EmptyController:
+                instance = new EmptyController();
                 break;
             default:
                 throw new UnsupportedOperationException("unknown enum: " + type);
