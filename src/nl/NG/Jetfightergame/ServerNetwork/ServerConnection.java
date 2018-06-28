@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -133,7 +134,7 @@ public class ServerConnection implements BlockingListener {
 
     /**
      * reads a new playerJet from the client
-     * @see ClientConnection#createPlayer()
+     * @see ClientConnection#getPlayerJet(Controller)
      */
     private MovingEntity createPlayer(GameEntity.State position) throws IOException {
         // notify client

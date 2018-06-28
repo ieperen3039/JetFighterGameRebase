@@ -4,7 +4,6 @@ import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -33,16 +32,11 @@ import static org.lwjgl.opengl.GL11.glDisable;
 public abstract class GameState implements Environment, NetForceProvider, PathDescription {
 
     protected final Collection<ParticleCloud> particles = new ConcurrentArrayList<>();
-    protected ParticleCloud newParticles = new ParticleCloud();
     protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
+    private ParticleCloud newParticles = new ParticleCloud();
 
     private EntityManagement physicsEngine;
-    private final GameTimer time;
     private Lock addParticleLock = new ReentrantLock();
-
-    public GameState(GameTimer time) {
-        this.time = time;
-    }
 
     @Override
     public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
@@ -79,9 +73,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public void updateGameLoop() {
-        final float currentTime = time.getGameTime().current();
-        final float deltaTime = time.getGameTime().difference();
+    public void updateGameLoop(float currentTime, float deltaTime) {
 
         // update positions and apply physics
         physicsEngine.preUpdateEntities(this, deltaTime);
@@ -126,30 +118,23 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     }
 
     @Override
-    public void drawParticles() {
-        float t = time.getRenderTime().current();
-
+    public void drawParticles(float currentTime) {
         if (newParticles.readyToLoad()) {
             addParticleLock.lock();
-            newParticles.writeToGL(t);
+            newParticles.writeToGL(currentTime);
             particles.add(newParticles);
             newParticles = new ParticleCloud();
             addParticleLock.unlock();
         }
 
-        particles.removeIf(p -> p.disposeIfFaded(t));
+        particles.removeIf(p -> p.disposeIfFaded(currentTime));
         particles.forEach(ParticleCloud::render);
     }
 
-    public int getParticleCount() {
-        float t = time.getRenderTime().current();
-        return particles.stream()
-                .mapToInt(p -> p.estParticlesAt(t))
+    public int getParticleCount(float currentTime) {
+        return particles.parallelStream()
+                .mapToInt(p -> p.estParticlesAt(currentTime))
                 .sum();
-    }
-
-    public GameTimer getTimer() {
-        return time;
     }
 
     @Override

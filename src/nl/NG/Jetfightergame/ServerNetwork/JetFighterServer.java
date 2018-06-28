@@ -133,7 +133,7 @@ public class JetFighterServer {
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
         GameTimer time = new GameTimer();
-        Environment world = new PlayerJetLaboratory(time);
+        Environment world = new PlayerJetLaboratory();
         JetFighterServer server = new JetFighterServer(world, true);
         server.listenForHost();
 

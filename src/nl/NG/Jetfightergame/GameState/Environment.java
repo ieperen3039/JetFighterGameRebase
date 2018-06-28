@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -42,9 +41,11 @@ public interface Environment {
 
     /**
      * update the physics of all game objects and check for collisions
+     * @param currentTime
+     * @param deltaTime
      */
     @SuppressWarnings("ConstantConditions")
-    void updateGameLoop();
+    void updateGameLoop(float currentTime, float deltaTime);
 
     /**
      * initializes the lights of this environment in the gl environment
@@ -56,7 +57,7 @@ public interface Environment {
      */
     void drawObjects(GL2 gl);
 
-    void drawParticles();
+    void drawParticles(float currentTime);
 
     default void addEntities(Collection<? extends MovingEntity> entities) {
         entities.forEach(this::addEntity);
@@ -86,5 +87,4 @@ public interface Environment {
 
     GameEntity.State getNewSpawn();
 
-    GameTimer getTimer();
 }

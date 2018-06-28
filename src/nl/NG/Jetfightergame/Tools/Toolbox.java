@@ -177,38 +177,10 @@ public final class Toolbox {
         return new Quaternionf().rotateTo(DirVector.xVector(), direction);
     }
 
-    /** returns a */
+    /** returns a uniformly distributed random value between val1 and val2 */
     public static float randomBetween(float val1, float val2) {
         return val1 + ((val2 - val1) * random.nextFloat());
     }
 
-    /**
-     * runs the specified action after the given delay. This may be cancelled, upon which this thread will not do
-     * anything after the delay ends.
-     */
-    public static class DelayedAction extends Thread {
-        private final long delay;
-        private boolean cancelled = false;
 
-        public DelayedAction(long delay, Runnable action) {
-            super(action);
-            this.delay = delay;
-            this.setDaemon(true);
-            start();
-        }
-
-        public void cancel() {
-            cancelled = true;
-        }
-
-        @Override
-        public void run() {
-            try {
-                Thread.sleep(delay);
-                if (!cancelled) super.run();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

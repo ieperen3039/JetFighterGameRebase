@@ -125,6 +125,8 @@ public abstract class GLFWGameEngine {
         return getCurrentGameMode() == GameMode.MENU_MODE;
     }
 
+    public abstract GameTimer getTimer();
+
     public enum GameMode {
         PLAY_MODE, SPECTATOR_MODE, MENU_MODE
     }

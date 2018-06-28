@@ -45,10 +45,9 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private int frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
-                              Camera camera, ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> gravityHud) throws IOException, ShaderException {
-        super(
-                "Rendering", ClientSettings.TARGET_FPS, false
-        );
+                              Camera camera, ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> gravityHud
+    ) throws IOException, ShaderException {
+        super("Rendering", ClientSettings.TARGET_FPS, false);
 
         this.gameState = gameState;
         this.window = window;
@@ -56,7 +55,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.engine = engine;
 
         if (gameState instanceof GameState) {
-            Logger.printOnline(() -> "Particles: " + ((GameState) gameState).getParticleCount());
+            Logger.printOnline(() -> {
+                Float currentTime = engine.getTimer().getRenderTime().current();
+                return "Particles: " + ((GameState) gameState).getParticleCount(currentTime);
+            });
         }
 
         shaderManager = new ShaderManager();
@@ -84,7 +86,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     protected void update(float realDeltaTime) {
         Toolbox.checkGLError();
 
-        GameTimer timer = gameState.getTimer();
+        GameTimer timer = engine.getTimer();
         timer.updateRenderTime();
         Float currentRenderTime = timer.getRenderTime().current();
         Float deltaRenderTime = timer.getRenderTime().difference();
@@ -138,7 +140,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         particleShader.setTime(currentRenderTime);
         particleShader.setProjection(gl.getProjection());
 
-        gameState.drawParticles();
+        gameState.drawParticles(currentRenderTime);
         particleShader.unbind();
         Toolbox.checkGLError();
 

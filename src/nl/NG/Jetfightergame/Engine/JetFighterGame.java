@@ -72,7 +72,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             Socket socket = new Socket();
 
             // TODO get environment from the server
-            Function<GameTimer, Environment> worldFactory = PlayerJetLaboratory::new;
+            Function<GameTimer, Environment> worldFactory = time -> new PlayerJetLaboratory();
             Environment environment = worldFactory.apply(globalGameTimer);
 
             if (ClientSettings.LOCAL_SERVER) {
@@ -147,6 +147,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         } else {
             super.setPlayMode();
         }
+    }
+
+    @Override
+    public GameTimer getTimer() {
+        return connection.getTimer();
     }
 
     /**

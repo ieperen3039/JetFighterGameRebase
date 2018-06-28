@@ -120,6 +120,8 @@ public class CollisionDetection implements EntityManagement {
         // the pairs that have their collision been processed
         List<Pair<Touchable, MovingEntity>> collisionPairs;
 
+        if (DEBUG) testSort();
+
         do {
             /* as a single collision may result in a previously not-intersecting pair to collide,
              * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
@@ -267,7 +269,7 @@ public class CollisionDetection implements EntityManagement {
      * tests whether the invariant holds. Throws an error if any of the arrays is not correctly sorted
      */
     public void testSort() {
-        Logger.printSpamless("testSort", "\n" + Logger.getCallingMethod(1) + " Testing Sorting");
+        Logger.printSpamless("testSort", "\n > " + Logger.getCallingMethod(1) + " Testing Sorting");
         float init = -Float.MAX_VALUE;
         for (int i = 0; i < xLowerSorted.length; i++) {
             CollisionEntity collisionEntity = xLowerSorted[i];
@@ -443,7 +445,7 @@ public class CollisionDetection implements EntityManagement {
             // search hitpoint, add it when found
             Collision newCrash = shape.getCollision(alpha, alphaToBeta, null);
             if (newCrash != null) {
-                newCrash.convertToGlobal(sm);
+                newCrash.convertToGlobal(sm, null);
                 firstHit.check(newCrash);
             }
         };

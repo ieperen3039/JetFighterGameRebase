@@ -170,14 +170,14 @@ public final class JetFighterProtocol {
     /**
      * updates the timer to sourceTime + ping
      */
-    public static void syncTimerTarget(InputStream input, OutputStream output, GameTimer timer) throws IOException {
+    public static GameTimer syncTimerTarget(InputStream input, OutputStream output) throws IOException {
         // wait for signal to arrive, to let the source measure the delay
         // repeat and take average for more accurate results
         pong(input, output);
 
         DataInputStream DIS = new DataInputStream(input);
         float serverTime = DIS.readFloat();
-        timer.set(serverTime);
+        return new GameTimer(serverTime);
     }
 
     /** sends an explosion or other effect to the client

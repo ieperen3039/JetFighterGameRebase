@@ -23,7 +23,7 @@ public final class ServerSettings {
     public static final int SERVER_PORT = 3039;
 
     /** collision detection */
-    public static final int MAX_COLLISION_ITERATIONS = 250/TARGET_TPS;
+    public static final int MAX_COLLISION_ITERATIONS = 2;//250/TARGET_TPS;
     public static final float BASE_BUMPOFF_ENERGY = (BasicJet.MASS * AbstractJet.BASE_SPEED * AbstractJet.BASE_SPEED * 0.1f); // in joule
 
     /** miscellaneous */

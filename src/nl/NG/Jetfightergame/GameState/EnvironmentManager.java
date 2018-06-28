@@ -7,7 +7,6 @@ import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
 import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
 import nl.NG.Jetfightergame.Assets.Scenarios.MissionSnake;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -31,13 +30,8 @@ import java.util.Collections;
  */
 public class EnvironmentManager implements Environment, Manager<EnvironmentManager.Worlds> {
 
-    private final GameTimer time;
     private Environment instance;
     private SpawnReceiver deposit;
-
-    public EnvironmentManager(GameTimer time) {
-        this.time = time;
-    }
 
     @Override
     public void addEntity(MovingEntity entity) {
@@ -71,7 +65,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
     public void init(SpawnReceiver deposit) {
         this.deposit = deposit;
-        instance = new PlayerJetLaboratory(time);
+        instance = new PlayerJetLaboratory();
         instance.buildScene(deposit, ServerSettings.COLLISION_DETECTION_LEVEL, true);
     }
 
@@ -93,8 +87,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void updateGameLoop() {
-        instance.updateGameLoop();
+    public void updateGameLoop(float currentTime, float deltaTime) {
+        instance.updateGameLoop(currentTime, deltaTime);
     }
 
     @Override
@@ -108,13 +102,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public void drawParticles() {
-        instance.drawParticles();
-    }
-
-    @Override
-    public GameTimer getTimer() {
-        return instance.getTimer();
+    public void drawParticles(float currentTime) {
+        instance.drawParticles(currentTime);
     }
 
     @Override
@@ -140,16 +129,16 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
 
         switch (implementation) {
             case CollisionLaboratory:
-                instance = new CollisionLaboratory(time);
+                instance = new CollisionLaboratory();
                 break;
             case PlayerJetLaboratory:
-                instance = new PlayerJetLaboratory(time);
+                instance = new PlayerJetLaboratory();
                 break;
             case ExplosionLaboratory:
-                instance = new ExplosionLaboratory(time);
+                instance = new ExplosionLaboratory();
                 break;
             case SnakeLevel:
-                instance = new MissionSnake(time);
+                instance = new MissionSnake();
                 break;
             default:
                 Logger.printError("Environment not properly registered: " + implementation + " (did we forget a break statement?)");
@@ -160,14 +149,10 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
 
+    /**
+     * private void Void()... :D
+     */
     private class Void extends GameState {
-        /**
-         * public void... :D
-         */
-        public Void() {
-            super(time);
-        }
-
         @Override
         protected Collection<Touchable> createWorld() {
             return Collections.EMPTY_SET;

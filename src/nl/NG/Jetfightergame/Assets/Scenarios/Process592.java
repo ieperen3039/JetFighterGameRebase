@@ -75,7 +75,7 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public void updateGameLoop() {
+    public void updateGameLoop(float currentTime, float deltaTime) {
     }
 
     @Override
@@ -163,15 +163,10 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public void drawParticles() {
+    public void drawParticles(float currentTime) {
         float t = time.getRenderTime().current();
         particles.removeIf(p -> p.disposeIfFaded(t));
         particles.forEach(ParticleCloud::render);
-    }
-
-    @Override
-    public GameTimer getTimer() {
-        return time;
     }
 
     @Override

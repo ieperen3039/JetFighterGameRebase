@@ -4,8 +4,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Assets.WorldObjects.Ring;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
@@ -28,10 +26,6 @@ public class PlayerJetLaboratory extends GameState {
 
     private static final int LAB_SIZE = 200;
 
-    public PlayerJetLaboratory(GameTimer time) {
-        super(time);
-    }
-
     @Override
     protected Collection<Touchable> createWorld() {
         ArrayList<Touchable> entities = new ArrayList<>();
@@ -44,8 +38,6 @@ public class PlayerJetLaboratory extends GameState {
             ));
         }
 
-        entities.add(new Ring(new PosVector(20, 0, 0), DirVector.xVector(), 20));
-
 //        entities.add(new StaticObject(
 //                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
 //                Material.PLASTIC, Color4f.ORANGE, LAB_SIZE
@@ -55,21 +47,15 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     private Color4f getColor(int ind) {
-//        switch (ind % 5){
-//            case 0:
-//                return Color4f.BLUE;
-//            case 1:
-//                return Color4f.RED;
-//            case 2:
-//                return Color4f.YELLOW;
-//            case 3:
-//                return Color4f.CYAN;
-//            case 4:
-//                return Color4f.GREY;
-//        }
-//        return Color4f.INVISIBLE;
+        switch (ind % 2) {
+            case 0:
+                return Color4f.BLUE;
+            case 1:
+                return Color4f.RED;
+        }
+        return Color4f.INVISIBLE;
 
-        return new Color4f((ind * 36) % 255, (ind * 52) % 255, (ind * 11) % 255, 1);
+//        return new Color4f((ind * 36) % 255, (ind * 52) % 255, (ind * 11) % 255, 1);
     }
 
     @Override

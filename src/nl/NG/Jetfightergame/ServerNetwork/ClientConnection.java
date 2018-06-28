@@ -39,6 +39,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final Environment game;
 
     private Lock sendLock = new ReentrantLock();
+    private GameTimer time;
 
     public ClientConnection(Socket connection, Environment game) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
@@ -46,7 +47,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.serverIn = connection.getInputStream();
         this.game = game;
 
-        JetFighterProtocol.syncTimerTarget(serverIn, serverOut, game.getTimer());
+        time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
 
         String name = connection.getInetAddress().getHostName();
         player = new Player(name);
@@ -212,7 +213,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public GameTimer getTimer() {
-        return game.getTimer();
+        return time;
     }
 
     @Override

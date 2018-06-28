@@ -4,7 +4,6 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
@@ -36,12 +35,12 @@ public class CollisionLaboratory extends GameState {
     private final int nrOfCubes;
     private final float speeds;
 
-    public CollisionLaboratory(GameTimer time) {
-        this(LAB_SIZE, NR_OF_CUBES, time);
+    public CollisionLaboratory() {
+        this(LAB_SIZE, NR_OF_CUBES);
     }
 
-    public CollisionLaboratory(int labSize, int nrOfCubes, GameTimer time) {
-        super(time);
+    public CollisionLaboratory(int labSize, int nrOfCubes) {
+        super();
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
         this.speeds = labSize / 3f;

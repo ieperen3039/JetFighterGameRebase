@@ -189,16 +189,19 @@ public abstract class GameEntity implements MovingEntity {
 
         if (newCollision == null) return false;
 
+        other.acceptCollision(newCollision);
+        // if the other is a spectral, pretend it didn't hit
+        if (other instanceof Spectral) return false;
+
         // update if there is a collision earlier than the currently registered collision
         nextCrash.check(newCollision);
-        other.acceptCollision(newCollision);
 
         return true;
     }
 
     @Override
     public void acceptCollision(Collision cause) {
-        nextCrash.check(new Collision(cause));
+        nextCrash.check(new Collision(cause, this));
     }
 
     @Override
@@ -231,7 +234,7 @@ public abstract class GameEntity implements MovingEntity {
             // search hitpoint, add it when found
             Collision newCrash = shape.getCollision(startPoint, direction, endPoint);
             if (newCrash != null) {
-                newCrash.convertToGlobal(sm);
+                newCrash.convertToGlobal(sm, this);
                 firstHit.check(newCrash);
             }
         };

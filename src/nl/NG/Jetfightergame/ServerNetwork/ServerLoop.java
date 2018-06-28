@@ -32,10 +32,12 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     /** the world that will eventually host the race. */
     private Environment gameWorld = null;
     private int playersInLobby;
+    private GameTimer globalTime;
 
     public ServerLoop(Environment world) {
         super("Server", ServerSettings.TARGET_TPS, true);
         this.lobby = world;
+        this.globalTime = new GameTimer();
 
         world.buildScene(this, COLLISION_DETECTION_LEVEL, true);
         connections = new ArrayList<>();
@@ -64,7 +66,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
         playersInLobby++;
         lobby.addEntity(player);
-        lobby.updateGameLoop();
+        lobby.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
     }
 
     @Override
@@ -76,7 +78,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     @Override
     public GameTimer getTimer() {
-        return lobby.getTimer();
+        return globalTime;
     }
 
     @Override
@@ -93,10 +95,10 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     }
 
     private void update(Environment world) {
-        world.getTimer().updateGameTime();
-        world.updateGameLoop();
+        globalTime.updateGameTime();
+        world.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
 
-        float time = world.getTimer().time();
+        float time = globalTime.time();
         Collection<MovingEntity> entities = world.getEntities();
 
         for (MovingEntity object : entities) {
@@ -112,13 +114,13 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     @Override
     public void unPause() {
-        lobby.getTimer().unPause();
+        globalTime.unPause();
         super.unPause();
     }
 
     @Override
     public void pause() {
-        lobby.getTimer().pause();
+        globalTime.pause();
         super.pause();
     }
 

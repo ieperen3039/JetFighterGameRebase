@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
-import nl.NG.Jetfightergame.Assets.WorldObjects.Ring;
+import nl.NG.Jetfightergame.Assets.WorldObjects.CheckpointRing;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
@@ -22,7 +22,7 @@ public final class GeneralShapes {
     /** a 2*2*2 cube with center on (0, 0, 0) */
     public static Shape CUBE;
     public static Shape INVERSE_CUBE;
-    public static Shape CHECKPOINT;
+    public static CheckpointRing CHECKPOINTRING;
 
     /** an arrow along the Z-axis, 1 long */
     public static Shape ARROW;
@@ -49,7 +49,7 @@ public final class GeneralShapes {
         CUBE = makeCube(loadMesh);
         ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", loadMesh, CONTAINER_SIZE, 50f);
 //        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));
-        CHECKPOINT = Ring.makeRing(1, 10, 0.05f, loadMesh);
+        CHECKPOINTRING = new CheckpointRing(10, 0.05f, loadMesh);
     }
 
     private static Shape makeCube(boolean loadMesh) {
