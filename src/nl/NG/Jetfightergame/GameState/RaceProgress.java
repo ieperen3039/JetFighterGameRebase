@@ -90,7 +90,7 @@ public class RaceProgress {
 
         @Override
         public void acceptCollision(Collision cause) {
-            MovingEntity source = cause.source;
+            MovingEntity source = cause.source();
             if (source instanceof AbstractJet) {
 
                 int pInd = indexIfPlayer((AbstractJet) source);

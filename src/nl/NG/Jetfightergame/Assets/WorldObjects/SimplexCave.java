@@ -116,7 +116,7 @@ public class SimplexCave implements Touchable {
 
     @Override
     public void acceptCollision(Collision cause) {
-        final PosVector pos = cause.hitPos;
+        final PosVector pos = cause.hitPosition();
         collisions.add(new Vector2f(
                 pos.x(), pos.y()
         ));

@@ -169,7 +169,7 @@ public class CollisionDetection implements EntityManagement {
             target.applyJerk(targetToMid, targetEnergy, deltaTime);
 
         } else {
-            target.terrainCollision();
+            target.terrainCollision(deltaTime);
         }
     }
 
@@ -358,34 +358,36 @@ public class CollisionDetection implements EntityManagement {
      * @param targets a collection of entities to be removed
      */
     private void deleteEntities(Collection<MovingEntity> targets) {
+        int nOfEntities = entityArray().length;
+
         int xi = 0;
-        for (CollisionEntity target : xLowerSorted) {
-            Touchable entity = target.entity;
+        for (int i = 0; i < nOfEntities; i++) {
+            Touchable entity = xLowerSorted[i].entity;
             if ((entity instanceof MovingEntity) && targets.contains(entity)) {
                 continue;
             }
-            xLowerSorted[xi++] = target;
+            xLowerSorted[xi++] = xLowerSorted[i];
         }
 
         int yi = 0;
-        for (CollisionEntity target : yLowerSorted) {
-            Touchable entity = target.entity;
+        for (int i = 0; i < nOfEntities; i++) {
+            Touchable entity = yLowerSorted[i].entity;
             if ((entity instanceof MovingEntity) && targets.contains(entity)) {
                 continue;
             }
-            yLowerSorted[yi++] = target;
+            yLowerSorted[yi++] = yLowerSorted[i];
         }
 
         int zi = 0;
-        for (CollisionEntity target : zLowerSorted) {
-            Touchable entity = target.entity;
+        for (int i = 0; i < nOfEntities; i++) {
+            Touchable entity = zLowerSorted[i].entity;
             if ((entity instanceof MovingEntity) && targets.contains(entity)) {
                 continue;
             }
-            zLowerSorted[zi++] = target;
+            zLowerSorted[zi++] = zLowerSorted[i];
         }
 
-        if (xi != yi || yi != zi) throw new IllegalStateException("Arrays have differing length!");
+        if (xi != yi || yi != zi) throw new IllegalStateException("Arrays have different length");
 
         xLowerSorted = Arrays.copyOf(xLowerSorted, xi);
         yLowerSorted = Arrays.copyOf(yLowerSorted, yi);

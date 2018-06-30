@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Interpolation;
 
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import org.joml.Quaternionf;
 
 /**
@@ -7,6 +8,8 @@ import org.joml.Quaternionf;
  * created on 22-12-2017.
  */
 public class QuaternionInterpolator extends LinearInterpolator<Quaternionf> {
+
+    private static final float DOT_THRESHOLD = 0.125f;
 
     /**
      * @param capacity    the initial expected maximum number of entries
@@ -19,7 +22,12 @@ public class QuaternionInterpolator extends LinearInterpolator<Quaternionf> {
     @Override
     protected Quaternionf interpolate(Quaternionf firstElt, Quaternionf secondElt, float fraction) {
         final Quaternionf result = new Quaternionf();
-        firstElt.nlerp(secondElt, fraction, result);
+
+        if (ClientSettings.ITERATIVE_ROTATION_INTERPOLATION && firstElt.dot(secondElt) > DOT_THRESHOLD) {
+            firstElt.nlerpIterative(secondElt, fraction, DOT_THRESHOLD, result);
+        } else {
+            firstElt.nlerp(secondElt, fraction, result);
+        }
         return result;
     }
 

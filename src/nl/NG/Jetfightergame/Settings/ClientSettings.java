@@ -18,7 +18,6 @@ public final class ClientSettings {
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
-    public static float HIGHLIGHT_LINE_WIDTH = 1f;
     public static boolean SAVE_PLAYBACK = false;
 
     /** controller settings; these modifiers are also used to inverse direction */
@@ -38,6 +37,8 @@ public final class ClientSettings {
     public static int ANTIALIAS = 3;
     public static final int MAX_POINT_LIGHTS = 10;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
+    public static final boolean ITERATIVE_ROTATION_INTERPOLATION = true;
+    public static float HIGHLIGHT_LINE_WIDTH = 1f;
 
     /** particle settings */
     public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles in total

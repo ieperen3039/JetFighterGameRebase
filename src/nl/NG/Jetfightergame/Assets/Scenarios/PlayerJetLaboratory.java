@@ -71,16 +71,19 @@ public class PlayerJetLaboratory extends GameState {
 //                for (int z : vals) {
                 {
                     int z = 2;
-                    MovingEntity cube = EntityClass.FALLING_CUBE_LARGE.construct(
+                    dynamicEntities.add(EntityClass.FALLING_CUBE_LARGE.construct(
                             Identity.next(), deposit, null,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new Quaternionf(), new DirVector()
-                    );
-
-                    dynamicEntities.add(cube);
+                    ));
                 }
             }
         }
+
+        dynamicEntities.add(EntityClass.FALLING_CUBE_SMALL.construct(
+                Identity.next(), deposit, null,
+                new PosVector(20, 0, 0), new Quaternionf(), new DirVector(0, 0, -50)
+        ));
 
         return dynamicEntities;
     }

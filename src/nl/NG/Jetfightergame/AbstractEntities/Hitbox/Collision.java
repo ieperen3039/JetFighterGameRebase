@@ -13,10 +13,10 @@ public class Collision implements Comparable<Collision> {
     private final DirVector shapeLocalNormal;
     private final PosVector shapeLocalHitPos;
 
-    public float timeScalar;
-    public PosVector hitPos;
-    public DirVector normal;
-    public MovingEntity source;
+    public final float timeScalar;
+    private PosVector hitPos;
+    private DirVector normal;
+    private MovingEntity source;
 
     public Collision(){
         this(1, DirVector.zeroVector(), PosVector.zeroVector());
@@ -63,4 +63,24 @@ public class Collision implements Comparable<Collision> {
         return (c == null) ? 0 : Double.compare(c.timeScalar, timeScalar);
     }
 
+    /**
+     * @return the position of contact described by this collision in world-space
+     */
+    public PosVector hitPosition() {
+        return new PosVector(hitPos);
+    }
+
+    /**
+     * @return the normalized normal of contact of the receiving side of the collision
+     */
+    public DirVector normal() {
+        return new DirVector(normal);
+    }
+
+    /**
+     * @return the entity of the incoming side of the collision
+     */
+    public MovingEntity source() {
+        return source;
+    }
 }
