@@ -2,9 +2,12 @@ package nl.NG.Jetfightergame.Controllers;
 
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Tools.Manager;
 
 import java.util.function.Consumer;
+
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.*;
 
 /**
  * a controller decorator that manages the current controller for the player, implementing overriding control.
@@ -13,20 +16,31 @@ import java.util.function.Consumer;
  */
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
-    private ScreenOverlay hud = null;
-    private Controller instance = new PassivePCControllerAbsolute();
+    private static final ControllerImpl[] SELECTABLE_CONTROLLERS = {MouseAbsolute, MouseAbsoluteActive, MouseRelative, XboxController};
+    private final ClientConnection controlReceiver;
+    private ScreenOverlay hud;
+    private Controller instance;
+
+    public ControllerManager(ScreenOverlay hud, ClientConnection controlReceiver) {
+        this.controlReceiver = controlReceiver;
+        instance = new EmptyController();
+        this.hud = hud;
+    }
 
     /**
      * all control types available for the player. This logically excludes AI.
      */
     public enum ControllerImpl {
-        MouseAbsolute, MouseRelative, XboxController,
+        MouseAbsolute, MouseRelative,
+        XboxController,
+        MouseAbsoluteActive,
         EmptyController,
     }
 
+    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     @Override
     public ControllerImpl[] implementations() {
-        return ControllerImpl.values();
+        return SELECTABLE_CONTROLLERS;
     }
 
     public void switchTo(ControllerImpl type){
@@ -46,6 +60,9 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
             case XboxController:
                 instance = new XBoxController();
                 break;
+            case MouseAbsoluteActive:
+                instance = new ActivePCControllerAbsolute(controlReceiver);
+                break;
             case EmptyController:
                 instance = new EmptyController();
                 break;
@@ -59,7 +76,8 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
     public void setDisplay(ScreenOverlay target) {
         if (hud != null) hud.removeHudItem(instance.hudElement());
         hud = target;
-        hud.addHudItem(instance.hudElement());
+        Consumer<ScreenOverlay.Painter> newElement = instance.hudElement();
+        if (newElement != null) hud.addHudItem(newElement);
     }
 
     @Override
@@ -95,5 +113,10 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
     @Override
     public boolean secondaryFire() {
         return instance.secondaryFire();
+    }
+
+    @Override
+    public boolean isActiveController() {
+        return instance.isActiveController();
     }
 }

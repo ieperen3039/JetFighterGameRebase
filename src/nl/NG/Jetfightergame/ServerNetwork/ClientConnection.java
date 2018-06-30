@@ -26,7 +26,6 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
-import static nl.NG.Jetfightergame.ServerNetwork.RemoteControlReceiver.toByte;
 
 /**
  * @author Geert van Ieperen created on 6-5-2018.
@@ -50,7 +49,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
 
         String name = connection.getInetAddress().getHostName();
-        player = new Player(name);
+        player = new Player(name, this);
         AbstractJet playerJet = getPlayerJet(player.getInput());
         player.setJet(playerJet);
     }
@@ -137,33 +136,38 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    // this block is not required if an active controller is used
     protected void update(float deltaTime) throws Exception {
         Controller input = player.getInput();
+        if (input.isActiveController()) return;
+        
         sendLock.lock();
         try {
             // axis controls
-            serverOut.write(THROTTLE.ordinal());
-            JetFighterProtocol.controlSend(serverOut, toByte(input.throttle()));
-            serverOut.write(PITCH.ordinal());
-            JetFighterProtocol.controlSend(serverOut, toByte(input.pitch()));
-            serverOut.write(YAW.ordinal());
-            JetFighterProtocol.controlSend(serverOut, toByte(input.yaw()));
-            serverOut.write(ROLL.ordinal());
-            JetFighterProtocol.controlSend(serverOut, toByte(input.roll()));
+            send(serverOut, THROTTLE, input.throttle());
+            send(serverOut, PITCH, input.pitch());
+            send(serverOut, YAW, input.yaw());
+            send(serverOut, ROLL, input.roll());
             // binary controls
-            byte doPrimary = input.primaryFire() ? (byte) 1 : (byte) 0;
-            serverOut.write(PRIMARY_FIRE.ordinal());
-            JetFighterProtocol.controlSend(serverOut, doPrimary);
-            byte doSecondary = input.secondaryFire() ? (byte) 1 : (byte) 0;
-            serverOut.write(SECONDARY_FIRE.ordinal());
-            JetFighterProtocol.controlSend(serverOut, doSecondary);
+            send(serverOut, PRIMARY_FIRE, input.primaryFire());
+            send(serverOut, SECONDARY_FIRE, input.secondaryFire());
 
         } finally {
             sendLock.unlock();
         }
 
         serverOut.flush();
+    }
+
+    private static void send(BufferedOutputStream serverOut, MessageType type, boolean isEnabled) throws IOException {
+        byte asByte = RemoteControlReceiver.toByte(isEnabled);
+        serverOut.write(type.ordinal());
+        JetFighterProtocol.controlSend(serverOut, asByte);
+    }
+
+    private static void send(BufferedOutputStream serverOut, MessageType type, float value) throws IOException {
+        byte asByte = RemoteControlReceiver.toByte(value);
+        serverOut.write(type.ordinal());
+        JetFighterProtocol.controlSend(serverOut, asByte);
     }
 
     @Override

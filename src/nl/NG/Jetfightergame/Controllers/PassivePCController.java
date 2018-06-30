@@ -88,5 +88,10 @@ public abstract class PassivePCController implements TrackerMoveListener, Tracke
     protected float normalize(float val){
         return (val / (1 + Math.abs(val)));
     }
+
+    @Override
+    public boolean isActiveController() {
+        return false;
+    }
 }
 

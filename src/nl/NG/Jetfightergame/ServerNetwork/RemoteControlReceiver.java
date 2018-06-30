@@ -53,6 +53,14 @@ public class RemoteControlReceiver implements Controller {
         return (byte) ((value + 1) * 127);
     }
 
+    /**
+     * @param isTrue a boolean
+     * @return a 0 byte if (!isTrue), a 1 byte if (isTrue)
+     */
+    public static byte toByte(boolean isTrue) {
+        return isTrue ? (byte) 1 : (byte) 0;
+    }
+
     @Override
     public float throttle() {
         return throttle;
@@ -81,5 +89,10 @@ public class RemoteControlReceiver implements Controller {
     @Override
     public boolean secondaryFire() {
         return secondary;
+    }
+
+    @Override
+    public boolean isActiveController() {
+        return false;
     }
 }

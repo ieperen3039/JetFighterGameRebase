@@ -62,4 +62,8 @@ public class XBoxController implements Controller {
         return false;
     }
 
+    @Override
+    public boolean isActiveController() {
+        return false;
+    }
 }

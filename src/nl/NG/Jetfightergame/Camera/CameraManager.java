@@ -12,12 +12,13 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  * created on 11-12-2017.
  */
 public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> {
+    private static final CameraImpl[] VALUES = CameraImpl.values();
     private MovingEntity target = null;
     private Camera instance = null;
 
     @Override
     public CameraImpl[] implementations() {
-        return CameraImpl.values();
+        return VALUES;
     }
 
     public enum CameraImpl {

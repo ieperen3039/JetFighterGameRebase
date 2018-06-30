@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 
@@ -14,12 +15,11 @@ import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.
  */
 public class Player {
     private final SubControl input;
-
     public final String name;
     private AbstractJet jet;
 
-    public Player(String name) {
-        this.input = new SubControl(EmptyController);
+    public Player(String name, ClientConnection connection) {
+        this.input = new SubControl(EmptyController, connection);
         this.input.switchTo(0);
         this.name = name;
     }
@@ -66,7 +66,9 @@ public class Player {
         private final ControllerImpl secondary;
         ControllerImpl active;
 
-        public SubControl(ControllerImpl secondary) {
+        public SubControl(ControllerImpl secondary, ClientConnection output) {
+            super(null, output);
+            switchTo(0);
             this.secondary = secondary;
         }
 

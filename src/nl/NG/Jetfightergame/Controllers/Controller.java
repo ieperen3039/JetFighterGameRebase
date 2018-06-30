@@ -73,6 +73,9 @@ public interface Controller {
         return null;
     }
 
+    /** @return true iff this controller does not need passive synchronisation */
+    boolean isActiveController();
+
     /**
      * a controller that does nothing
      */
@@ -105,6 +108,11 @@ public interface Controller {
         @Override
         public boolean secondaryFire() {
             return false;
+        }
+
+        @Override
+        public boolean isActiveController() {
+            return true;
         }
     }
 }
