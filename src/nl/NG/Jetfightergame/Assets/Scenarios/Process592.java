@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -70,8 +69,8 @@ public class Process592 implements Environment {
     }
 
     @Override
-    public GameEntity.State getNewSpawn() {
-        return new GameEntity.State();
+    public MovingEntity.State getNewSpawn() {
+        return new MovingEntity.State();
     }
 
     @Override

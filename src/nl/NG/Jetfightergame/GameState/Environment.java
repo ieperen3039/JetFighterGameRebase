@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -85,6 +84,6 @@ public interface Environment {
      */
     void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic);
 
-    GameEntity.State getNewSpawn();
+    MovingEntity.State getNewSpawn();
 
 }

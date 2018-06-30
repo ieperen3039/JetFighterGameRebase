@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
@@ -10,7 +11,7 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.DataStructures.ConcurrentArrayList;
-import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -21,7 +22,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.NG.Jetfightergame.Settings.ServerSettings.DEBUG;
@@ -116,63 +116,37 @@ public class CollisionDetection implements EntityManagement {
     @Override
     public void analyseCollisions(float currentTime, float deltaTime, PathDescription path) {
         int remainingLoops = MAX_COLLISION_ITERATIONS;
-
-        // the pairs that have their collision been processed
-        List<Pair<Touchable, MovingEntity>> collisionPairs;
-
         if (DEBUG) testSort();
 
+        int nOfCollisions = 0;
         do {
             /* as a single collision may result in a previously not-intersecting pair to collide,
              * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
              * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
              * On the other hand, we may assume collisions of that magnitude appear seldom
              */
-            collisionPairs = getIntersectingPairs()
-                    .parallelStream()
-                    // check for collisions, remove items that did not collide
-                    .filter(p -> checkCollisionPair(p.left, p.right, deltaTime))
-                    .collect(Collectors.toList());
+            PairList<Touchable, MovingEntity> pairs = getIntersectingPairs();
 
+            for (int i = 0; i < pairs.size(); i++) {
+                if (checkCollisionPair(pairs.left(i), pairs.right(i), deltaTime)) {
+                    nOfCollisions++;
 
-            for (Pair<Touchable, MovingEntity> pair : collisionPairs) {
-                if (pair.left instanceof MovingEntity) { // if two entities collide
-                    MovingEntity left = (MovingEntity) pair.left;
-                    bumpOff(left, pair.right, deltaTime);
+                    Touchable other = pairs.left(i);
+                    if (other instanceof MovingEntity) { // if two entities collide
+                        MovingEntity left = (MovingEntity) other;
+                        MovingEntity.entityCollision(left, pairs.right(i), deltaTime);
 
-                } else { // if entity collides with terrain
-                    applyCorrection(pair.right, path, deltaTime);
+                    } else { // if entity collides with terrain
+                        terrainCollision(pairs.right(i), path, deltaTime);
+                    }
                 }
             }
 
+        } while ((nOfCollisions > 0) && (--remainingLoops > 0) && !Thread.interrupted());
 
-        } while (!collisionPairs.isEmpty() && (--remainingLoops > 0) && !Thread.interrupted());
-
-        if (!collisionPairs.isEmpty()) {
-            Logger.printError(collisionPairs.size() + " collisions not resolved");
+        if (nOfCollisions > 0) {
+            Logger.printError(nOfCollisions + " collisions not resolved");
         }
-    }
-
-    /**
-     * move two entities away from each other
-     * @param left      one entity, which has collided with right
-     * @param right     another entity, which has collided with left
-     * @param deltaTime time difference of this gameloop
-     */
-    private void bumpOff(MovingEntity left, MovingEntity right, float deltaTime) {
-        DirVector leftToRight = new DirVector();
-        leftToRight = left.getExpectedPosition().to(right.getExpectedPosition(), leftToRight);
-
-        leftToRight.normalize();
-        DirVector rightToLeft = leftToRight.negate(new DirVector());
-
-        float rightEnergy = right.getKineticEnergy(rightToLeft);
-        float leftEnergy = left.getKineticEnergy(leftToRight);
-        float sharedEnergy = (0.3f * (leftEnergy + rightEnergy)) + ServerSettings.BASE_BUMPOFF_ENERGY; // not quite but ok
-
-        right.applyJerk(leftToRight, sharedEnergy, deltaTime);
-        left.applyJerk(rightToLeft, sharedEnergy, deltaTime);
-
     }
 
     /**
@@ -181,22 +155,22 @@ public class CollisionDetection implements EntityManagement {
      * @param deltaTime
      * @param target    an entity that has collided with a solid entity
      */
-    private void applyCorrection(MovingEntity target, PathDescription path, float deltaTime) {
-//        if (target instanceof AbstractJet) {
-        PosVector jetPosition = target.getPosition();
-        PosVector bounceDirection = path.getMiddleOfPath(jetPosition);
-        DirVector targetToMid = jetPosition.to(bounceDirection, new DirVector());
+    private static void terrainCollision(MovingEntity target, PathDescription path, float deltaTime) {
+        if (target instanceof AbstractJet) {
+            PosVector jetPosition = target.getPosition();
+            PosVector bounceDirection = path.getMiddleOfPath(jetPosition);
+            DirVector targetToMid = jetPosition.to(bounceDirection, new DirVector());
 
-        targetToMid.normalize();
-        DirVector midToTarget = targetToMid.negate(new DirVector());
+            targetToMid.normalize();
+            DirVector midToTarget = targetToMid.negate(new DirVector());
 
-        float targetEnergy = target.getKineticEnergy(midToTarget) + ServerSettings.BASE_BUMPOFF_ENERGY;
+            float targetEnergy = target.getKineticEnergy(midToTarget) + ServerSettings.BASE_BUMPOFF_ENERGY;
 
-        target.applyJerk(targetToMid, targetEnergy, deltaTime);
+            target.applyJerk(targetToMid, targetEnergy, deltaTime);
 
-//        } else {
-//            target.elasticCollision();
-//        }
+        } else {
+            target.terrainCollision();
+        }
     }
 
     /**
@@ -216,7 +190,7 @@ public class CollisionDetection implements EntityManagement {
      * ground, but not an object with itself. One pair does not occur the other way around.
      * @return a collection of pairs of objects that are close to each other
      */
-    private Collection<Pair<Touchable, MovingEntity>> getIntersectingPairs() {
+    private PairList<Touchable, MovingEntity> getIntersectingPairs() {
         CollisionEntity[] entityArray = entityArray();
         int nOfEntities = entityArray.length;
 
@@ -233,7 +207,7 @@ public class CollisionDetection implements EntityManagement {
         checkOverlap(adjacencyMatrix, yLowerSorted, CollisionEntity::yLower, CollisionEntity::yUpper);
         checkOverlap(adjacencyMatrix, zLowerSorted, CollisionEntity::zLower, CollisionEntity::zUpper);
 
-        Collection<Pair<Touchable, MovingEntity>> allEntityPairs = new ArrayList<>();
+        PairList<Touchable, MovingEntity> allEntityPairs = new PairList<>(nOfEntities);
 
         // select all source pairs that are 'close' in three coordinates
         for (int i = 0; i < nOfEntities; i++) {
@@ -246,16 +220,12 @@ public class CollisionDetection implements EntityManagement {
                 int intervalAgreements = adjacencyMatrix[i][j];
 
                 if (intervalAgreements >= 3) {
-                    Pair<Touchable, MovingEntity> newPair = new Pair<>(entityArray[j].entity, (MovingEntity) entity);
-                    allEntityPairs.add(newPair);
+                    allEntityPairs.add(entityArray[j].entity, (MovingEntity) entity);
                 }
             }
         }
 
-        // run some checks
         if (DEBUG) {
-            long nulls = allEntityPairs.stream().filter(Objects::isNull).count();
-            if (nulls > 0) Logger.print("nulls found in intersecting pairs: " + nulls);
             long equals = allEntityPairs.stream().filter(p -> p.left.equals(p.right)).count();
             if (equals > 0) Logger.print("duplicates found in intersecting pairs: " + equals);
         }
@@ -276,7 +246,7 @@ public class CollisionDetection implements EntityManagement {
             if (collisionEntity.xLower() < init) {
                 Logger.printError("Sorting error on x = " + i);
                 Logger.printError(Arrays.toString(xLowerSorted));
-                Toolbox.exitJava();
+                throw new IllegalStateException("Sorting error on x = " + i);
             }
             init = collisionEntity.xLower();
         }
@@ -287,6 +257,7 @@ public class CollisionDetection implements EntityManagement {
             if (collisionEntity.yLower() < init) {
                 Logger.printError("Sorting error on y = " + i);
                 Logger.printError(Arrays.toString(yLowerSorted));
+                throw new IllegalStateException("Sorting error on y = " + i);
             }
             init = collisionEntity.yLower();
         }
@@ -297,6 +268,7 @@ public class CollisionDetection implements EntityManagement {
             if (collisionEntity.zLower() < init) {
                 Logger.printError("Sorting error on z = " + i);
                 Logger.printError(Arrays.toString(zLowerSorted));
+                throw new IllegalStateException("Sorting error on z = " + i);
             }
             init = collisionEntity.zLower();
         }
@@ -381,46 +353,43 @@ public class CollisionDetection implements EntityManagement {
     }
 
     /**
-     * remove the selected entities off the entity lists in a robust way (entities that did not exist are accepted, as
-     * well as doubles)
+     * Remove the selected entities off the entity lists in a robust way. Entities that did not exist are ignored, and
+     * doubles are also accepted.
      * @param targets a collection of entities to be removed
      */
     private void deleteEntities(Collection<MovingEntity> targets) {
-        int nOfEntities = xLowerSorted.length;
-
         int xi = 0;
-        CollisionEntity[] xList = new CollisionEntity[nOfEntities];
         for (CollisionEntity target : xLowerSorted) {
             Touchable entity = target.entity;
             if ((entity instanceof MovingEntity) && targets.contains(entity)) {
                 continue;
             }
-            xList[xi++] = target;
+            xLowerSorted[xi++] = target;
         }
 
         int yi = 0;
-        CollisionEntity[] yList = new CollisionEntity[nOfEntities];
         for (CollisionEntity target : yLowerSorted) {
             Touchable entity = target.entity;
             if ((entity instanceof MovingEntity) && targets.contains(entity)) {
                 continue;
             }
-            yList[yi++] = target;
+            yLowerSorted[yi++] = target;
         }
 
         int zi = 0;
-        CollisionEntity[] zList = new CollisionEntity[nOfEntities];
         for (CollisionEntity target : zLowerSorted) {
             Touchable entity = target.entity;
             if ((entity instanceof MovingEntity) && targets.contains(entity)) {
                 continue;
             }
-            zList[zi++] = target;
+            zLowerSorted[zi++] = target;
         }
 
-        xLowerSorted = Arrays.copyOf(xList, xi);
-        yLowerSorted = Arrays.copyOf(yList, yi);
-        zLowerSorted = Arrays.copyOf(zList, zi);
+        if (xi != yi || yi != zi) throw new IllegalStateException("Arrays have differing length!");
+
+        xLowerSorted = Arrays.copyOf(xLowerSorted, xi);
+        yLowerSorted = Arrays.copyOf(yLowerSorted, yi);
+        zLowerSorted = Arrays.copyOf(zLowerSorted, zi);
 
         dynamicEntities.removeAll(targets);
     }

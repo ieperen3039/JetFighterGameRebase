@@ -18,7 +18,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
 /**
  * @author Geert van Ieperen created on 24-1-2018.
  */
-public abstract class AbstractProjectile extends GameEntity implements TemporalEntity, Serializable {
+public abstract class AbstractProjectile extends MovingEntity implements TemporalEntity, Serializable {
 
     protected static final float IMPACT_POWER = 5f;
     private static final int SPARK_DENSITY = 10;

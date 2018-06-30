@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
@@ -75,7 +74,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
     }
 
     @Override
-    public GameEntity.State getNewSpawn() {
+    public MovingEntity.State getNewSpawn() {
         return instance.getNewSpawn();
     }
 

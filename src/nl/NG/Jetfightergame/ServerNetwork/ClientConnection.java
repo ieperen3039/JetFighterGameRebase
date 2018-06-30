@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -112,7 +112,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addSpawn(MovingEntity.Spawn spawn) {
+    public void addSpawn(Spawn spawn) {
         game.addEntity(spawn.construct(this, null));
     }
 
@@ -194,7 +194,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     /**
      * sends a request for a jet to the server and reads the final entity
-     * @see ServerConnection#createPlayer(GameEntity.State)
+     * @see ServerConnection#createPlayer(MovingEntity.State)
      * @param input
      */
     private AbstractJet getPlayerJet(Controller input) throws IOException {

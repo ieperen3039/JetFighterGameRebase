@@ -45,7 +45,7 @@ public interface EntityManagement {
     Collection<MovingEntity> getDynamicEntities();
 
     /**
-     * calls {@link nl.NG.Jetfightergame.AbstractEntities.GameEntity#update(float)}
+     * calls {@link MovingEntity#update(float)}
      * @param currentTime gametime
      */
     void updateEntities(float currentTime);

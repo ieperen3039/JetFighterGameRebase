@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Assets.GeneralEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -19,7 +18,7 @@ import java.util.function.Consumer;
 /**
  * @author Geert van Ieperen created on 26-12-2017.
  */
-public class FallingCube extends GameEntity {
+public class FallingCube extends MovingEntity {
 
     private final float range;
     protected Material surfaceMaterial;

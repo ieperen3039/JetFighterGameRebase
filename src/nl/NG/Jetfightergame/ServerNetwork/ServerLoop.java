@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -29,7 +29,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
     private final Environment lobby;
     private final Collection<ServerConnection> connections;
 
-    /** the world that will eventually host the race. */
     private Environment gameWorld = null;
     private int playersInLobby;
     private GameTimer globalTime;
@@ -88,6 +87,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
     @Override
     protected void update(float deltaTime) {
+        // deltaTime is real-time difference
         if (playersInLobby != 0) update(lobby);
         if (gameWorld != null) update(gameWorld);
 
@@ -140,8 +140,9 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         connections.forEach(ServerConnection::close);
     }
 
-    public String entityList() {
+    public String toString() {
         StringBuilder s = new StringBuilder();
+        s.append(super.toString());
         lobby.getEntities().forEach(e -> s.append("\n").append(e));
         return s.toString();
     }

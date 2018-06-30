@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -79,7 +80,7 @@ public final class JetFighterProtocol {
      * client sending a request of spawing a new entity.
      * @see #spawnRequestRead(InputStream)
      */
-    public static void spawnRequestSend(OutputStream output, MovingEntity.Spawn spawn) throws IOException {
+    public static void spawnRequestSend(OutputStream output, Spawn spawn) throws IOException {
         output.write(spawn.type.ordinal());
         DataOutputStream DOS = new DataOutputStream(output);
         // state
@@ -91,9 +92,9 @@ public final class JetFighterProtocol {
     /**
      * server reading an entity from the InputStream
      * @return a description of a new entity to be added to the server
-     * @see #spawnRequestSend(OutputStream, MovingEntity.Spawn)
+     * @see #spawnRequestSend(OutputStream, Spawn)
      */
-    public static MovingEntity.Spawn spawnRequestRead(InputStream input) throws IOException {
+    public static Spawn spawnRequestRead(InputStream input) throws IOException {
         EntityClass type = EntityClass.get(input.read());
         DataInputStream DIS = new DataInputStream(input);
         // state
@@ -101,11 +102,11 @@ public final class JetFighterProtocol {
         Quaternionf rotation = DataIO.readQuaternion(DIS);
         DirVector velocity = DataIO.readDirVector(DIS);
 
-        return new MovingEntity.Spawn(type, position, rotation, velocity);
+        return new Spawn(type, position, rotation, velocity);
     }
 
     /** server sending a new entity */
-    public static void newEntitySend(OutputStream output, MovingEntity.Spawn entity, int id) throws IOException {
+    public static void newEntitySend(OutputStream output, Spawn entity, int id) throws IOException {
         output.write(entity.type.ordinal());
         DataOutputStream DOS = new DataOutputStream(output);
         // identity number

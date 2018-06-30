@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -20,14 +20,14 @@ public interface SpawnReceiver {
      * adds an moving entity to the game's collision detection and rendering
      * @param spawn the new entity
      */
-    void addSpawn(MovingEntity.Spawn spawn);
+    void addSpawn(Spawn spawn);
 
     /**
      * add multiple new entities
-     * @see #addSpawn(MovingEntity.Spawn)
+     * @see #addSpawn(Spawn)
      */
-    default void addSpawns(Collection<MovingEntity.Spawn> spawn){
-        for (MovingEntity.Spawn entity : spawn) {
+    default void addSpawns(Collection<Spawn> spawn) {
+        for (Spawn entity : spawn) {
             addSpawn(entity);
         }
     }

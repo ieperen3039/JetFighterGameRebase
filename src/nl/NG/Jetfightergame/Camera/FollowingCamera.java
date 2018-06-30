@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
@@ -23,13 +23,13 @@ public class FollowingCamera implements Camera {
     private final SmoothTracked<PosVector> eye;
     private final SmoothTracked<DirVector> focus;
     private final SmoothTracked<DirVector> up;
-    private final GameEntity target;
+    private final MovingEntity target;
 
-    public FollowingCamera(GameEntity target) {
+    public FollowingCamera(MovingEntity target) {
         this(jetPosition(eyeRelative, target).toPosVector(), target, jetPosition(DirVector.zVector(), target).toDirVector());
     }
 
-    public FollowingCamera(PosVector eye, GameEntity playerJet, DirVector up) {
+    public FollowingCamera(PosVector eye, MovingEntity playerJet, DirVector up) {
         this(
                 new ExponentialSmoothVector<>(eye, 1- CAMERA_CATCHUP),
                 new ExponentialSmoothVector<>(jetPosition(focusRelativeToEye, playerJet).toDirVector(), 1- CAMERA_ORIENT),
@@ -38,7 +38,7 @@ public class FollowingCamera implements Camera {
         );
     }
 
-    public FollowingCamera(SmoothTracked<PosVector> eye, SmoothTracked<DirVector> focus, SmoothTracked<DirVector> up, GameEntity target) {
+    public FollowingCamera(SmoothTracked<PosVector> eye, SmoothTracked<DirVector> focus, SmoothTracked<DirVector> up, MovingEntity target) {
         this.eye = eye;
         this.focus = focus;
         this.up = up;
@@ -50,7 +50,7 @@ public class FollowingCamera implements Camera {
      * @param target a target jet, where DirVector.X points forward
      * @return a new vector with the position translated to world-space
      */
-    private static PosVector jetPosition(DirVector relativePosition, GameEntity target){
+    private static PosVector jetPosition(DirVector relativePosition, MovingEntity target) {
         final DirVector relative = target.relativeInterpolatedDirection(relativePosition);
         return target.interpolatedPosition().add(relative, new PosVector());
     }

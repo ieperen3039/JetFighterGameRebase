@@ -19,7 +19,7 @@ import java.util.Collection;
 /**
  * @author Geert van Ieperen created on 30-10-2017.
  */
-public abstract class AbstractJet extends GameEntity {
+public abstract class AbstractJet extends MovingEntity {
 
     protected final float liftFactor;
     protected final float airResistCoeff;
@@ -203,7 +203,7 @@ public abstract class AbstractJet extends GameEntity {
         super.addStatePoint(currentTime, newPosition, newRotation);
         relativeStateDirection(DirVector.xVector()).normalize(forward);
         forwardInterpolator.add(new DirVector(forward), currentTime);
-        velocityInterpolator.add(super.renderVelocity(), currentTime);
+        velocityInterpolator.add(super.velocityAtRenderTime(), currentTime);
     }
 
     @Override

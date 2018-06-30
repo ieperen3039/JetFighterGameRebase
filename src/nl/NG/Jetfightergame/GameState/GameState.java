@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -56,8 +55,8 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     }
 
     @Override
-    public GameEntity.State getNewSpawn() {
-        return new GameEntity.State();
+    public MovingEntity.State getNewSpawn() {
+        return new MovingEntity.State();
     }
 
     /**

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.GameEntity;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  * created on 11-12-2017.
  */
 public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> {
-    private GameEntity target = null;
+    private MovingEntity target = null;
     private Camera instance = null;
 
     @Override
@@ -26,7 +26,7 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
         MountedCamera
     }
 
-    public void setTarget(GameEntity target) {
+    public void setTarget(MovingEntity target) {
         this.target = target;
     }
 
@@ -47,7 +47,7 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
      * @param target the game object that is the target (not necessarily the focus) of the new camera
      * @param up current upvector
      */
-    public void switchTo(CameraImpl camera, PosVector eye, GameEntity target, DirVector up){
+    public void switchTo(CameraImpl camera, PosVector eye, MovingEntity target, DirVector up) {
         if (instance instanceof TrackerListener) {
             ((TrackerListener) instance).cleanUp();
         }
