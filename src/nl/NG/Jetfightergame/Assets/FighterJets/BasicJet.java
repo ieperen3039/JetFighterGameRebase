@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -23,18 +24,19 @@ import java.util.function.Consumer;
 public class BasicJet extends AbstractJet {
 
     public static final float LIFT_FACTOR = 1f;
-    public static final float THROTTLE_POWER = 1000f;
+    public static final float THROTTLE_POWER = 500f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
     public static final float MASS = 40f;
     public static final Material MATERIAL = Material.SILVER;
     public static final float YAW_POWER = 2f;
     public static final float PITCH_POWER = 3f;
     public static final float ROLL_POWER = 3f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.002f;
-    private final float range = (float) Math.sqrt(3 * (6f * scale) * (6f * scale));
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
+    private final float planeRange;
     private static final MachineGun GUN = new MachineGun(0.1f);
 
     private final Shape shape;
+    private final PosVector planeMiddle;
 
     public BasicJet(int id, Controller input, GameTimer renderTimer, SpawnReceiver entityDeposit) {
         this(id, PosVector.zeroVector(), input, new Quaternionf(), renderTimer, entityDeposit, new SpecialWeapon(0.1f));
@@ -51,7 +53,9 @@ public class BasicJet extends AbstractJet {
         );
 
         shape = GeneralShapes.CONCEPT_BLUEPRINT; // SCALE IS 0.5
-
+        Pair<PosVector, Float> minimalCircle = shape.getMinimalCircle();
+        planeMiddle = minimalCircle.left;
+        planeRange = minimalCircle.right;
     }
 
     @Override
@@ -74,6 +78,11 @@ public class BasicJet extends AbstractJet {
 
     @Override
     public float getRange() {
-        return range;
+        return planeRange;
+    }
+
+    @Override
+    public PosVector getExpectedMiddle() {
+        return extraPosition.add(planeMiddle, new PosVector());
     }
 }

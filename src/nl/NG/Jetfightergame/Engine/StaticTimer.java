@@ -12,8 +12,6 @@ public class StaticTimer extends GameTimer {
     private TrackedFloat currentTime = new TrackedFloat(0f);
     private TrackedFloat renderTime = new TrackedFloat(-ClientSettings.RENDER_DELAY);
     private final float deltaTime;
-    private float gameMult = 1f;
-    private float engineMult = 1f;
 
     public StaticTimer(float targetFPS) {
         deltaTime = 1f/targetFPS;
@@ -21,7 +19,7 @@ public class StaticTimer extends GameTimer {
 
     @Override
     public void updateGameTime() {
-        currentTime.addUpdate(deltaTime * gameMult * engineMult);
+        currentTime.addUpdate(deltaTime);
     }
 
     @Override

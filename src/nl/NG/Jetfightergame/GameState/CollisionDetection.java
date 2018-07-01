@@ -108,9 +108,9 @@ public class CollisionDetection implements EntityManagement {
 
     @Override
     public void analyseCollisions(float currentTime, float deltaTime, PathDescription path) {
-        int remainingLoops = MAX_COLLISION_ITERATIONS;
         if (DEBUG) testInvariants();
 
+        int remainingLoops = MAX_COLLISION_ITERATIONS;
         int nOfCollisions = 0;
         do {
             /* as a single collision may result in a previously not-intersecting pair to collide,
@@ -125,19 +125,19 @@ public class CollisionDetection implements EntityManagement {
                     .forEach(n -> buffer[n] = checkCollisionPair(pairs.left(n), pairs.right(n), deltaTime));
 
             for (int i = 0; i < buffer.length; i++) {
-                Collision collision = buffer[i];
-                if (collision != null) {
-                    nOfCollisions++;
-                    Logger.print("Collision " + nOfCollisions + " with " + collision.source());
+                if (buffer[i] == null) {
+                    continue;
+                }
 
-                    Touchable other = pairs.left(i);
-                    if (other instanceof MovingEntity) { // if two entities collide
-                        MovingEntity left = (MovingEntity) other;
-                        MovingEntity.entityCollision(left, pairs.right(i), deltaTime);
+                nOfCollisions++;
 
-                    } else { // if entity collides with terrain
-                        terrainCollision(pairs.right(i), path, deltaTime, collision);
-                    }
+                Touchable other = pairs.left(i);
+                if (other instanceof MovingEntity) { // if two entities collide
+                    MovingEntity left = (MovingEntity) other;
+                    MovingEntity.entityCollision(left, pairs.right(i), deltaTime);
+
+                } else { // if entity collides with terrain
+                    terrainCollision(pairs.right(i), path, deltaTime, buffer[i]);
                 }
             }
 
@@ -182,6 +182,7 @@ public class CollisionDetection implements EntityManagement {
         if (TemporalEntity.isOverdue(either)) return null;
         Collision collision = moving.checkCollisionWith(either, deltaTime);
         if (collision != null) return collision;
+
         if (either instanceof MovingEntity) {
             MovingEntity other = (MovingEntity) either;
             return other.checkCollisionWith(moving, deltaTime);
@@ -343,12 +344,8 @@ public class CollisionDetection implements EntityManagement {
             // while the lowerbound of target is less than the upperbound of our subject
             while (lower.apply(target) <= upper.apply(subject)) {
 
-                // add one to the number of coinciding coordinates
-                if (subject.id > target.id) {
-                    adjacencyMatrix[subject.id][target.id]++;
-                } else {
-                    adjacencyMatrix[target.id][subject.id]++;
-                }
+                adjacencyMatrix[subject.id][target.id]++;
+                adjacencyMatrix[target.id][subject.id]++;
 
                 if (j == nOfItems) break;
                 target = sortedArray[j++];
@@ -507,11 +504,11 @@ public class CollisionDetection implements EntityManagement {
         }
 
         public void update() {
-            PosVector position = entity.getExpectedPosition();
+            PosVector middle = entity.getExpectedMiddle();
             this.range = entity.getRange();
-            x = position.x;
-            y = position.y;
-            z = position.z;
+            x = middle.x;
+            y = middle.y;
+            z = middle.z;
         }
 
         public void setId(int id) {

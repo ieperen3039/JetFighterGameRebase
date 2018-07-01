@@ -82,6 +82,11 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         return 0;
     }
 
+    @Override
+    public PosVector getExpectedMiddle() {
+        return extraPosition;
+    }
+
     /**
      * update state of this projectile according to input. This method is called after the physics are applied
      * @param extraPosition the place to store the new position

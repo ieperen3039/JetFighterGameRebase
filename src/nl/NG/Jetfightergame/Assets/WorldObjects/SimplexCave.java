@@ -128,7 +128,7 @@ public class SimplexCave implements Touchable {
     }
 
     @Override
-    public PosVector getExpectedPosition() {
+    public PosVector getExpectedMiddle() {
         return PosVector.zeroVector();
     }
 

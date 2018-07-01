@@ -66,5 +66,5 @@ public interface Touchable extends Drawable {
      * @return the position of this object in the next timestamp. This value is bound to change after calls to
      *         {@link nl.NG.Jetfightergame.GameState.CollisionDetection}
      */
-    PosVector getExpectedPosition();
+    PosVector getExpectedMiddle();
 }

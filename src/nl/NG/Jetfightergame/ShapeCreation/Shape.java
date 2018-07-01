@@ -70,6 +70,10 @@ public interface Shape extends Renderable {
                 .findAny().orElse(false);
     }
 
+    default Pair<PosVector, Float> getMinimalCircle() {
+        return getMinimalCircle(getPoints());
+    }
+
     /**
      * Calculates the smallest orb around the given points
      * @param points a number of points, at least two

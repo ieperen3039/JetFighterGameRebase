@@ -12,11 +12,12 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Matrix3f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -109,14 +110,16 @@ public abstract class MovingEntity implements Touchable {
         leftToRight = left.extraPosition.to(right.extraPosition, leftToRight);
         DirVector rightToLeft = leftToRight.negate(new DirVector());
 
-        float dotProduct1 = left.extraVelocity.sub(right.extraVelocity, new DirVector()).dot(rightToLeft);
-        float scalarLeft1 = (2 * right.mass / (left.mass + right.mass)) * (dotProduct1 / rightToLeft.lengthSquared());
-        left.extraVelocity.sub(rightToLeft.mul(scalarLeft1));
-        left.recalculateMovement(deltaTime);
-        float dotProduct = right.extraVelocity.sub(left.extraVelocity, new DirVector()).dot(leftToRight);
-        float scalarLeft = (2 * left.mass / (right.mass + left.mass)) * (dotProduct / leftToRight.lengthSquared());
-        right.extraVelocity.sub(leftToRight.mul(scalarLeft));
-        right.recalculateMovement(deltaTime);
+        left.collideWith(right, deltaTime, rightToLeft);
+        right.collideWith(left, deltaTime, leftToRight);
+    }
+
+    /** @see #entityCollision(MovingEntity, MovingEntity, float) */
+    private void collideWith(MovingEntity right, float deltaTime, DirVector rightToLeft) {
+        float dotProduct1 = extraVelocity.sub(right.extraVelocity, new DirVector()).dot(rightToLeft);
+        float scalarLeft1 = (2 * right.mass / (mass + right.mass)) * (dotProduct1 / rightToLeft.lengthSquared());
+        extraVelocity.sub(rightToLeft.mul(scalarLeft1));
+        recalculateMovement(deltaTime);
     }
 
     /**
@@ -338,11 +341,6 @@ public abstract class MovingEntity implements Touchable {
         return new PosVector(position);
     }
 
-    @Override
-    public PosVector getExpectedPosition() {
-        return new PosVector(extraPosition);
-    }
-
     /**
      * applies a change in velocity by applying the given momentum to the velocity. This may only be applied between
      * calls to {@link #preUpdate(float, DirVector)} and {@link #update(float)}
@@ -459,12 +457,26 @@ public abstract class MovingEntity implements Touchable {
      * @param collision
      */
     public void terrainCollision(float deltaTime, Collision collision) {
-        DirVector contactNormal = collision.normal();
+        // calculate inverse inertia tensor
+        Matrix3f inertTensor = new Matrix3f().scale(1 / mass);
+        Matrix3f rotMatrix = rotation.get(new Matrix3f());
+        Matrix3f rotInert = rotMatrix.mul(inertTensor, inertTensor);
+        Matrix3f rotTranspose = rotMatrix.transpose();
+        Matrix3f invInertTensor = rotInert.mul(rotTranspose).invert();
 
-        Logger.print(extraVelocity, contactNormal);
+        DirVector contactNormal = collision.normal();
+        PosVector hitPosition = collision.hitPosition();
+
         if (extraVelocity.dot(contactNormal) < 0) {
             extraVelocity.reflect(contactNormal);
         }
+        Vector3f angularVelChange = contactNormal.cross(hitPosition, new Vector3f());
+        invInertTensor.transform(angularVelChange);
+        angularVelChange.mul(0.8f);
+
+        rollSpeed += angularVelChange.x;
+        pitchSpeed += angularVelChange.y;
+        yawSpeed += angularVelChange.z;
 
         recalculateMovement(deltaTime);
     }

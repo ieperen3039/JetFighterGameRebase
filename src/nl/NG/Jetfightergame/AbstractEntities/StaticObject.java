@@ -94,8 +94,8 @@ public class StaticObject implements Touchable {
     }
 
     @Override
-    public PosVector getExpectedPosition() {
-        return middle;
+    public PosVector getExpectedMiddle() {
+        return middle.add(offSet, new PosVector());
     }
 
     @Override

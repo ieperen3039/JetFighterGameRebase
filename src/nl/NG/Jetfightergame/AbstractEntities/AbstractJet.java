@@ -10,11 +10,13 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 /**
  * @author Geert van Ieperen created on 30-10-2017.
@@ -48,8 +50,8 @@ public abstract class AbstractJet extends MovingEntity {
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
-    public static final float BASE_SPEED = 100f;
-    private final float defaultThrustSquared;
+    public static final float BASE_SPEED = 200f;
+    private float baseThrust;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -107,7 +109,10 @@ public abstract class AbstractJet extends MovingEntity {
         relativeStateDirection(forward).normalize(forward);
         forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
         velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
-        defaultThrustSquared = BASE_SPEED * BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
+        baseThrust = BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
+
+        Supplier<String> slowTimer = () -> String.format("%3d%% slow for %.1f seconds", ((int) (slowFactor * 100)), slowTimeLeft);
+        Logger.printOnline(slowTimer);
     }
 
     @Override
@@ -154,8 +159,8 @@ public abstract class AbstractJet extends MovingEntity {
 
         // thrust forces
         float throttle = input.throttle();
-        final float baseThrust = defaultThrustSquared * airResistCoeff;
         float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
+        thrust = thrust > throttlePower ? throttlePower : thrust;
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         float yPres = instantPreserveFraction(yPreservation, deltaTime);
@@ -182,16 +187,16 @@ public abstract class AbstractJet extends MovingEntity {
 
         // air-resistance
         DirVector airResistance = new DirVector();
-        float speed = velocity.length();
-        float brake = (throttle < 0) ? (-throttle * brakePower) : 1;
+        float speedSq = velocity.lengthSquared();
+        float brake = (throttle < 0) ? ((1 - throttle * brakePower) + 1) : 1;
         float resistance = airResistCoeff * brake;
-        velocity.reducedTo(speed * speed * resistance * -1, airResistance);
-        extraVelocity.add(airResistance.scale(deltaTime, temp));
+        velocity.reducedTo(speedSq * resistance * -1, airResistance);
+        airResistance.div(1 - slowFactor);
+        netForce.add(airResistance);
 
         // F = m * a ; a = dv/dt
         // a = F/m ; dv = a * dt = F * (dt/m)
         extraVelocity.add(netForce.scale(deltaTime / mass, temp));
-        extraVelocity.scale(1 - slowFactor);
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, temp), extraPosition);

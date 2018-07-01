@@ -107,7 +107,7 @@ public class Tunnel implements Touchable {
     }
 
     @Override
-    public PosVector getExpectedPosition() {
+    public PosVector getExpectedMiddle() {
         return null;
     }
 }

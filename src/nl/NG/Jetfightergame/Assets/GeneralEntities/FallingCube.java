@@ -93,6 +93,11 @@ public class FallingCube extends MovingEntity {
     }
 
     @Override
+    public PosVector getExpectedMiddle() {
+        return extraPosition;
+    }
+
+    @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
     }
