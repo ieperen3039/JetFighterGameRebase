@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Scenarios.CollisionLaboratory;
 import nl.NG.Jetfightergame.Assets.Scenarios.ExplosionLaboratory;
@@ -158,7 +159,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentManag
         }
 
         @Override
-        protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
+        protected Collection<Spawn> getInitialEntities() {
             return Collections.EMPTY_SET;
         }
 

@@ -2,10 +2,10 @@ package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Tools.DataStructures.TimedQueue;
 import nl.NG.Jetfightergame.Tools.Interpolation.FloatInterpolator;
-import nl.NG.Jetfightergame.Tools.Vectors.Vector;
-import org.joml.Vector3f;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Geert van Ieperen
@@ -52,8 +52,9 @@ public class FloatInterpolatorTest {
     }
 
     private void testValue(Float expected, float timeStamp) {
+        instance.updateTime(timeStamp);
         Float answer = instance.getInterpolated(timeStamp);
-        assert answer.equals(expected) : "interpolation on time " + timeStamp + " resulted in " + answer + " while it should be " + expected;
+        assert answer.equals(expected) : String.format("interpolation on time %s resulted in %s while it should be %s\n%s", timeStamp, answer, expected, instance.toString());
     }
 
     @Test
@@ -63,16 +64,15 @@ public class FloatInterpolatorTest {
         float[] expectedAnswers = {0f, 0f, 2f, 4f, 4f, 6f};
 
         for (int i = 0; i < challenges.length; i++) {
+            queue.updateTime(challenges[i]);
             Float answer = queue.getActive(challenges[i]);
             Float expected = expectedAnswers[i];
-            assert answer.equals(expected) : "polling on time " + challenges[i] + " resulted in " + answer + " while it should be " + expected;
+            assertEquals(
+                    String.format("polling on time %s resulted in %s while it should be %s\n%s", challenges[i], answer, expected, instance),
+                    expected, answer
+            );
         }
 
         assert queue.getActive(5) == null : "time = 5 did not return null";
-    }
-
-    @Test
-    public void equals() {
-        assert new Vector3f() instanceof Vector;
     }
 }

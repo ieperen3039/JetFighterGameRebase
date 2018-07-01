@@ -21,7 +21,7 @@ import java.util.Collections;
 @SuppressWarnings("unchecked")
 public class CollisionDetectionTest extends CollisionDetection {
     public CollisionDetectionTest() {
-        super(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+        super(Collections.EMPTY_LIST);
     }
 
     @Test

@@ -1,12 +1,11 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.GameState.GameState;
-import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -51,23 +50,23 @@ public class CollisionLaboratory extends GameState {
     @Override
     protected Collection<Touchable> createWorld() {
 //        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.3f)));
-        return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, null, Material.ROUGH, Color4f.ORANGE, labSize));
+        return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, Material.ROUGH, Color4f.ORANGE, null, labSize));
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
+    protected Collection<Spawn> getInitialEntities() {
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
         int remainingCubes = nrOfCubes;
 
-        Collection<MovingEntity> cubes = new ArrayList<>(nrOfCubes);
+        Collection<Spawn> cubes = new ArrayList<>(nrOfCubes);
 
         cubing:
         for (int x = 0; x < gridSize; x++) {
             for (int y = 0; y < gridSize; y++) {
                 for (int z = 0; z < gridSize; z++) {
-                    cubes.add(makeCube(labSize, speeds, interSpace, x, y, z, deposit));
+                    cubes.add(makeCube(labSize, speeds, interSpace, x, y, z));
 
                     if (--remainingCubes <= 0) break cubing;
                 }
@@ -77,7 +76,7 @@ public class CollisionLaboratory extends GameState {
         return cubes;
     }
 
-    private MovingEntity makeCube(int labSize, float speeds, int interSpace, int x, int y, int z, SpawnReceiver deposit) {
+    private Spawn makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
         final PosVector pos = new PosVector(
                 -labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace)
         );
@@ -85,10 +84,7 @@ public class CollisionLaboratory extends GameState {
         DirVector random = Vector.random();
         random.scale(speeds, random);
 
-        return EntityClass.FALLING_CUBE_SMALL.construct(
-                Identity.next(), deposit, null,
-                pos, new Quaternionf(), random
-        );
+        return new Spawn(EntityClass.FALLING_CUBE_SMALL, pos, new Quaternionf(), random);
     }
 
     @SuppressWarnings("ConstantConditions")

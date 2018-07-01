@@ -1,12 +1,11 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Assets.Weapons.SimpleBullet;
 import nl.NG.Jetfightergame.GameState.GameState;
-import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -37,8 +36,8 @@ public class ExplosionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
-        Collection<MovingEntity> dynamicEntities = new ArrayList<>(21);
+    protected Collection<Spawn> getInitialEntities() {
+        Collection<Spawn> dynamicEntities = new ArrayList<>(20);
 
         for (int i = 0; i < 20; i++) {
             final PosVector pos = Vector.random().toPosVector();
@@ -46,7 +45,7 @@ public class ExplosionLaboratory extends GameState {
             final DirVector vel = new DirVector(0, 1, 0);
             pos.negate(vel).add(DirVector.random(), vel);
             dynamicEntities.add(
-                    new SimpleBullet(Identity.next(), pos, vel.reducedTo(10, vel), new Quaternionf(), deposit.getTimer(), deposit)
+                    new Spawn(EntityClass.SIMPLE_BULLET, pos, new Quaternionf(), vel.reducedTo(10, vel))
             );
         }
 

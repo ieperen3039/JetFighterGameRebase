@@ -16,8 +16,8 @@ public class EntityList implements EntityManagement {
     private final Collection<MovingEntity> dynamicEntities;
     private final Collection<Touchable> staticEntities;
 
-    public EntityList(Collection<MovingEntity> dynamicEntities, Collection<Touchable> staticEntities) {
-        this.dynamicEntities = new CopyOnWriteArrayList<>(dynamicEntities);
+    public EntityList(Collection<Touchable> staticEntities) {
+        this.dynamicEntities = new CopyOnWriteArrayList<>();
         this.staticEntities = Collections.unmodifiableCollection(staticEntities);
     }
 

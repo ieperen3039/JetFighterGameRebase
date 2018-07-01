@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
-import org.joml.Vector3f;
 
 /**
  * @author Geert van Ieperen created on 28-6-2018.
@@ -84,7 +83,7 @@ public class RaceProgress {
         private final int id;
 
         public Checkpoint(int id, Vector position, DirVector direction, float radius, Color4f color, RaceProgress progressTracker) {
-            super(GeneralShapes.CHECKPOINTRING, Material.GOLD, color, position, new Vector3f(radius), Toolbox.xTo(direction));
+            super(GeneralShapes.CHECKPOINTRING, Material.GOLD, color, position, radius, Toolbox.xTo(direction));
             this.id = id;
         }
 

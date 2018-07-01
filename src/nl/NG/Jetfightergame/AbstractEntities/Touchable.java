@@ -9,27 +9,24 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.util.function.Consumer;
 
 /**
- * @author Geert van Ieperen
- *         created on 6-11-2017.
+ * @author Geert van Ieperen created on 6-11-2017.
  */
 public interface Touchable extends Drawable {
 
     /**
-     * moves the reference frame from local space to each shape, executing {@code action} on every shape.
-     * every create call should preserve the matrix stack.
-     * If this object is moving, this applies to the current position
-     * @param ms reference frame to perform transformations on
+     * moves the reference frame from local space to each shape, executing {@code action} on every shape. every create
+     * call should preserve the matrix stack. If this object is moving, this applies to the current position
+     * @param ms     reference frame to perform transformations on
      * @param action actions to execute for every Shape
      */
     void create(MatrixStack ms, Consumer<Shape> action);
 
     /**
-     * moves the reference frame from global space to this object and executes action.
-     * Every create call should preserve the matrix stack.
-     * If this object is moving, this applies to the current position
-     * @see MovingEntity#toLocalSpace(MatrixStack, Runnable, boolean)
-     * @param ms reference frame to perform transformations on
+     * moves the reference frame from global space to this object and executes action. Every create call should preserve
+     * the matrix stack. If this object is moving, this applies to the current position
+     * @param ms     reference frame to perform transformations on
      * @param action action to perform one in local space
+     * @see MovingEntity#toLocalSpace(MatrixStack, Runnable, boolean)
      */
     void toLocalSpace(MatrixStack ms, Runnable action);
 
@@ -44,22 +41,20 @@ public interface Touchable extends Drawable {
     }
 
     /**
-     * prepare gl object for drawing this object (material properties, shaders...).
-     * This method should called inside the draw method
+     * prepare gl object for drawing this object (material properties, shaders...). This method should called inside the
+     * draw method
      */
     void preDraw(GL2 gl);
 
-    /**
-     * process the effect of another object colliding on this object.
-     * @param cause the data of the collision from causer's perspective
-     */
-    void acceptCollision(Collision cause);
+    default void acceptCollision(Collision cause) {
+    }
 
     /**
      * react on collision
      * @param power magnitude of the impact
      */
-    default void impact(float power) {}
+    default void impact(float power) {
+    }
 
     /**
      * distance of the farthest vertex of this object
@@ -68,8 +63,8 @@ public interface Touchable extends Drawable {
     float getRange();
 
     /**
-     * @return the position of this object in the next timestamp. This value is bound to change after calls to {@link
-     *         nl.NG.Jetfightergame.GameState.CollisionDetection}
+     * @return the position of this object in the next timestamp. This value is bound to change after calls to
+     *         {@link nl.NG.Jetfightergame.GameState.CollisionDetection}
      */
     PosVector getExpectedPosition();
 }

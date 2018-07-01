@@ -194,6 +194,11 @@ public class ConcurrentArrayList<T> implements Collection<T> {
         }
     }
 
+    @Override
+    public String toString() {
+        return list.toString();
+    }
+
     /**
      * iterator for a copy of this list
      */

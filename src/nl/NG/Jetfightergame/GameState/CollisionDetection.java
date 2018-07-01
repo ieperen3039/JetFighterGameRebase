@@ -19,10 +19,11 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import static nl.NG.Jetfightergame.Settings.ServerSettings.DEBUG;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.MAX_COLLISION_ITERATIONS;
@@ -46,48 +47,40 @@ public class CollisionDetection implements EntityManagement {
 
     /**
      * Collects the given entities and allows collision and phisics calculations to influence these entities
-     * @param dynamicEntities a list of moving entities. This object is not backed by the given list, changes in the
-     *                        list have no effect on this object.
      * @param staticEntities  a list of fixed entities. Entities in this collection should not move, but if they do,
      *                        dynamic objects might phase through when moving in opposite direction. Apart from this
      *                        case, the collision detection still functions.
      */
-    public CollisionDetection(Collection<MovingEntity> dynamicEntities, Collection<Touchable> staticEntities) {
+    public CollisionDetection(Collection<Touchable> staticEntities) {
         this.staticEntities = Collections.unmodifiableCollection(staticEntities);
+        this.dynamicEntities = new CopyOnWriteArrayList<>();
         this.newEntities = new ConcurrentArrayList<>();
         this.removeEntities = new ConcurrentArrayList<>();
 
         Logger.printOnline(collisionCounter);
 
-        int nOfEntities = dynamicEntities.size() + staticEntities.size();
+        int nOfEntities = staticEntities.size();
         xLowerSorted = new CollisionEntity[nOfEntities];
         yLowerSorted = new CollisionEntity[nOfEntities];
         zLowerSorted = new CollisionEntity[nOfEntities];
 
-        Iterator<CollisionEntity> entities = Stream
-                // combine the dynamic entities with the static entities
-                .concat(dynamicEntities.stream(), staticEntities.stream())
-                // create new collision entities of them
-                .map(CollisionEntity::new)
-                .iterator();
-
-        for (int i = 0; entities.hasNext(); i++) {
-            CollisionEntity asCollisionEntity = entities.next();
+        int i = 0;
+        for (Touchable entity : staticEntities) {
+            CollisionEntity asCollisionEntity = new CollisionEntity(entity);
             xLowerSorted[i] = asCollisionEntity;
             yLowerSorted[i] = asCollisionEntity;
             zLowerSorted[i] = asCollisionEntity;
+            i++;
         }
 
         Arrays.sort(xLowerSorted, (a, b) -> Float.compare(a.xLower(), b.xLower()));
         Arrays.sort(yLowerSorted, (a, b) -> Float.compare(a.yLower(), b.yLower()));
         Arrays.sort(zLowerSorted, (a, b) -> Float.compare(a.zLower(), b.zLower()));
 
-        this.dynamicEntities = new ArrayList<>(dynamicEntities);
     }
 
     @Override
     public void preUpdateEntities(NetForceProvider gravity, float deltaTime) {
-
         // add new entities
         if (!newEntities.isEmpty()) {
             mergeNewEntities(newEntities);
@@ -116,7 +109,7 @@ public class CollisionDetection implements EntityManagement {
     @Override
     public void analyseCollisions(float currentTime, float deltaTime, PathDescription path) {
         int remainingLoops = MAX_COLLISION_ITERATIONS;
-        if (DEBUG) testSort();
+        if (DEBUG) testInvariants();
 
         int nOfCollisions = 0;
         do {
@@ -127,9 +120,15 @@ public class CollisionDetection implements EntityManagement {
              */
             PairList<Touchable, MovingEntity> pairs = getIntersectingPairs();
 
-            for (int i = 0; i < pairs.size(); i++) {
-                if (checkCollisionPair(pairs.left(i), pairs.right(i), deltaTime)) {
+            Collision[] buffer = new Collision[pairs.size()];
+            IntStream.range(0, pairs.size()).parallel()
+                    .forEach(n -> buffer[n] = checkCollisionPair(pairs.left(n), pairs.right(n), deltaTime));
+
+            for (int i = 0; i < buffer.length; i++) {
+                Collision collision = buffer[i];
+                if (collision != null) {
                     nOfCollisions++;
+                    Logger.print("Collision " + nOfCollisions + " with " + collision.source());
 
                     Touchable other = pairs.left(i);
                     if (other instanceof MovingEntity) { // if two entities collide
@@ -137,7 +136,7 @@ public class CollisionDetection implements EntityManagement {
                         MovingEntity.entityCollision(left, pairs.right(i), deltaTime);
 
                     } else { // if entity collides with terrain
-                        terrainCollision(pairs.right(i), path, deltaTime);
+                        terrainCollision(pairs.right(i), path, deltaTime, collision);
                     }
                 }
             }
@@ -153,9 +152,10 @@ public class CollisionDetection implements EntityManagement {
      * gives a correcting momentum to the target entity, such that it restores its path. It may not happen that the
      * momentum results in another collision
      * @param deltaTime
+     * @param collision the collision of this entity to be processed
      * @param target    an entity that has collided with a solid entity
      */
-    private static void terrainCollision(MovingEntity target, PathDescription path, float deltaTime) {
+    private static void terrainCollision(MovingEntity target, PathDescription path, float deltaTime, Collision collision) {
         if (target instanceof AbstractJet) {
             PosVector jetPosition = target.getPosition();
             PosVector bounceDirection = path.getMiddleOfPath(jetPosition);
@@ -169,20 +169,24 @@ public class CollisionDetection implements EntityManagement {
             target.applyJerk(targetToMid, targetEnergy, deltaTime);
 
         } else {
-            target.terrainCollision(deltaTime);
+            target.terrainCollision(deltaTime, collision);
         }
     }
 
     /**
-     * @return false iff neither hits the other
+     * @return null iff neither hits the other, otherwise return the resulting collision
      */
-    @SuppressWarnings("SimplifiableIfStatement")
-    private boolean checkCollisionPair(Touchable either, MovingEntity moving, float deltaTime) {
+    private Collision checkCollisionPair(Touchable either, MovingEntity moving, float deltaTime) {
         // the isDead checks are for entities that die in a previous collision iteration
-        if (TemporalEntity.isOverdue(moving)) return false;
-        if (TemporalEntity.isOverdue(either)) return false;
-        if (moving.checkCollisionWith(either, deltaTime)) return true;
-        return (either instanceof MovingEntity) && ((MovingEntity) either).checkCollisionWith(moving, deltaTime);
+        if (TemporalEntity.isOverdue(moving)) return null;
+        if (TemporalEntity.isOverdue(either)) return null;
+        Collision collision = moving.checkCollisionWith(either, deltaTime);
+        if (collision != null) return collision;
+        if (either instanceof MovingEntity) {
+            MovingEntity other = (MovingEntity) either;
+            return other.checkCollisionWith(moving, deltaTime);
+        }
+        return null;
     }
 
     /**
@@ -215,11 +219,11 @@ public class CollisionDetection implements EntityManagement {
             // skip world-on-world
             if (!(entity instanceof MovingEntity)) continue;
 
-            for (int j = i - 1; j > 0; j--) {
-                // count how often i hits j and how often j hits i.
-                int intervalAgreements = adjacencyMatrix[i][j];
+            for (int j = 0; j < i; j++) {
+                // count in how many axes i overlaps j.
+                int intervalOverlap = adjacencyMatrix[i][j];
 
-                if (intervalAgreements >= 3) {
+                if (intervalOverlap >= 3) {
                     allEntityPairs.add(entityArray[j].entity, (MovingEntity) entity);
                 }
             }
@@ -231,51 +235,94 @@ public class CollisionDetection implements EntityManagement {
         }
 
         avgCollision.add(allEntityPairs.size());
-
         return allEntityPairs;
     }
 
     /**
-     * tests whether the invariant holds. Throws an error if any of the arrays is not correctly sorted
+     * tests whether the invariants holds.
+     * Throws an error if any of the arrays is not correctly sorted or any other assumption no longer holds
      */
-    public void testSort() {
-        Logger.printSpamless("testSort", "\n > " + Logger.getCallingMethod(1) + " Testing Sorting");
+    private void testInvariants() {
+        String source = Logger.getCallingMethod(1);
+        Logger.printSpamless(source, "\n    " + source + " Checking collision detection invariants");
+
+        // all arrays are of equal length
+        if ((xLowerSorted.length != yLowerSorted.length) || (xLowerSorted.length != zLowerSorted.length)) {
+            Logger.printError(toString(entityArray()));
+            throw new IllegalStateException("Entity arrays have different lengths: "
+                    + xLowerSorted.length + ", " + yLowerSorted.length + ", " + zLowerSorted.length
+            );
+        }
+
+        // all arrays contain all entities
+        Set<Touchable> allEntities = new HashSet<>();
+        for (CollisionEntity collEty : entityArray()) {
+            allEntities.add(collEty.entity);
+        }
+        for (CollisionEntity collEty : xLowerSorted) {
+            if (!allEntities.contains(collEty.entity)) {
+                throw new IllegalStateException("Array x does not contain entity " + collEty.entity);
+            }
+        }
+        for (CollisionEntity collEty : yLowerSorted) {
+            if (!allEntities.contains(collEty.entity)) {
+                throw new IllegalStateException("Array y does not contain entity " + collEty.entity);
+            }
+        }
+        for (CollisionEntity collEty : zLowerSorted) {
+            if (!allEntities.contains(collEty.entity)) {
+                throw new IllegalStateException("Array z does not contain entity " + collEty.entity);
+            }
+        }
+
+        // x is sorted
         float init = -Float.MAX_VALUE;
         for (int i = 0; i < xLowerSorted.length; i++) {
             CollisionEntity collisionEntity = xLowerSorted[i];
             if (collisionEntity.xLower() < init) {
                 Logger.printError("Sorting error on x = " + i);
-                Logger.printError(Arrays.toString(xLowerSorted));
+                Logger.printError(toString(xLowerSorted));
                 throw new IllegalStateException("Sorting error on x = " + i);
             }
             init = collisionEntity.xLower();
         }
 
+        // y is sorted
         init = -Float.MAX_VALUE;
         for (int i = 0; i < yLowerSorted.length; i++) {
             CollisionEntity collisionEntity = yLowerSorted[i];
             if (collisionEntity.yLower() < init) {
                 Logger.printError("Sorting error on y = " + i);
-                Logger.printError(Arrays.toString(yLowerSorted));
+                Logger.printError(toString(yLowerSorted));
                 throw new IllegalStateException("Sorting error on y = " + i);
             }
             init = collisionEntity.yLower();
         }
 
+        // z is sorted
         init = -Float.MAX_VALUE;
         for (int i = 0; i < zLowerSorted.length; i++) {
             CollisionEntity collisionEntity = zLowerSorted[i];
             if (collisionEntity.zLower() < init) {
                 Logger.printError("Sorting error on z = " + i);
-                Logger.printError(Arrays.toString(zLowerSorted));
+                Logger.printError(toString(zLowerSorted));
                 throw new IllegalStateException("Sorting error on z = " + i);
             }
             init = collisionEntity.zLower();
         }
     }
 
+    private static String toString(CollisionEntity[] entityArray) {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < entityArray.length; i++) {
+            CollisionEntity ety = entityArray[i];
+            s.append(String.format("%3d | %3d : %s\n", i, ety.id, ety.entity));
+        }
+        return s.toString();
+    }
+
     /**
-     * iterating over xLowerSorted, increase the value of all pairs that have coinciding intervals
+     * iterating over the sorted array, increase the value of all pairs that have coinciding intervals
      * @param adjacencyMatrix the matrix where the pairs are marked using entity id's
      * @param sortedArray     an array sorted increasingly on the lower mapping
      * @param lower           a mapping that maps to the lower value of the interval of the entity
@@ -358,42 +405,23 @@ public class CollisionDetection implements EntityManagement {
      * @param targets a collection of entities to be removed
      */
     private void deleteEntities(Collection<MovingEntity> targets) {
-        int nOfEntities = entityArray().length;
-
-        int xi = 0;
-        for (int i = 0; i < nOfEntities; i++) {
-            Touchable entity = xLowerSorted[i].entity;
-            if ((entity instanceof MovingEntity) && targets.contains(entity)) {
-                continue;
-            }
-            xLowerSorted[xi++] = xLowerSorted[i];
-        }
-
-        int yi = 0;
-        for (int i = 0; i < nOfEntities; i++) {
-            Touchable entity = yLowerSorted[i].entity;
-            if ((entity instanceof MovingEntity) && targets.contains(entity)) {
-                continue;
-            }
-            yLowerSorted[yi++] = yLowerSorted[i];
-        }
-
-        int zi = 0;
-        for (int i = 0; i < nOfEntities; i++) {
-            Touchable entity = zLowerSorted[i].entity;
-            if ((entity instanceof MovingEntity) && targets.contains(entity)) {
-                continue;
-            }
-            zLowerSorted[zi++] = zLowerSorted[i];
-        }
-
-        if (xi != yi || yi != zi) throw new IllegalStateException("Arrays have different length");
-
-        xLowerSorted = Arrays.copyOf(xLowerSorted, xi);
-        yLowerSorted = Arrays.copyOf(yLowerSorted, yi);
-        zLowerSorted = Arrays.copyOf(zLowerSorted, zi);
+        xLowerSorted = deleteAll(targets, xLowerSorted);
+        yLowerSorted = deleteAll(targets, yLowerSorted);
+        zLowerSorted = deleteAll(targets, zLowerSorted);
 
         dynamicEntities.removeAll(targets);
+    }
+
+    private CollisionEntity[] deleteAll(Collection<MovingEntity> targets, CollisionEntity[] array) {
+        int xi = 0;
+        for (int i = 0; i < array.length; i++) {
+            Touchable entity = array[i].entity;
+            if ((entity instanceof MovingEntity) && targets.contains(entity)) {
+                continue;
+            }
+            array[xi++] = array[i];
+        }
+        return Arrays.copyOf(array, xi);
     }
 
     /**
@@ -430,7 +458,7 @@ public class CollisionDetection implements EntityManagement {
     }
 
     /**
-     * @return an unsafe array of the entities. Should only be used for querying, otherwise it must be cloned
+     * @return an array of the entities, backed by any local representation. Should only be used for querying, otherwise it must be cloned
      */
     private CollisionEntity[] entityArray() {
         return xLowerSorted;
@@ -444,7 +472,9 @@ public class CollisionDetection implements EntityManagement {
 
     @Override
     public Collection<MovingEntity> getDynamicEntities() {
-        return Collections.unmodifiableCollection(dynamicEntities);
+        Collection<MovingEntity> l = new ArrayList<>(dynamicEntities);
+        l.addAll(newEntities);
+        return l;
     }
 
     @Override
@@ -510,6 +540,11 @@ public class CollisionDetection implements EntityManagement {
 
         public float zLower() {
             return z - range;
+        }
+
+        @Override
+        public String toString() {
+            return entity.toString();
         }
     }
 }

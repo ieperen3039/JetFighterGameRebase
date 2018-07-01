@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
-import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
@@ -14,7 +14,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
-import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,20 +64,20 @@ public class MissionSnake extends GameState {
         for (int x = 0; x < (LEVEL_SQUARE_DIM + 1); x++) {
             for (int y = 0; y < (LEVEL_SQUARE_DIM + 1); y++) {
                 final Vector offSet = new DirVector(LEVEL_SQUARE_SIZE * x, LEVEL_SQUARE_SIZE * y, 0);
-                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet, null, null));
+                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet));
             }
         }
 
         final float offSet = LEVEL_SQUARE_SIZE * LEVEL_SQUARE_DIM;
         staticEntities.add(new StaticObject(
-                gameFloor, WORLD_MATERIAL, Color4f.BLUE, new DirVector(offSet, 0, LEVEL_HEIGHT), new Vector3f(-1, 1, 1), null
+                gameFloor, WORLD_MATERIAL, Color4f.BLUE, new PosVector(offSet, 0, LEVEL_HEIGHT), -1
         ));
 
         return staticEntities;
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
+    protected Collection<Spawn> getInitialEntities() {
         return Collections.EMPTY_SET;
     }
 

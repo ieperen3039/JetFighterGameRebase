@@ -80,7 +80,7 @@ public interface MatrixStack {
     }
 
     default void scale(float s) {
-        scale(s, s, s);
+        if (s != 1) scale(s, s, s);
     }
 
     default void scale(Vector3fc s){

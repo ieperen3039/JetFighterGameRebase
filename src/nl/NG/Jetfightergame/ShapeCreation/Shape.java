@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.Renderable;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -67,5 +68,60 @@ public interface Shape extends Renderable {
                 .map((plane) -> plane.intersectWithRay(position, direction))
                 // return whether at least one hit
                 .findAny().orElse(false);
+    }
+
+    /**
+     * Calculates the smallest orb around the given points
+     * @param points a number of points, at least two
+     * @return Left, the middle of the found orb. Right, the radius of the given orb
+     */
+    static Pair<PosVector, Float> getMinimalCircle(Iterable<PosVector> points) {
+        // determine furthest two point
+        float duoMax = 0;
+        DirVector temp = new DirVector();
+        PosVector aMax = new PosVector();
+        PosVector bMax = new PosVector();
+        for (PosVector a : points) {
+            for (PosVector b : points) {
+                float dist = a.to(b, temp).lengthSquared();
+                if (dist > duoMax) {
+                    duoMax = dist;
+                    aMax.set(a);
+                    bMax.set(b);
+                }
+            }
+        }
+
+        // determine point furthest from the middle
+        PosVector mid = aMax.middleTo(bMax);
+        PosVector outer = new PosVector();
+        float tripleMax = 0;
+        for (PosVector vector : points) {
+            float dist = mid.to(vector, temp).lengthSquared();
+            if (dist > tripleMax) {
+                outer.set(vector);
+                tripleMax = dist;
+            }
+        }
+
+        // if this point is none of the two previous points, determine the circumscribed circle
+        // https://en.wikipedia.org/wiki/Circumscribed_circle
+        if ((tripleMax > (duoMax / 4)) && !(outer.equals(aMax) || outer.equals(bMax))) {
+            PosVector temp2 = new PosVector();
+            PosVector temp3 = new PosVector();
+
+            PosVector a = aMax.sub(outer, new PosVector());
+            PosVector b = bMax.sub(outer, new PosVector());
+
+            PosVector dif = b.scale(a.lengthSquared(), temp2)
+                    .sub(a.scale(b.lengthSquared(), temp3), temp2);
+            float scalar = 2 * a.cross(b, temp3).lengthSquared();
+
+            mid.set(
+                    dif.cross(a.cross(b, temp)).div(scalar).add(outer)
+            );
+        }
+
+        return new Pair<>(mid, mid.to(aMax, temp).length());
     }
 }

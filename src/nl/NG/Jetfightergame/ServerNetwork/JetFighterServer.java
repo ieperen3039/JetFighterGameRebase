@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Tools.Logger;
 
@@ -11,7 +10,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.ServerNetwork.JetFighterServer.Phase.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
@@ -46,13 +45,13 @@ public class JetFighterServer {
     private JetFighterServer(Environment environment, boolean loadModels) throws IOException {
         currentPhase = BOOTING;
 
-        this.socket = new ServerSocket(SERVER_PORT);
-        this.game = new ServerLoop(environment);
-        portNumber = socket.getLocalPort();
-
         if (loadModels) {
             GeneralShapes.init(false);
         }
+
+        this.socket = new ServerSocket(SERVER_PORT);
+        this.game = new ServerLoop(environment);
+        portNumber = socket.getLocalPort();
 
         currentPhase = WAITING_FOR_HOST;
     }
@@ -63,8 +62,8 @@ public class JetFighterServer {
      * @param client the connection between front-end and back-end
      * @throws IOException if the initialisation runs into problems
      */
-    public static AbstractGameLoop createOfflineServer(Function<GameTimer, Environment> worldCreator, Socket client) throws IOException, InterruptedException {
-        Environment world = worldCreator.apply(new GameTimer());
+    public static AbstractGameLoop createOfflineServer(Supplier<Environment> worldCreator, Socket client) throws IOException, InterruptedException {
+        Environment world = worldCreator.get();
 
         JetFighterServer server = new JetFighterServer(world, false);
         // internal connect, this thread will soon terminate
@@ -132,7 +131,6 @@ public class JetFighterServer {
 
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
-        GameTimer time = new GameTimer();
         Environment world = new PlayerJetLaboratory();
         JetFighterServer server = new JetFighterServer(world, true);
         server.listenForHost();

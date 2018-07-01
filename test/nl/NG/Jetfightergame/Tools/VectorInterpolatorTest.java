@@ -48,6 +48,7 @@ public class VectorInterpolatorTest {
     }
 
     private void testValue(PosVector expected, float timeStamp) {
+        instance.updateTime(timeStamp);
         Vector answer = instance.getInterpolated(timeStamp);
         assert answer.equals(expected) : "interpolation on " + timeStamp + " resulted in " + answer + " while it should be " + expected;
     }

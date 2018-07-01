@@ -1,6 +1,5 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.ShapeCreation;
 
-import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -12,7 +11,7 @@ import java.util.Arrays;
 /**
  * @author Geert van Ieperen created on 21-6-2018.
  */
-public class StaticObjectTest {
+public class MinimalCircleTest {
 
     private static final double errorMargin = 1E-6;
 
@@ -26,7 +25,7 @@ public class StaticObjectTest {
         };
         Pair<PosVector, Float> expected = new Pair<>(new PosVector(1, -1, 0), 5f);
 
-        Pair<PosVector, Float> result = RaceProgress.Checkpoint.getMinimalCircle(Arrays.asList(input));
+        Pair<PosVector, Float> result = Shape.getMinimalCircle(Arrays.asList(input));
 
         Assert.assertEquals(expected, result);
     }
@@ -40,7 +39,7 @@ public class StaticObjectTest {
                 new PosVector(3, 4, 5),
         };
 
-        Pair<PosVector, Float> result = RaceProgress.Checkpoint.getMinimalCircle(Arrays.asList(input));
+        Pair<PosVector, Float> result = Shape.getMinimalCircle(Arrays.asList(input));
 
         System.out.println(result);
         PosVector mid = result.left;

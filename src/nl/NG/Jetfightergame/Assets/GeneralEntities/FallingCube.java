@@ -1,19 +1,15 @@
 package nl.NG.Jetfightergame.Assets.GeneralEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
-import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
-
-import java.util.function.Consumer;
 
 /**
  * @author Geert van Ieperen created on 26-12-2017.
@@ -21,7 +17,7 @@ import java.util.function.Consumer;
 public class FallingCube extends MovingEntity {
 
     private final float range;
-    protected Material surfaceMaterial;
+    private Material surfaceMaterial;
 
     /**
      * a cube that can be moved around, and has all physic properties
@@ -89,11 +85,6 @@ public class FallingCube extends MovingEntity {
         velocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
-    }
-
-    @Override
-    public void create(MatrixStack ms, Consumer<Shape> action) {
-        action.accept(GeneralShapes.CUBE);
     }
 
     @Override

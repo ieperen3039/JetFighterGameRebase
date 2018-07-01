@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -15,9 +16,7 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Matrix3f;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -51,9 +50,6 @@ public abstract class MovingEntity implements Touchable {
 
     private VectorInterpolator positionInterpolator;
     private QuaternionInterpolator rotationInterpolator;
-
-    /** collision of this gametick, null if it doesn't hit */
-    private Extreme<Collision> nextCrash;
     /** cached positions of the hitpoints */
     private Collection<TrackedVector<PosVector>> hitPoints = null;
 
@@ -130,8 +126,6 @@ public abstract class MovingEntity implements Touchable {
      * @param netForce  the net external forces on this object
      */
     public void preUpdate(float deltaTime, DirVector netForce) {
-        nextCrash = new Extreme<>(false);
-
         extraPosition.set(position);
         extraRotation.set(rotation);
         extraVelocity.set(velocity);
@@ -204,15 +198,15 @@ public abstract class MovingEntity implements Touchable {
     }
 
     /**
-     * checks the movement of the hitpoints of this object against the planes of 'other'. This method must be
-     * thread-safe
+     * checks the movement of the hitpoints of this object against the planes of 'other'. This method may not change the
+     * state of this or of other
      * @param other     an object that may hit this object
      * @param deltaTime
      * @return true if there was a collision. This also means that the other has a collision as well
      */
-    public boolean checkCollisionWith(Touchable other, float deltaTime) {
+    public Collision checkCollisionWith(Touchable other, float deltaTime) {
         // projectiles cannot be hit
-        if (other instanceof AbstractProjectile) return false;
+        if (other instanceof AbstractProjectile) return null;
 
         Collision newCollision = hitPoints.stream()
                 // see which points collide with the other
@@ -224,26 +218,13 @@ public abstract class MovingEntity implements Touchable {
                 // if there has been no collision, return null
                 .orElse(null);
 
-        if (newCollision == null) return false;
+        if (newCollision == null) return null;
 
         other.acceptCollision(newCollision);
         // if the other is a spectral, pretend it didn't hit
-        if (other instanceof Spectral) return false;
+        if (other instanceof Spectral) return null;
 
-        // update if there is a collision earlier than the currently registered collision
-        nextCrash.check(newCollision);
-
-        return true;
-    }
-
-    @Override
-    public void acceptCollision(Collision cause) {
-        nextCrash.check(new Collision(cause, this));
-    }
-
-    /** @return an unique number given by the server */
-    public int idNumber() {
-        return thisID;
+        return newCollision;
     }
 
     /**
@@ -317,6 +298,11 @@ public abstract class MovingEntity implements Touchable {
                 .forEach(list::add);
         toLocalSpace(identity, () -> create(identity, collect), extrapolate);
         return list;
+    }
+
+    @Override
+    public void toLocalSpace(MatrixStack ms, Runnable action) {
+        toLocalSpace(ms, action, false);
     }
 
     /**
@@ -468,37 +454,29 @@ public abstract class MovingEntity implements Touchable {
     }
 
     /**
-     * reacts on the last collision as a full elastic collision
+     * reacts on the given collision as a full elastic collision
      * @param deltaTime
+     * @param collision
      */
-    public void terrainCollision(float deltaTime) {
-        // calculate inverse inertia tensor
-        Matrix3f inertTensor = new Matrix3f().scale(1 / mass);
-        Matrix3f rotMatrix = rotation.get(new Matrix3f());
-        Matrix3f rotInert = rotMatrix.mul(inertTensor, inertTensor);
-        Matrix3f rotTranspose = rotMatrix.transpose();
-        Matrix3f invInertTensor = rotInert.mul(rotTranspose).invert();
-
-        DirVector contactNormal = nextCrash.get().normal();
-        PosVector hitPosition = nextCrash.get().hitPosition();
+    public void terrainCollision(float deltaTime, Collision collision) {
+        DirVector contactNormal = collision.normal();
 
         Logger.print(extraVelocity, contactNormal);
         if (extraVelocity.dot(contactNormal) < 0) {
             extraVelocity.reflect(contactNormal);
         }
-        Vector3f angularVelChange = contactNormal.cross(hitPosition, new Vector3f());
-        invInertTensor.transform(angularVelChange);
-        angularVelChange.mul(0.8f);
-
-        rollSpeed += angularVelChange.x;
-        pitchSpeed += angularVelChange.y;
-        yawSpeed += angularVelChange.z;
 
         recalculateMovement(deltaTime);
     }
 
-    public void toLocalSpace(MatrixStack ms, Runnable action) {
-        toLocalSpace(ms, action, false);
+    /** @return an unique number given by the server */
+    public int idNumber() {
+        return thisID;
+    }
+
+    @Override
+    public void create(MatrixStack ms, Consumer<Shape> action) {
+        action.accept(GeneralShapes.CUBE);
     }
 
     public static class State {

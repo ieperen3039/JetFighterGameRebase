@@ -37,9 +37,9 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         super("Server", ServerSettings.TARGET_TPS, true);
         this.lobby = world;
         this.globalTime = new GameTimer();
+        connections = new ArrayList<>();
 
         world.buildScene(this, COLLISION_DETECTION_LEVEL, true);
-        connections = new ArrayList<>();
     }
 
     /**
@@ -65,7 +65,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
 
         playersInLobby++;
         lobby.addEntity(player);
-        lobby.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
+//        lobby.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
     }
 
     @Override

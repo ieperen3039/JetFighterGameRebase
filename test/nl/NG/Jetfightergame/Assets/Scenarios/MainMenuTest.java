@@ -1,12 +1,14 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * @author Geert van Ieperen
  * created on 15-2-2018.
  */
+@Ignore
 public class MainMenuTest {
 
     @Test

@@ -38,4 +38,9 @@ public interface TimedQueue<T> {
     double timeUntilNext(double timeStamp);
 
 
+    /**
+     * upon returning, nextTimeStamp > timeStamp or there exist no item with such timestamp.
+     * @param timeStamp the time until where the state of the queue should be updated.
+     */
+    void updateTime(double timeStamp);
 }

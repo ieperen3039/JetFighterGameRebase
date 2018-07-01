@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.PathDescription;
@@ -9,7 +10,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.DataStructures.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -30,7 +30,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
  */
 public abstract class GameState implements Environment, NetForceProvider, PathDescription {
 
-    protected final Collection<ParticleCloud> particles = new ConcurrentArrayList<>();
+    protected final Collection<ParticleCloud> particles = new ArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
     private ParticleCloud newParticles = new ParticleCloud();
 
@@ -40,17 +40,22 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     @Override
     public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
         final Collection<Touchable> staticEntities = createWorld();
-        final Collection<MovingEntity> dynamicEntities = loadDynamic ? setEntities(deposit) : new ArrayList<>();
 
         switch (collisionDetLevel){
             case 0:
-                physicsEngine = new EntityList(dynamicEntities, staticEntities);
+                physicsEngine = new EntityList(staticEntities);
                 break;
             case 1:
-                physicsEngine = new CollisionDetection(dynamicEntities, staticEntities);
+                physicsEngine = new CollisionDetection(staticEntities);
                 break;
             default:
                 throw new UnsupportedOperationException("unsupported collision detection level:" + collisionDetLevel);
+        }
+
+        if (loadDynamic) {
+            for (Spawn spawn : getInitialEntities()) {
+                deposit.addSpawn(spawn);
+            }
         }
     }
 
@@ -66,14 +71,12 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
 
     /**
      * @return all the dynamic entities that are standard part of this world
-     * @param deposit
      */
-    protected abstract Collection<MovingEntity> setEntities(SpawnReceiver deposit);
+    protected abstract Collection<Spawn> getInitialEntities();
 
     @Override
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop(float currentTime, float deltaTime) {
-
         // update positions and apply physics
         physicsEngine.preUpdateEntities(this, deltaTime);
 
@@ -109,10 +112,9 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
 
     @Override
     public void drawObjects(GL2 gl) {
+        glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
 //        Toolbox.drawAxisFrame(gl);
         physicsEngine.getStaticEntities().forEach(d -> d.draw(gl));
-
-        glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
         physicsEngine.getDynamicEntities().forEach(d -> d.draw(gl));
     }
 

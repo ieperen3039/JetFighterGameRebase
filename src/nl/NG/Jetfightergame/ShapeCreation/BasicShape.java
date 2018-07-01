@@ -63,8 +63,7 @@ public class BasicShape implements Shape {
     }
 
     public static List<Shape> loadSplit(String fileName, boolean loadMesh, float containerSize, float scale) {
-        // TODO position == (0, 0, 0)
-        ShapeParameters file = new ShapeParameters(fileName, new PosVector(0, 0, -400), scale);
+        ShapeParameters file = new ShapeParameters(fileName, PosVector.zeroVector(), scale);
         HashMap<Vector3i, CustomShape> world = new HashMap<>();
 
         for (Mesh.Face f : file.faces) {

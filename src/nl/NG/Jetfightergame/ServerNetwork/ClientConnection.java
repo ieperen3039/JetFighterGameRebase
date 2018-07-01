@@ -179,6 +179,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         } catch (IOException e) {
             e.printStackTrace();
+
         } finally {
             sendLock.unlock();
         }
@@ -190,7 +191,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     protected void cleanup() {
         try {
             serverIn.close();
-            Logger.print(this + " connection close");
+            Logger.print(this + " connection is closed");
         } catch (IOException e) {
             e.printStackTrace();
         }

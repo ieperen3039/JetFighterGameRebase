@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
 import static org.lwjgl.glfw.GLFW.*;
@@ -68,12 +68,11 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            GameTimer globalGameTimer = new GameTimer();
             Socket socket = new Socket();
 
             // TODO get environment from the server
-            Function<GameTimer, Environment> worldFactory = time -> new PlayerJetLaboratory();
-            Environment environment = worldFactory.apply(globalGameTimer);
+            Supplier<Environment> worldFactory = PlayerJetLaboratory::new;
+            Environment environment = worldFactory.get();
 
             if (ClientSettings.LOCAL_SERVER) {
                 Logger.print("Creating new local server");

@@ -1,12 +1,11 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.GameState.GameState;
-import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -17,6 +16,8 @@ import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
+
+import static nl.NG.Jetfightergame.ServerNetwork.EntityClass.FALLING_CUBE_SMALL;
 
 /**
  * @author Geert van Ieperen
@@ -33,8 +34,7 @@ public class PlayerJetLaboratory extends GameState {
 
         for (Shape shape : GeneralShapes.ISLAND1) {
             entities.add(new StaticObject(
-                    shape, new PosVector(0, 0, -50),
-                    Material.ROUGH, getColor(ind++), 1
+                    shape, Material.ROUGH, getColor(ind++), new PosVector(0, 0, -500)
             ));
         }
 
@@ -59,8 +59,8 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<MovingEntity> setEntities(SpawnReceiver deposit) {
-        Collection<MovingEntity> dynamicEntities = new ArrayList<>();
+    protected Collection<Spawn> getInitialEntities() {
+        Collection<Spawn> dynamicEntities = new ArrayList<>();
 
         int[] vals = new int[]{-1, 1};
         // for x = -1 and x = 1
@@ -71,8 +71,7 @@ public class PlayerJetLaboratory extends GameState {
 //                for (int z : vals) {
                 {
                     int z = 2;
-                    dynamicEntities.add(EntityClass.FALLING_CUBE_LARGE.construct(
-                            Identity.next(), deposit, null,
+                    dynamicEntities.add(new Spawn(EntityClass.FALLING_CUBE_LARGE,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new Quaternionf(), new DirVector()
                     ));
@@ -80,8 +79,7 @@ public class PlayerJetLaboratory extends GameState {
             }
         }
 
-        dynamicEntities.add(EntityClass.FALLING_CUBE_SMALL.construct(
-                Identity.next(), deposit, null,
+        dynamicEntities.add(new Spawn(FALLING_CUBE_SMALL,
                 new PosVector(20, 0, 0), new Quaternionf(), new DirVector(0, 0, -50)
         ));
 

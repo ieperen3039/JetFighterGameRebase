@@ -50,10 +50,7 @@ public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
         return (nextTimeStamp() - timeStamp);
     }
 
-    /**
-     * upon returning, nextTimeStamp > timeStamp or there exist no item with such timestamp.
-     * @param timeStamp the time until where the state of the queue should be updated.
-     */
+    @Override
     public void updateTime(double timeStamp) {
         changeGuard.lock();
 

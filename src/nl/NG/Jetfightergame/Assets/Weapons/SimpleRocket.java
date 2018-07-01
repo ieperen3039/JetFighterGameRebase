@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Weapons;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -54,16 +55,20 @@ public class SimpleRocket extends AbstractProjectile {
         ms.popMatrix();
     }
 
+    /**
+     * @param other an object that may hit this object
+     * @return null
+     */
     @Override
-    public boolean checkCollisionWith(Touchable other, float deltaTime) {
+    public Collision checkCollisionWith(Touchable other, float deltaTime) {
 //        if (other instanceof Projectile); // reward 'crimera war' achievement
 
-        if (super.checkCollisionWith(other, deltaTime)){
+        if (super.checkCollisionWith(other, deltaTime) != null) {
             other.impact(IMPACT_POWER);
             this.timeToLive = 0;
         }
         // there is no physical effect of projectile impact
-        return false;
+        return null;
     }
 
     @Override

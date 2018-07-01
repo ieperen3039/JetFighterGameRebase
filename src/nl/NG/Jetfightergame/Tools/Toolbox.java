@@ -12,6 +12,7 @@ import org.joml.Quaternionf;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
 
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -59,9 +60,29 @@ public final class Toolbox {
     public static void checkGLError() {
         if (!ServerSettings.DEBUG) return;
         int error;
+        int i = 0;
         while ((error = glGetError()) != GL_NO_ERROR) {
-            Logger.printFrom(2, "glError " + asHex(error) + ": " + glGetString(error));
+            Logger.printFrom(2, "glError " + asHex(error) + ": " + getMessage(error));
+            if (++i == 10) throw new IllegalStateException("Context is probably not current for this thread");
         }
+    }
+
+    private static String getMessage(int error) {
+        switch (error) {
+            case GL_INVALID_ENUM:
+                return "Invalid Enum";
+            case GL_INVALID_VALUE:
+                return "Invalid Value";
+            case GL_INVALID_OPERATION:
+                return "Invalid Operation";
+            case GL_STACK_OVERFLOW:
+                return "Stack Overflow";
+            case GL_STACK_UNDERFLOW:
+                return "Stack Underflow";
+            case GL_OUT_OF_MEMORY:
+                return "Out of Memory";
+        }
+        return "Unknown Error";
     }
 
     public static String asHex(int decimal) {
@@ -104,7 +125,7 @@ public final class Toolbox {
     }
 
     /**
-     * performs an incremental insertion-sort on (preferably nearly-sorted) array entities
+     * performs an incremental insertion-sort on (preferably nearly-sorted) the given array
      * @param items the array to sort
      * @param map   maps a moving source to the value to be sorted upon
      * @modifies items
@@ -132,43 +153,46 @@ public final class Toolbox {
     /**
      * merges a joining array into this array, and removes {@link TemporalEntity} entities that are overdue as in {@link
      * TemporalEntity#isOverdue()}
-     * @param host the sorted largest of the arrays to merge, entities in this array will be checked for relevance.
-     * @param join the sorted other array to merge
+     * @param host the sorted largest non-empty of the arrays to merge, entities in this array will be checked for relevance.
+     * @param join the sorted other non-empty array to merge
      * @param map  maps a moving source to the value to be sorted upon
      * @return a sorted array of living entities from both host and join combined.
      */
     public static <Type> Type[] mergeArrays(Type[] host, Type[] join, Function<Type, Float> map) {
-        Type[] results = Arrays.copyOf(host, host.length + join.length);
+        int hLength = host.length;
+        int jLength = join.length;
 
+        Type[] results = Arrays.copyOf(host, hLength + jLength);
+        // current indices
         int hIndex = 0;
         int jIndex = 0;
-        Type hostItem = host[0];
-        Type joinItem = join[0];
 
         for (int i = 0; i < results.length; i++) {
-            // all host items must be checked for isDead, so first see if there are any left
-            if (hIndex >= host.length) {
-                results[i] = joinItem;
-                joinItem = join[jIndex++];
+            if (jIndex >= jLength) {
+                results[i] = host[hIndex];
+                hIndex++;
 
-            } else if (jIndex >= join.length) {
-                results[i] = hostItem;
-                hostItem = host[hIndex++];
+            } else if (hIndex >= hLength) {
+                results[i] = join[jIndex];
+                jIndex++;
 
             } else {
+                Type hostItem = host[hIndex];
+                Type joinItem = join[jIndex];
+
                 // select the smallest
                 if (map.apply(hostItem) < map.apply(joinItem)) {
                     results[i] = hostItem;
-                    hostItem = host[hIndex++];
+                    hIndex++;
 
                 } else {
                     results[i] = joinItem;
-                    joinItem = join[jIndex++];
+                    jIndex++;
                 }
-
             }
         }
 
+        // loop automatically ends after at most (i = alpha.length + beta.length) iterations
         return results;
     }
 
@@ -182,5 +206,28 @@ public final class Toolbox {
         return val1 + ((val2 - val1) * random.nextFloat());
     }
 
+    /**
+     * executes the given function {@code size} times in parallel, with as parameters the numbers [0 ... size]
+     * @param function
+     * @param size
+     * @throws InterruptedException
+     */
+    public static void inParallel(IntConsumer function, int size) {
+        Thread[] waitList = new Thread[size];
 
+        for (int i = 0; i < size; i++) {
+            int n = i;
+            Thread thread = new Thread(() -> function.accept(n));
+            thread.start();
+            waitList[i] = thread;
+        }
+
+        try {
+            for (Thread thread : waitList) {
+                thread.join();
+            }
+        } catch (InterruptedException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 }
