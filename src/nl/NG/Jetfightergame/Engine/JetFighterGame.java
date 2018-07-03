@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
-import nl.NG.Jetfightergame.GameState.Environment;
-import nl.NG.Jetfightergame.Player;
+import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
@@ -71,8 +71,8 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
             Socket socket = new Socket();
 
             // TODO get environment from the server
-            Supplier<Environment> worldFactory = PlayerJetLaboratory::new;
-            Environment environment = worldFactory.get();
+            Supplier<GameState> worldFactory = PlayerJetLaboratory::new;
+            GameState environment = worldFactory.get();
 
             if (ClientSettings.LOCAL_SERVER) {
                 Logger.print("Creating new local server");
@@ -84,14 +84,14 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             }
 
-            connection = new ClientConnection(socket, environment);
+            connection = new ClientConnection(socket, environment, "TheLegend27");
             otherLoops.add(connection);
 
-            Player player = connection.getPlayer();
+            ClientControl player = connection;
             AbstractJet playerJet = player.jet();
             Logger.print("Received " + playerJet + " from the server");
 
-            environment.buildScene(connection, ClientSettings.COLLISION_DETECTION_LEVEL, false);
+            environment.buildScene(connection, connection.getRaceProgress(), ClientSettings.COLLISION_DETECTION_LEVEL, false);
             environment.addEntity(playerJet);
 
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
@@ -100,7 +100,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
                     this, environment, window, camera, player.getInputControl(), hud
             );
 
-            camera.switchTo(PointCenteredCamera, new PosVector(3, -3, 2), playerJet, DirVector.zVector());
+            camera.switchTo(PointCenteredCamera, new PosVector(-5, 4, 2), playerJet, DirVector.zVector());
 
             new Thread(connection::listen).start();
 

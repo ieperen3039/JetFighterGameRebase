@@ -32,8 +32,8 @@ public class JetFighterServerTest {
     private Exception tryConnect(Socket client) {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
-            ClientConnection cc = new ClientConnection(client, new CollisionLaboratory());
-            Logger.print("received a " + cc.getPlayer());
+            ClientConnection cc = new ClientConnection(client, new CollisionLaboratory(), "TheLegend27");
+            Logger.print("received a " + cc);
         } catch (IOException e) {
             return e;
         }

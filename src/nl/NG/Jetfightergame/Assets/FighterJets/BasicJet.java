@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 public class BasicJet extends AbstractJet {
 
     public static final float LIFT_FACTOR = 1f;
-    public static final float THROTTLE_POWER = 500f;
+    public static final float THROTTLE_POWER = 800f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
     public static final float MASS = 40f;
     public static final Material MATERIAL = Material.SILVER;

@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
@@ -57,7 +58,7 @@ public class MissionSnake extends GameState {
 
 
     @Override
-    protected Collection<Touchable> createWorld() {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         Collection<Touchable> staticEntities = new ArrayList<>();
         staticEntities.add(new StaticObject(gameFloor, WORLD_MATERIAL, Color4f.BLUE));
 

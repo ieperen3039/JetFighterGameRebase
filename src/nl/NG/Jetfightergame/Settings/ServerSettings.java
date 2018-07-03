@@ -28,6 +28,7 @@ public final class ServerSettings {
 
     /** miscellaneous */
     public static final int INTERPOLATION_QUEUE_SIZE = 10;
+    public static final int PLAYERS_PER_RACE = 8;
     public static boolean RENDER_ENABLED = false;
 
     /** shape constants */

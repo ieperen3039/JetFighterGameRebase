@@ -20,6 +20,7 @@ public class CheckpointRing implements Shape {
 
     /**
      * create a torus with 4 sides. Its center is on (0, 0, 0) and lies on the YZ plane.
+     * It has a radius of 1 and the visible ring has no collision detection
      * @param radialParts   how many sections are used to construct the ring.
      * @param ringThiccness radius of the ring to its sides
      * @param loadMesh      if true, a mesh instance is loaded to the GPU

@@ -111,7 +111,7 @@ public abstract class AbstractJet extends MovingEntity {
         velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
         baseThrust = BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
 
-        Supplier<String> slowTimer = () -> String.format("%3d%% slow for %.1f seconds", ((int) (slowFactor * 100)), slowTimeLeft);
+        Supplier<String> slowTimer = () -> slowTimeLeft > 0 ? String.format("%3d%% slow for %.1f seconds", ((int) (slowFactor * 100)), slowTimeLeft) : "";
         Logger.printOnline(slowTimer);
     }
 
@@ -213,8 +213,8 @@ public abstract class AbstractJet extends MovingEntity {
 
     @Override
     public void impact(float power) {
-        slowTimeLeft += power;
-        slowFactor = 0.5f;
+        slowTimeLeft += power / (slowTimeLeft + 1);
+        slowFactor = 0.5f; // TODO make it constant?
     }
 
     /**

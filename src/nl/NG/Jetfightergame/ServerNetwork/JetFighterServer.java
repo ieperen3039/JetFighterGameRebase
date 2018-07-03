@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
-import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
@@ -38,11 +38,11 @@ public class JetFighterServer {
     /**
      * starts a single environment to run exactly once.
      * @param environment the world to simulate in. Do not use this object afterward
-     * @param loadModels whether the server should trigger a load of the models.
-     *                   set this to true iff the server is not running as offline server (i.e. sharing objects)
+     * @param loadModels  whether the server should trigger a load of the models. set this to true iff the server is not
+     *                    running as offline server (i.e. sharing objects)
      * @throws IOException if a serversocket could not be created
      */
-    private JetFighterServer(Environment environment, boolean loadModels) throws IOException {
+    private JetFighterServer(GameState environment, boolean loadModels) throws IOException {
         currentPhase = BOOTING;
 
         if (loadModels) {
@@ -59,11 +59,11 @@ public class JetFighterServer {
     /**
      * creates a thread on the local machine, connecting the given socket as host.
      * @param worldCreator a constructor for the world on which is played
-     * @param client the connection between front-end and back-end
+     * @param client       the connection between front-end and back-end
      * @throws IOException if the initialisation runs into problems
      */
-    public static AbstractGameLoop createOfflineServer(Supplier<Environment> worldCreator, Socket client) throws IOException, InterruptedException {
-        Environment world = worldCreator.get();
+    public static AbstractGameLoop createOfflineServer(Supplier<GameState> worldCreator, Socket client) throws IOException, InterruptedException {
+        GameState world = worldCreator.get();
 
         JetFighterServer server = new JetFighterServer(world, false);
         // internal connect, this thread will soon terminate
@@ -74,8 +74,7 @@ public class JetFighterServer {
     }
 
     /**
-     * blocks until one connection is made.
-     * The host of this server is set to the next connection.
+     * blocks until one connection is made. The host of this server is set to the next connection.
      */
     public void listenForHost() {
         if ((currentPhase != WAITING_FOR_HOST) && (currentPhase != PREPARATION)) {
@@ -87,21 +86,21 @@ public class JetFighterServer {
             acceptConnection(true);
             currentPhase = PREPARATION;
 
-        } catch (IOException ex){
+        } catch (IOException ex) {
             Logger.printError(ex);
         }
     }
 
     /**
-     * listens to the predefined port, adding all incoming requests to clients.
-     * blocks while listening.
+     * listens to the predefined port, adding all incoming requests to clients. blocks while listening.
      * @throws IOException if an I/O error occurs when waiting for a connection
      */
     public void listen() throws IOException {
-        if (currentPhase != PREPARATION) throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
+        if (currentPhase != PREPARATION)
+            throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
         Logger.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
 
-        while ((currentPhase == PREPARATION) && acceptConnection(false));
+        while ((currentPhase == PREPARATION) && acceptConnection(false)) ;
 
         Logger.print("Stopped listening for new players");
         currentPhase = STARTING;
@@ -116,11 +115,13 @@ public class JetFighterServer {
     }
 
     /**
-     * Stop accepting connections, and open a portal to the new world. Possible delay between these two actions should be handeled in the lobby world.
+     * Stop accepting connections, and open a portal to the new world. Possible delay between these two actions should
+     * be handled in the lobby world.
      * @param world the world to start
      */
-    public void upgrade(Environment world) {
+    public void upgrade(GameState world) {
         currentPhase = STARTING; // TODO stop listen() calls connections
+        // TODO notify clients
         game.startMap(world);
     }
 
@@ -131,7 +132,7 @@ public class JetFighterServer {
 
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
-        Environment world = new PlayerJetLaboratory();
+        GameState world = new PlayerJetLaboratory();
         JetFighterServer server = new JetFighterServer(world, true);
         server.listenForHost();
 

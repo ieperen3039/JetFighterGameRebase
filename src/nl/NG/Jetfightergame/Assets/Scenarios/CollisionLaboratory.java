@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -48,7 +49,7 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Touchable> createWorld() {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
 //        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.3f)));
         return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, Material.ROUGH, Color4f.ORANGE, null, labSize));
     }

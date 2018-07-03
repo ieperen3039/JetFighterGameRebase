@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -25,10 +26,9 @@ import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
 
 /**
- * @author Geert van Ieperen
- * created on 11-12-2017.
+ * @author Geert van Ieperen created on 11-12-2017.
  */
-public abstract class GameState implements Environment, NetForceProvider, PathDescription {
+public abstract class GameState implements EntityManagement.NetForceProvider, PathDescription, EntityMapping {
 
     protected final Collection<ParticleCloud> particles = new ArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
@@ -37,11 +37,19 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
     private EntityManagement physicsEngine;
     private Lock addParticleLock = new ReentrantLock();
 
-    @Override
-    public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
-        final Collection<Touchable> staticEntities = createWorld();
+    /**
+     * initialize the scene. Make sure to call Shapes.init() for all shapes you want to initialize
+     * @param deposit           new entities are deposited here
+     * @param raceProgress      the management of the checkpoints and race-situation. The checkpoints of this world are
+     *                          added upon returning
+     * @param collisionDetLevel 0 = no collision
+     * @param loadDynamic       if false, all dynamic entities are not loaded. This is required if these are managed by
+     *                          a server
+     */
+    public void buildScene(SpawnReceiver deposit, RaceProgress raceProgress, int collisionDetLevel, boolean loadDynamic) {
+        final Collection<Touchable> staticEntities = createWorld(raceProgress);
 
-        switch (collisionDetLevel){
+        switch (collisionDetLevel) {
             case 0:
                 physicsEngine = new EntityList(staticEntities);
                 break;
@@ -53,28 +61,30 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         }
 
         if (loadDynamic) {
-            for (Spawn spawn : getInitialEntities()) {
-                deposit.addSpawn(spawn);
-            }
+            getInitialEntities().forEach(deposit::addSpawn);
         }
     }
 
-    @Override
     public MovingEntity.State getNewSpawn() {
         return new MovingEntity.State();
     }
 
     /**
+     * @param raceProgress the progress tracker.
      * @return all the static entities that are part of this world
      */
-    protected abstract Collection<Touchable> createWorld();
+    protected abstract Collection<Touchable> createWorld(RaceProgress raceProgress);
 
     /**
      * @return all the dynamic entities that are standard part of this world
      */
     protected abstract Collection<Spawn> getInitialEntities();
 
-    @Override
+    /**
+     * update the physics of all game objects and check for collisions
+     * @param currentTime
+     * @param deltaTime
+     */
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop(float currentTime, float deltaTime) {
         // update positions and apply physics
@@ -89,7 +99,9 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         physicsEngine.updateEntities(currentTime);
     }
 
-    @Override
+    /**
+     * initializes the lights of this environment in the gl environment
+     */
     public void setLights(GL2 gl) {
         for (Pair<PosVector, Color4f> l : lights) {
             final PosVector pos = l.left;
@@ -110,7 +122,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         }
     }
 
-    @Override
+    /** draw all objects of the game */
     public void drawObjects(GL2 gl) {
         glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
 //        Toolbox.drawAxisFrame(gl);
@@ -118,7 +130,7 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         physicsEngine.getDynamicEntities().forEach(d -> d.draw(gl));
     }
 
-    @Override
+    /** draw all particles of the game */
     public void drawParticles(float currentTime) {
         if (newParticles.readyToLoad()) {
             addParticleLock.lock();
@@ -132,43 +144,53 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         particles.forEach(ParticleCloud::render);
     }
 
+    /** @return the estimated number of particles at the given time. */
     public int getParticleCount(float currentTime) {
         return particles.parallelStream()
                 .mapToInt(p -> p.estParticlesAt(currentTime))
                 .sum();
     }
 
-    @Override
+    /** all entities added by the constructor or using {@link #addEntity(MovingEntity) */
     public Collection<MovingEntity> getEntities() {
         return physicsEngine.getDynamicEntities();
     }
 
-    @Override
-    public void addEntity(MovingEntity entity) {
-        physicsEngine.addEntity(entity);
-    }
-
-    @Override
+    /**
+     * Searches the entity corresponding to the given ID, or null if no such entity exists
+     * @param entityID the ID number of an existing entity
+     * @return the entity with the given entityID, or null if no such entity exists
+     */
     public MovingEntity getEntity(int entityID) {
         for (MovingEntity entity : physicsEngine.getDynamicEntities()) {
-            if (entity.idNumber() == entityID){
+            if (entity.idNumber() == entityID) {
                 return entity;
             }
         }
         return null;
     }
 
-    @Override
-    public void removeEntity(MovingEntity entity) {
-        physicsEngine.removeEntity(entity);
+    /**
+     * Adds an entity to this world.
+     * @param entity an entity, set in the appropriate position, not being controlled by outside resources
+     * @see #getEntity(int)
+     */
+    public void addEntity(MovingEntity entity) {
+        physicsEngine.addEntity(entity);
     }
 
-    @Override
     public void addEntities(Collection<? extends MovingEntity> entities) {
         physicsEngine.addEntities(entities);
     }
 
-    @Override
+    /**
+     * Removes an entity off this world.
+     * @param entity the entity to be removed
+     */
+    public void removeEntity(MovingEntity entity) {
+        physicsEngine.removeEntity(entity);
+    }
+
     public void addParticles(ParticleCloud cloud) {
         if (cloud.readyToLoad()) {
             addParticleLock.lock();
@@ -183,14 +205,22 @@ public abstract class GameState implements Environment, NetForceProvider, PathDe
         }
     }
 
+    /**
+     * allows this object to be cleaned. after calling this method, this object should not be used.
+     */
     public void cleanUp() {
         lights.clear();
         particles.clear();
         physicsEngine.cleanUp();
-        physicsEngine = null;
     }
 
     public PosVector getMiddleOfPath(PosVector position) {
         return PosVector.zeroVector();
     }
+
+    /**
+     * light of the background, alpha determines the thickness of the fog
+     * @return the background-color
+     */
+    public abstract Color4f fogColor();
 }

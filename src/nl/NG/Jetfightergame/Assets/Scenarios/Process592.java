@@ -2,11 +2,11 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -32,12 +32,12 @@ import static org.lwjgl.opengl.GL11.glDisable;
  * @author Geert van Ieperen
  * created on 13-2-2018.
  */
-public class Process592 implements Environment {
+public abstract class Process592 {
 
     private static final int SCALE = 50;
     private static final float OFFSET = 0.1f;
     private static final float SPACE = SCALE/2;
-    private final Player player;//TODO
+    private final ClientControl clientControl;//TODO
     private final List<ParticleCloud> particles;
 
     private GameTimer time = new GameTimer(); // I know, time does not exist, but it is for user experience.
@@ -55,36 +55,49 @@ public class Process592 implements Environment {
 
     /**
      * @param worldSelector Consumer of worlds. Must be available and implemented
-     * @param player
+     * @param clientControl
      */
-    public Process592(Consumer<Worlds> worldSelector, Player player) {
+    public Process592(Consumer<Worlds> worldSelector, ClientControl clientControl) {
         particles = new ArrayList<>();
         currentItems = worldSelectionMenu(worldSelector);
-        this.player = player;
+        this.clientControl = clientControl;
     }
 
-    @Override
+    /**
+     * initialize the scene. Make sure to call Shapes.init() for all shapes you want to initialize
+     * @param deposit
+     * @param collisionDetLevel 0 = no collision
+     * @param loadDynamic       if false, all dynamic entities are not loaded. This is required if these are managed by
+     *                          a server
+     */
     public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
-        player.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
+        clientControl.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
     }
 
-    @Override
     public MovingEntity.State getNewSpawn() {
         return new MovingEntity.State();
     }
 
-    @Override
+    /**
+     * update the physics of all game objects and check for collisions
+     * @param currentTime
+     * @param deltaTime
+         */
     public void updateGameLoop(float currentTime, float deltaTime) {
     }
 
-    @Override
+    /**
+     * initializes the lights of this environment in the gl environment
+         */
     public void setLights(GL2 gl) {
     }
 
-    @Override
+    /**
+     * draw all objects of the game
+         */
     public void drawObjects(GL2 gl) {
         glDisable(GL_CULL_FACE);
-        player.jet().draw(gl);
+        clientControl.jet().draw(gl);
 
         gl.pushMatrix();
         {
@@ -107,11 +120,11 @@ public class Process592 implements Environment {
      * @param gl
      */
     private void updateAndDrawPlayer(GL2 gl) {
-        final AbstractJet jet = player.jet();
+        final AbstractJet jet = clientControl.jet();
         jet.applyPhysics(DirVector.zeroVector(), 0.1f);
         jet.update(0.1f);
         jet.set(PosVector.zeroVector());
-        player.jet().draw(gl);
+        clientControl.jet().draw(gl);
     }
 
     private void drawPanels(GL2 gl, int parts) {
@@ -151,7 +164,7 @@ public class Process592 implements Environment {
 
     private void readControllerInput() {
         // read controller input
-        final Controller input = player.getInput();
+        final Controller input = clientControl.getInput();
 
         final Float deltaTime = time.getGameTime().difference();
 
@@ -161,40 +174,52 @@ public class Process592 implements Environment {
         if (input.primaryFire() && (selection >= 0)) currentItems[selection].run();
     }
 
-    @Override
     public void drawParticles(float currentTime) {
         float t = time.getRenderTime().current();
         particles.removeIf(p -> p.disposeIfFaded(t));
         particles.forEach(ParticleCloud::render);
     }
 
-    @Override
+    /** all entities added by the constructor or using {@link #addEntity(MovingEntity) */
     public Collection<MovingEntity> getEntities() {
         return Collections.EMPTY_SET;
     }
 
-    @Override
+    /**
+     * allows this object to be cleaned.
+     * after calling this method, this object should not be used.
+         */
     public void cleanUp() {
         particles.clear();
     }
 
-    @Override
+    /**
+     * adds an entity to this world
+     * @param entity an entity, set in the appropriate position, not being controlled by outside resources
+     * @see #getEntity(int)
+         */
     public void addEntity(MovingEntity entity) {
         // maybe a bit pessimistic
         throw new UnsupportedOperationException();
     }
 
-    @Override
+    /**
+     * searches the entity corresponding to the given ID, or null if no such entity exists
+     * @param entityID the ID number of an existing entity
+     * @return the entity with the given entityID, or null if no such entity exists
+         */
     public MovingEntity getEntity(int entityID) {
         return null;
     }
 
-    @Override
+    /**
+     * removes an entity off this world.
+     * @param entity the entity to be removed
+         */
     public void removeEntity(MovingEntity entity) {
         throw new UnsupportedOperationException("removeEntity");
     }
 
-    @Override
     public void addParticles(ParticleCloud newParticles) {
         particles.add(newParticles);
     }
@@ -217,10 +242,23 @@ public class Process592 implements Environment {
         return main;
     }
 
-    @Override
+    /**
+     * light of the background, alpha determines the thickness of the fog
+     * @return the background-color
+         */
     public Color4f fogColor(){
         return new Color4f(0.2f, 0.2f, 0.2f, 0f);
     }
+
+    public void addEntities(Collection<? extends MovingEntity> entities) {
+        entities.forEach(this::addEntity);
+    }
+
+    /**
+     * adds
+     * @param raceProgress
+     */
+    public abstract void addCheckPoints(RaceProgress raceProgress);
 
     protected static class MenuPanel implements Runnable {
         private static final float INNER = 0.3f;

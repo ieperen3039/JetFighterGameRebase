@@ -4,12 +4,15 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
+import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.Player;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -19,75 +22,92 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 
 /**
  * @author Geert van Ieperen created on 6-5-2018.
  */
-public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver {
-    private final Player player;
-
-    private final BufferedOutputStream serverOut;
-    private final InputStream serverIn;
-    private final Environment game;
+public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver, ClientControl {
+    private final DataOutputStream serverOut;
+    private final DataInputStream serverIn;
+    private final GameState game;
 
     private Lock sendLock = new ReentrantLock();
     private GameTimer time;
 
-    public ClientConnection(Socket connection, Environment game) throws IOException {
+    private final SubControl input;
+    private final AbstractJet jet;
+    private RaceProgress gameProgress;
+    private String name;
+
+    public ClientConnection(Socket connection, GameState game, String name) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
-        this.serverOut = new BufferedOutputStream(connection.getOutputStream());
-        this.serverIn = connection.getInputStream();
+        this.serverOut = new DataOutputStream(new BufferedOutputStream(connection.getOutputStream()));
+        this.serverIn = new DataInputStream(connection.getInputStream());
         this.game = game;
-
-        time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
-
-        String name = connection.getInetAddress().getHostName();
-        player = new Player(name, this);
-        AbstractJet playerJet = getPlayerJet(player.getInput());
-        player.setJet(playerJet);
+        this.name = name;
+        this.input = new SubControl(EmptyController);
+        this.jet = getPlayerJet(input, name);
+        this.time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
+        this.gameProgress = new RaceProgress();
     }
 
     @Override
     public boolean handleMessage() throws IOException {
         MessageType type = MessageType.get(serverIn.read());
 
-        if (type == MessageType.ENTITY_SPAWN) {
-            MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, this, Controller.EMPTY);
-            game.addEntity(newEntity);
+        switch (type) {
+            case ENTITY_SPAWN:
+                MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, this, Controller.EMPTY);
+                game.addEntity(newEntity);
+                break;
 
-        } else if (type == MessageType.ENTITY_UPDATE) {
-            JetFighterProtocol.entityUpdateRead(serverIn, game.getEntities());
+            case ENTITY_UPDATE:
+                JetFighterProtocol.entityUpdateRead(serverIn, game);
+                break;
 
-        } else if (type == MessageType.ENTITY_REMOVE) {
-            int target = JetFighterProtocol.entityRemoveRead(serverIn);
-            MovingEntity entity = game.getEntity(target);
-            game.removeEntity(entity);
+            case ENTITY_REMOVE:
+                int target = JetFighterProtocol.entityRemoveRead(serverIn);
+                MovingEntity entity = game.getEntity(target);
+                game.removeEntity(entity);
 
-            if (entity instanceof TemporalEntity) {
-                ParticleCloud explosion = ((TemporalEntity) entity).explode();
-                game.addParticles(explosion);
-            }
+                if (entity instanceof TemporalEntity) {
+                    ParticleCloud explosion = ((TemporalEntity) entity).explode();
+                    game.addParticles(explosion);
+                }
+                break;
 
-        } else if (type == MessageType.SHUTDOWN_GAME) {
-            /* triggers {@link #cleanup()}*/
-            stopLoop();
+            case PLAYER_SPAWN:
+                Player newPlayer = JetFighterProtocol.playerSpawnRead(serverIn, game);
+                gameProgress.addPlayer(newPlayer);
+                break;
 
-        } else if (type == MessageType.CONNECTION_CLOSE) {
-            return false;
+            case RACE_PROGRESS:
+                JetFighterProtocol.raceProgressRead(serverIn, gameProgress);
 
-        } else if (type == MessageType.EXPLOSION_SPAWN) {
-            ParticleCloud cloud = JetFighterProtocol.explosionRead(serverIn);
-            game.addParticles(cloud);
+            case EXPLOSION_SPAWN:
+                ParticleCloud cloud = JetFighterProtocol.explosionRead(serverIn);
+                game.addParticles(cloud);
+                break;
 
-        } else {
-            Logger.print("unknown message: " + type);
+            case SHUTDOWN_GAME:
+                /* triggers {@link #cleanup()}*/
+                stopLoop();
+                break;
+
+            case CONNECTION_CLOSE:
+                return false;
+
+            default:
+                Logger.print("Inappropriate message: " + type);
         }
 
         return true;
@@ -117,9 +137,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     /**
      * sends a single control message to the server
-     * @param type the control to adapt
+     * @param type  the control to adapt
      * @param value the value of this message
-     * @throws IOException if there is a problem with the connection to the server
+     * @throws IOException              if there is a problem with the connection to the server
      * @throws IllegalArgumentException if the number of value arguments is invalid
      * @throws IllegalArgumentException if any value is out of range
      */
@@ -137,9 +157,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     protected void update(float deltaTime) throws Exception {
-        Controller input = player.getInput();
+        Controller input = getInput();
         if (input.isActiveController()) return;
-        
+
         sendLock.lock();
         try {
             // axis controls
@@ -158,13 +178,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         serverOut.flush();
     }
 
-    private static void send(BufferedOutputStream serverOut, MessageType type, boolean isEnabled) throws IOException {
+    private static void send(DataOutputStream serverOut, MessageType type, boolean isEnabled) throws IOException {
         byte asByte = RemoteControlReceiver.toByte(isEnabled);
         serverOut.write(type.ordinal());
         JetFighterProtocol.controlSend(serverOut, asByte);
     }
 
-    private static void send(BufferedOutputStream serverOut, MessageType type, float value) throws IOException {
+    private static void send(DataOutputStream serverOut, MessageType type, float value) throws IOException {
         byte asByte = RemoteControlReceiver.toByte(value);
         serverOut.write(type.ordinal());
         JetFighterProtocol.controlSend(serverOut, asByte);
@@ -179,6 +199,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         } catch (IOException e) {
             e.printStackTrace();
+            cleanup();
 
         } finally {
             sendLock.unlock();
@@ -192,28 +213,42 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         try {
             serverIn.close();
             Logger.print(this + " connection is closed");
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex1) {
+            try {
+                serverOut.close();
+            } catch (IOException ex2) {
+                ex2.addSuppressed(ex1);
+                ex2.printStackTrace();
+            }
         }
     }
 
     /**
      * sends a request for a jet to the server and reads the final entity
-     * @see ServerConnection#createPlayer(MovingEntity.State)
-     * @param input
+     * @param input the controller (or -wrapper) used by the player
+     * @param playerName
      */
-    private AbstractJet getPlayerJet(Controller input) throws IOException {
+    private AbstractJet getPlayerJet(Controller input, String playerName) throws IOException {
         // wait for confirmation of connection
         int reply = serverIn.read();
         if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
             throw new IOException("Received " + MessageType.get(reply) + " as reaction on connection");
 
-        JetFighterProtocol.playerSpawnRequest(serverOut, EntityClass.BASIC_JET);
+        JetFighterProtocol.playerSpawnRequest(serverOut, EntityClass.BASIC_JET, playerName);
         serverOut.flush();
 
         return (AbstractJet) JetFighterProtocol.newEntityRead(
                 serverIn, this, input
         );
+    }
+
+    @Override
+    public void setControl(boolean enabled) {
+        if (enabled) {
+            input.enable();
+        } else {
+            input.disable();
+        }
     }
 
     @Override
@@ -226,7 +261,74 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         game.addParticles(Particles.explosion(position, direction, color1, color2, power, density));
     }
 
-    public Player getPlayer() {
-        return player;
+    @Override
+    public Controller getInput() {
+        return input;
+    }
+
+    @Override
+    public ControllerManager getInputControl() {
+        return input;
+    }
+
+    @Override
+    public AbstractJet jet() {
+        return jet;
+    }
+
+    public RaceProgress getRaceProgress() {
+        return gameProgress;
+    }
+
+    @Override
+    public String playerName() {
+        return name;
+    }
+
+
+    class SubControl extends ControllerManager {
+        private final ControllerImpl secondary;
+        ControllerImpl active;
+
+        public SubControl(ControllerImpl secondary) {
+            super(null, ClientConnection.this);
+            switchTo(0);
+            this.secondary = secondary;
+        }
+
+        @Override
+        public void switchTo(ControllerImpl type) {
+            active = type;
+            super.switchTo(type);
+        }
+
+        public void disable() {
+            super.switchTo(secondary);
+        }
+
+        public void enable() {
+            switchTo(active);
+        }
+    }
+
+    /** a representation of players other than this player (to be used client-side) */
+    public static class OtherPlayer implements Player {
+        private AbstractJet jet;
+        private String name;
+
+        OtherPlayer(AbstractJet jet, String name) {
+            this.jet = jet;
+            this.name = name;
+        }
+
+        @Override
+        public String playerName() {
+            return name;
+        }
+
+        @Override
+        public AbstractJet jet() {
+            return jet;
+        }
     }
 }

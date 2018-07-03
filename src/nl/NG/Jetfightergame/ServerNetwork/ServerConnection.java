@@ -1,16 +1,19 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
-import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.GameState.Player;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -19,29 +22,35 @@ import java.util.concurrent.locks.ReentrantLock;
  * can be viewed as a client's personal connection inside the server
  * @author Geert van Ieperen created on 5-5-2018.
  */
-public class ServerConnection implements BlockingListener {
-    private final InputStream clientIn;
-    private final BufferedOutputStream clientOut;
+public class ServerConnection implements BlockingListener, Player {
+    private final DataInputStream clientIn;
+    private final DataOutputStream clientOut;
     private final String clientName;
-    public final boolean hasAdminCapabilities;
+    private final boolean hasAdminCapabilities;
 
     private final GameServer server;
-    private final MovingEntity playerJet;
+    private final AbstractJet playerJet;
     private Lock sendOutput = new ReentrantLock();
 
     private final RemoteControlReceiver controls;
 
     public ServerConnection(Socket connection, boolean isAdmin, GameServer server, MovingEntity.State playerSpawn) throws IOException {
-        this.clientIn = connection.getInputStream();
-        this.clientOut = new BufferedOutputStream(connection.getOutputStream());
+        this.clientOut = new DataOutputStream(new BufferedOutputStream(connection.getOutputStream()));
+        this.clientIn = new DataInputStream(connection.getInputStream());
         this.hasAdminCapabilities = isAdmin;
         this.server = server;
         this.controls = new RemoteControlReceiver();
-        this.clientName = connection.toString();
+        // notify client
+        clientOut.write(MessageType.CONFIRM_CONNECTION.ordinal());
+        clientOut.flush();
+        // get player properties
+        Pair<String, Spawn> p = JetFighterProtocol.playerSpawnAccept(clientIn, playerSpawn);
+        clientName = p.left;
+        MovingEntity construct = p.right.construct(server, controls);
+        assert construct instanceof AbstractJet : "player tried flying on something that is not a jet.";
+        playerJet = (AbstractJet) construct;
 
         JetFighterProtocol.syncTimerSource(clientIn, clientOut, server.getTimer());
-
-        this.playerJet = createPlayer(playerSpawn);
     }
 
     /**
@@ -101,27 +110,33 @@ public class ServerConnection implements BlockingListener {
         if (type.isOf(MessageType.controls)) {
             JetFighterProtocol.controlRead(clientIn, controls, type);
 
-        } else if (type == MessageType.PING) {
-            clientOut.write(MessageType.PONG.ordinal());
-            clientOut.flush();
+        } else switch (type) {
+            case PING:
+                clientOut.write(MessageType.PONG.ordinal());
+                clientOut.flush();
+                break;
 
-        } else if (type == MessageType.START_GAME) {
-            server.unPause();
+            case START_GAME:
+                server.unPause();
+                break;
 
-        } else if (type == MessageType.PAUSE_GAME) {
-            server.pause();
+            case PAUSE_GAME:
+                server.pause();
+                break;
 
-        } else if (type == MessageType.SHUTDOWN_GAME){
-            server.shutDown();
+            case SHUTDOWN_GAME:
+                server.shutDown();
+                break;
 
-        } else if (type == MessageType.ENTITY_SPAWN) {
-            // actually works for Jets
-            Spawn spawn = JetFighterProtocol.spawnRequestRead(clientIn);
-            server.addSpawn(spawn);
+            case ENTITY_SPAWN:
+                // actually works for Jets
+                Spawn spawn = JetFighterProtocol.spawnRequestRead(clientIn);
+                server.addSpawn(spawn);
+                break;
 
-        } else {
-            long bits = clientIn.skip(type.nOfArgs());
-            Logger.printError("Message caused an error: " + type, "skipping " + bits + " bits");
+            default:
+                long bits = clientIn.skip(type.nOfArgs());
+                Logger.printError("Message caused an error: " + type, "skipping " + bits + " bits");
         }
 
         return true;
@@ -132,29 +147,14 @@ public class ServerConnection implements BlockingListener {
         return clientName;
     }
 
-    /**
-     * reads a new playerJet from the client
-     * @see ClientConnection#getPlayerJet(Controller)
-     */
-    private MovingEntity createPlayer(MovingEntity.State position) throws IOException {
-        // notify client
-        clientOut.write(MessageType.CONFIRM_CONNECTION.ordinal());
-        clientOut.flush();
-        // listen to which plane is desired
-        EntityClass type = JetFighterProtocol.playerSpawnAccept(clientIn);
-        // create new plane
-        Spawn spawn = new Spawn(type, position);
-        // it sure may be a jet but nobody cares
-        MovingEntity player = spawn.construct(server, controls);
-        // notify client about his new acquisition
-        JetFighterProtocol.newEntitySend(clientOut, spawn, player.idNumber());
-        clientOut.flush();
-
-        return player;
+    @Override
+    public AbstractJet jet() {
+        return playerJet;
     }
 
-    public MovingEntity getPlayerJet() {
-        return playerJet;
+    @Override
+    public String playerName() {
+        return clientName;
     }
 
     /**
@@ -204,6 +204,34 @@ public class ServerConnection implements BlockingListener {
         try {
             clientOut.write(MessageType.ENTITY_REMOVE.ordinal());
             JetFighterProtocol.entityRemoveSend(clientOut, entity.idNumber());
+
+        } catch (IOException ex) {
+            Logger.printError(ex);
+
+        } finally {
+            sendOutput.unlock();
+        }
+    }
+
+    public void sendProgress(String playerName, int checkPointNr, int roundNr) {
+        sendOutput.lock();
+        try {
+            clientOut.write(MessageType.RACE_PROGRESS.ordinal());
+            JetFighterProtocol.raceProgressSend(clientOut, playerName, checkPointNr, roundNr);
+
+        } catch (IOException ex) {
+            Logger.printError(ex);
+
+        } finally {
+            sendOutput.unlock();
+        }
+    }
+
+    public void sendPlayerSpawn(Player player) {
+        sendOutput.lock();
+        try {
+            clientOut.write(MessageType.PLAYER_SPAWN.ordinal());
+            JetFighterProtocol.playerSpawnSend(clientOut, player.playerName(), player.jet());
 
         } catch (IOException ex) {
             Logger.printError(ex);

@@ -6,7 +6,10 @@ import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.Player;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
+import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
 
@@ -24,22 +28,24 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_L
  * @author Geert van Ieperen
  *         created on 16-11-2017.
  */
-public class ServerLoop extends AbstractGameLoop implements GameServer {
+public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChangeListener {
 
-    private final Environment lobby;
-    private final Collection<ServerConnection> connections;
+    private final GameState lobby;
+    private final List<ServerConnection> connections;
 
-    private Environment gameWorld = null;
-    private int playersInLobby;
+    private GameState gameWorld = null;
+    private int playersInLobby = 0;
     private GameTimer globalTime;
+    private List<Player> players;
 
-    public ServerLoop(Environment world) {
+    public ServerLoop(GameState world) {
         super("Server", ServerSettings.TARGET_TPS, true);
         this.lobby = world;
         this.globalTime = new GameTimer();
-        connections = new ArrayList<>();
+        this.connections = new ArrayList<>();
+        this.players = new ArrayList<>();
 
-        world.buildScene(this, COLLISION_DETECTION_LEVEL, true);
+        lobby.buildScene(this, new RaceProgress(), COLLISION_DETECTION_LEVEL, true);
     }
 
     /**
@@ -52,7 +58,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         // establish communication handler
         ServerConnection connector = new ServerConnection(socket, asAdmin, this, lobby.getNewSpawn());
         // first thing to do is creating a player
-        MovingEntity player = connector.getPlayerJet();
+        MovingEntity player = connector.jet();
         connections.add(connector);
         new Thread(connector::listen).start();
 
@@ -61,9 +67,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
             EntityClass type = EntityClass.get(entity);
             Spawn spawn = new Spawn(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
             connector.sendEntitySpawn(spawn, entity.idNumber());
+            connector.sendPlayerSpawn(connector);
         }
 
         playersInLobby++;
+        players.add(connector);
         lobby.addEntity(player);
 //        lobby.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
     }
@@ -94,7 +102,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         connections.forEach(ServerConnection::flush);
     }
 
-    private void update(Environment world) {
+    private void update(GameState world) {
         globalTime.updateGameTime();
         world.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
 
@@ -147,7 +155,14 @@ public class ServerLoop extends AbstractGameLoop implements GameServer {
         return s.toString();
     }
 
-    public void startMap(Environment world) {
+    public void startMap(GameState world) {
         gameWorld = world;
+        Player[] asArray = (Player[]) players.toArray();
+        RaceProgress raceProgress = new RaceProgress(playersInLobby, this, asArray);
+        world.buildScene(this, raceProgress, COLLISION_DETECTION_LEVEL, false);
+    }
+
+    public void playerCheckpointUpdate(Player p, int n, int r) {
+        connections.forEach(conn -> conn.sendProgress(p.playerName(), n, r));
     }
 }

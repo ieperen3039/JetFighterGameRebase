@@ -5,52 +5,88 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Player;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
+import java.util.Arrays;
+
 /**
  * @author Geert van Ieperen created on 28-6-2018.
  */
 public class RaceProgress {
+    private static final float CAPACITY_GROW = 1.2f;
     /** for each player, what its last passed checkpoint is */
-    private final int[] progressCheckpoint;
-    /** for each player its current round number */
-    private final int[] progressRound;
-    /** all players in the race */
-    private final Player[] players;
-    private int nOfCheckpoints = 0;
+    private int[] progressCheckpoint;
 
-    public RaceProgress(Player[] players) {
-        int nOfPlayers = players.length;
-//        this.checkpoints = new ArrayList<>();
-        this.progressRound = new int[nOfPlayers];
-        this.progressCheckpoint = new int[nOfPlayers];
-        this.players = players.clone();
+    private final RaceChangeListener changeListener;
+    /** for each player its current round number */
+    private int[] progressRound;
+    /** all players in the race */
+    private Player[] players;
+    /** number of registered checkpoints */
+    private int nOfCheckpoints = 0;
+    /** number of actual valid players in the player array */
+    private int nOfPlayers = 0;
+    /** number of spots available before re-allocation of arrays is required */
+    private int capacity;
+
+    /**
+     * creates a RaceProgress instance without listener and without players
+     */
+    public RaceProgress() {
+        this(0, (p, c, r) -> {
+        });
     }
 
-    public void addCheckpoint(Vector position, DirVector direction, float radius, Color4f color) {
-        new Checkpoint(
-                nOfCheckpoints++, position, direction, radius, color, this
+    /**
+     * tracks the progress of all players in the current race. The checkpoints must first be set out be fore the race
+     * starts, the players may be added at a later stage as well.
+     * @param capacity       an expectation of how many players are probably going to participate
+     * @param changeListener this class is notified whenever a player crosses a checkpoint
+     * @param players        an optional array of initial players.
+     */
+    public RaceProgress(int capacity, RaceChangeListener changeListener, Player... players) {
+        this.capacity = capacity;
+        this.progressRound = new int[capacity];
+        this.progressCheckpoint = new int[capacity];
+        this.changeListener = changeListener;
+        this.players = Arrays.copyOf(players, capacity);
+        this.nOfPlayers = players.length;
+    }
+
+    public void addPlayer(Player newPlayer) {
+        nOfPlayers++;
+        if (nOfPlayers > capacity) {
+            capacity = (int) (capacity * CAPACITY_GROW) + 1;
+            progressRound = Arrays.copyOf(progressRound, capacity);
+            progressCheckpoint = Arrays.copyOf(progressCheckpoint, capacity);
+            players = Arrays.copyOf(players, capacity);
+        }
+        players[nOfPlayers - 1] = newPlayer;
+    }
+
+    public Checkpoint addCheckpoint(Vector position, DirVector direction, float radius, Color4f color) {
+        return new Checkpoint(
+                nOfCheckpoints++, position, direction, radius, color
         );
     }
 
-    /** returns the player belonging to the given jet, if any */
-    public Player identify(AbstractJet entity) {
-        for (Player p : players) {
-            if (p.jet() == entity) {
-                return p;
+    /** returns the index of the player with the given name, or -1 if no such player is registered */
+    private int identify(String name) {
+        for (int i = 0; i < nOfPlayers; i++) {
+            if (name.equals(players[i].playerName())) {
+                return i;
             }
         }
-        return null;
+        return -1;
     }
 
     /** @return the index of the player with p as its jet, or -1 if no such player is registered */
     private int indexIfPlayer(AbstractJet p) {
-        for (int i = 0; i < players.length; i++) {
+        for (int i = 0; i < nOfPlayers; i++) {
             if (p == players[i].jet()) {
                 return i;
             }
@@ -74,6 +110,13 @@ public class RaceProgress {
         if (nextCh == 0) {
             progressRound[pInd]++;
         }
+        changeListener.playerCheckpointUpdate(players[pInd], nextCh, progressRound[pInd]);
+    }
+
+    public void setState(String playerName, int chProg, int i) {
+        int pInd = identify(playerName);
+        progressCheckpoint[pInd] = chProg;
+        progressRound[pInd] = i;
     }
 
     /**
@@ -82,7 +125,7 @@ public class RaceProgress {
     public class Checkpoint extends StaticObject {
         private final int id;
 
-        public Checkpoint(int id, Vector position, DirVector direction, float radius, Color4f color, RaceProgress progressTracker) {
+        private Checkpoint(int id, Vector position, DirVector direction, float radius, Color4f color) {
             super(GeneralShapes.CHECKPOINTRING, Material.GOLD, color, position, radius, Toolbox.xTo(direction));
             this.id = id;
         }
@@ -91,7 +134,6 @@ public class RaceProgress {
         public void acceptCollision(Collision cause) {
             MovingEntity source = cause.source();
             if (source instanceof AbstractJet) {
-
                 int pInd = indexIfPlayer((AbstractJet) source);
                 if (pInd > 0) {
                     int nextCh = nextCheckpointOf(pInd);
@@ -102,5 +144,9 @@ public class RaceProgress {
                 }
             }
         }
+    }
+
+    public interface RaceChangeListener {
+        void playerCheckpointUpdate(Player player, int nextCh, int i);
     }
 }

@@ -13,12 +13,13 @@ public enum MessageType {
     PING, PONG,
     START_GAME, PAUSE_GAME, SHUTDOWN_GAME,
     THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE,
-    ENTITY_UPDATE, ENTITY_SPAWN, ENTITY_REMOVE, PLAYER_SPAWN, EXPLOSION_SPAWN;
+    ENTITY_UPDATE, ENTITY_SPAWN, ENTITY_REMOVE, EXPLOSION_SPAWN,
+    PLAYER_SPAWN, PLAYER_UPDATE, RACE_PROGRESS;
 
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
     public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, SHUTDOWN_GAME);
     public static EnumSet<MessageType> lobbyCommands = EnumSet.of(START_GAME);
-    public static EnumSet<MessageType> variableLength = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE, PLAYER_SPAWN);
+    public static EnumSet<MessageType> variableLength = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE, PLAYER_SPAWN, PLAYER_UPDATE);
 
     /**
      * @param id a number n corresponing to an enum ordinal

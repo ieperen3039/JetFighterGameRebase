@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.GameState;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.PathDescription;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.Collection;
 
@@ -53,4 +54,15 @@ public interface EntityManagement {
     void cleanUp();
 
     void removeEntity(MovingEntity entity);
+
+    /**
+     * @author Geert van Ieperen created on 26-4-2018.
+     */
+    interface NetForceProvider {
+        /**
+         * @param entity any dynamic entity in this world
+         * @return the force of gravity (or whatever) that naturally acts on this entity
+         */
+        DirVector entityNetforce(MovingEntity entity);
+    }
 }

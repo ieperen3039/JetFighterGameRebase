@@ -1,22 +1,29 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.Player;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.io.*;
-import java.util.Collection;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 /**
  * @author Geert van Ieperen created on 9-5-2018.
@@ -24,189 +31,191 @@ import java.util.Collection;
 public final class JetFighterProtocol {
 
     /**
-     * writes the given entity to the OutputStream.
-     * @see #entityUpdateRead(InputStream, Collection)
+     * writes the given entity to the DataOutputStream.
+     * @see #entityUpdateRead(DataInputStream, GameState)
      */
-    public static void entityUpdateSend(OutputStream output, MovingEntity thing, float currentTime) throws IOException {
-        DataOutputStream DOS = new DataOutputStream(output);
+    public static void entityUpdateSend(DataOutputStream output, MovingEntity thing, float currentTime) throws IOException {
         // identity and time
-        DOS.writeInt(thing.idNumber());
-        DOS.writeFloat(currentTime);
+        output.writeInt(thing.idNumber());
+        output.writeFloat(currentTime);
         // state
-        DataIO.writeVector(DOS, thing.getPosition());
-        DataIO.writeQuaternion(DOS, thing.getRotation());
+        DataIO.writeVector(output, thing.getPosition());
+        DataIO.writeQuaternion(output, thing.getRotation());
     }
 
     /**
-     * read an entity from the InputStream, match the entity with one in the list, and updates it
+     * read an entity from the DataInputStream, match the entity with one in the list, and updates it
      * @param input    the input stream, with an entity state on its next read chunk.
      * @param entities a list of all entities of which one of them must be the one on the stream
      * @return the relevant entity, or null if it was not found
      * @throws IOException if anything goes wrong with the connection
-     * @see #entityUpdateRead(InputStream, Collection)
+     * @see #entityUpdateRead(DataInputStream, GameState)
      */
-    public static MovingEntity entityUpdateRead(InputStream input, Collection<MovingEntity> entities) throws IOException {
-        DataInputStream DIS = new DataInputStream(input);
+    public static MovingEntity entityUpdateRead(DataInputStream input, GameState entities) throws IOException {
         // identity and time
-        int id = DIS.readInt();
-        float time = DIS.readFloat();
+        int id = input.readInt();
+        float time = input.readFloat();
         // state
-        PosVector pos = DataIO.readPosVector(DIS);
-        Quaternionf rot = DataIO.readQuaternion(DIS);
+        PosVector pos = DataIO.readPosVector(input);
+        Quaternionf rot = DataIO.readQuaternion(input);
         // set the entity state
-        MovingEntity target = matchEntity(entities, id);
-
-        if (target == null) {
-            Logger.printError("Entity with id " + id + " not found among " + entities.size() + " entities.");
-            return null;
-        }
+        MovingEntity target = entities.getEntity(id);
+        assert target != null : "Entity with id " + id + " not found";
 
         target.addStatePoint(time, pos, rot);
         return target;
     }
 
-    /** returns the (first) entity with the given id, or null when it is not found */
-    private static MovingEntity matchEntity(Collection<MovingEntity> entities, int id) {
-        for (MovingEntity entity : entities) {
-            if (entity.idNumber() == id) {
-                return entity;
-            }
-        }
-
-        return null;
-    }
-
     /**
      * client sending a request of spawing a new entity.
-     * @see #spawnRequestRead(InputStream)
+     * @see #spawnRequestRead(DataInputStream)
      */
-    public static void spawnRequestSend(OutputStream output, Spawn spawn) throws IOException {
+    public static void spawnRequestSend(DataOutputStream output, Spawn spawn) throws IOException {
         output.write(spawn.type.ordinal());
-        DataOutputStream DOS = new DataOutputStream(output);
         // state
-        DataIO.writeVector(DOS, spawn.position);
-        DataIO.writeQuaternion(DOS, spawn.rotation);
-        DataIO.writeVector(DOS, spawn.velocity);
+        DataIO.writeVector(output, spawn.position);
+        DataIO.writeQuaternion(output, spawn.rotation);
+        DataIO.writeVector(output, spawn.velocity);
     }
 
     /**
-     * server reading an entity from the InputStream
+     * server reading an entity from the DataInputStream
      * @return a description of a new entity to be added to the server
-     * @see #spawnRequestSend(OutputStream, Spawn)
+     * @see #spawnRequestSend(DataOutputStream, Spawn)
      */
-    public static Spawn spawnRequestRead(InputStream input) throws IOException {
+    public static Spawn spawnRequestRead(DataInputStream input) throws IOException {
         EntityClass type = EntityClass.get(input.read());
-        DataInputStream DIS = new DataInputStream(input);
         // state
-        PosVector position = DataIO.readPosVector(DIS);
-        Quaternionf rotation = DataIO.readQuaternion(DIS);
-        DirVector velocity = DataIO.readDirVector(DIS);
+        PosVector position = DataIO.readPosVector(input);
+        Quaternionf rotation = DataIO.readQuaternion(input);
+        DirVector velocity = DataIO.readDirVector(input);
 
         return new Spawn(type, position, rotation, velocity);
     }
 
     /** server sending a new entity */
-    public static void newEntitySend(OutputStream output, Spawn entity, int id) throws IOException {
+    public static void newEntitySend(DataOutputStream output, Spawn entity, int id) throws IOException {
         output.write(entity.type.ordinal());
-        DataOutputStream DOS = new DataOutputStream(output);
         // identity number
-        DOS.writeInt(id);
+        output.writeInt(id);
         // state
-        DataIO.writeVector(DOS, entity.position);
-        DataIO.writeQuaternion(DOS, entity.rotation);
-        DataIO.writeVector(DOS, entity.velocity);
+        DataIO.writeVector(output, entity.position);
+        DataIO.writeQuaternion(output, entity.rotation);
+        DataIO.writeVector(output, entity.velocity);
     }
 
-    /** client reading an entity off the InputStream and creates an instance of it */
-    public static MovingEntity newEntityRead(InputStream input, SpawnReceiver world, Controller controller) throws IOException {
+    /** client reading an entity off the DataInputStream and creates an instance of it */
+    public static MovingEntity newEntityRead(DataInputStream input, SpawnReceiver world, Controller controller) throws IOException {
         EntityClass type = EntityClass.get(input.read());
-        DataInputStream DIS = new DataInputStream(input);
         // identity number
-        int id = DIS.readInt();
+        int id = input.readInt();
         // state
-        PosVector position = DataIO.readPosVector(DIS);
-        Quaternionf rotation = DataIO.readQuaternion(DIS);
-        DirVector velocity = DataIO.readDirVector(DIS);
+        PosVector position = DataIO.readPosVector(input);
+        Quaternionf rotation = DataIO.readQuaternion(input);
+        DirVector velocity = DataIO.readDirVector(input);
 
         return type.construct(id, world, controller, position, rotation, velocity);
     }
 
-    /** read a control message off the InputStream */
-    static void controlRead(InputStream clientIn, RemoteControlReceiver controls, MessageType type) throws IOException {
+    /** read a control message off the DataInputStream */
+    static void controlRead(DataInputStream clientIn, RemoteControlReceiver controls, MessageType type) throws IOException {
         int value = clientIn.read();
         controls.receive(type, value);
     }
 
-    /** sends a control message into the OutputStream */
-    static synchronized void controlSend(OutputStream output, byte value) throws IOException {
+    /** sends a control message into the DataOutputStream */
+    static synchronized void controlSend(DataOutputStream output, byte value) throws IOException {
         output.write(value);
     }
 
     /**
      * sends a request to spawn a new plane. When successful, the reply is caught with {@link
-     * #newEntityRead(InputStream, SpawnReceiver, Controller)}
-     * @see #playerSpawnAccept(InputStream)
+     * #newEntityRead(DataInputStream, SpawnReceiver, Controller)}
      */
-    public static void playerSpawnRequest(OutputStream output, EntityClass entity) throws IOException {
-        output.write(entity.ordinal());
+    public static Pair<String, Spawn> playerSpawnAccept(DataInputStream input, MovingEntity.State position) throws IOException {
+        EntityClass type = EntityClass.get(input.read());
+        String name = input.readUTF();
+        Spawn spawn = new Spawn(type, position);
+        return new Pair<>(name, spawn);
     }
 
-    /** @see #playerSpawnRequest(OutputStream, EntityClass) */
-    public static EntityClass playerSpawnAccept(InputStream clientIn) throws IOException {
-        return EntityClass.get(clientIn.read());
+    /** @see #playerSpawnAccept(DataInputStream, MovingEntity.State) */
+    public static void playerSpawnRequest(DataOutputStream output, EntityClass type, String name) throws IOException {
+        output.write(type.ordinal());
+        output.writeUTF(name);
+    }
+
+    /**
+     * sends spawning of a player different from this player
+     * @param world entities generated by this player are provided here
+     */
+    public static Player playerSpawnRead(DataInputStream input, EntityMapping world) throws IOException {
+        int id = input.readInt();
+        String name = input.readUTF();
+
+        MovingEntity entity = world.getEntity(id);
+        assert entity != null : "Entity with id " + id + " not found";
+        assert entity instanceof AbstractJet : "received an non-jet entity from the server for player " + name;
+        return new ClientConnection.OtherPlayer((AbstractJet) entity, name);
+    }
+
+    /**
+     * Sends the spawn of player b, different than this player. The entity used by player b must already be sent.
+     * @param name   the name-identifier of player b
+     * @param entity the entity used by player b
+     */
+    public static void playerSpawnSend(DataOutputStream output, String name, MovingEntity entity) throws IOException {
+        output.write(entity.idNumber());
+        output.writeUTF(name);
     }
 
     /**
      * sets up synchronizing time across server-client connection
      * @param serverTime current time according to the source
      */
-    public static void syncTimerSource(InputStream input, OutputStream output, GameTimer serverTime) throws IOException {
+    public static void syncTimerSource(DataInputStream input, DataOutputStream output, GameTimer serverTime) throws IOException {
         float deltaNanos = ping(input, output);
 
-        DataOutputStream DOS = new DataOutputStream(output);
-        DOS.writeFloat(serverTime.time() + deltaNanos);
-        DOS.flush();
+        output.writeFloat(serverTime.time() + deltaNanos);
+        output.flush();
     }
 
     /**
      * updates the timer to sourceTime + ping
      */
-    public static GameTimer syncTimerTarget(InputStream input, OutputStream output) throws IOException {
+    public static GameTimer syncTimerTarget(DataInputStream input, DataOutputStream output) throws IOException {
         // wait for signal to arrive, to let the source measure the delay
         // repeat and take average for more accurate results
         pong(input, output);
 
-        DataInputStream DIS = new DataInputStream(input);
-        float serverTime = DIS.readFloat();
+        float serverTime = input.readFloat();
         return new GameTimer(serverTime);
     }
 
     /** sends an explosion or other effect to the client
-     * @see #explosionRead(InputStream)  */
-    public static void explosionSend(OutputStream output, PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
-        DataOutputStream DOS = new DataOutputStream(output);
-        DataIO.writeVector(DOS, position);
-        DataIO.writeVector(DOS, direction);
-        DOS.writeFloat(spread);
-        DataIO.writeColor(DOS, color1);
-        DataIO.writeColor(DOS, color2);
+     * @see #explosionRead(DataInputStream)  */
+    public static void explosionSend(DataOutputStream output, PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
+        DataIO.writeVector(output, position);
+        DataIO.writeVector(output, direction);
+        output.writeFloat(spread);
+        DataIO.writeColor(output, color1);
+        DataIO.writeColor(output, color2);
     }
 
-    /** reads an explosion off the InputStream
-     * @see #explosionSend(OutputStream, PosVector, DirVector, float, Color4f, Color4f)  */
-    public static ParticleCloud explosionRead(InputStream input) throws IOException {
-        DataInputStream DIS = new DataInputStream(input);
-        PosVector position = DataIO.readPosVector(DIS);
-        DirVector direction = DataIO.readDirVector(DIS);
-        float power = DIS.readFloat();
-        Color4f color1 = DataIO.readColor(DIS);
-        Color4f color2 = DataIO.readColor(DIS);
+    /** reads an explosion off the DataInputStream
+     * @see #explosionSend(DataOutputStream, PosVector, DirVector, float, Color4f, Color4f)  */
+    public static ParticleCloud explosionRead(DataInputStream input) throws IOException {
+        PosVector position = DataIO.readPosVector(input);
+        DirVector direction = DataIO.readDirVector(input);
+        float power = input.readFloat();
+        Color4f color1 = DataIO.readColor(input);
+        Color4f color2 = DataIO.readColor(input);
 
         return Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY);
     }
 
     /** @return the RTT in seconds */
-    public static float ping(InputStream input, OutputStream output) throws IOException {
+    public static float ping(DataInputStream input, DataOutputStream output) throws IOException {
         output.write(MessageType.PING.ordinal());
         output.flush();
         long start = System.nanoTime();
@@ -221,20 +230,32 @@ public final class JetFighterProtocol {
     /**
      * reacts on an expected ping message
      */
-    private static void pong(InputStream input, OutputStream output) throws IOException {
+    private static void pong(DataInputStream input, DataOutputStream output) throws IOException {
         int ping = input.read();
         if (ping != MessageType.PING.ordinal()) throw new IOException("unexpected reply: " + ping);
         output.write(MessageType.PONG.ordinal());
         output.flush();
     }
 
-    public static void entityRemoveSend(OutputStream output, int id) throws IOException {
-        DataOutputStream DOS = new DataOutputStream(output);
-        DOS.writeInt(id);
+    public static void entityRemoveSend(DataOutputStream output, int id) throws IOException {
+        output.writeInt(id);
     }
 
-    public static int entityRemoveRead(InputStream input) throws IOException {
-        DataInputStream DIS = new DataInputStream(input);
-        return DIS.readInt();
+    public static int entityRemoveRead(DataInputStream input) throws IOException {
+        return input.readInt();
+    }
+
+    public static void raceProgressSend(DataOutputStream output, String playerID, int checkPointNr, int roundNr) throws IOException {
+        output.writeUTF(playerID);
+        output.writeInt(checkPointNr);
+        output.writeInt(roundNr);
+    }
+
+    public static void raceProgressRead(DataInputStream input, RaceProgress progress) throws IOException {
+        String playerName = input.readUTF();
+        int checkPointNr = input.readInt();
+        int roundNr = input.readInt();
+
+        progress.setState(playerName, checkPointNr, roundNr);
     }
 }

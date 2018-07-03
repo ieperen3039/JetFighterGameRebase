@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -28,7 +29,7 @@ public class PlayerJetLaboratory extends GameState {
     private static final int LAB_SIZE = 200;
 
     @Override
-    protected Collection<Touchable> createWorld() {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         ArrayList<Touchable> entities = new ArrayList<>();
         int ind = 0;
 
@@ -37,6 +38,10 @@ public class PlayerJetLaboratory extends GameState {
                     shape, Material.ROUGH, getColor(ind++), new PosVector(0, 0, -500)
             ));
         }
+
+        entities.add(raceProgress.addCheckpoint(
+                new PosVector(30, 0, 0), DirVector.xVector(), 10, Color4f.BLUE
+        ));
 
 //        entities.add(new StaticObject(
 //                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
