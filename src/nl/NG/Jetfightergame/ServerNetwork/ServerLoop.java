@@ -30,22 +30,21 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_L
  */
 public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChangeListener {
 
-    private final GameState lobby;
     private final List<ServerConnection> connections;
 
-    private GameState gameWorld = null;
+    private GameState gameWorld;
     private int playersInLobby = 0;
     private GameTimer globalTime;
     private List<Player> players;
 
     public ServerLoop(GameState world) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        this.lobby = world;
+        this.gameWorld = world;
         this.globalTime = new GameTimer();
         this.connections = new ArrayList<>();
         this.players = new ArrayList<>();
 
-        lobby.buildScene(this, new RaceProgress(), COLLISION_DETECTION_LEVEL, true);
+        gameWorld.buildScene(this, new RaceProgress(), COLLISION_DETECTION_LEVEL, true);
     }
 
     /**
@@ -56,14 +55,14 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
      */
     public void connectToPlayer(Socket socket, boolean asAdmin) throws IOException {
         // establish communication handler
-        ServerConnection connector = new ServerConnection(socket, asAdmin, this, lobby.getNewSpawn());
+        ServerConnection connector = new ServerConnection(socket, asAdmin, this, gameWorld.getNewSpawn());
         // first thing to do is creating a player
         MovingEntity player = connector.jet();
         connections.add(connector);
         new Thread(connector::listen).start();
 
         // send all entities until this point (excluding the player himself)
-        for (MovingEntity entity : lobby.getEntities()) {
+        for (MovingEntity entity : gameWorld.getEntities()) {
             EntityClass type = EntityClass.get(entity);
             Spawn spawn = new Spawn(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
             connector.sendEntitySpawn(spawn, entity.idNumber());
@@ -72,14 +71,14 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         playersInLobby++;
         players.add(connector);
-        lobby.addEntity(player);
+        gameWorld.addEntity(player);
 //        lobby.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
     }
 
     @Override
     public void addSpawn(Spawn spawn){
         MovingEntity entity = spawn.construct(this, Controller.EMPTY);
-        lobby.addEntity(entity);
+        gameWorld.addEntity(entity);
         connections.forEach(c -> c.sendEntitySpawn(spawn, entity.idNumber()));
     }
 
@@ -96,7 +95,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     @Override
     protected void update(float deltaTime) {
         // deltaTime is real-time difference
-        if (playersInLobby != 0) update(lobby);
+        if (playersInLobby != 0) update(gameWorld);
         if (gameWorld != null) update(gameWorld);
 
         connections.forEach(ServerConnection::flush);
@@ -140,7 +139,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     protected void cleanup() {
-        lobby.cleanUp();
+        gameWorld.cleanUp();
     }
 
     @Override
@@ -151,15 +150,18 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     public String toString() {
         StringBuilder s = new StringBuilder();
         s.append(super.toString());
-        lobby.getEntities().forEach(e -> s.append("\n").append(e));
+        gameWorld.getEntities().forEach(e -> s.append("\n").append(e));
         return s.toString();
     }
 
-    public void startMap(GameState world) {
-        gameWorld = world;
+    public void startMap(WorldClass world) {
+        // breakdown
+        connections.forEach(conn -> conn.sendWorldSwitch(world));
+        gameWorld = world.get();
+
         Player[] asArray = (Player[]) players.toArray();
         RaceProgress raceProgress = new RaceProgress(playersInLobby, this, asArray);
-        world.buildScene(this, raceProgress, COLLISION_DETECTION_LEVEL, false);
+        gameWorld.buildScene(this, raceProgress, COLLISION_DETECTION_LEVEL, false);
     }
 
     public void playerCheckpointUpdate(Player p, int n, int r) {

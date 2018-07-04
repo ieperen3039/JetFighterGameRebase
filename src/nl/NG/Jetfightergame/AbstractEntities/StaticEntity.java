@@ -16,7 +16,7 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen
  * created on 2-3-2018.
  */
-public class StaticObject implements Touchable {
+public class StaticEntity implements Touchable {
 
     private final Shape shape;
     private final Material material;
@@ -28,18 +28,18 @@ public class StaticObject implements Touchable {
     private final PosVector middle;
     private final float range;
 
-    /** @see #StaticObject(Shape, Material, Color4f, Vector, float, Quaternionf) */
-    public StaticObject(Shape shape, Material material, Color4f color) {
+    /** @see #StaticEntity(Shape, Material, Color4f, Vector, float, Quaternionf) */
+    public StaticEntity(Shape shape, Material material, Color4f color) {
         this(shape, material, color, null, 1, null);
     }
 
-    /** @see #StaticObject(Shape, Material, Color4f, Vector, float, Quaternionf) */
-    public StaticObject(Shape shape, Material material, Color4f color, Vector position) {
+    /** @see #StaticEntity(Shape, Material, Color4f, Vector, float, Quaternionf) */
+    public StaticEntity(Shape shape, Material material, Color4f color, Vector position) {
         this(shape, material, color, position, 1, null);
     }
 
-    /** @see #StaticObject(Shape, Material, Color4f, Vector, float, Quaternionf) */
-    public StaticObject(Shape shape, Material material, Color4f color, PosVector position, float scaling) {
+    /** @see #StaticEntity(Shape, Material, Color4f, Vector, float, Quaternionf) */
+    public StaticEntity(Shape shape, Material material, Color4f color, PosVector position, float scaling) {
         this(shape, material, color, position, scaling, null);
     }
 
@@ -52,7 +52,7 @@ public class StaticObject implements Touchable {
      * @param scaling  the scaling factor
      * @param rotation the rotation of the object, or null for no rotation
      */
-    public StaticObject(Shape shape, Material material, Color4f color, Vector offSet, float scaling, Quaternionf rotation) {
+    public StaticEntity(Shape shape, Material material, Color4f color, Vector offSet, float scaling, Quaternionf rotation) {
         this.shape = shape;
         this.material = material;
         this.color = color;
@@ -101,5 +101,9 @@ public class StaticObject implements Touchable {
     @Override
     public String toString() {
         return shape.toString();
+    }
+
+    public Quaternionf getRotation() {
+        return rotation;
     }
 }

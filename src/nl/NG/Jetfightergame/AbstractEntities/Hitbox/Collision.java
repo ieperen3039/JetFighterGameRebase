@@ -25,7 +25,7 @@ public class Collision implements Comparable<Collision> {
     /**
      * @param timeScalar corrected scalar of the direction vector
      * @param normal the normal of the hit plane
-     * @param hitPos actual world-space position of collision
+     * @param hitPos local-space position of collision
      */
     public Collision(float timeScalar, DirVector normal, PosVector hitPos) {
         this.timeScalar = timeScalar;
@@ -82,5 +82,12 @@ public class Collision implements Comparable<Collision> {
      */
     public MovingEntity source() {
         return source;
+    }
+
+    /**
+     * @return the position of collision in reference to this object (in local-space)
+     */
+    public PosVector getShapeLocalHitPos() {
+        return shapeLocalHitPos;
     }
 }

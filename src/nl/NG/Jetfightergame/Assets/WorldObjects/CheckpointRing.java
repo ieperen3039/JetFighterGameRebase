@@ -98,7 +98,7 @@ public class CheckpointRing implements Shape {
 
     @Override
     public Iterable<PosVector> getPoints() {
-        return hitPlane.getBorder();
+        return Collections.EMPTY_LIST;
     }
 
     @Override

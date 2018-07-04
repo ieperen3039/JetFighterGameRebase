@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.GameState;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
+import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -122,7 +122,7 @@ public class RaceProgress {
     /**
      * @author Geert van Ieperen created on 28-6-2018.
      */
-    public class Checkpoint extends StaticObject {
+    public class Checkpoint extends StaticEntity {
         private final int id;
 
         private Checkpoint(int id, Vector position, DirVector direction, float radius, Color4f color) {

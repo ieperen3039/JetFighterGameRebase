@@ -235,26 +235,6 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     /**
-     * set the state of this plane to the given parameters. This also updates the interpolation cache, which may result
-     * in temporal visual glitches. Usage is preferably restricted to switching worlds
-     */
-    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation) {
-        this.position = new PosVector(newPosition);
-        this.extraPosition = new PosVector(newPosition);
-        this.rotation = new Quaternionf(newRotation);
-        this.extraRotation = new Quaternionf(newRotation);
-        this.velocity = new DirVector(newVelocity);
-        this.extraVelocity = new DirVector(newVelocity);
-
-        yawSpeed = 0f;
-        pitchSpeed = 0f;
-        rollSpeed = 0f;
-
-        slowTimeLeft = 0;
-        resetCache();
-    }
-
-    /**
      * @return current position of the pilot's eyes in world-space
      */
     public abstract PosVector getPilotEyePosition();

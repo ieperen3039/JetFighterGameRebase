@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
-import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
+import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
@@ -60,17 +60,17 @@ public class MissionSnake extends GameState {
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         Collection<Touchable> staticEntities = new ArrayList<>();
-        staticEntities.add(new StaticObject(gameFloor, WORLD_MATERIAL, Color4f.BLUE));
+        staticEntities.add(new StaticEntity(gameFloor, WORLD_MATERIAL, Color4f.BLUE));
 
         for (int x = 0; x < (LEVEL_SQUARE_DIM + 1); x++) {
             for (int y = 0; y < (LEVEL_SQUARE_DIM + 1); y++) {
                 final Vector offSet = new DirVector(LEVEL_SQUARE_SIZE * x, LEVEL_SQUARE_SIZE * y, 0);
-                staticEntities.add(new StaticObject(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet));
+                staticEntities.add(new StaticEntity(gamePillar, WORLD_MATERIAL, WORLD_COLOR, offSet));
             }
         }
 
         final float offSet = LEVEL_SQUARE_SIZE * LEVEL_SQUARE_DIM;
-        staticEntities.add(new StaticObject(
+        staticEntities.add(new StaticEntity(
                 gameFloor, WORLD_MATERIAL, Color4f.BLUE, new PosVector(offSet, 0, LEVEL_HEIGHT), -1
         ));
 

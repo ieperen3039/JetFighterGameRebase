@@ -258,4 +258,8 @@ public final class JetFighterProtocol {
 
         progress.setState(playerName, checkPointNr, roundNr);
     }
+
+    public static void worldSwitchSend(DataOutputStream input, WorldClass world) throws IOException {
+        throw new UnsupportedOperationException();
+    }
 }

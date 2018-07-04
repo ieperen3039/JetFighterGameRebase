@@ -491,6 +491,25 @@ public abstract class MovingEntity implements Touchable {
         action.accept(GeneralShapes.CUBE);
     }
 
+    /**
+     * set the state of this plane to the given parameters. This also updates the interpolation cache, which may result
+     * in temporal visual glitches. Usage is preferably restricted to switching worlds
+     */
+    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation) {
+        this.position = new PosVector(newPosition);
+        this.extraPosition = new PosVector(newPosition);
+        this.rotation = new Quaternionf(newRotation);
+        this.extraRotation = new Quaternionf(newRotation);
+        this.velocity = new DirVector(newVelocity);
+        this.extraVelocity = new DirVector(newVelocity);
+
+        yawSpeed = 0f;
+        pitchSpeed = 0f;
+        rollSpeed = 0f;
+
+        resetCache();
+    }
+
     public static class State {
         private final PosVector firstPos;
         private final PosVector secondPos;

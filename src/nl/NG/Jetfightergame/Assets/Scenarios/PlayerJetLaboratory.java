@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
-import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
+import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.GameState.GameState;
@@ -34,7 +34,7 @@ public class PlayerJetLaboratory extends GameState {
         int ind = 0;
 
         for (Shape shape : GeneralShapes.ISLAND1) {
-            entities.add(new StaticObject(
+            entities.add(new StaticEntity(
                     shape, Material.ROUGH, getColor(ind++), new PosVector(0, 0, -500)
             ));
         }

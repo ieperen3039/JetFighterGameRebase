@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Settings;
 
+import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 /**
@@ -18,6 +19,7 @@ public final class ClientSettings {
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
+    public static final Material PORTAL_MATERIAL = Material.PLASTIC;
     public static boolean SAVE_PLAYBACK = false;
 
     /** controller settings; these modifiers are also used to inverse direction */

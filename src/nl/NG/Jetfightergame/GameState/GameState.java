@@ -172,7 +172,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
 
     /**
      * Adds an entity to this world.
-     * @param entity an entity, set in the appropriate position, not being controlled by outside resources
+     * @param entity an entity, set in the appropriate position
      * @see #getEntity(int)
      */
     public void addEntity(MovingEntity entity) {

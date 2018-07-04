@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
-import nl.NG.Jetfightergame.AbstractEntities.StaticObject;
+import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.GameState.GameState;
@@ -51,7 +51,7 @@ public class CollisionLaboratory extends GameState {
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
 //        lights.add(new Pair<>(PosVector.zeroVector(), Color4f.WHITE.darken(0.3f)));
-        return Collections.singletonList(new StaticObject(GeneralShapes.INVERSE_CUBE, Material.ROUGH, Color4f.ORANGE, null, labSize));
+        return Collections.singletonList(new StaticEntity(GeneralShapes.INVERSE_CUBE, Material.ROUGH, Color4f.ORANGE, null, labSize));
     }
 
     @Override
