@@ -1,11 +1,9 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -28,7 +26,7 @@ import static org.lwjgl.opengl.GL11.glDisable;
 /**
  * @author Geert van Ieperen created on 11-12-2017.
  */
-public abstract class GameState implements EntityManagement.NetForceProvider, PathDescription, EntityMapping {
+public abstract class GameState implements Environment {
 
     protected final Collection<ParticleCloud> particles = new ArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
@@ -38,7 +36,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
     private Lock addParticleLock = new ReentrantLock();
 
     /**
-     * initialize the scene. Make sure to call Shapes.init() for all shapes you want to initialize
+     * initialize the scene. Make sure to have called Shapes.init() for all shapes you want to initialize
      * @param deposit           new entities are deposited here
      * @param raceProgress      the management of the checkpoints and race-situation. The checkpoints of this world are
      *                          added upon returning
@@ -65,10 +63,6 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         }
     }
 
-    public MovingEntity.State getNewSpawn() {
-        return new MovingEntity.State();
-    }
-
     /**
      * @param raceProgress the progress tracker.
      * @return all the static entities that are part of this world
@@ -80,11 +74,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
      */
     protected abstract Collection<Spawn> getInitialEntities();
 
-    /**
-     * update the physics of all game objects and check for collisions
-     * @param currentTime
-     * @param deltaTime
-     */
+    @Override
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop(float currentTime, float deltaTime) {
         // update positions and apply physics
@@ -99,9 +89,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         physicsEngine.updateEntities(currentTime);
     }
 
-    /**
-     * initializes the lights of this environment in the gl environment
-     */
+    @Override
     public void setLights(GL2 gl) {
         for (Pair<PosVector, Color4f> l : lights) {
             final PosVector pos = l.left;
@@ -122,7 +110,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         }
     }
 
-    /** draw all objects of the game */
+    @Override
     public void drawObjects(GL2 gl) {
         glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
 //        Toolbox.drawAxisFrame(gl);
@@ -130,7 +118,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         physicsEngine.getDynamicEntities().forEach(d -> d.draw(gl));
     }
 
-    /** draw all particles of the game */
+    @Override
     public void drawParticles(float currentTime) {
         if (newParticles.readyToLoad()) {
             addParticleLock.lock();
@@ -144,14 +132,14 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         particles.forEach(ParticleCloud::render);
     }
 
-    /** @return the estimated number of particles at the given time. */
+    @Override
     public int getParticleCount(float currentTime) {
         return particles.parallelStream()
                 .mapToInt(p -> p.estParticlesAt(currentTime))
                 .sum();
     }
 
-    /** all entities added by the constructor or using {@link #addEntity(MovingEntity) */
+    @Override
     public Collection<MovingEntity> getEntities() {
         return physicsEngine.getDynamicEntities();
     }
@@ -170,27 +158,22 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         return null;
     }
 
-    /**
-     * Adds an entity to this world.
-     * @param entity an entity, set in the appropriate position
-     * @see #getEntity(int)
-     */
+    @Override
     public void addEntity(MovingEntity entity) {
         physicsEngine.addEntity(entity);
     }
 
+    @Override
     public void addEntities(Collection<? extends MovingEntity> entities) {
         physicsEngine.addEntities(entities);
     }
 
-    /**
-     * Removes an entity off this world.
-     * @param entity the entity to be removed
-     */
+    @Override
     public void removeEntity(MovingEntity entity) {
         physicsEngine.removeEntity(entity);
     }
 
+    @Override
     public void addParticles(ParticleCloud cloud) {
         if (cloud.readyToLoad()) {
             addParticleLock.lock();
@@ -205,9 +188,7 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         }
     }
 
-    /**
-     * allows this object to be cleaned. after calling this method, this object should not be used.
-     */
+    @Override
     public void cleanUp() {
         lights.clear();
         particles.clear();
@@ -218,9 +199,4 @@ public abstract class GameState implements EntityManagement.NetForceProvider, Pa
         return PosVector.zeroVector();
     }
 
-    /**
-     * light of the background, alpha determines the thickness of the fog
-     * @return the background-color
-     */
-    public abstract Color4f fogColor();
 }

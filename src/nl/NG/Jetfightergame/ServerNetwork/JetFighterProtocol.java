@@ -6,10 +6,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.GameState;
-import nl.NG.Jetfightergame.GameState.Player;
-import nl.NG.Jetfightergame.GameState.RaceProgress;
-import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.GameState.*;
 import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
@@ -24,6 +21,7 @@ import org.joml.Quaternionf;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 /**
  * @author Geert van Ieperen created on 9-5-2018.
@@ -32,7 +30,7 @@ public final class JetFighterProtocol {
 
     /**
      * writes the given entity to the DataOutputStream.
-     * @see #entityUpdateRead(DataInputStream, GameState)
+     * @see #entityUpdateRead(DataInputStream, Environment)
      */
     public static void entityUpdateSend(DataOutputStream output, MovingEntity thing, float currentTime) throws IOException {
         // identity and time
@@ -49,9 +47,8 @@ public final class JetFighterProtocol {
      * @param entities a list of all entities of which one of them must be the one on the stream
      * @return the relevant entity, or null if it was not found
      * @throws IOException if anything goes wrong with the connection
-     * @see #entityUpdateRead(DataInputStream, GameState)
      */
-    public static MovingEntity entityUpdateRead(DataInputStream input, GameState entities) throws IOException {
+    public static MovingEntity entityUpdateRead(DataInputStream input, Environment entities) throws IOException {
         // identity and time
         int id = input.readInt();
         float time = input.readFloat();
@@ -64,33 +61,6 @@ public final class JetFighterProtocol {
 
         target.addStatePoint(time, pos, rot);
         return target;
-    }
-
-    /**
-     * client sending a request of spawing a new entity.
-     * @see #spawnRequestRead(DataInputStream)
-     */
-    public static void spawnRequestSend(DataOutputStream output, Spawn spawn) throws IOException {
-        output.write(spawn.type.ordinal());
-        // state
-        DataIO.writeVector(output, spawn.position);
-        DataIO.writeQuaternion(output, spawn.rotation);
-        DataIO.writeVector(output, spawn.velocity);
-    }
-
-    /**
-     * server reading an entity from the DataInputStream
-     * @return a description of a new entity to be added to the server
-     * @see #spawnRequestSend(DataOutputStream, Spawn)
-     */
-    public static Spawn spawnRequestRead(DataInputStream input) throws IOException {
-        EntityClass type = EntityClass.get(input.read());
-        // state
-        PosVector position = DataIO.readPosVector(input);
-        Quaternionf rotation = DataIO.readQuaternion(input);
-        DirVector velocity = DataIO.readDirVector(input);
-
-        return new Spawn(type, position, rotation, velocity);
     }
 
     /** server sending a new entity */
@@ -129,20 +99,47 @@ public final class JetFighterProtocol {
     }
 
     /**
-     * sends a request to spawn a new plane. When successful, the reply is caught with {@link
-     * #newEntityRead(DataInputStream, SpawnReceiver, Controller)}
+     * @return a pair with on left the name of this player, and on right the jet of this player
+     * @see #playerSpawnRequest(DataOutputStream, DataInputStream, String, EntityClass, Controller, SpawnReceiver)
      */
-    public static Pair<String, Spawn> playerSpawnAccept(DataInputStream input, MovingEntity.State position) throws IOException {
+    public static Pair<String, AbstractJet> playerSpawnAccept(
+            DataInputStream input, DataOutputStream output, MovingEntity.State position,
+            SpawnReceiver server, Controller controls, BiConsumer<Spawn, Integer> others
+    ) throws IOException {
         EntityClass type = EntityClass.get(input.read());
         String name = input.readUTF();
+
         Spawn spawn = new Spawn(type, position);
-        return new Pair<>(name, spawn);
+        MovingEntity construct = spawn.construct(server, controls);
+        assert construct instanceof AbstractJet : "player tried flying on something that is not a jet.";
+        JetFighterProtocol.newEntitySend(output, spawn, construct.idNumber());
+        output.flush();
+
+        others.accept(spawn, construct.idNumber());
+        return new Pair<>(name, (AbstractJet) construct);
     }
 
-    /** @see #playerSpawnAccept(DataInputStream, MovingEntity.State) */
-    public static void playerSpawnRequest(DataOutputStream output, EntityClass type, String name) throws IOException {
+
+    /**
+     * //TODO accept boolean from server, and handling if spawn is denied requests and receives a new jet from the
+     * server, based on the given type
+     * @param playerName the name you wish to use. Must be unique for this server
+     * @param type       the entity you wish to fly. Should be an AbstractJet.
+     * @param controls   the controls used for the resulting jet
+     * @param deposit    the deposit for new entities
+     * @return the jet received from the server. Not necessarily the one requested.
+     */
+    public static AbstractJet playerSpawnRequest(
+            DataOutputStream output, DataInputStream input, String playerName, EntityClass type,
+            Controller controls, SpawnReceiver deposit
+    ) throws IOException {
         output.write(type.ordinal());
-        output.writeUTF(name);
+        output.writeUTF(playerName);
+        output.flush();
+
+        return (AbstractJet) JetFighterProtocol.newEntityRead(
+                input, deposit, controls
+        );
     }
 
     /**
@@ -193,7 +190,7 @@ public final class JetFighterProtocol {
     }
 
     /** sends an explosion or other effect to the client
-     * @see #explosionRead(DataInputStream)  */
+     * @see #explosionRead(DataInputStream, EnvironmentManager)  */
     public static void explosionSend(DataOutputStream output, PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
         DataIO.writeVector(output, position);
         DataIO.writeVector(output, direction);
@@ -204,14 +201,15 @@ public final class JetFighterProtocol {
 
     /** reads an explosion off the DataInputStream
      * @see #explosionSend(DataOutputStream, PosVector, DirVector, float, Color4f, Color4f)  */
-    public static ParticleCloud explosionRead(DataInputStream input) throws IOException {
-        PosVector position = DataIO.readPosVector(input);
-        DirVector direction = DataIO.readDirVector(input);
-        float power = input.readFloat();
-        Color4f color1 = DataIO.readColor(input);
-        Color4f color2 = DataIO.readColor(input);
+    public static void explosionRead(DataInputStream serverIn, EnvironmentManager game) throws IOException {
+        PosVector position = DataIO.readPosVector(serverIn);
+        DirVector direction = DataIO.readDirVector(serverIn);
+        float power = serverIn.readFloat();
+        Color4f color1 = DataIO.readColor(serverIn);
+        Color4f color2 = DataIO.readColor(serverIn);
 
-        return Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY);
+        ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY);
+        game.addParticles(cloud);
     }
 
     /** @return the RTT in seconds */
@@ -237,12 +235,12 @@ public final class JetFighterProtocol {
         output.flush();
     }
 
-    public static void entityRemoveSend(DataOutputStream output, int id) throws IOException {
-        output.writeInt(id);
+    public static void entityRemoveSend(DataOutputStream output, MovingEntity id) throws IOException {
+        output.writeInt(id.idNumber());
     }
 
-    public static int entityRemoveRead(DataInputStream input) throws IOException {
-        return input.readInt();
+    public static MovingEntity entityRemoveRead(DataInputStream input, Environment game) throws IOException {
+        return game.getEntity(input.readInt());
     }
 
     public static void raceProgressSend(DataOutputStream output, String playerID, int checkPointNr, int roundNr) throws IOException {
@@ -259,7 +257,12 @@ public final class JetFighterProtocol {
         progress.setState(playerName, checkPointNr, roundNr);
     }
 
-    public static void worldSwitchSend(DataOutputStream input, WorldClass world) throws IOException {
-        throw new UnsupportedOperationException();
+    public static void worldSwitchRead(DataInputStream input, EnvironmentManager game) throws IOException {
+        EnvironmentClass type = EnvironmentClass.get(input.read());
+        game.switchTo(type);
+    }
+
+    public static void worldSwitchSend(DataOutputStream output, EnvironmentClass world) throws IOException {
+        output.write(world.ordinal());
     }
 }

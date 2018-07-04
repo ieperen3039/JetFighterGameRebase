@@ -44,6 +44,7 @@ public class RaceProgress {
     /**
      * tracks the progress of all players in the current race. The checkpoints must first be set out be fore the race
      * starts, the players may be added at a later stage as well.
+     * If the capacity is less than the given players, then the remaining players are dropped.
      * @param capacity       an expectation of how many players are probably going to participate
      * @param changeListener this class is notified whenever a player crosses a checkpoint
      * @param players        an optional array of initial players.
@@ -54,7 +55,18 @@ public class RaceProgress {
         this.progressCheckpoint = new int[capacity];
         this.changeListener = changeListener;
         this.players = Arrays.copyOf(players, capacity);
-        this.nOfPlayers = players.length;
+        this.nOfPlayers = Math.min(players.length, capacity);
+    }
+
+    public RaceProgress(RaceProgress source) {
+        players = source.players;
+        nOfPlayers = source.nOfPlayers;
+        capacity = source.nOfPlayers;
+        changeListener = source.changeListener;
+
+        progressCheckpoint = new int[capacity];
+        progressRound = new int[capacity];
+        nOfCheckpoints = 0;
     }
 
     public void addPlayer(Player newPlayer) {

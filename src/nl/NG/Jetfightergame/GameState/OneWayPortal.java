@@ -18,15 +18,15 @@ import org.joml.Quaternionf;
  * @author Geert van Ieperen. Created on 3-7-2018.
  */
 public class OneWayPortal {
-    private GameState worldFrom;
+    private Environment worldFrom;
     private StaticEntity tunnelFrom;
 
-    private GameState worldTo;
+    private Environment worldTo;
     private StaticEntity tunnelTo;
 
     public OneWayPortal(
-            GameState worldFrom, PosVector positionFrom, DirVector directionFrom,
-            GameState worldTo, PosVector positionTo, DirVector directionTo,
+            Environment worldFrom, PosVector positionFrom, DirVector directionFrom,
+            Environment worldTo, PosVector positionTo, DirVector directionTo,
             float radius
     ) {
         tunnelTo = new TargetPortal(positionTo, directionTo, radius);

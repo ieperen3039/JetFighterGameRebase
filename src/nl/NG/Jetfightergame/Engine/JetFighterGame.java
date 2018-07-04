@@ -1,17 +1,17 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
-import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
+import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
 import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
 import nl.NG.Jetfightergame.ServerNetwork.MessageType;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -27,6 +27,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
@@ -35,7 +37,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
 import static org.lwjgl.glfw.GLFW.*;
@@ -68,36 +69,38 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         splash.run();
 
         try {
-            Socket socket = new Socket();
 
-            // TODO get environment from the server
-            Supplier<GameState> worldFactory = PlayerJetLaboratory::new;
-            GameState environment = worldFactory.get();
+            OutputStream sendChannel;
+            InputStream receiveChannel;
 
             if (ClientSettings.LOCAL_SERVER) {
                 Logger.print("Creating new local server");
+                Socket socket = new Socket(); // TODO direct channel impl.
                 // a second (new) environment is created, as the server runs separately from the client
-                otherLoops.add(JetFighterServer.createOfflineServer(worldFactory, socket));
+                otherLoops.add(JetFighterServer.createOfflineServer(EnvironmentClass.LOBBY, socket));
+                sendChannel = socket.getOutputStream();
+                receiveChannel = socket.getInputStream();
 
             } else {
+                Socket socket = new Socket();
                 Logger.print("Searching local server");
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
+                sendChannel = socket.getOutputStream();
+                receiveChannel = socket.getInputStream();
             }
 
-            connection = new ClientConnection(socket, environment, "TheLegend27");
+            connection = new ClientConnection("TheLegend27", sendChannel, receiveChannel);
             otherLoops.add(connection);
 
             ClientControl player = connection;
+            Environment gameState = connection.getWorld();
             AbstractJet playerJet = player.jet();
             Logger.print("Received " + playerJet + " from the server");
-
-            environment.buildScene(connection, connection.getRaceProgress(), ClientSettings.COLLISION_DETECTION_LEVEL, false);
-            environment.addEntity(playerJet);
 
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
 
             renderLoop = new JetFighterRenderer(
-                    this, environment, window, camera, player.getInputControl(), hud
+                    this, gameState, window, camera, player.getInputControl(), hud
             );
 
             camera.switchTo(PointCenteredCamera, new PosVector(-5, 4, 2), playerJet, DirVector.zVector());

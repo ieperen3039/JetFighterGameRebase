@@ -1,15 +1,15 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
-import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.Environment;
 
 /**
  * @author Geert van Ieperen
  * created on 9-2-2018.
  */
 public class SimpleTargetAI extends AI {
-    private GameState game;
+    private Environment game;
 
-    public SimpleTargetAI(String name, int targetTps, GameState game) {
+    public SimpleTargetAI(String name, int targetTps, Environment game) {
         super(name, targetTps);
         this.game = game;
     }

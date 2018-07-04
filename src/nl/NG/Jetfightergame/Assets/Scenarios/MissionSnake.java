@@ -156,4 +156,9 @@ public class MissionSnake extends GameState {
         final int yIndex = (2 * y) + (positiveY ? 1 : 0);
         world[xIndex][yIndex] = offset;
     }
+
+    @Override
+    public MovingEntity.State getNewSpawnPosition() {
+        return new MovingEntity.State();
+    }
 }

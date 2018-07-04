@@ -73,4 +73,9 @@ public class ExplosionLaboratory extends GameState {
     public Color4f fogColor(){
         return new Color4f(0.8f, 0.8f, 0.8f, 0f);
     }
+
+    @Override
+    public MovingEntity.State getNewSpawnPosition() {
+        return new MovingEntity.State();
+    }
 }

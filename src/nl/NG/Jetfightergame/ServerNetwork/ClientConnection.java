@@ -9,10 +9,7 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.GameState;
-import nl.NG.Jetfightergame.GameState.Player;
-import nl.NG.Jetfightergame.GameState.RaceProgress;
-import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.GameState.*;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -21,11 +18,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.Socket;
+import java.io.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -38,7 +31,7 @@ import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver, ClientControl {
     private final DataOutputStream serverOut;
     private final DataInputStream serverIn;
-    private final GameState game;
+    private final EnvironmentManager game;
 
     private Lock sendLock = new ReentrantLock();
     private GameTimer time;
@@ -48,16 +41,26 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private RaceProgress gameProgress;
     private String name;
 
-    public ClientConnection(Socket connection, GameState game, String name) throws IOException {
+    public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
-        this.serverOut = new DataOutputStream(new BufferedOutputStream(connection.getOutputStream()));
-        this.serverIn = new DataInputStream(connection.getInputStream());
-        this.game = game;
+        this.serverOut = new DataOutputStream(new BufferedOutputStream(sendChannel));
+        this.serverIn = new DataInputStream(receiveChannel);
+        this.game = new EnvironmentManager(false);
         this.name = name;
         this.input = new SubControl(EmptyController);
-        this.jet = getPlayerJet(input, name);
-        this.time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
         this.gameProgress = new RaceProgress();
+        game.setContext(this, gameProgress);
+
+        // wait for confirmation of connection
+        int reply = serverIn.read();
+        if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
+            throw new IOException("Received " + MessageType.get(reply) + " as reaction on connection");
+
+        this.time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
+        JetFighterProtocol.worldSwitchRead(serverIn, game);
+        this.jet = JetFighterProtocol.playerSpawnRequest(serverOut, serverIn, name, EntityClass.BASIC_JET, input, this);
+
+        game.addEntity(jet);
     }
 
     @Override
@@ -75,8 +78,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case ENTITY_REMOVE:
-                int target = JetFighterProtocol.entityRemoveRead(serverIn);
-                MovingEntity entity = game.getEntity(target);
+                MovingEntity entity = JetFighterProtocol.entityRemoveRead(serverIn, game);
                 game.removeEntity(entity);
 
                 if (entity instanceof TemporalEntity) {
@@ -92,10 +94,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
             case RACE_PROGRESS:
                 JetFighterProtocol.raceProgressRead(serverIn, gameProgress);
+                break;
 
             case EXPLOSION_SPAWN:
-                ParticleCloud cloud = JetFighterProtocol.explosionRead(serverIn);
-                game.addParticles(cloud);
+                JetFighterProtocol.explosionRead(serverIn, game);
+                break;
+
+            case WORLD_SWITCH:
+                gameProgress = new RaceProgress(gameProgress);
+                game.setContext(this, gameProgress);
+                JetFighterProtocol.worldSwitchRead(serverIn, game);
                 break;
 
             case SHUTDOWN_GAME:
@@ -132,6 +140,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public void addSpawn(Spawn spawn) {
+        Logger.printError("client spawned his own entity (" + spawn + ")");
         game.addEntity(spawn.construct(this, null));
     }
 
@@ -223,25 +232,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         }
     }
 
-    /**
-     * sends a request for a jet to the server and reads the final entity
-     * @param input the controller (or -wrapper) used by the player
-     * @param playerName
-     */
-    private AbstractJet getPlayerJet(Controller input, String playerName) throws IOException {
-        // wait for confirmation of connection
-        int reply = serverIn.read();
-        if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
-            throw new IOException("Received " + MessageType.get(reply) + " as reaction on connection");
-
-        JetFighterProtocol.playerSpawnRequest(serverOut, EntityClass.BASIC_JET, playerName);
-        serverOut.flush();
-
-        return (AbstractJet) JetFighterProtocol.newEntityRead(
-                serverIn, this, input
-        );
-    }
-
     @Override
     public void setControl(boolean enabled) {
         if (enabled) {
@@ -285,6 +275,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         return name;
     }
 
+    public Environment getWorld() {
+        return game;
+    }
 
     class SubControl extends ControllerManager {
         private final ControllerImpl secondary;

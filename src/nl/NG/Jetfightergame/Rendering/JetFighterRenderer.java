@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
-import nl.NG.Jetfightergame.GameState.GameState;
+import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
@@ -36,14 +36,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private Camera activeCamera;
     private final JetFighterGame engine;
     private ShaderManager shaderManager;
-    private GameState gameState;
+    private Environment gameState;
     private ScreenOverlay overlay;
     private ParticleShader particleShader;
 
     private final String sessionName;
     private int frameNumber = 0;
 
-    public JetFighterRenderer(JetFighterGame engine, GameState gameState, GLFWWindow window,
+    public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
                               Camera camera, ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> gravityHud
     ) throws IOException, ShaderException {
         super("Rendering", ClientSettings.TARGET_FPS, false);
@@ -53,12 +53,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.activeCamera = camera;
         this.engine = engine;
 
-        if (gameState instanceof GameState) {
-            Logger.printOnline(() -> {
-                Float currentTime = engine.getTimer().getRenderTime().current();
-                return "Particles: " + ((GameState) gameState).getParticleCount(currentTime);
-            });
-        }
+        Logger.printOnline(() -> {
+            Float currentTime = engine.getTimer().getRenderTime().current();
+            return "Particles: " + gameState.getParticleCount(currentTime);
+        });
 
         shaderManager = new ShaderManager();
         particleShader = new ParticleShader();

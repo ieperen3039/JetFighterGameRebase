@@ -1,0 +1,146 @@
+package nl.NG.Jetfightergame.GameState;
+
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
+import nl.NG.Jetfightergame.Tools.Manager;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+
+import java.util.Collection;
+
+import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
+
+/**
+ * @author Geert van Ieperen created on 8-1-2018.
+ *         <p>
+ *         possibly we make this an instance of GameState, empty the lists upon changing world, separate GameState from
+ *         GameState and reduce the GameState interface to #buildScene(). This removes a little overhead of the world
+ *         instances.
+ */
+public class EnvironmentManager implements Environment, Manager<EnvironmentClass> {
+
+    private GameState instance;
+    private SpawnReceiver deposit;
+    private RaceProgress raceProgress;
+    private final boolean loadDynamic;
+    private EnvironmentClass currentType;
+
+    public EnvironmentManager(boolean loadDynamic) {
+        this.loadDynamic = loadDynamic;
+        instance = new EnvironmentClass.Void();
+        currentType = null;
+    }
+
+    public EnvironmentManager(EnvironmentClass initial, boolean loadDynamic, SpawnReceiver deposit, RaceProgress raceProgress) {
+        currentType = initial;
+        instance = initial.create();
+        instance.buildScene(deposit, raceProgress, COLLISION_DETECTION_LEVEL, loadDynamic);
+        this.loadDynamic = loadDynamic;
+    }
+
+    public void setContext(SpawnReceiver deposit, RaceProgress raceProgress) {
+        this.deposit = deposit;
+        this.raceProgress = raceProgress;
+    }
+
+    @Override
+    public void addEntity(MovingEntity entity) {
+        instance.addEntity(entity);
+    }
+
+    @Override
+    public MovingEntity getEntity(int entityID) {
+        return instance.getEntity(entityID);
+    }
+
+    @Override
+    public void removeEntity(MovingEntity entity) {
+        instance.removeEntity(entity);
+    }
+
+    @Override
+    public void addEntities(Collection<? extends MovingEntity> entities) {
+        instance.addEntities(entities);
+    }
+
+    @Override
+    public void addParticles(ParticleCloud newParticles) {
+        instance.addParticles(newParticles);
+    }
+
+    @Override
+    public Color4f fogColor() {
+        return instance.fogColor();
+    }
+
+    @Override
+    public MovingEntity.State getNewSpawnPosition() {
+        return instance.getNewSpawnPosition();
+    }
+
+    @Override
+    public DirVector entityNetforce(MovingEntity entity) {
+        return instance.entityNetforce(entity);
+    }
+
+    @Override
+    public void updateGameLoop(float currentTime, float deltaTime) {
+        instance.updateGameLoop(currentTime, deltaTime);
+    }
+
+    @Override
+    public void setLights(GL2 gl) {
+        instance.setLights(gl);
+    }
+
+    @Override
+    public void drawObjects(GL2 gl) {
+        instance.drawObjects(gl);
+    }
+
+    @Override
+    public void drawParticles(float currentTime) {
+        instance.drawParticles(currentTime);
+    }
+
+    @Override
+    public int getParticleCount(float currentTime) {
+        return instance.getParticleCount(currentTime);
+    }
+
+    @Override
+    public Collection<MovingEntity> getEntities() {
+        return instance.getEntities();
+    }
+
+    @Override
+    public void cleanUp() {
+        instance.cleanUp();
+    }
+
+    @Override
+    public EnvironmentClass[] implementations() {
+        return EnvironmentClass.values();
+    }
+
+    @Override
+    public void switchTo(EnvironmentClass type) {
+        instance.cleanUp();
+        currentType = type;
+        instance = type.create();
+        instance.buildScene(deposit, raceProgress, COLLISION_DETECTION_LEVEL, loadDynamic);
+    }
+
+    public EnvironmentClass getCurrentType() {
+        return currentType;
+    }
+
+    @Override
+    public PosVector getMiddleOfPath(PosVector position) {
+        return instance.getMiddleOfPath(position);
+    }
+}
+

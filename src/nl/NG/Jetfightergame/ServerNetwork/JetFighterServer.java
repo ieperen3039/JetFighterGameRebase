@@ -1,16 +1,13 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
-import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.ServerNetwork.JetFighterServer.Phase.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
@@ -37,12 +34,12 @@ public class JetFighterServer {
 
     /**
      * starts a single environment to run exactly once.
-     * @param environment the world to simulate in. Do not use this object afterward
+     * @param world the world to simulate in.
      * @param loadModels  whether the server should trigger a load of the models. set this to true iff the server is not
      *                    running as offline server (i.e. sharing objects)
      * @throws IOException if a serversocket could not be created
      */
-    private JetFighterServer(GameState environment, boolean loadModels) throws IOException {
+    private JetFighterServer(EnvironmentClass world, boolean loadModels) throws IOException {
         currentPhase = BOOTING;
 
         if (loadModels) {
@@ -50,7 +47,7 @@ public class JetFighterServer {
         }
 
         this.socket = new ServerSocket(SERVER_PORT);
-        this.game = new ServerLoop(environment);
+        this.game = new ServerLoop(world);
         portNumber = socket.getLocalPort();
 
         currentPhase = WAITING_FOR_HOST;
@@ -58,14 +55,13 @@ public class JetFighterServer {
 
     /**
      * creates a thread on the local machine, connecting the given socket as host.
-     * @param worldCreator a constructor for the world on which is played
+     * @param type the type of world to start this server on
      * @param client       the connection between front-end and back-end
      * @throws IOException if the initialisation runs into problems
      */
-    public static AbstractGameLoop createOfflineServer(Supplier<GameState> worldCreator, Socket client) throws IOException, InterruptedException {
-        GameState world = worldCreator.get();
+    public static AbstractGameLoop createOfflineServer(EnvironmentClass type, Socket client) throws IOException {
 
-        JetFighterServer server = new JetFighterServer(world, false);
+        JetFighterServer server = new JetFighterServer(type, false);
         // internal connect, this thread will soon terminate
         new Thread(server::listenForHost).start();
         client.connect(new InetSocketAddress(server.portNumber), 1000);
@@ -119,9 +115,9 @@ public class JetFighterServer {
      * be handled in the lobby world.
      * @param world the world to start
      */
-    public void upgrade(GameState world) {
-        currentPhase = STARTING; // TODO stop listen() calls connections
-        // TODO notify clients
+    public void upgrade(EnvironmentClass world) {
+        currentPhase = STARTING;
+        // TODO stop listen() calls connections
         game.startMap(world);
     }
 
@@ -132,8 +128,7 @@ public class JetFighterServer {
 
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
-        GameState world = new PlayerJetLaboratory();
-        JetFighterServer server = new JetFighterServer(world, true);
+        JetFighterServer server = new JetFighterServer(EnvironmentClass.PLAYERJET_LABORATORY, true);
         server.listenForHost();
 
 //        server.listen();

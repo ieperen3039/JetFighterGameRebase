@@ -22,14 +22,16 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
 public enum  EntityClass {
     BASIC_JET, SIMPLE_BULLET, FALLING_CUBE_SMALL, FALLING_CUBE_LARGE, SIMPLE_ROCKET;
 
+    private static final EntityClass[] VALUES = values();
+
     /**
      * @param id a number n corresponing to an enum ordinal
      * @return the enum e such that {@code e.ordinal() == n}
      * @throws IllegalArgumentException if the id does not correspond to a valid message
      */
     public static EntityClass get(int id) {
-        if (id >= values().length) throw new IllegalArgumentException("Invalid entityclass identifier " + id);
-        else return values()[id];
+        if (id >= VALUES.length) throw new IllegalArgumentException("Invalid entityclass identifier " + id);
+        else return VALUES[id];
     }
 
     /**
