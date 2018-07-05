@@ -5,6 +5,8 @@ import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -35,16 +37,10 @@ public class JetFighterServer {
     /**
      * starts a single environment to run exactly once.
      * @param world the world to simulate in.
-     * @param loadModels  whether the server should trigger a load of the models. set this to true iff the server is not
-     *                    running as offline server (i.e. sharing objects)
      * @throws IOException if a serversocket could not be created
      */
-    private JetFighterServer(EnvironmentClass world, boolean loadModels) throws IOException {
+    public JetFighterServer(EnvironmentClass world) throws IOException {
         currentPhase = BOOTING;
-
-        if (loadModels) {
-            GeneralShapes.init(false);
-        }
 
         this.socket = new ServerSocket(SERVER_PORT);
         this.game = new ServerLoop(world);
@@ -61,12 +57,25 @@ public class JetFighterServer {
      */
     public static AbstractGameLoop createOfflineServer(EnvironmentClass type, Socket client) throws IOException {
 
-        JetFighterServer server = new JetFighterServer(type, false);
-        // internal connect, this thread will soon terminate
+        JetFighterServer server = new JetFighterServer(type);
         new Thread(server::listenForHost).start();
         client.connect(new InetSocketAddress(server.portNumber), 1000);
 
         return server.game;
+    }
+
+    /**
+     * connects a new player on the given input and output streams
+     * @param asHost if true, player is considered to host the server
+     */
+    public void shortConnect(InputStream receive, OutputStream send, boolean asHost) {
+        try {
+            Logger.print("Creating internal connection" + (asHost ? " with host privileges" : "") + "...");
+            game.connectToPlayer(receive, send, asHost);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -96,18 +105,21 @@ public class JetFighterServer {
             throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
         Logger.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
 
-        while ((currentPhase == PREPARATION) && acceptConnection(false)) ;
+        while (currentPhase == PREPARATION) {
+            acceptConnection(false);
+        }
 
         Logger.print("Stopped listening for new players");
         currentPhase = STARTING;
     }
 
-    public boolean acceptConnection(boolean asAdmin) throws IOException {
+    public void acceptConnection(boolean asAdmin) throws IOException {
         Socket client = socket.accept();
 
-        Logger.print("Connection made with " + client + (asAdmin ? " with admin privileges" : ""));
-        game.connectToPlayer(client, asAdmin);
-        return true;
+        Logger.print("Connection made with " + client + (asAdmin ? " with host privileges" : ""));
+        InputStream in = client.getInputStream();
+        OutputStream out = client.getOutputStream();
+        game.connectToPlayer(in, out, asAdmin);
     }
 
     /**
@@ -128,7 +140,8 @@ public class JetFighterServer {
 
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
-        JetFighterServer server = new JetFighterServer(EnvironmentClass.PLAYERJET_LABORATORY, true);
+        GeneralShapes.init(false);
+        JetFighterServer server = new JetFighterServer(EnvironmentClass.PLAYERJET_LABORATORY);
         server.listenForHost();
 
 //        server.listen();

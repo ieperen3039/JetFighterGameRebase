@@ -25,7 +25,7 @@ public class StaticEntity implements Touchable {
     private final float scaling;
     private final Quaternionf rotation;
 
-    private final PosVector middle;
+    private final PosVector relativeMiddle;
     private final float range;
 
     /** @see #StaticEntity(Shape, Material, Color4f, Vector, float, Quaternionf) */
@@ -62,7 +62,7 @@ public class StaticEntity implements Touchable {
 
         Pair<PosVector, Float> hitbox = Shape.getMinimalCircle(shape.getPoints());
 
-        this.middle = hitbox.left;
+        this.relativeMiddle = hitbox.left;
         this.range = hitbox.right * scaling;
     }
 
@@ -95,7 +95,9 @@ public class StaticEntity implements Touchable {
 
     @Override
     public PosVector getExpectedMiddle() {
-        return middle.add(offSet, new PosVector());
+        PosVector result = new PosVector(relativeMiddle);
+        if (offSet != null) result.add(offSet);
+        return result;
     }
 
     @Override

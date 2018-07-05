@@ -255,4 +255,8 @@ public abstract class AbstractJet extends MovingEntity {
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
     }
+
+    public void set(State spawn) {
+        set(spawn.position(0), spawn.velocity(), spawn.rotation(0));
+    }
 }

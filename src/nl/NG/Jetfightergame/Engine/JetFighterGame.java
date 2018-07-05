@@ -21,6 +21,7 @@ import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.StreamPipe;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -75,15 +76,21 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             if (ClientSettings.LOCAL_SERVER) {
                 Logger.print("Creating new local server");
-                Socket socket = new Socket(); // TODO direct channel impl.
-                // a second (new) environment is created, as the server runs separately from the client
-                otherLoops.add(JetFighterServer.createOfflineServer(EnvironmentClass.LOBBY, socket));
-                sendChannel = socket.getOutputStream();
-                receiveChannel = socket.getInputStream();
+                StreamPipe serverToClient = new StreamPipe(1024);
+                StreamPipe clientToServer = new StreamPipe(126);
+
+                InputStream serverReceive = serverToClient.getInputStream();
+                OutputStream serverSend = clientToServer.getOutputStream();
+
+                JetFighterServer server = new JetFighterServer(EnvironmentClass.LOBBY);
+                new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
+
+                sendChannel = serverToClient.getOutputStream();
+                receiveChannel = clientToServer.getInputStream();
 
             } else {
-                Socket socket = new Socket();
                 Logger.print("Searching local server");
+                Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
                 sendChannel = socket.getOutputStream();
                 receiveChannel = socket.getInputStream();
