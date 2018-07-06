@@ -49,7 +49,7 @@ public final class GeneralShapes {
         CUBE = makeCube(loadMesh);
         ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", loadMesh, CONTAINER_SIZE, 50f);
 //        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));
-        CHECKPOINTRING = new CheckpointRing(10, 0.05f, loadMesh);
+        CHECKPOINTRING = new CheckpointRing(10, 0.1f, loadMesh);
     }
 
     private static Shape makeCube(boolean loadMesh) {

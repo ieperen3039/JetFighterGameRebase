@@ -26,7 +26,6 @@ public class CheckpointRing implements Shape {
      * @param loadMesh      if true, a mesh instance is loaded to the GPU
      */
     public CheckpointRing(int radialParts, float ringThiccness, boolean loadMesh) {
-        // our beloved random vector
         PosVector position = PosVector.zeroVector();
         DirVector orthogonal = DirVector.zVector();
 
@@ -34,11 +33,11 @@ public class CheckpointRing implements Shape {
         AxisAngle4f axis = new AxisAngle4f(angle, 1, 0, 0);
 
         PosVector[] ring = new PosVector[radialParts];
-        DirVector out = new DirVector();
+        DirVector[] expand = new DirVector[radialParts];
 
         for (int j = 0; j < radialParts; j++) {
-            orthogonal.reducedTo(ringThiccness, out);
-            ring[j] = position.add(out, new PosVector());
+            ring[j] = position.add(orthogonal, new PosVector());
+            expand[j] = orthogonal.reducedTo(ringThiccness, new DirVector());
             axis.transform(orthogonal);
         }
 
@@ -50,23 +49,27 @@ public class CheckpointRing implements Shape {
             PosVector BIF = new PosVector();
             PosVector BOB = new PosVector(); // Look, it's bob!
             PosVector BIB = new PosVector();
-            PosVector startPoint = ring[radialParts - 1];
-            startPoint.add(forward, BOF).add(out, BOF);
-            startPoint.add(forward, BIF).sub(out, BIF);
-            startPoint.sub(forward, BOB).add(out, BOB);
-            startPoint.sub(forward, BIB).sub(out, BIB);
 
-            for (PosVector border : ring) {
+            PosVector ringMiddle = ring[radialParts - 1];
+            DirVector out = expand[radialParts - 1];
+            ringMiddle.add(forward, BOF).add(out, BOF);
+            ringMiddle.add(forward, BIF).sub(out, BIF);
+            ringMiddle.sub(forward, BOB).add(out, BOB);
+            ringMiddle.sub(forward, BIB).sub(out, BIB);
+
+            for (int i = 0; i < ring.length; i++) {
+                ringMiddle = ring[i];
+                out = expand[i];
                 // I = inner, O = outer, F = front, B = back
                 PosVector AOF = new PosVector();
                 PosVector AIF = new PosVector();
                 PosVector AOB = new PosVector();
                 PosVector AIB = new PosVector();
 
-                border.add(forward, AOF).add(out, AOF);
-                border.add(forward, AIF).sub(out, AIF);
-                border.sub(forward, AOB).add(out, AOB);
-                border.sub(forward, AIB).sub(out, AIB);
+                ringMiddle.add(forward, AOF).add(out, AOF);
+                ringMiddle.add(forward, AIF).sub(out, AIF);
+                ringMiddle.sub(forward, AOB).add(out, AOB);
+                ringMiddle.sub(forward, AIB).sub(out, AIB);
 
                 frame.addQuad(AIF, BIF, BOF, AOF, new DirVector(1, 0, 0));
                 frame.addQuad(AOF, BOF, BOB, AOB, out);

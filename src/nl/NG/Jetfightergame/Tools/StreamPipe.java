@@ -7,8 +7,9 @@ import java.io.OutputStream;
 import java.util.concurrent.Semaphore;
 
 /**
- * This object assumes that the InputStream and the OutputStream are accessible to at most one thread each. The
- * OutputStream only flushes when strictly necessary
+ * A pipe that supplies an InputStream and an OutputStream. The InputStream blocks until data is available. All data
+ * written to the OutputStream can be read from the InputStream. This object assumes that the InputStream and the
+ * OutputStream are accessible to at most one thread each. The OutputStream only flushes when strictly necessary
  * @author Geert van Ieperen. Created on 5-7-2018.
  */
 public class StreamPipe {
@@ -156,6 +157,8 @@ public class StreamPipe {
             buffer[bufferHead] = (byte) (b & 0xFF);
             bufferHead = (bufferHead + 1) % bufferSize;
             unFlushed++;
+
+            Logger.print((byte) (b & 0xFF));
         }
 
         @Override
@@ -195,6 +198,8 @@ public class StreamPipe {
 
             bufferHead = (bufferHead + length) % bufferSize;
             unFlushed += length;
+
+//            Logger.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, length)));
         }
 
         private void writeInChunks(byte[] bytes, int offset, int targetLength, int chunkSize) throws IOException {

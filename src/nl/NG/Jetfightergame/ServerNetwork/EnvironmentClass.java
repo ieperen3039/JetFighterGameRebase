@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spawn;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Assets.Scenarios.IslandMap;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
@@ -20,7 +21,7 @@ import java.util.Collections;
  */
 public enum EnvironmentClass {
     LOBBY,
-    PLAYERJET_LABORATORY;
+    PLAYERJET_LABORATORY, ISLAND_MAP;
 
     private static final EnvironmentClass[] VALUES = values();
 
@@ -30,6 +31,8 @@ public enum EnvironmentClass {
                 return new PlayerJetLaboratory();
             case PLAYERJET_LABORATORY:
                 return new PlayerJetLaboratory();
+            case ISLAND_MAP:
+                return new IslandMap();
             default:
                 return new Void();
         }

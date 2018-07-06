@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
-import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -31,36 +31,21 @@ public class PlayerJetLaboratory extends GameState {
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         ArrayList<Touchable> entities = new ArrayList<>();
-        int ind = 0;
 
-        for (Shape shape : GeneralShapes.ISLAND1) {
-            entities.add(new StaticEntity(
-                    shape, Material.ROUGH, getColor(ind++), new PosVector(0, 0, -500)
-            ));
-        }
-
-        entities.add(raceProgress.addCheckpoint(
-                new PosVector(30, 0, 0), DirVector.xVector(), 10, Color4f.BLUE
-        ));
-
-//        entities.add(new StaticObject(
-//                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
-//                Material.PLASTIC, Color4f.ORANGE, LAB_SIZE
+//        entities.add(raceProgress.addCheckpoint(
+//                new PosVector(30, 0, 0), DirVector.xVector(), 10 , Color4f.BLUE
 //        ));
 
+        entities.add(new StaticEntity(
+                GeneralShapes.CHECKPOINTRING, Material.GOLD, Color4f.WHITE, new PosVector(10, 0, 0), 10
+        ));
+
+        entities.add(new StaticEntity(
+                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
+                Material.PLASTIC, Color4f.ORANGE, PosVector.zeroVector(), LAB_SIZE
+        ));
+
         return entities;
-    }
-
-    private Color4f getColor(int ind) {
-        switch (ind % 2) {
-            case 0:
-                return Color4f.BLUE;
-            case 1:
-                return Color4f.RED;
-        }
-        return Color4f.INVISIBLE;
-
-//        return new Color4f((ind * 36) % 255, (ind * 52) % 255, (ind * 11) % 255, 1);
     }
 
     @Override
@@ -73,9 +58,7 @@ public class PlayerJetLaboratory extends GameState {
             // for y = -1 and y = 1
             for (int y : vals) {
                 // etc.
-//                for (int z : vals) {
-                {
-                    int z = 2;
+                for (int z : vals) {
                     dynamicEntities.add(new Spawn(EntityClass.FALLING_CUBE_LARGE,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new Quaternionf(), new DirVector()

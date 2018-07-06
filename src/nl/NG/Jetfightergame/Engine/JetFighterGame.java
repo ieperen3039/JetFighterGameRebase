@@ -137,8 +137,13 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         return Collections.unmodifiableCollection(otherLoops);
     }
 
-    public static void main(String args[]) throws Exception {
-        new JetFighterGame().root();
+    public static void main(String args[]) {
+        try {
+            new JetFighterGame().root();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(-1);
+        }
     }
 
     @Override

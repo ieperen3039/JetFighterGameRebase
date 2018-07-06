@@ -167,24 +167,25 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     protected void update(float deltaTime) throws Exception {
         Controller input = getInput();
-        if (input.isActiveController()) return;
 
         sendLock.lock();
         try {
-            // axis controls
-            send(serverOut, THROTTLE, input.throttle());
-            send(serverOut, PITCH, input.pitch());
-            send(serverOut, YAW, input.yaw());
-            send(serverOut, ROLL, input.roll());
-            // binary controls
-            send(serverOut, PRIMARY_FIRE, input.primaryFire());
-            send(serverOut, SECONDARY_FIRE, input.secondaryFire());
+            if (!input.isActiveController()) {
+                // axis controls
+                send(serverOut, THROTTLE, input.throttle());
+                send(serverOut, PITCH, input.pitch());
+                send(serverOut, YAW, input.yaw());
+                send(serverOut, ROLL, input.roll());
+                // binary controls
+                send(serverOut, PRIMARY_FIRE, input.primaryFire());
+                send(serverOut, SECONDARY_FIRE, input.secondaryFire());
 
+            }
+
+            serverOut.flush();
         } finally {
             sendLock.unlock();
         }
-
-        serverOut.flush();
     }
 
     private static void send(DataOutputStream serverOut, MessageType type, boolean isEnabled) throws IOException {

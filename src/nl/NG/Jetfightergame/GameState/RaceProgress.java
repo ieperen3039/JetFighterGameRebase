@@ -159,6 +159,6 @@ public class RaceProgress {
     }
 
     public interface RaceChangeListener {
-        void playerCheckpointUpdate(Player player, int nextCh, int i);
+        void playerCheckpointUpdate(Player player, int checkpointProgress, int roundsProgress);
     }
 }
