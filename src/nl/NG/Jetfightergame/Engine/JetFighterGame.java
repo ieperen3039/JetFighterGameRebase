@@ -84,6 +84,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
                 JetFighterServer server = new JetFighterServer(EnvironmentClass.LOBBY);
                 new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
+                otherLoops.add(server.getRunnable());
 
                 sendChannel = serverToClient.getOutputStream();
                 receiveChannel = clientToServer.getInputStream();

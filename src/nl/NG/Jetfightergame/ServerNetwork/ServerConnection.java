@@ -124,7 +124,6 @@ public class ServerConnection implements BlockingListener, Player {
      * @param currentTime the time of when this entity is on the said position
      */
     public void sendEntityUpdate(MovingEntity entity, float currentTime) {
-        Logger.print(entity);
         sendMessage(MessageType.ENTITY_UPDATE, () ->
                 JetFighterProtocol.entityUpdateSend(clientOut, entity, currentTime)
         );

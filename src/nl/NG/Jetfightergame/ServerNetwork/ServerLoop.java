@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -80,6 +81,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     public void addSpawn(Spawn spawn){
         MovingEntity entity = spawn.construct(this, Controller.EMPTY);
         gameWorld.addEntity(entity);
+        Logger.print(spawn.type);
         connections.forEach(conn -> conn.sendEntitySpawn(spawn, entity.idNumber()));
     }
 
@@ -101,13 +103,13 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         Collection<MovingEntity> entities = gameWorld.getEntities();
 
-        for (MovingEntity object : entities) {
-            if (TemporalEntity.isOverdue(object)) {
-                connections.forEach(conn -> conn.sendEntityRemove(object));
-                gameWorld.removeEntity(object);
+        for (MovingEntity ety : entities) {
+            if (TemporalEntity.isOverdue(ety)) {
+                connections.forEach(conn -> conn.sendEntityRemove(ety));
+                gameWorld.removeEntity(ety);
 
             } else {
-                connections.forEach(conn -> conn.sendEntityUpdate(object, time.current()));
+                connections.forEach(conn -> conn.sendEntityUpdate(ety, time.current()));
             }
         }
         connections.forEach(ServerConnection::flush);

@@ -56,7 +56,6 @@ public class StreamPipe {
         @Override
         public int read() throws IOException {
             if (isClosed && available() == 0) {
-                Logger.printError("Tried reading from closed channel");
                 return -1;
             }
             virtualTail++;
@@ -76,13 +75,18 @@ public class StreamPipe {
 
         @Override
         public int read(@Nonnull byte[] bytes, int offset, int length) throws IOException {
-            if (isClosed && available() < length) throw new IOException("Tried reading from a closed channel");
             if (length <= 0 || offset < 0 || offset + length > bytes.length) {
                 if (length == 0) {
                     return 0;
                 }
                 throw new ArrayIndexOutOfBoundsException();
             }
+
+            if (isClosed && available() < length) {
+                if (available() == 0) return -1;
+                length = available();
+            }
+
             virtualTail += length;
 
             if (length > bufferSize) {
@@ -145,7 +149,7 @@ public class StreamPipe {
 
         @Override
         public void write(int b) throws IOException {
-            if (isClosed) throw new IOException("Tried writing to a closed channel");
+            if (isClosed) return;
             virtualHead++;
 
             try {
@@ -163,13 +167,13 @@ public class StreamPipe {
 
         @Override
         public void write(@Nonnull byte[] bytes, int offset, int length) throws IOException {
-            if (isClosed) throw new IOException("Tried writing to a closed channel");
             if (length <= 0 || offset < 0 || offset + length > bytes.length) {
                 if (length == 0) {
                     return;
                 }
                 throw new ArrayIndexOutOfBoundsException();
             }
+            if (isClosed) return;
 
             virtualHead += length;
 

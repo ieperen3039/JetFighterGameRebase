@@ -25,6 +25,10 @@ public class JetFighterServer {
     private Phase currentPhase;
     private ServerLoop game;
 
+    public AbstractGameLoop getRunnable() {
+        return game;
+    }
+
     public enum Phase {
         BOOTING, // server is creating a map
         WAITING_FOR_HOST, // before the host has connected
