@@ -47,7 +47,7 @@ public class JetFighterServer {
         currentPhase = BOOTING;
 
         this.socket = new ServerSocket(SERVER_PORT);
-        this.game = new ServerLoop(world);
+        this.game = new ServerLoop(EnvironmentClass.LOBBY, world);
         portNumber = socket.getLocalPort();
 
         currentPhase = WAITING_FOR_HOST;
@@ -133,8 +133,8 @@ public class JetFighterServer {
      */
     public void upgrade(EnvironmentClass world) {
         currentPhase = STARTING;
-        // TODO stop listen() calls connections
-        game.startMap(world);
+        // TODO stop listen()
+//        game.setWorld(world);
     }
 
     /** @return what the server is doing ATM */

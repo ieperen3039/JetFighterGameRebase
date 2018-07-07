@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -203,7 +204,7 @@ public class StreamPipe {
             bufferHead = (bufferHead + length) % bufferSize;
             unFlushed += length;
 
-//            Logger.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, length)));
+            Logger.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, offset + length)));
         }
 
         private void writeInChunks(byte[] bytes, int offset, int targetLength, int chunkSize) throws IOException {
@@ -212,9 +213,11 @@ public class StreamPipe {
                 flush();
                 writeUnsafe(bytes, offset + i, chunkSize);
                 i += chunkSize;
-            } while (i + chunkSize < targetLength);
+            } while (i + chunkSize <= targetLength);
             flush();
-            writeUnsafe(bytes, offset + i, targetLength % chunkSize);
+
+            int remain = targetLength % chunkSize;
+            if (remain > 0) writeUnsafe(bytes, offset + i, remain);
         }
 
         @Override

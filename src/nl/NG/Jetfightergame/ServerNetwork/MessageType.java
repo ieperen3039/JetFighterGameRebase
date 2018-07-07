@@ -9,16 +9,16 @@ import java.util.EnumSet;
  */
 public enum MessageType {
     WRONG_MESSAGE_0, WRONG_MESSAGE_1, // for ease of debugging, these messages may not be used
-    CONNECTION_CLOSE, CONFIRM_CONNECTION, // CONNECTION_CLOSE counts also for id = -1
+    CONFIRM_CONNECTION, CONNECTION_CLOSE, // CONNECTION_CLOSE also matches id = -1
     PING, PONG,
-    START_GAME, PAUSE_GAME, SHUTDOWN_GAME, WORLD_SWITCH,
+    PAUSE_GAME, UNPAUSE_GAME, START_GAME, SHUTDOWN_GAME, WORLD_SWITCH,
     THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE,
     ENTITY_UPDATE, ENTITY_SPAWN, ENTITY_REMOVE, EXPLOSION_SPAWN,
     PLAYER_SPAWN, PLAYER_UPDATE, RACE_PROGRESS;
 
+    public static final MessageType[] VALUES = values();
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
-    public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, SHUTDOWN_GAME);
-    public static EnumSet<MessageType> lobbyCommands = EnumSet.of(START_GAME);
+    public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, PAUSE_GAME, UNPAUSE_GAME, SHUTDOWN_GAME);
     public static EnumSet<MessageType> variableLength = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE, PLAYER_SPAWN, PLAYER_UPDATE);
 
     /**
@@ -27,9 +27,9 @@ public enum MessageType {
      * @throws IllegalArgumentException if the id does not correspond to a valid message
      */
     public static MessageType get(int id) {
-        if (id >= values().length) throw new IllegalArgumentException("Invalid message identifier " + id);
+        if (id >= VALUES.length) throw new IllegalArgumentException("Invalid message identifier " + id);
         else if (id == -1) return CONNECTION_CLOSE;
-        else return values()[id];
+        else return VALUES[id];
     }
 
     /**

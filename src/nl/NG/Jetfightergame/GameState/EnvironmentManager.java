@@ -28,17 +28,22 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     private final boolean loadDynamic;
     private EnvironmentClass currentType;
 
-    public EnvironmentManager(boolean loadDynamic) {
+    /**
+     * creates a switchable world, whithout building the scene.
+     * @param initial
+     * @param deposit
+     * @param raceProgress
+     * @param loadDynamic
+     */
+    public EnvironmentManager(EnvironmentClass initial, SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic) {
+        instance = (initial != null) ? initial.create() : new Void();
+        currentType = initial;
         this.loadDynamic = loadDynamic;
-        instance = new EnvironmentClass.Void();
-        currentType = null;
+        setContext(deposit, raceProgress);
     }
 
-    public EnvironmentManager(EnvironmentClass initial, boolean loadDynamic, SpawnReceiver deposit, RaceProgress raceProgress) {
-        currentType = initial;
-        instance = initial.create();
+    public void build() {
         instance.buildScene(deposit, raceProgress, COLLISION_DETECTION_LEVEL, loadDynamic);
-        this.loadDynamic = loadDynamic;
     }
 
     public void setContext(SpawnReceiver deposit, RaceProgress raceProgress) {
@@ -130,7 +135,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     public void switchTo(EnvironmentClass type) {
         instance.cleanUp();
         currentType = type;
-        instance = type.create();
+        instance = (type != null) ? type.create() : new Void();
         instance.buildScene(deposit, raceProgress, COLLISION_DETECTION_LEVEL, loadDynamic);
     }
 

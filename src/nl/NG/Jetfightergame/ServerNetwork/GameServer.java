@@ -15,4 +15,7 @@ public interface GameServer extends SpawnReceiver {
 
     /** starts the server if it is enabled */
     void unPause();
+
+    /** change the current map to the previousy given race map */
+    void startRace();
 }

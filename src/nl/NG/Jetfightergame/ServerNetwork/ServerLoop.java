@@ -12,7 +12,6 @@ import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -36,12 +35,16 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     private EnvironmentManager gameWorld;
     private GameTimer globalTime;
+    private EnvironmentClass raceWorld;
 
-    public ServerLoop(EnvironmentClass world) {
+    public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        this.gameWorld = new EnvironmentManager(world, false, this, new RaceProgress());
+        this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true);
+        this.raceWorld = raceWorld;
         this.globalTime = new GameTimer();
         this.connections = new ArrayList<>();
+
+        gameWorld.build();
     }
 
     /**
@@ -81,7 +84,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     public void addSpawn(Spawn spawn){
         MovingEntity entity = spawn.construct(this, Controller.EMPTY);
         gameWorld.addEntity(entity);
-        Logger.print(spawn.type);
         connections.forEach(conn -> conn.sendEntitySpawn(spawn, entity.idNumber()));
     }
 
@@ -122,6 +124,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
+    public void startRace() {
+        setWorld(raceWorld);
+    }
+
+    @Override
     public void pause() {
         globalTime.pause();
         super.pause();
@@ -129,18 +136,19 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     public void shutDown() {
-        connections.forEach(ServerConnection::close);
+        stopLoop();
+    }
+
+    @Override
+    public void stopLoop() {
+        connections.forEach(ServerConnection::sendShutDown);
         super.stopLoop();
     }
 
     @Override
     protected void cleanup() {
-        gameWorld.cleanUp();
-    }
-
-    @Override
-    protected void exceptionHandler(Exception ex) {
         connections.forEach(ServerConnection::close);
+        gameWorld.cleanUp();
     }
 
     public String toString() {
@@ -150,7 +158,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         return s.toString();
     }
 
-    public void startMap(EnvironmentClass world) {
+    private void setWorld(EnvironmentClass world) {
         // startup new world
         Player[] asArray = connections.toArray(new Player[0]);
         RaceProgress raceProgress = new RaceProgress(asArray.length, this, asArray);

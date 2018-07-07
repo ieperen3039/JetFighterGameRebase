@@ -72,12 +72,13 @@ public class ServerConnection implements BlockingListener, Player {
         MessageType type = MessageType.get(clientIn.read());
 
         if (type.isOf(MessageType.adminOnly) && !hasAdminCapabilities) {
-            Logger.printError(this + " sent an " + type + " command, while it has no access to it");
+            Logger.printError(this + " sent a " + type + " command, while it has no access to it");
             return true;
 
         } else if (type == MessageType.CONNECTION_CLOSE) {
-            clientOut.write(MessageType.CONNECTION_CLOSE.ordinal()); // reflect
+//            clientOut.write(MessageType.CONNECTION_CLOSE.ordinal());
             clientOut.close();
+            clientIn.close();
             Logger.print("Connection close of " + clientName);
             return false;
         }
@@ -87,17 +88,19 @@ public class ServerConnection implements BlockingListener, Player {
 
         } else switch (type) {
             case PING:
-                clientOut.write(MessageType.PONG.ordinal());
-                clientOut.flush();
+                sendMessage(MessageType.PONG, clientOut::flush);
                 break;
 
-            case START_GAME:
+            case UNPAUSE_GAME:
                 server.unPause();
                 break;
 
             case PAUSE_GAME:
                 server.pause();
                 break;
+
+            case START_GAME:
+                server.startRace();
 
             case SHUTDOWN_GAME:
                 server.shutDown();
@@ -115,7 +118,7 @@ public class ServerConnection implements BlockingListener, Player {
      * a passive closing, doesnt actually close the connection yet
      */
     public void close() {
-        sendMessage(MessageType.SHUTDOWN_GAME, clientOut::flush);
+
     }
 
     /**
@@ -196,6 +199,10 @@ public class ServerConnection implements BlockingListener, Player {
         } finally {
             sendLock.unlock();
         }
+    }
+
+    public void sendShutDown() {
+        sendMessage(MessageType.SHUTDOWN_GAME, clientOut::flush);
     }
 
     @Override

@@ -3,9 +3,9 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.ClientControl;
+import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
-import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
@@ -32,22 +32,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
-import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * @author Geert van Ieperen
  *         created on 29-10-2017.
  *         a class that manages all game objects, and houses both the rendering- and the gameloop
  */
-public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener {
+public class JetFighterGame extends GLFWGameEngine {
+    private final ActionButtonHandler actionHandler;
     private AbstractGameLoop renderLoop;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
 
@@ -58,7 +56,6 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         super();
         GeneralShapes.init(true);
 
-        KeyTracker.getInstance().addKeyListener(this);
         MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
         MouseTracker.getInstance().listenTo(window);
         KeyTracker.getInstance().listenTo(window);
@@ -99,6 +96,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
             connection = new ClientConnection("TheLegend27", sendChannel, receiveChannel);
             otherLoops.add(connection);
+            actionHandler = new ActionButtonHandler(this, connection);
 
             ClientControl player = connection;
             Environment gameState = connection.getWorld();
@@ -156,7 +154,7 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
 
     public void setPlayMode() {
         connection.getTimer().unPause();
-        connection.sendCommand(MessageType.START_GAME);
+        connection.sendCommand(MessageType.UNPAUSE_GAME);
         if (ClientSettings.SPECTATOR_MODE) {
             super.setSpectatorMode();
         } else {
@@ -169,41 +167,12 @@ public class JetFighterGame extends GLFWGameEngine implements TrackerKeyListener
         return connection.getTimer();
     }
 
-    /**
-     * basic keybindings.
-     * Should be moved to testInstance in later stage
-     */
-    @Override
-    public void keyPressed(int key) {
-        // quit when Esc is pressed
-        switch (key) {
-            case GLFW_KEY_ESCAPE:
-                if (currentGameMode == GameMode.MENU_MODE) exitGame();
-                else setMenuMode();
-                break;
-
-            case GLFW_KEY_F11:
-                Logger.print("Switching fullscreen");
-                window.toggleFullScreen();
-                break;
-
-            case GLFW_KEY_PRINT_SCREEN:
-                SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
-                final String name = "Screenshot_" + ft.format(new Date());
-
-                boolean success = window.printScreen(name);
-                if (success){
-                    Logger.print("Saved screenshot as \"" + name + "\"");
-                }
-        }
-    }
-
     @Override
     public void cleanUp() {
         Mesh.cleanAll();
         AudioFile.cleanAll();
         SoundEngine.closeDevices();
-        KeyTracker.getInstance().removeKeyListener(this);
+        actionHandler.cleanUp();
     }
 
     /**

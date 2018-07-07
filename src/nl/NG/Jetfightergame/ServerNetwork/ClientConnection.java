@@ -45,11 +45,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new DataOutputStream(new BufferedOutputStream(sendChannel));
         this.serverIn = new DataInputStream(receiveChannel);
-        this.game = new EnvironmentManager(false);
         this.name = name;
         this.input = new SubControl(EmptyController);
         this.gameProgress = new RaceProgress();
-        game.setContext(this, gameProgress);
+        this.game = new EnvironmentManager(null, this, gameProgress, false);
+        game.build();
 
         // wait for confirmation of connection
         int reply = serverIn.read();
@@ -94,6 +94,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
             case RACE_PROGRESS:
                 JetFighterProtocol.raceProgressRead(serverIn, gameProgress);
+                Logger.print(gameProgress.getState(this));
                 break;
 
             case EXPLOSION_SPAWN:
@@ -205,7 +206,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         sendLock.lock();
         try {
             serverOut.write(CONNECTION_CLOSE.ordinal());
-            serverOut.flush();
+            serverOut.close();
+            serverIn.close();
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -222,14 +224,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     protected void cleanup() {
         try {
             serverIn.close();
+            serverOut.close();
             Logger.print(this + " connection is closed");
-        } catch (IOException ex1) {
-            try {
-                serverOut.close();
-            } catch (IOException ex2) {
-                ex2.addSuppressed(ex1);
-                ex2.printStackTrace();
-            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

@@ -18,8 +18,6 @@ import org.joml.Quaternionf;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static nl.NG.Jetfightergame.ServerNetwork.EntityClass.FALLING_CUBE_SMALL;
-
 /**
  * @author Geert van Ieperen
  * created on 7-1-2018.
@@ -32,13 +30,12 @@ public class PlayerJetLaboratory extends GameState {
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         ArrayList<Touchable> entities = new ArrayList<>();
 
-//        entities.add(raceProgress.addCheckpoint(
-//                new PosVector(30, 0, 0), DirVector.xVector(), 10 , Color4f.BLUE
-//        ));
+        for (int i = 1; i < 7; i++) {
+            entities.add(raceProgress.addCheckpoint(
+                    new PosVector(20 * i, 0, 0), DirVector.xVector(), 10, Color4f.BLUE
+            ));
+        }
 
-        entities.add(new StaticEntity(
-                GeneralShapes.CHECKPOINTRING, Material.GOLD, Color4f.WHITE, new PosVector(10, 0, 0), 10
-        ));
 
         entities.add(new StaticEntity(
                 GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
@@ -66,10 +63,6 @@ public class PlayerJetLaboratory extends GameState {
                 }
             }
         }
-
-        dynamicEntities.add(new Spawn(FALLING_CUBE_SMALL,
-                new PosVector(20, 0, 0), new Quaternionf(), new DirVector(0, 0, -50)
-        ));
 
         return dynamicEntities;
     }

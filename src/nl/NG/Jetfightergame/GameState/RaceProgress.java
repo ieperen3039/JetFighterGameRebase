@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -131,6 +132,12 @@ public class RaceProgress {
         progressRound[pInd] = i;
     }
 
+    public Pair<Integer, Integer> getState(Player player) {
+        int pInd = Arrays.asList(players).indexOf(player);
+        if (pInd == -1) return null;
+        return new Pair<>(progressRound[pInd], progressCheckpoint[pInd]);
+    }
+
     /**
      * @author Geert van Ieperen created on 28-6-2018.
      */
@@ -138,7 +145,7 @@ public class RaceProgress {
         private final int id;
 
         private Checkpoint(int id, Vector position, DirVector direction, float radius, Color4f color) {
-            super(GeneralShapes.CHECKPOINTRING, Material.GOLD, color, position, radius, Toolbox.xTo(direction));
+            super(GeneralShapes.CHECKPOINTRING, Material.SILVER, color, position, radius, Toolbox.xTo(direction));
             this.id = id;
         }
 
