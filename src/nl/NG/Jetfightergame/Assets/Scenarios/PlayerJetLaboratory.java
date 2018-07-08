@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -30,13 +30,6 @@ public class PlayerJetLaboratory extends GameState {
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         ArrayList<Touchable> entities = new ArrayList<>();
 
-        for (int i = 1; i < 7; i++) {
-            entities.add(raceProgress.addCheckpoint(
-                    new PosVector(20 * i, 0, 0), DirVector.xVector(), 10, Color4f.BLUE
-            ));
-        }
-
-
         entities.add(new StaticEntity(
                 GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
                 Material.PLASTIC, Color4f.ORANGE, PosVector.zeroVector(), LAB_SIZE
@@ -46,8 +39,8 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Spawn> getInitialEntities() {
-        Collection<Spawn> dynamicEntities = new ArrayList<>();
+    protected Collection<Prentity> getInitialEntities() {
+        Collection<Prentity> dynamicEntities = new ArrayList<>();
 
         int[] vals = new int[]{-1, 1};
         // for x = -1 and x = 1
@@ -56,7 +49,7 @@ public class PlayerJetLaboratory extends GameState {
             for (int y : vals) {
                 // etc.
                 for (int z : vals) {
-                    dynamicEntities.add(new Spawn(EntityClass.FALLING_CUBE_LARGE,
+                    dynamicEntities.add(new Prentity(EntityClass.FALLING_CUBE_LARGE,
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new Quaternionf(), new DirVector()
                     ));
@@ -65,13 +58,6 @@ public class PlayerJetLaboratory extends GameState {
         }
 
         return dynamicEntities;
-    }
-
-
-
-    @Override
-    public void cleanUp() {
-        super.cleanUp();
     }
 
     @Override

@@ -9,22 +9,22 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 /**
- * a description of a moving entity
+ * a description of a moving entity. aka Pre-Entity
  */
-public class Spawn {
+public class Prentity {
     public final EntityClass type;
     public final PosVector position;
     public final Quaternionf rotation;
     public final DirVector velocity;
 
-    public Spawn(EntityClass type, PosVector position, Quaternionf rotation, DirVector velocity) {
+    public Prentity(EntityClass type, PosVector position, Quaternionf rotation, DirVector velocity) {
         this.type = type;
         this.position = position;
         this.rotation = rotation;
         this.velocity = velocity;
     }
 
-    public Spawn(EntityClass type, MovingEntity.State state) {
+    public Prentity(EntityClass type, MovingEntity.State state) {
         this(type, state.position(0), state.rotation(0), state.velocity());
     }
 

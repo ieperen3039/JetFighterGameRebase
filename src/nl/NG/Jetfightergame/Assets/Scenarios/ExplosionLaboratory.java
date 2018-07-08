@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
@@ -37,16 +37,16 @@ public class ExplosionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Spawn> getInitialEntities() {
-        Collection<Spawn> dynamicEntities = new ArrayList<>(20);
+    protected Collection<Prentity> getInitialEntities() {
+        Collection<Prentity> dynamicEntities = new ArrayList<>(20);
 
         for (int i = 0; i < 20; i++) {
             final PosVector pos = Vector.random().toPosVector();
             pos.mul((3 * i) + 20);
-            final DirVector vel = new DirVector(0, 1, 0);
+            final DirVector vel = new DirVector();
             pos.negate(vel).add(DirVector.random(), vel);
             dynamicEntities.add(
-                    new Spawn(EntityClass.SIMPLE_BULLET, pos, new Quaternionf(), vel.reducedTo(10, vel))
+                    new Prentity(EntityClass.SIMPLE_ROCKET, pos, new Quaternionf(), vel.reducedTo(10, vel))
             );
         }
 
@@ -57,11 +57,6 @@ public class ExplosionLaboratory extends GameState {
     public void drawObjects(GL2 gl) {
         Toolbox.drawAxisFrame(gl);
         super.drawObjects(gl);
-    }
-
-    @Override
-    public void cleanUp() {
-        super.cleanUp();
     }
 
     @Override

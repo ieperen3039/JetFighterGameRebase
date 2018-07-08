@@ -143,7 +143,7 @@ public abstract class AbstractJet extends MovingEntity {
      * updates the firing of the gun
      */
     private void updateGun(float deltaTime, State interpolator, AbstractWeapon gunAlpha, boolean isFiring) {
-        final Collection<Spawn> bullets;
+        final Collection<Prentity> bullets;
         bullets = gunAlpha.update(deltaTime, isFiring, interpolator, entityDeposit);
         entityDeposit.addSpawns(bullets);
     }

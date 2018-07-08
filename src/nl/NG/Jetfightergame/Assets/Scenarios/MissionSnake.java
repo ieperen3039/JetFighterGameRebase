@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
@@ -78,7 +78,7 @@ public class MissionSnake extends GameState {
     }
 
     @Override
-    protected Collection<Spawn> getInitialEntities() {
+    protected Collection<Prentity> getInitialEntities() {
         return Collections.EMPTY_SET;
     }
 

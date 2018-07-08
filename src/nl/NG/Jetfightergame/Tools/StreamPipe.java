@@ -4,13 +4,13 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 
 /**
- * A pipe that supplies an InputStream and an OutputStream. The InputStream blocks until data is available. All data
- * written to the OutputStream can be read from the InputStream. This object assumes that the InputStream and the
- * OutputStream are accessible to at most one thread each. The OutputStream only flushes when strictly necessary
+ * A pipe that supplies an InputStream and an OutputStream. The InputStream blocks until data is available. The output
+ * stream blocks until it has enough space to write. All data written to the OutputStream can be read from the
+ * InputStream. This object assumes that the InputStream and the OutputStream are accessible to at most one thread each.
+ * The OutputStream only flushes when strictly necessary
  * @author Geert van Ieperen. Created on 5-7-2018.
  */
 public class StreamPipe {
@@ -64,7 +64,12 @@ public class StreamPipe {
             try {
                 hasItems.acquire();
             } catch (InterruptedException e) {
+                virtualTail--;
                 throw new IOException("Interrupted while waiting for input");
+            }
+
+            if (isClosed && available() == -1) {
+                return -1;
             }
 
             int result = buffer[bufferTail] & 0xFF;
@@ -89,14 +94,21 @@ public class StreamPipe {
             }
 
             virtualTail += length;
+            int tail = bufferTail;
+            try {
+                if (length > bufferSize) {
+                    readInChunks(bytes, offset, length, bufferSize / 2);
 
-            if (length > bufferSize) {
-                readInChunks(bytes, offset, length, bufferSize / 2);
-
-            } else {
-                readUnsafe(bytes, offset, length);
+                } else {
+                    readUnsafe(bytes, offset, length);
+                }
+            } catch (IOException ex) {
+                virtualTail -= length;
+                bufferTail = tail;
+                throw ex;
             }
 
+            if (isClosed && available() < 0) return -1;
             return length;
         }
 
@@ -137,6 +149,7 @@ public class StreamPipe {
         @Override
         public void close() {
             isClosed = true;
+            hasSpace.release(bufferSize);
         }
     }
 
@@ -155,15 +168,15 @@ public class StreamPipe {
 
             try {
                 hasSpace.acquire();
+                if (isClosed) throw new IOException("Tried writing on closed channel");
             } catch (InterruptedException e) {
+                virtualHead--;
                 throw new IOException("Interrupted while waiting for input");
             }
 
             buffer[bufferHead] = (byte) (b & 0xFF);
             bufferHead = (bufferHead + 1) % bufferSize;
             unFlushed++;
-
-            Logger.print((byte) (b & 0xFF));
         }
 
         @Override
@@ -174,21 +187,30 @@ public class StreamPipe {
                 }
                 throw new ArrayIndexOutOfBoundsException();
             }
-            if (isClosed) return;
+            if (isClosed) throw new IOException("Tried writing on closed channel");
 
             virtualHead += length;
+            int preHead = bufferHead;
 
-            if (length > bufferSize) {
-                writeInChunks(bytes, offset, length, bufferSize / 2);
+            try {
+                if (length > bufferSize) {
+                    writeInChunks(bytes, offset, length, bufferSize / 2);
 
-            } else {
-                writeUnsafe(bytes, offset, length);
+                } else {
+                    writeUnsafe(bytes, offset, length);
+                }
+
+            } catch (IOException ex) {
+                bufferHead = preHead;
+                virtualHead -= length;
+                throw ex;
             }
         }
 
         private void writeUnsafe(byte[] bytes, int offset, int length) throws IOException {
             try {
                 hasSpace.acquire(length);
+                if (isClosed) throw new IOException("Tried writing on closed channel");
             } catch (InterruptedException e) {
                 throw new IOException("Interrupted while waiting to write");
             }
@@ -204,7 +226,7 @@ public class StreamPipe {
             bufferHead = (bufferHead + length) % bufferSize;
             unFlushed += length;
 
-            Logger.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, offset + length)));
+//            Logger.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, offset + length)));
         }
 
         private void writeInChunks(byte[] bytes, int offset, int targetLength, int chunkSize) throws IOException {
@@ -224,10 +246,12 @@ public class StreamPipe {
         public void close() {
             flush();
             isClosed = true;
+            hasItems.release(bufferSize);
         }
 
         @Override
         public void flush() {
+            if (unFlushed == 0) return;
             hasItems.release(unFlushed);
             unFlushed = 0;
         }

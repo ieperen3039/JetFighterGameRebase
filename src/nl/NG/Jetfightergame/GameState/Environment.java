@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -65,9 +65,11 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
     void addParticles(ParticleCloud cloud);
 
     /**
-     * allows this object to be cleaned. after calling this method, this object should not be used.
+     * allows this object to be cleaned. After calling this method, this environment should not throw exceptions that it
+     * didn't throw before
      */
-    void cleanUp();
+    default void cleanUp() {
+    }
 
     /**
      * light of the background, alpha determines the thickness of the fog
@@ -91,7 +93,7 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         }
 
         @Override
-        protected Collection<Spawn> getInitialEntities() {
+        protected Collection<Prentity> getInitialEntities() {
             return Collections.EMPTY_SET;
         }
 
@@ -135,10 +137,6 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
 
         @Override
         public void addParticles(ParticleCloud cloud) {
-        }
-
-        @Override
-        public void cleanUp() {
         }
 
         @Override

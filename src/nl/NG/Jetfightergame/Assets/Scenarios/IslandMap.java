@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -11,6 +11,7 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,15 +26,21 @@ public class IslandMap extends GameState {
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         List<Touchable> entities = new ArrayList<>();
 
+        for (int i = 1; i < 7; i++) {
+            entities.add(raceProgress.addCheckpoint(
+                    new PosVector(40 * i, 0, 10 * i), DirVector.xVector(), 10, Color4f.BLUE
+            ));
+        }
+
         for (Shape s : GeneralShapes.ISLAND1) {
-            entities.add(new StaticEntity(s, Material.ROUGH, Color4f.GREY));
+            entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.5f, 0.2f), new PosVector(0, 0, -200)));
         }
 
         return entities;
     }
 
     @Override
-    protected Collection<Spawn> getInitialEntities() {
+    protected Collection<Prentity> getInitialEntities() {
         return Collections.EMPTY_SET;
     }
 

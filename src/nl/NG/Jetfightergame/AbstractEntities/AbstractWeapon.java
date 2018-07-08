@@ -35,17 +35,17 @@ public abstract class AbstractWeapon implements Serializable {
      * @param entityDeposit allows the new bullets to add entities
      *                      @return a collection of all newly generated entities
      */
-    public Collection<Spawn> update(float deltaTime, boolean isFiring, MovingEntity.State source, SpawnReceiver entityDeposit) {
+    public Collection<Prentity> update(float deltaTime, boolean isFiring, MovingEntity.State source, SpawnReceiver entityDeposit) {
         timeRemaining -= deltaTime;
         if (timeRemaining >= 0) return Collections.EMPTY_SET;
 
-        List<Spawn> newProjectiles = new ArrayList<>();
+        List<Prentity> newProjectiles = new ArrayList<>();
         if (!wasFiring) timeRemaining = 0;
 
         if (isFiring) {
             do {
                 final float timeFraction = timeRemaining / deltaTime;
-                Spawn bullet = newProjectile(source, entityDeposit, timeFraction);
+                Prentity bullet = newProjectile(source, entityDeposit, timeFraction);
                 newProjectiles.add(bullet);
                 timeRemaining += cooldown;
             } while (timeRemaining < 0);
@@ -64,5 +64,5 @@ public abstract class AbstractWeapon implements Serializable {
      * @param timeFraction the deltaTime offset of spawning
      * @return a new projectile as if it was fired on the given moment
      */
-    protected abstract Spawn newProjectile(MovingEntity.State source, SpawnReceiver entityDeposit, float timeFraction);
+    protected abstract Prentity newProjectile(MovingEntity.State source, SpawnReceiver entityDeposit, float timeFraction);
 }

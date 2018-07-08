@@ -12,7 +12,7 @@ import java.util.Random;
 /**
  * @author Geert van Ieperen. Created on 5-7-2018.
  */
-public class StreamCombinationTest {
+public abstract class StreamCombinationTest {
     /** an indication of the size of the used buffer */
     protected static final int BUFFER_SIZE = 64;
     protected InputStream in;
@@ -34,7 +34,7 @@ public class StreamCombinationTest {
         }).start();
 
         for (byte anInput : input) {
-            int read = in.read();
+            byte read = (byte) in.read();
             System.out.println(read);
             Assert.assertEquals(anInput, read);
         }

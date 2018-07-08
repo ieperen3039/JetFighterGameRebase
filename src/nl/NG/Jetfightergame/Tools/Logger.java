@@ -2,10 +2,10 @@ package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -14,7 +14,7 @@ import java.util.function.Supplier;
  */
 public class Logger {
     private static Consumer<String> out = System.out::println;
-    private static List<Supplier<String>> onlinePrints = new ArrayList<>();
+    private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
     /** prevents spamming the chat */
     static Set<String> callerBlacklist = new HashSet<>();
 

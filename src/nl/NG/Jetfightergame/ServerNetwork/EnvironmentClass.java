@@ -32,4 +32,7 @@ public enum EnvironmentClass {
         else return VALUES[id];
     }
 
+    public static String asString(int id) {
+        return id < VALUES.length ? get(id).toString() : id + " (Invalid world id)";
+    }
 }

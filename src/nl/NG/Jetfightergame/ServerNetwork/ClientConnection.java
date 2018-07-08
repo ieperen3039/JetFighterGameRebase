@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.Controller;
@@ -51,21 +51,27 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.game = new EnvironmentManager(null, this, gameProgress, false);
         game.build();
 
+        gameProgress.addPlayer(this);
+
         // wait for confirmation of connection
         int reply = serverIn.read();
         if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
-            throw new IOException("Received " + MessageType.get(reply) + " as reaction on connection");
+            throw new IOException("Received " + MessageType.asString(reply) + " as reaction on connection");
 
         this.time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
-        JetFighterProtocol.worldSwitchRead(serverIn, game);
-        this.jet = JetFighterProtocol.playerSpawnRequest(serverOut, serverIn, name, EntityClass.BASIC_JET, input, this);
 
+        EnvironmentClass type = JetFighterProtocol.worldSwitchRead(serverIn);
+        game.switchTo(type);
+
+        this.jet = JetFighterProtocol.playerSpawnRequest(serverOut, serverIn, name, EntityClass.BASIC_JET, input, this);
         game.addEntity(jet);
     }
 
     @Override
     public boolean handleMessage() throws IOException {
         MessageType type = MessageType.get(serverIn.read());
+
+        if (type == CONNECTION_CLOSE || type == SHUTDOWN_GAME) Logger.print(type);
 
         switch (type) {
             case ENTITY_SPAWN:
@@ -104,15 +110,17 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             case WORLD_SWITCH:
                 gameProgress = new RaceProgress(gameProgress);
                 game.setContext(this, gameProgress);
-                JetFighterProtocol.worldSwitchRead(serverIn, game);
+                EnvironmentClass world = JetFighterProtocol.worldSwitchRead(serverIn);
+                game.switchTo(world);
+                gameProgress.forEachPlayer(player -> game.addEntity(player.jet()));
                 break;
 
             case SHUTDOWN_GAME:
-                /* triggers {@link #cleanup()}*/
                 stopLoop();
-                break;
+                return false;
 
             case CONNECTION_CLOSE:
+                Logger.print("Received CONNECTION_CLOSE");
                 return false;
 
             default:
@@ -140,9 +148,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addSpawn(Spawn spawn) {
-        Logger.printError("client spawned his own entity (" + spawn + ")");
-        game.addEntity(spawn.construct(this, null));
+    public void addSpawn(Prentity prentity) {
+        Logger.printError("Client added an entity to its own world entity (" + prentity + ")");
+        game.addEntity(prentity.construct(this, null));
     }
 
     /**
@@ -199,25 +207,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         byte asByte = RemoteControlReceiver.toByte(value);
         serverOut.write(type.ordinal());
         JetFighterProtocol.controlSend(serverOut, asByte);
-    }
-
-    @Override
-    public void stopLoop() {
-        sendLock.lock();
-        try {
-            serverOut.write(CONNECTION_CLOSE.ordinal());
-            serverOut.close();
-            serverIn.close();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            cleanup();
-
-        } finally {
-            sendLock.unlock();
-        }
-
-        super.stopLoop();
     }
 
     @Override

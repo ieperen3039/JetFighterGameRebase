@@ -133,7 +133,7 @@ public abstract class AbstractGameLoop extends Thread {
 
     @Override
     public String toString() {
-        return String.format("%s @%.01fTPS", loopName, avgTPS.average());
+        return String.format("%s @%.01f TPS", loopName, avgTPS.average());
     }
 
     public void unPause(){

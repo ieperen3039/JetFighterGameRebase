@@ -3,12 +3,12 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import java.util.EnumSet;
 
 /**
- * Important note, there may not be more than 255 constants defined here due to implementation assumptions.
+ * NOTE: There may not be more than 255 constants defined here due to implementation assumptions.
  * Visa versa, you may assume that (MessageType).ordinal() always fits in a byte.
  * @author Geert van Ieperen, created on 5-5-2018.
  */
 public enum MessageType {
-    WRONG_MESSAGE_0, WRONG_MESSAGE_1, // for ease of debugging, these messages may not be used
+    INVALID_MESSAGE_ID_0, INVALID_MESSAGE_ID_1, // for ease of debugging, these messages may not be used
     CONFIRM_CONNECTION, CONNECTION_CLOSE, // CONNECTION_CLOSE also matches id = -1
     PING, PONG,
     PAUSE_GAME, UNPAUSE_GAME, START_GAME, SHUTDOWN_GAME, WORLD_SWITCH,
@@ -16,7 +16,7 @@ public enum MessageType {
     ENTITY_UPDATE, ENTITY_SPAWN, ENTITY_REMOVE, EXPLOSION_SPAWN,
     PLAYER_SPAWN, PLAYER_UPDATE, RACE_PROGRESS;
 
-    public static final MessageType[] VALUES = values();
+    private static final MessageType[] VALUES = values();
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
     public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, PAUSE_GAME, UNPAUSE_GAME, SHUTDOWN_GAME);
     public static EnumSet<MessageType> variableLength = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE, PLAYER_SPAWN, PLAYER_UPDATE);
@@ -30,6 +30,16 @@ public enum MessageType {
         if (id >= VALUES.length) throw new IllegalArgumentException("Invalid message identifier " + id);
         else if (id == -1) return CONNECTION_CLOSE;
         else return VALUES[id];
+    }
+
+    public static String asString(int id) {
+        if (id >= VALUES.length) {
+            return id + " (Invalid message id)";
+        } else if (id < 0) {
+            return id + " (Connection close)";
+        } else {
+            return VALUES[id].toString();
+        }
     }
 
     /**

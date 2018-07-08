@@ -13,6 +13,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 /**
  * @author Geert van Ieperen created on 28-6-2018.
@@ -60,7 +61,7 @@ public class RaceProgress {
     }
 
     public RaceProgress(RaceProgress source) {
-        players = source.players;
+        players = source.players.clone();
         nOfPlayers = source.nOfPlayers;
         capacity = source.nOfPlayers;
         changeListener = source.changeListener;
@@ -136,6 +137,12 @@ public class RaceProgress {
         int pInd = Arrays.asList(players).indexOf(player);
         if (pInd == -1) return null;
         return new Pair<>(progressRound[pInd], progressCheckpoint[pInd]);
+    }
+
+    public void forEachPlayer(Consumer<Player> action) {
+        for (Player p : players) {
+            action.accept(p);
+        }
     }
 
     /**

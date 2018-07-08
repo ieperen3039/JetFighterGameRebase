@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -55,13 +55,13 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Spawn> getInitialEntities() {
+    protected Collection<Prentity> getInitialEntities() {
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
         int remainingCubes = nrOfCubes;
 
-        Collection<Spawn> cubes = new ArrayList<>(nrOfCubes);
+        Collection<Prentity> cubes = new ArrayList<>(nrOfCubes);
 
         cubing:
         for (int x = 0; x < gridSize; x++) {
@@ -77,7 +77,7 @@ public class CollisionLaboratory extends GameState {
         return cubes;
     }
 
-    private Spawn makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
+    private Prentity makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
         final PosVector pos = new PosVector(
                 -labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace)
         );
@@ -85,7 +85,7 @@ public class CollisionLaboratory extends GameState {
         DirVector random = Vector.random();
         random.scale(speeds, random);
 
-        return new Spawn(EntityClass.FALLING_CUBE_SMALL, pos, new Quaternionf(), random);
+        return new Prentity(EntityClass.FALLING_CUBE_SMALL, pos, new Quaternionf(), random);
     }
 
     @SuppressWarnings("ConstantConditions")

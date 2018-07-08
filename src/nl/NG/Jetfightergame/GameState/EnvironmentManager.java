@@ -29,11 +29,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     private EnvironmentClass currentType;
 
     /**
-     * creates a switchable world, whithout building the scene.
-     * @param initial
-     * @param deposit
-     * @param raceProgress
-     * @param loadDynamic
+     * creates a switchable world, without building the scene yet.
+     * @param initial the world that is built at first invocation of build()
+     * @param deposit the place where all new entities are sent to
+     * @param raceProgress an object that tracks rounds and checkpoints for players, required for building checkpoints
+     * @param loadDynamic true if the caller is hosting a server, false if the dynamic entities shall be received by an outside source.
      */
     public EnvironmentManager(EnvironmentClass initial, SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic) {
         instance = (initial != null) ? initial.create() : new Void();
@@ -133,10 +133,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
 
     @Override
     public void switchTo(EnvironmentClass type) {
+        GameState newInstance = (type != null) ? type.create() : new Void();
+        newInstance.buildScene(deposit, raceProgress, COLLISION_DETECTION_LEVEL, loadDynamic);
         instance.cleanUp();
+        instance = newInstance;
         currentType = type;
-        instance = (type != null) ? type.create() : new Void();
-        instance.buildScene(deposit, raceProgress, COLLISION_DETECTION_LEVEL, loadDynamic);
     }
 
     public EnvironmentClass getCurrentType() {

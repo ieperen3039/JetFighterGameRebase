@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -36,6 +37,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     private EnvironmentManager gameWorld;
     private GameTimer globalTime;
     private EnvironmentClass raceWorld;
+    private boolean worldShouldSwitch = false;
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
@@ -63,11 +65,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 asAdmin
         );
 
-        // send all entities until this point (excluding the player himself)
+        // send all entities until this point (excluding the player jet himself)
         for (MovingEntity entity : gameWorld.getEntities()) {
             EntityClass type = EntityClass.get(entity);
-            Spawn spawn = new Spawn(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
-            player.sendEntitySpawn(spawn, entity.idNumber());
+            Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
+            player.sendEntitySpawn(prentity, entity.idNumber());
         }
 
         AbstractJet entity = player.jet();
@@ -81,10 +83,10 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
-    public void addSpawn(Spawn spawn){
-        MovingEntity entity = spawn.construct(this, Controller.EMPTY);
+    public void addSpawn(Prentity prentity) {
+        MovingEntity entity = prentity.construct(this, Controller.EMPTY);
         gameWorld.addEntity(entity);
-        connections.forEach(conn -> conn.sendEntitySpawn(spawn, entity.idNumber()));
+        connections.forEach(conn -> conn.sendEntitySpawn(prentity, entity.idNumber()));
     }
 
     @Override
@@ -99,6 +101,9 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     protected void update(float deltaTime) {
+        if (worldShouldSwitch) setWorld(raceWorld);
+        connections.removeIf(ServerConnection::isClosed);
+
         globalTime.updateGameTime();
         TrackedFloat time = globalTime.getGameTime();
         gameWorld.updateGameLoop(time.current(), time.difference());
@@ -125,7 +130,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     public void startRace() {
-        setWorld(raceWorld);
+        worldShouldSwitch = true;
     }
 
     @Override
@@ -147,7 +152,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     protected void cleanup() {
-        connections.forEach(ServerConnection::close);
         gameWorld.cleanUp();
     }
 
@@ -159,6 +163,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     private void setWorld(EnvironmentClass world) {
+        Logger.print("Switching world to " + world);
         // startup new world
         Player[] asArray = connections.toArray(new Player[0]);
         RaceProgress raceProgress = new RaceProgress(asArray.length, this, asArray);
@@ -168,13 +173,24 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         // notify clients
         connections.forEach(conn -> conn.sendWorldSwitch(world));
 
-        float time = globalTime.getGameTime().current();
+
+        // progress this change to all clients
         for (ServerConnection player : connections) {
             AbstractJet playerJet = player.jet();
             MovingEntity.State spawn = gameWorld.getNewSpawnPosition();
             playerJet.set(spawn);
-            connections.forEach(conn -> conn.sendEntityUpdate(playerJet, time));
+
+            // send all entities (excluding all player jets)
+            for (MovingEntity entity : gameWorld.getEntities()) {
+                EntityClass type = EntityClass.get(entity);
+                Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
+                player.sendEntitySpawn(prentity, entity.idNumber());
+            }
         }
+
+        connections.forEach(conn -> gameWorld.addEntity(conn.jet()));
+
+        worldShouldSwitch = false;
     }
 
     public void playerCheckpointUpdate(Player p, int checkpointProgress, int roundProgress) {

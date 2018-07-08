@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.Tools.Logger;
-
 import java.io.IOException;
 
 /**
@@ -18,7 +16,6 @@ public interface BlockingListener {
         try {
             // loop until handleMessage returns false (the connection should be closed)
             while (handleMessage());
-            Logger.print("Stopped listening " + this);
 
         } catch (IOException ex) {
             ex.printStackTrace();

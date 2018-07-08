@@ -66,6 +66,7 @@ public enum  EntityClass {
 
     /**
      * @return the enum value corresponding to the given entity, or null if there is none
+     * @deprecated an entity should know its own defined type. (not yet implemented) //TODO add this
      */
     public static EntityClass get(MovingEntity type){
         if (type instanceof FallingCube) {
@@ -88,5 +89,9 @@ public enum  EntityClass {
         } else {
             return null;
         }
+    }
+
+    public static String asString(int id) {
+        return id < VALUES.length ? get(id).toString() : id + " (Invalid entity id)";
     }
 }

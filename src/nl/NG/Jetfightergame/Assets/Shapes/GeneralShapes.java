@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Assets.Shapes;
 
 import nl.NG.Jetfightergame.Assets.WorldObjects.CheckpointRing;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -33,23 +34,24 @@ public final class GeneralShapes {
 
     /**
      * loads the shapes into memory. This method may be split into several selections of models
-     * @param loadMesh whether the meshes should be loaded. If this is false, calling {@link Shape#render(GL2.Painter)}
+     * @param doLoadMesh whether the meshes should be loaded. If this is false, calling {@link Shape#render(GL2.Painter)}
      *                 will result in a {@link NullPointerException}
      */
-    public static void init(boolean loadMesh) {
+    public static void init(boolean doLoadMesh) {
+        ServerSettings.RENDER_ENABLED = doLoadMesh;
         if (isLoaded) {
             Logger.printError("Tried loading shapes while they where already loaded");
             return;
         }
         isLoaded = true;
 
-        CONCEPT_BLUEPRINT = new BasicShape("ConceptBlueprint.obj", loadMesh);
-        ARROW = new BasicShape("arrow.obj", loadMesh);
-        INVERSE_CUBE = makeInverseCube(0, loadMesh);
-        CUBE = makeCube(loadMesh);
-        ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", loadMesh, CONTAINER_SIZE, 50f);
+        CONCEPT_BLUEPRINT = new BasicShape("ConceptBlueprint.obj", doLoadMesh);
+        ARROW = new BasicShape("arrow.obj", doLoadMesh);
+        INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
+        CUBE = makeCube(doLoadMesh);
+        ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", doLoadMesh, CONTAINER_SIZE, 50f);
 //        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));
-        CHECKPOINTRING = new CheckpointRing(10, 0.1f, loadMesh);
+        CHECKPOINTRING = new CheckpointRing(10, 0.1f, doLoadMesh);
     }
 
     private static Shape makeCube(boolean loadMesh) {

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -72,7 +72,7 @@ public abstract class GameState implements Environment {
     /**
      * @return all the dynamic entities that are standard part of this world
      */
-    protected abstract Collection<Spawn> getInitialEntities();
+    protected abstract Collection<Prentity> getInitialEntities();
 
     @Override
     @SuppressWarnings("ConstantConditions")
@@ -112,6 +112,8 @@ public abstract class GameState implements Environment {
 
     @Override
     public void drawObjects(GL2 gl) {
+        if (physicsEngine == null) return;
+
         glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
 //        Toolbox.drawAxisFrame(gl);
         physicsEngine.getStaticEntities().forEach(d -> d.draw(gl));
@@ -186,13 +188,6 @@ public abstract class GameState implements Environment {
         } else {
             Logger.printError("Tried adding particles that are either already loaded, or without particles");
         }
-    }
-
-    @Override
-    public void cleanUp() {
-        lights.clear();
-        particles.clear();
-        physicsEngine.cleanUp();
     }
 
     public PosVector getMiddleOfPath(PosVector position) {

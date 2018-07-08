@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.*;
@@ -57,14 +57,17 @@ public final class JetFighterProtocol {
         Quaternionf rot = DataIO.readQuaternion(input);
         // set the entity state
         MovingEntity target = entities.getEntity(id);
-        assert target != null : "Entity with id " + id + " not found";
+        if (target == null) {
+            Logger.printError("Entity with id " + id + " not found");
+            return null;
+        }
 
         target.addStatePoint(time, pos, rot);
         return target;
     }
 
     /** server sending a new entity */
-    public static void newEntitySend(DataOutputStream output, Spawn entity, int id) throws IOException {
+    public static void newEntitySend(DataOutputStream output, Prentity entity, int id) throws IOException {
         output.write(entity.type.ordinal());
         // identity number
         output.writeInt(id);
@@ -104,18 +107,18 @@ public final class JetFighterProtocol {
      */
     public static Pair<String, AbstractJet> playerSpawnAccept(
             DataInputStream input, DataOutputStream output, MovingEntity.State position,
-            SpawnReceiver server, Controller controls, BiConsumer<Spawn, Integer> others
+            SpawnReceiver server, Controller controls, BiConsumer<Prentity, Integer> others
     ) throws IOException {
         EntityClass type = EntityClass.get(input.read());
         String name = input.readUTF();
 
-        Spawn spawn = new Spawn(type, position);
-        MovingEntity construct = spawn.construct(server, controls);
+        Prentity prentity = new Prentity(type, position);
+        MovingEntity construct = prentity.construct(server, controls);
         assert construct instanceof AbstractJet : "player tried flying on something that is not a jet.";
-        JetFighterProtocol.newEntitySend(output, spawn, construct.idNumber());
+        JetFighterProtocol.newEntitySend(output, prentity, construct.idNumber());
         output.flush();
 
-        others.accept(spawn, construct.idNumber());
+        others.accept(prentity, construct.idNumber());
         return new Pair<>(name, (AbstractJet) construct);
     }
 
@@ -219,7 +222,8 @@ public final class JetFighterProtocol {
         long start = System.nanoTime();
 
         int reply = input.read();
-        if (reply != MessageType.PONG.ordinal()) Logger.printError("unexpected reply: " + MessageType.get(reply));
+        if (reply != MessageType.PONG.ordinal())
+            Logger.printError("Unexpected reply on " + MessageType.PONG + ": " + MessageType.asString(reply));
 
         int deltaNanos = (int) (System.nanoTime() - start);
         return deltaNanos * 1E-9f;
@@ -257,9 +261,8 @@ public final class JetFighterProtocol {
         progress.setState(playerName, checkPointNr, roundNr);
     }
 
-    public static void worldSwitchRead(DataInputStream input, EnvironmentManager game) throws IOException {
-        EnvironmentClass type = EnvironmentClass.get(input.read());
-        game.switchTo(type);
+    public static EnvironmentClass worldSwitchRead(DataInputStream input) throws IOException {
+        return EnvironmentClass.get(input.read());
     }
 
     public static void worldSwitchSend(DataOutputStream output, EnvironmentClass world) throws IOException {

@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.Weapons;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractWeapon;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spawn;
+import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -19,11 +19,11 @@ public class MachineGun extends AbstractWeapon {
     }
 
     @Override
-    protected Spawn newProjectile(MovingEntity.State source, SpawnReceiver entityDeposit, float timeFraction) {
+    protected Prentity newProjectile(MovingEntity.State source, SpawnReceiver entityDeposit, float timeFraction) {
         DirVector vel = source.velocity();
         vel.add(source.forward().mul(200));
         final PosVector pos = source.position(timeFraction);
         final Quaternionf rot = source.rotation(timeFraction);
-        return new Spawn(EntityClass.SIMPLE_BULLET, pos, rot, vel);
+        return new Prentity(EntityClass.SIMPLE_BULLET, pos, rot, vel);
     }
 }

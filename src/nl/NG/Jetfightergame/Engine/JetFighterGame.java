@@ -45,6 +45,7 @@ import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCentered
  *         a class that manages all game objects, and houses both the rendering- and the gameloop
  */
 public class JetFighterGame extends GLFWGameEngine {
+    private static final boolean USE_SOCKET_FOR_OFFLINE = !ServerSettings.DEBUG;
     private final ActionButtonHandler actionHandler;
     private AbstractGameLoop renderLoop;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
@@ -73,18 +74,27 @@ public class JetFighterGame extends GLFWGameEngine {
 
             if (ClientSettings.LOCAL_SERVER) {
                 Logger.print("Creating new local server");
-                StreamPipe serverToClient = new StreamPipe(1024);
-                StreamPipe clientToServer = new StreamPipe(126);
 
-                InputStream serverReceive = serverToClient.getInputStream();
-                OutputStream serverSend = clientToServer.getOutputStream();
+                if (USE_SOCKET_FOR_OFFLINE) {
+                    Socket client = new Socket();
+                    otherLoops.add(JetFighterServer.createOfflineServer(EnvironmentClass.ISLAND_MAP, client));
+                    sendChannel = client.getOutputStream();
+                    receiveChannel = client.getInputStream();
 
-                JetFighterServer server = new JetFighterServer(EnvironmentClass.LOBBY);
-                new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
-                otherLoops.add(server.getRunnable());
+                } else {
+                    StreamPipe serverToClient = new StreamPipe(1024);
+                    StreamPipe clientToServer = new StreamPipe(126);
 
-                sendChannel = serverToClient.getOutputStream();
-                receiveChannel = clientToServer.getInputStream();
+                    InputStream serverReceive = serverToClient.getInputStream();
+                    OutputStream serverSend = clientToServer.getOutputStream();
+
+                    JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
+                    new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
+                    otherLoops.add(server.getRunnable());
+
+                    sendChannel = serverToClient.getOutputStream();
+                    receiveChannel = clientToServer.getInputStream();
+                }
 
             } else {
                 Logger.print("Searching local server");
@@ -136,13 +146,14 @@ public class JetFighterGame extends GLFWGameEngine {
         return Collections.unmodifiableCollection(otherLoops);
     }
 
-    public static void main(String args[]) {
+    public static void main(String... args) {
         try {
             new JetFighterGame().root();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
         }
+        System.exit(1);
     }
 
     @Override

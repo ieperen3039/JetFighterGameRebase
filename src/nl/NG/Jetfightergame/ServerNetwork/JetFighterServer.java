@@ -74,7 +74,7 @@ public class JetFighterServer {
      */
     public void shortConnect(InputStream receive, OutputStream send, boolean asHost) {
         try {
-            Logger.print("Creating internal connection" + (asHost ? " with host privileges" : "") + "...");
+            Logger.print("Creating internal connection" + (asHost ? " with host privileges" : ""));
             game.connectToPlayer(receive, send, asHost);
 
         } catch (IOException e) {
@@ -126,17 +126,6 @@ public class JetFighterServer {
         game.connectToPlayer(in, out, asAdmin);
     }
 
-    /**
-     * Stop accepting connections, and open a portal to the new world. Possible delay between these two actions should
-     * be handled in the lobby world.
-     * @param world the world to start
-     */
-    public void upgrade(EnvironmentClass world) {
-        currentPhase = STARTING;
-        // TODO stop listen()
-//        game.setWorld(world);
-    }
-
     /** @return what the server is doing ATM */
     public Phase getPhase() {
         return currentPhase;
@@ -145,7 +134,7 @@ public class JetFighterServer {
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
         GeneralShapes.init(false);
-        JetFighterServer server = new JetFighterServer(EnvironmentClass.PLAYERJET_LABORATORY);
+        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
         server.listenForHost();
 
 //        server.listen();

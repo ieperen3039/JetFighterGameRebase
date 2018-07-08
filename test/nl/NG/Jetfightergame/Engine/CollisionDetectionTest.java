@@ -53,13 +53,6 @@ public class CollisionDetectionTest extends CollisionDetection {
             System.out.println();
         }
 
-        // no values for i > j
-        for (int i = 0; i < nums.length; i++) {
-            for (int j = i; j < nums.length; j++) {
-                assert matrix[i][j] == 0: String.format("loose values on [%d, %d]", i, j);
-            }
-        }
-
         assert matrix [1][0] == 0: "false positive";
         assert matrix [2][0] == 1: "false negative";
         assert matrix [2][1] == 0: "false positive";
@@ -93,13 +86,6 @@ public class CollisionDetectionTest extends CollisionDetection {
                 System.out.print(matrix[i][j] + ", ");
             }
             System.out.println();
-        }
-
-        // no values for i > j
-        for (int i = 0; i < nums.length; i++) {
-            for (int j = i; j < nums.length; j++) {
-                assert matrix[i][j] == 0: String.format("loose values on [%d, %d]", i, j);
-            }
         }
 
         assert matrix [1][0] == 2: "[1][0] => " + matrix[1][0];

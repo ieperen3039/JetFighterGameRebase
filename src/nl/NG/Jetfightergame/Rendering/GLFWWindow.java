@@ -114,7 +114,6 @@ public class GLFWWindow {
             GLUtil.setupDebugMessageCallback();
         }
 
-        ServerSettings.RENDER_ENABLED = true;
         Toolbox.checkGLError();
     }
 
