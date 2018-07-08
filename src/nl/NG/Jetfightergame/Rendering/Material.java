@@ -13,7 +13,7 @@ public enum Material {
     ROUGH(
             new Color4f(0.9f, 0.9f, 0.9f, 1),
             new Color4f(0.1f, 0.1f, 0.1f, 0.1f),
-            new Color4f(0.5f, 0.5f, 0.5f, 1),
+            new Color4f(0.3f, 0.3f, 0.3f, 1),
             1f
     ),
 
@@ -58,9 +58,9 @@ public enum Material {
     ),
     
     CYBERGLASSMETAL(
-            Color4f.GREY,
+            Color4f.BLACK,
             Color4f.WHITE,
-            Color4f.MAGENTA,
+            new Color4f(0.5f, 0.5f, 1.0f),
             20
     ),
 
@@ -70,7 +70,8 @@ public enum Material {
     WOOD(
             new Color4f(0.5f, 0.27f, 0.14f, 1),
             new Color4f(0.02f, 0.04f, 0.06f, 1),
-            new Color4f(0.75f, 0.375f, 0.20f, 1), 0.5f
+            new Color4f(0.75f, 0.375f, 0.20f, 1),
+            0.5f
     );
 
     /**

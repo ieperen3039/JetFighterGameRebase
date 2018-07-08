@@ -71,8 +71,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     public boolean handleMessage() throws IOException {
         MessageType type = MessageType.get(serverIn.read());
 
-        if (type == CONNECTION_CLOSE || type == SHUTDOWN_GAME) Logger.print(type);
-
         switch (type) {
             case ENTITY_SPAWN:
                 MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, this, Controller.EMPTY);
@@ -100,7 +98,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
             case RACE_PROGRESS:
                 JetFighterProtocol.raceProgressRead(serverIn, gameProgress);
-                Logger.print(gameProgress.getState(this));
                 break;
 
             case EXPLOSION_SPAWN:

@@ -203,7 +203,7 @@ public class ServerConnection implements BlockingListener, Player {
     }
 
     public void sendShutDown() {
-        sendMessage(MessageType.SHUTDOWN_GAME, clientOut::flush);
+        if (!isClosed) sendMessage(MessageType.SHUTDOWN_GAME, clientOut::flush);
     }
 
     @Override

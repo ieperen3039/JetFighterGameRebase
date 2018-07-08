@@ -45,7 +45,7 @@ public class Triangle extends Plane {
      * @return true if the point is within the boundaries
      */
     @Override
-    protected boolean encapsules(PosVector hitPos) {
+    protected boolean encapsulates(PosVector hitPos) {
         PosVector A = boundary[0];
         PosVector B = boundary[1];
         PosVector C = boundary[2];

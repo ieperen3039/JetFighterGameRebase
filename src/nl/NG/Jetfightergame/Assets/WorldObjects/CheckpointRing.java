@@ -26,7 +26,6 @@ public class CheckpointRing implements Shape {
      * @param loadMesh      if true, a mesh instance is loaded to the GPU
      */
     public CheckpointRing(int radialParts, float ringThiccness, boolean loadMesh) {
-        PosVector position = PosVector.zeroVector();
         DirVector orthogonal = DirVector.zVector();
 
         float angle = (float) ((2 * Math.PI) / radialParts);
@@ -36,7 +35,7 @@ public class CheckpointRing implements Shape {
         DirVector[] expand = new DirVector[radialParts];
 
         for (int j = 0; j < radialParts; j++) {
-            ring[j] = position.add(orthogonal, new PosVector());
+            ring[j] = new PosVector(orthogonal);
             expand[j] = orthogonal.reducedTo(ringThiccness, new DirVector());
             axis.transform(orthogonal);
         }
@@ -86,9 +85,9 @@ public class CheckpointRing implements Shape {
         }
 
 
-        hitPlane = new Plane(ring, DirVector.xVector()) {
+        hitPlane = new Plane(ring, new DirVector(-1, 0, 0)) {
             @Override
-            protected boolean encapsules(PosVector hitPos) {
+            protected boolean encapsulates(PosVector hitPos) {
                 return hitPos.lengthSquared() < 1;
             }
         };

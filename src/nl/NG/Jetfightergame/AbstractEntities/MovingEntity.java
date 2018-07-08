@@ -12,6 +12,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -529,6 +530,10 @@ public abstract class MovingEntity implements Touchable {
             );
         }
 
+        public State(PosVector position, DirVector direction, DirVector velocity) {
+            this(position, Toolbox.xTo(direction), velocity, direction);
+        }
+
         public State(PosVector firstPos, PosVector secondPos, Quaternionf firstRot, Quaternionf secondRot, DirVector velocity, DirVector forward) {
             this.firstPos = firstPos;
             this.secondPos = secondPos;
@@ -536,6 +541,10 @@ public abstract class MovingEntity implements Touchable {
             this.secondRot = secondRot;
             this.velocity = new DirVector(velocity);
             this.forward = new DirVector(forward);
+        }
+
+        public State(PosVector position, Quaternionf rotation, DirVector velocity, DirVector forward) {
+            this(position, position, rotation, rotation, velocity, forward);
         }
 
         public PosVector position(float timeFraction) {

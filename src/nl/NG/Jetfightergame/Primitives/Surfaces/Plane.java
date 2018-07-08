@@ -76,7 +76,7 @@ public abstract class Plane {
 
         DirVector hitDir = direction.scale(scalar, new DirVector());
         PosVector hitPos = linePosition.add(hitDir, new PosVector());
-        if (!this.encapsules(hitPos)) return null;
+        if (!this.encapsulates(hitPos)) return null;
 
         return new Collision(scalar, normal, hitPos);
     }
@@ -114,7 +114,7 @@ public abstract class Plane {
      * @return true if the point is not outside the boundary of this plane
      * @precondition hitPos lies on the plane of the points of {@code boundary}
      */
-    protected abstract boolean encapsules(PosVector hitPos);
+    protected abstract boolean encapsulates(PosVector hitPos);
 
     /**
      * calculates the new {@param direction}, relative to {@param linePosition}
@@ -166,7 +166,7 @@ public abstract class Plane {
         if (hitDir.dot(direction) < 0) return false;
 
         PosVector hitPoint = position.add(hitDir, new PosVector());
-        return this.encapsules(hitPoint);
+        return this.encapsulates(hitPoint);
     }
 
     /**

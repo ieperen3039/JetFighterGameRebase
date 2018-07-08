@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.GameState;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spectral;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -10,7 +11,7 @@ import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
-import nl.NG.Jetfightergame.Tools.Vectors.Vector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
@@ -82,7 +83,7 @@ public class RaceProgress {
         players[nOfPlayers - 1] = newPlayer;
     }
 
-    public Checkpoint addCheckpoint(Vector position, DirVector direction, float radius, Color4f color) {
+    public Checkpoint addCheckpoint(PosVector position, DirVector direction, float radius, Color4f color) {
         return new Checkpoint(
                 nOfCheckpoints++, position, direction, radius, color
         );
@@ -148,12 +149,16 @@ public class RaceProgress {
     /**
      * @author Geert van Ieperen created on 28-6-2018.
      */
-    public class Checkpoint extends StaticEntity {
-        private final int id;
+    public class Checkpoint extends StaticEntity implements Spectral {
+        private final int checkpointNumber;
+        private final PosVector position;
+        private final float radius;
 
-        private Checkpoint(int id, Vector position, DirVector direction, float radius, Color4f color) {
+        private Checkpoint(int checkpointNumber, PosVector position, DirVector direction, float radius, Color4f color) {
             super(GeneralShapes.CHECKPOINTRING, Material.SILVER, color, position, radius, Toolbox.xTo(direction));
-            this.id = id;
+            this.checkpointNumber = checkpointNumber;
+            this.position = position;
+            this.radius = radius;
         }
 
         @Override
@@ -161,14 +166,26 @@ public class RaceProgress {
             MovingEntity source = cause.source();
             if (source instanceof AbstractJet) {
                 int pInd = indexIfPlayer((AbstractJet) source);
-                if (pInd > 0) {
-                    int nextCh = nextCheckpointOf(pInd);
-                    // check for passing the right checkpoint
-                    if (nextCh == id) {
-                        update(pInd, nextCh);
-                    }
+                if (pInd < 0) {
+                    return;
+                }
+
+                int nextCh = nextCheckpointOf(pInd);
+                // check for passing the right checkpoint
+                if (nextCh == checkpointNumber) {
+                    update(pInd, nextCh);
                 }
             }
+        }
+
+        @Override
+        public float getRange() {
+            return radius;
+        }
+
+        @Override
+        public PosVector getExpectedMiddle() {
+            return position;
         }
     }
 

@@ -194,4 +194,8 @@ public abstract class GameState implements Environment {
         return PosVector.zeroVector();
     }
 
+    @Override
+    public void cleanUp() {
+        physicsEngine.cleanUp();
+    }
 }

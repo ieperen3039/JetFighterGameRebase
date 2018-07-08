@@ -483,10 +483,10 @@ public class CollisionDetection implements EntityManagement {
 
     @Override
     public void cleanUp() {
+        Logger.removeOnlineUpdate(collisionCounter);
         xLowerSorted = new CollisionEntity[0];
         yLowerSorted = new CollisionEntity[0];
         zLowerSorted = new CollisionEntity[0];
-        Logger.removeOnlineUpdate(collisionCounter);
     }
 
     protected class CollisionEntity {

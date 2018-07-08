@@ -26,14 +26,18 @@ public class IslandMap extends GameState {
     protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
         List<Touchable> entities = new ArrayList<>();
 
-        for (int i = 1; i < 7; i++) {
+        PosVector position = new PosVector();
+        DirVector direction = new DirVector(1, 1, 0.2f);
+        for (int i = 1; i < 15; i++) {
+            position.add(direction.reducedTo(70, new DirVector()));
+            direction.rotateZ((float) Math.PI / 4);
             entities.add(raceProgress.addCheckpoint(
-                    new PosVector(40 * i, 0, 10 * i), DirVector.xVector(), 10, Color4f.BLUE
+                    new PosVector(position), new DirVector(direction), 20, Color4f.BLUE
             ));
         }
 
         for (Shape s : GeneralShapes.ISLAND1) {
-            entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.5f, 0.2f), new PosVector(0, 0, -200)));
+            entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
         }
 
         return entities;
@@ -46,12 +50,14 @@ public class IslandMap extends GameState {
 
     @Override
     public MovingEntity.State getNewSpawnPosition() {
-        return new MovingEntity.State();
+        DirVector direction = new DirVector(1, 1, 0);
+        direction.normalize();
+        return new MovingEntity.State(PosVector.zeroVector(), direction, DirVector.zeroVector());
     }
 
     @Override
     public Color4f fogColor() {
-        return Color4f.WHITE;
+        return new Color4f(0.6f, 0.6f, 0.9f);
     }
 
     @Override

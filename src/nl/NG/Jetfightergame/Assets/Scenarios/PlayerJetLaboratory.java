@@ -32,7 +32,7 @@ public class PlayerJetLaboratory extends GameState {
 
         entities.add(new StaticEntity(
                 GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
-                Material.PLASTIC, Color4f.ORANGE, PosVector.zeroVector(), LAB_SIZE
+                Material.CYBERGLASSMETAL, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
         ));
 
         return entities;
