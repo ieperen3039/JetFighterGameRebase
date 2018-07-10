@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Camera;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
-import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
+import nl.NG.Jetfightergame.Tools.Tracked.SmoothTrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -20,9 +20,9 @@ public class FollowingCamera implements Camera {
     /**
      * The position of the camera.
      */
-    private final SmoothTracked<PosVector> eye;
-    private final SmoothTracked<DirVector> focus;
-    private final SmoothTracked<DirVector> up;
+    private final SmoothTrackedVector<PosVector> eye;
+    private final SmoothTrackedVector<DirVector> focus;
+    private final SmoothTrackedVector<DirVector> up;
     private final MovingEntity target;
 
     public FollowingCamera(MovingEntity target) {
@@ -38,7 +38,7 @@ public class FollowingCamera implements Camera {
         );
     }
 
-    public FollowingCamera(SmoothTracked<PosVector> eye, SmoothTracked<DirVector> focus, SmoothTracked<DirVector> up, MovingEntity target) {
+    public FollowingCamera(SmoothTrackedVector<PosVector> eye, SmoothTrackedVector<DirVector> focus, SmoothTrackedVector<DirVector> up, MovingEntity target) {
         this.eye = eye;
         this.focus = focus;
         this.up = up;

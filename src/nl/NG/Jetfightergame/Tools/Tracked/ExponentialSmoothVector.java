@@ -9,7 +9,7 @@ import static java.lang.StrictMath.pow;
  * @author Geert van Ieperen
  *         created on 29-10-2017.
  */
-public class ExponentialSmoothVector<V extends Vector> extends TrackedVector<V> implements SmoothTracked<V> {
+public class ExponentialSmoothVector<V extends Vector> extends SmoothTrackedVector<V> {
 
     private final float preservedFraction;
 

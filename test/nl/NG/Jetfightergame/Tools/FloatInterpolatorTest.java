@@ -16,7 +16,7 @@ public class FloatInterpolatorTest {
 
     @Before
     public void setUp() throws Exception {
-        instance = new FloatInterpolator(10, 0f);
+        instance = new FloatInterpolator(10, 0f, 0);
         instance.add(1f, 0);
         instance.add(2f, 1);
         instance.add(4f, 3);

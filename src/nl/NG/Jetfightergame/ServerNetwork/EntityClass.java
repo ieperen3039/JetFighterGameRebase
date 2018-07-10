@@ -48,7 +48,7 @@ public enum  EntityClass {
         switch (this) {
             case BASIC_JET:
                 BasicJet jet = new BasicJet(id, input, timer, game);
-                jet.set(position, velocity, rotation);
+                jet.set(position, velocity, rotation, 0);
                 return jet;
             case SIMPLE_BULLET:
                 return new SimpleBullet(id, position, velocity, rotation, timer, game);

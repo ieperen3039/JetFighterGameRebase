@@ -25,7 +25,6 @@ public final class ClientSettings {
     public static float PITCH_MODIFIER = -0.05f;
     public static float ROLL_MODIFIER = 0.05f;
     public static final int CONNECTION_SEND_FREQUENCY = 60;
-    public static boolean SPECTATOR_MODE = false;
 
     /** visual settings */
     public static float FOV = (float) Math.toRadians(60);
@@ -40,7 +39,6 @@ public final class ClientSettings {
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final boolean ITERATIVE_ROTATION_INTERPOLATION = true;
     public static float HIGHLIGHT_LINE_WIDTH = 1f;
-    public static final Material PORTAL_MATERIAL = Material.PLASTIC;
 
     /** particle settings */
     public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles in total
@@ -50,4 +48,9 @@ public final class ClientSettings {
     public static final int PARTICLE_SPLITS = 0;
     public static final int PARTICLECLOUD_SPLIT_SIZE = 5000;
     public static final float PARTICLECLOUD_MIN_TIME = 0.5f;
+
+    /** miscellaneous */
+    public static boolean SPECTATOR_MODE = false;
+    public static final float BASE_SPEED = 0;
+    public static final Material PORTAL_MATERIAL = Material.PLASTIC;
 }

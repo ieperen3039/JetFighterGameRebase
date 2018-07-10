@@ -69,7 +69,7 @@ public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderP
             PhongShader shader = (PhongShader) instance;
             shader.setSpecular(1f);
             shader.setAmbientLight(ambientLight);
-            shader.setFog(fog);
+            shader.setFogRange(fog);
             shader.setCameraPosition(eye);
 
         } else if (instance instanceof GouraudShader) {

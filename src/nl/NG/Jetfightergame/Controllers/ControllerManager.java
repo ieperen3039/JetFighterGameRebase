@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.Tools.Manager;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.*;
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.XBoxController;
 
 /**
  * a controller decorator that manages the current controller for the player, implementing overriding control.
@@ -16,7 +17,7 @@ import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.
  */
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
-    private static final ControllerImpl[] SELECTABLE_CONTROLLERS = {MouseAbsolute, MouseAbsoluteActive, MouseRelative, XboxController};
+    private static final ControllerImpl[] SELECTABLE_CONTROLLERS = {MouseAbsolute, MouseAbsoluteActive, MouseRelative, XBoxController};
     private final ClientConnection controlReceiver;
     private ScreenOverlay hud;
     private Controller instance;
@@ -32,7 +33,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
      */
     public enum ControllerImpl {
         MouseAbsolute, MouseRelative,
-        XboxController,
+        XBoxController,
         MouseAbsoluteActive,
         EmptyController,
     }
@@ -57,7 +58,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
             case MouseRelative:
                 instance = new PassivePCControllerRelative();
                 break;
-            case XboxController:
+            case XBoxController:
                 instance = new XBoxController();
                 break;
             case MouseAbsoluteActive:
@@ -113,6 +114,11 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
     @Override
     public boolean secondaryFire() {
         return instance.secondaryFire();
+    }
+
+    @Override
+    public void update() {
+        instance.update();
     }
 
     @Override

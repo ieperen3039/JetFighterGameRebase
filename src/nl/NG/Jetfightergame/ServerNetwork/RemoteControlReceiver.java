@@ -15,6 +15,7 @@ public class RemoteControlReceiver implements Controller {
     RemoteControlReceiver() {}
 
     public void receive(MessageType type, int value) {
+        // single assignment, so technically thread-safe
         switch (type) {
             case THROTTLE:
                 throttle = toFloat(value);
@@ -39,10 +40,10 @@ public class RemoteControlReceiver implements Controller {
 
     /**
      * @param value an int representation in range [0, 254]
-     * @return this value mapped to [-1, 1], where (0 -> -1, 127 -> 0, 254 -> 1)
+     * @return the given value mapped to [-1, 1], where (0 -> -1, 127 -> 0, 254 -> 1)
      */
-    public static float toFloat(int value) {
-        return (value / 127f) - 1;
+    private static float toFloat(int value) {
+        return Math.min((value / 127f) - 1, 1);
     }
 
     /**
@@ -59,6 +60,10 @@ public class RemoteControlReceiver implements Controller {
      */
     public static byte toByte(boolean isTrue) {
         return isTrue ? (byte) 1 : (byte) 0;
+    }
+
+    @Override
+    public void update() {
     }
 
     @Override

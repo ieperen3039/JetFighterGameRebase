@@ -32,6 +32,7 @@ uniform mat4 viewProjectionMatrix;
 uniform mat3 normalMatrix;
 
 smooth out vec4 fragColor;
+smooth out float cameraDistance;
 
 // P, N, eye and light.mPosition in model-space
 vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
@@ -70,6 +71,8 @@ void main()
             diffuseSpecularComponent += calculateLighting(mPosition, mNormal, cameraPosition, pointLights[i]);
         }
     }
+
+    cameraDistance = length(mPosition.xyz - cameraPosition);
 
     fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
 }

@@ -64,7 +64,7 @@ public class OneWayPortal {
             Quaternionf newRotation = source.getRotation().add(relativeRotation);
             DirVector newVelocity = source.getVelocity();
             relativeRotation.transform(newVelocity);
-            source.set(newPosition, newVelocity, newRotation);
+            source.set(newPosition, newVelocity, newRotation, 0);
 
             worldTo.addEntity(source);
         }

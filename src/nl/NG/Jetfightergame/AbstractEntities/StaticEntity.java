@@ -19,8 +19,8 @@ import java.util.function.Consumer;
 public class StaticEntity implements Touchable {
 
     private final Shape shape;
-    private final Material material;
-    private final Color4f color;
+    protected final Material material;
+    protected Color4f color;
     private final Vector offSet;
     private final float scaling;
     private final Quaternionf rotation;

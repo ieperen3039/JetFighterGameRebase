@@ -6,8 +6,8 @@ package nl.NG.Jetfightergame.Tools.Interpolation;
  */
 public class FloatInterpolator extends LinearInterpolator<Float> {
 
-    public FloatInterpolator(int capacity, Float initialValue) {
-        super(capacity, initialValue);
+    public FloatInterpolator(int capacity, Float initialValue, float initialTime) {
+        super(capacity, initialValue, initialTime);
     }
 
     @Override

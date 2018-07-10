@@ -14,6 +14,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
+
 /**
  * @author Geert van Ieperen created on 21-5-2018.
  */
@@ -80,6 +82,9 @@ public class JetFighterClient {
 
                 // update window and poll for clicks
                 window.update();
+
+                // Poll for events
+                glfwPollEvents();
 
                 // sleep at least one millisecond
                 long remainingTime = Math.max((long) targetDeltaMillis - loopTimer.getTimeSinceLastUpdate(), 1);

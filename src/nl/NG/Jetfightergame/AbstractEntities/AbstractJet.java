@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -50,7 +51,6 @@ public abstract class AbstractJet extends MovingEntity {
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
-    public static final float BASE_SPEED = 200f;
     private float baseThrust;
 
     /**
@@ -73,7 +73,7 @@ public abstract class AbstractJet extends MovingEntity {
      * @param pitchAcc                 acceleration over the Y-axis when pitching up at full power in rad/ss
      * @param rollAcc                  acceleration over the X-axis when rolling at full power in rad/ss
      * @param rotationReductionFactor  the fraction that the rotationspeed is reduced every second [0, 1]
-     * @param renderTimer              the timer that determines the "current rendering time" for {@link
+     * @param gameTimer              the timer that determines the "current rendering time" for {@link
      *                                 MovingEntity#interpolatedPosition()}
      * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
      * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
@@ -85,10 +85,10 @@ public abstract class AbstractJet extends MovingEntity {
             int id, Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
-            float rotationReductionFactor, GameTimer renderTimer, float yReduction, float zReduction,
+            float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
             MachineGun gunAlpha, SpecialWeapon gunBeta, SpawnReceiver entityDeposit
     ) {
-        super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, renderTimer, entityDeposit);
+        super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, gameTimer, entityDeposit);
 
         this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
@@ -105,11 +105,12 @@ public abstract class AbstractJet extends MovingEntity {
         this.gunBeta = gunBeta;
         this.surfaceMaterial = material;
 
+        float time = gameTimer.time();
         forward = DirVector.xVector();
         relativeStateDirection(forward).normalize(forward);
-        forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward));
-        velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector());
-        baseThrust = BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
+        forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
+        velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
+        baseThrust = ClientSettings.BASE_SPEED * ClientSettings.BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
 
         Supplier<String> slowTimer = () -> slowTimeLeft > 0 ? String.format("%3d%% slow for %.1f seconds", ((int) (slowFactor * 100)), slowTimeLeft) : "";
         Logger.printOnline(slowTimer);
@@ -245,10 +246,10 @@ public abstract class AbstractJet extends MovingEntity {
 
     /**
      * set the position of the jet
-     * @see #set(PosVector, DirVector, Quaternionf)
+     * @see MovingEntity#set(PosVector, DirVector, Quaternionf, float)
      */
     public void set(PosVector posVector) {
-        set(posVector, velocity, rotation);
+        set(posVector, velocity, rotation, 0);
     }
 
     @Override
@@ -257,6 +258,6 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     public void set(State spawn) {
-        set(spawn.position(0), spawn.velocity(), spawn.rotation(0));
+        set(spawn.position(0), spawn.velocity(), spawn.rotation(0), 0);
     }
 }

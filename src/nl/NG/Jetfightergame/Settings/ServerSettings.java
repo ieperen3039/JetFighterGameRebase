@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Settings;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
 
 /**
@@ -24,11 +23,12 @@ public final class ServerSettings {
 
     /** collision detection */
     public static final int MAX_COLLISION_ITERATIONS = 100 / TARGET_TPS;
-    public static final float BASE_BUMPOFF_ENERGY = (BasicJet.MASS * AbstractJet.BASE_SPEED * AbstractJet.BASE_SPEED * 0.01f); // e = 0.5*m*v*v in joule
+    public static final float BASE_BUMPOFF_ENERGY = (BasicJet.MASS * ClientSettings.BASE_SPEED * ClientSettings.BASE_SPEED * 0.01f); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
     public static final int INTERPOLATION_QUEUE_SIZE = 10;
     public static final int PLAYERS_PER_RACE = 8;
+    public static final float POWERUP_COLLECTION_RANGE = 10;
     public static boolean RENDER_ENABLED = false;
 
     /** shape constants */

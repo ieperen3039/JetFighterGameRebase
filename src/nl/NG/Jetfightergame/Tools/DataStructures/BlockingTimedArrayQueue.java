@@ -2,16 +2,17 @@ package nl.NG.Jetfightergame.Tools.DataStructures;
 
 import java.io.Serializable;
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
-import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
+ * A timedQueue that uses ArrayDeque for implementation.
+ * Includes synchronized adding and deletion.
+ * Items added to the queue with a timestamp less than the previous addition will cause the previous value to be removed
  * @author Geert van Ieperen
  * created on 13-12-2017.
- * A timedQueue that uses ArrayDeque for implementation.
- * Includes synchoronized adding and deletion
  */
 public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
 
@@ -19,8 +20,8 @@ public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
     private Lock changeGuard;
 
     /** timestamps in seconds. Private, as semaphore must be handled */
-    private Queue<Double> timeStamps;
-    private Queue<T> elements;
+    private Deque<Float> timeStamps;
+    private Deque<T> elements;
 
     /**
      * @param capacity the initial expected maximum number of entries
@@ -32,26 +33,33 @@ public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
     }
 
     @Override
-    public void add(T element, double timeStamp) {
+    public void add(T element, float timeStamp) {
         changeGuard.lock();
+
+        // act as refinement
+        while (!timeStamps.isEmpty() && timeStamps.peekLast() > timeStamp) {
+            timeStamps.removeLast();
+            elements.removeLast();
+        }
+
         timeStamps.add(timeStamp);
         elements.add(element);
         changeGuard.unlock();
     }
 
     @Override
-    public T getActive(double timeStamp) {
+    public T getActive(float timeStamp) {
         // if (activeTimeStamp < timeStamp), there is no element available
         return (nextTimeStamp() < timeStamp) ? null : nextElement();
     }
 
     @Override
-    public double timeUntilNext(double timeStamp) {
+    public float timeUntilNext(float timeStamp) {
         return (nextTimeStamp() - timeStamp);
     }
 
     @Override
-    public void updateTime(double timeStamp) {
+    public void updateTime(float timeStamp) {
         changeGuard.lock();
 
         while ((timeStamps.size() > 1) && (timeStamp > nextTimeStamp())) {
@@ -69,7 +77,7 @@ public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
     }
 
     /** returns the next queued timestamp in seconds or null if there is none */
-    public Double nextTimeStamp(){
+    public Float nextTimeStamp() {
         return timeStamps.peek();
     }
 
@@ -80,7 +88,7 @@ public class BlockingTimedArrayQueue<T> implements TimedQueue<T>, Serializable {
 
     @Override
     public String toString() {
-        Iterator<Double> times = timeStamps.iterator();
+        Iterator<Float> times = timeStamps.iterator();
         Iterator elts = elements.iterator();
 
         StringBuilder s = new StringBuilder();

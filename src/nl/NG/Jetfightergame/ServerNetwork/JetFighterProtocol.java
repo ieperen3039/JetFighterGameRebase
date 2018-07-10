@@ -259,7 +259,6 @@ public final class JetFighterProtocol {
         int roundNr = input.readInt();
 
         progress.setState(playerName, checkPointNr, roundNr);
-        Logger.print(String.format("Player checkpoint: %s -> (%d, %d)", playerName, checkPointNr, roundNr));
     }
 
     public static EnvironmentClass worldSwitchRead(DataInputStream input) throws IOException {

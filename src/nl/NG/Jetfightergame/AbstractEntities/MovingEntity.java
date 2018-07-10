@@ -18,7 +18,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Matrix3f;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -30,6 +29,7 @@ import static java.lang.StrictMath.sqrt;
  */
 public abstract class MovingEntity implements Touchable {
 
+    private final float spawnTime;
     /** particles and new entities should be passed to this object */
     protected transient SpawnReceiver entityDeposit;
     private final int thisID;
@@ -97,7 +97,8 @@ public abstract class MovingEntity implements Touchable {
         pitchSpeed = 0f;
         rollSpeed = 0f;
 
-        resetCache();
+        spawnTime = gameTimer.time();
+        resetCache(spawnTime);
     }
 
     /**
@@ -367,6 +368,8 @@ public abstract class MovingEntity implements Touchable {
 
     @Override
     public void draw(GL2 gl) {
+        if (renderTime() < spawnTime) return;
+
         PosVector pos = interpolatedPosition();
         Quaternionf rot = interpolatedRotation();
 
@@ -433,9 +436,19 @@ public abstract class MovingEntity implements Touchable {
         return getClass().getSimpleName() + "(" + idNumber() + ")";
     }
 
-    public void resetCache() {
-        positionInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, position);
-        rotationInterpolator = new QuaternionInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, rotation);
+    private void resetCache(float currentTime) {
+        PosVector postPosition = position.add(velocity, new PosVector());
+
+        positionInterpolator = new VectorInterpolator(
+                ServerSettings.INTERPOLATION_QUEUE_SIZE,
+                position, currentTime,
+                postPosition, currentTime + 1
+        );
+
+        rotationInterpolator = new QuaternionInterpolator(
+                ServerSettings.INTERPOLATION_QUEUE_SIZE,
+                rotation, currentTime
+        );
     }
 
     /**
@@ -471,13 +484,13 @@ public abstract class MovingEntity implements Touchable {
         if (extraVelocity.dot(contactNormal) < 0) {
             extraVelocity.reflect(contactNormal);
         }
-        Vector3f angularVelChange = contactNormal.cross(hitPosition, new Vector3f());
-        invInertTensor.transform(angularVelChange);
-        angularVelChange.mul(0.8f);
-
-        rollSpeed += angularVelChange.x;
-        pitchSpeed += angularVelChange.y;
-        yawSpeed += angularVelChange.z;
+//        Vector3f angularVelChange = contactNormal.cross(hitPosition, new Vector3f());
+//        invInertTensor.transform(angularVelChange);
+//        angularVelChange.mul(0.8f);
+//
+//        rollSpeed += angularVelChange.x;
+//        pitchSpeed += angularVelChange.y;
+//        yawSpeed += angularVelChange.z;
 
         recalculateMovement(deltaTime);
     }
@@ -496,7 +509,7 @@ public abstract class MovingEntity implements Touchable {
      * set the state of this plane to the given parameters. This also updates the interpolation cache, which may result
      * in temporal visual glitches. Usage is preferably restricted to switching worlds
      */
-    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation) {
+    public void set(PosVector newPosition, DirVector newVelocity, Quaternionf newRotation, float currentTime) {
         this.position = new PosVector(newPosition);
         this.extraPosition = new PosVector(newPosition);
         this.rotation = new Quaternionf(newRotation);
@@ -508,7 +521,7 @@ public abstract class MovingEntity implements Touchable {
         pitchSpeed = 0f;
         rollSpeed = 0f;
 
-        resetCache();
+        resetCache(currentTime);
     }
 
     public static class State {

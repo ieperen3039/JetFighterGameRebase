@@ -9,8 +9,15 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
  */
 public class VectorInterpolator extends LinearInterpolator<Vector> {
 
-    public VectorInterpolator(int capacity, Vector initialValue) {
-        super(capacity, initialValue);
+    public VectorInterpolator(int capacity, Vector initialVector, float initialTime) {
+        super(capacity, initialVector, initialTime);
+    }
+
+    /**
+     * creates an interpolator with two values already set. Make sure that firstTime < secondTime
+     */
+    public VectorInterpolator(int capacity, Vector firstElement, float firstTime, Vector secondElement, float secondTime) {
+        super(capacity, firstElement, firstTime, secondElement, secondTime);
     }
 
     protected Vector interpolate(Vector firstElt, Vector secondElt, float fraction) {

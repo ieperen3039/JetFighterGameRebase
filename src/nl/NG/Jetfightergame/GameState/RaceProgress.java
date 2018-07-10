@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Spectral;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -14,7 +15,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * @author Geert van Ieperen created on 28-6-2018.
@@ -56,6 +58,8 @@ public class RaceProgress {
         this.capacity = capacity;
         this.progressRound = new int[capacity];
         this.progressCheckpoint = new int[capacity];
+        Arrays.fill(progressRound, -1);
+        Arrays.fill(progressCheckpoint, -1);
         this.changeListener = changeListener;
         this.players = Arrays.copyOf(players, capacity);
         this.nOfPlayers = Math.min(players.length, capacity);
@@ -69,6 +73,9 @@ public class RaceProgress {
 
         progressCheckpoint = new int[capacity];
         progressRound = new int[capacity];
+        Arrays.fill(progressRound, -1);
+        Arrays.fill(progressCheckpoint, -1);
+
         nOfCheckpoints = 0;
     }
 
@@ -85,8 +92,7 @@ public class RaceProgress {
 
     public Checkpoint addCheckpoint(PosVector position, DirVector direction, float radius, Color4f color) {
         return new Checkpoint(
-                nOfCheckpoints++, position, direction, radius, color
-        );
+                nOfCheckpoints++, position, direction, radius, color, Color4f.YELLOW);
     }
 
     /** returns the index of the player with the given name, or -1 if no such player is registered */
@@ -111,11 +117,7 @@ public class RaceProgress {
 
     /** get the next checkpoint of the player with the given identity */
     private int nextCheckpointOf(int pInd) {
-        int nextCh = progressCheckpoint[pInd] + 1;
-        if (nextCh == nOfCheckpoints) {
-            nextCh = 0;
-        }
-        return nextCh;
+        return (progressCheckpoint[pInd] + 1) % nOfCheckpoints;
     }
 
     /** set the checkpoint of the given player one up */
@@ -140,10 +142,8 @@ public class RaceProgress {
         return new Pair<>(progressRound[pInd], progressCheckpoint[pInd]);
     }
 
-    public void forEachPlayer(Consumer<Player> action) {
-        for (Player p : players) {
-            action.accept(p);
-        }
+    public Collection<Player> players() {
+        return Collections.unmodifiableList(Arrays.asList(players));
     }
 
     /**
@@ -153,12 +153,14 @@ public class RaceProgress {
         private final int checkpointNumber;
         private final PosVector position;
         private final float radius;
+        private Color4f activeColor;
 
-        private Checkpoint(int checkpointNumber, PosVector position, DirVector direction, float radius, Color4f color) {
+        private Checkpoint(int checkpointNumber, PosVector position, DirVector direction, float radius, Color4f color, Color4f activeColor) {
             super(GeneralShapes.CHECKPOINTRING, Material.SILVER, color, position, radius, Toolbox.xTo(direction));
             this.checkpointNumber = checkpointNumber;
             this.position = position;
             this.radius = radius;
+            this.activeColor = activeColor;
         }
 
         @Override
@@ -176,6 +178,13 @@ public class RaceProgress {
                     update(pInd, nextCh);
                 }
             }
+        }
+
+        @Override
+        public void preDraw(GL2 gl) {
+            Color4f color = (nextCheckpointOf(0) == checkpointNumber) ? activeColor : this.color;
+
+            gl.setMaterial(material, color);
         }
 
         @Override

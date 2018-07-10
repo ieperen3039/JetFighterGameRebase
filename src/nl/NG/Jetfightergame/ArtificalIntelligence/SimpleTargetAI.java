@@ -15,6 +15,11 @@ public class SimpleTargetAI extends AI {
     }
 
     @Override
+    public void update() {
+
+    }
+
+    @Override
     public float throttle() {
         return 0;
     }

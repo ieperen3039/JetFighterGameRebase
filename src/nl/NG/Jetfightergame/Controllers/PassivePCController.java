@@ -4,7 +4,9 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerMoveListener;
-import nl.NG.Jetfightergame.Settings.KeyBindings;
+
+import static nl.NG.Jetfightergame.Settings.KeyBindings.*;
+import static org.lwjgl.glfw.GLFW.glfwPollEvents;
 
 /**
  * @author Geert van Ieperen
@@ -31,16 +33,16 @@ public abstract class PassivePCController implements TrackerMoveListener, Tracke
     @Override
     public float throttle() {
         int i = 0;
-        if (keyboard.isPressed(KeyBindings.THROTTLE_UP)) i++;
-        if (keyboard.isPressed(KeyBindings.THROTTLE_DOWN)) i--;
+        if (keyboard.isPressed(KEY_THROTTLE_UP)) i++;
+        if (keyboard.isPressed(KEY_THROTTLE_DOWN)) i--;
         return (i);
     }
 
     @Override
     public float yaw() {
         int i = 0;
-        if (keyboard.isPressed(KeyBindings.YAW_UP)) i++;
-        if (keyboard.isPressed(KeyBindings.YAW_DOWN)) i--;
+        if (keyboard.isPressed(KEY_YAW_UP)) i++;
+        if (keyboard.isPressed(KEY_YAW_DOWN)) i--;
         return (i);
     }
 
@@ -92,6 +94,12 @@ public abstract class PassivePCController implements TrackerMoveListener, Tracke
     @Override
     public boolean isActiveController() {
         return false;
+    }
+
+    @Override
+    public void update() {
+        // Poll for events at the active window
+        glfwPollEvents();
     }
 }
 

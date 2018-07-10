@@ -17,6 +17,13 @@ public interface Controller {
     Controller EMPTY = new EmptyController();
 
     /**
+     * updates the state of the controller.
+     * <p>
+     * May only be called in the main thread.
+     */
+    void update();
+
+    /**
      * the amount of throttle requested by this controller.
      * Values out of the range [-1, 1] do not occur (should be taken care of in implementation).
      * @return the desired throttle as fraction [-1, 1].
@@ -80,6 +87,10 @@ public interface Controller {
      * a controller that does nothing
      */
     class EmptyController implements Controller {
+        @Override
+        public void update() {
+        }
+
         @Override
         public float throttle() {
             return 0;

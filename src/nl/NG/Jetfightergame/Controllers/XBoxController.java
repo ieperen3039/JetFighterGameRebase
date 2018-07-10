@@ -2,8 +2,7 @@ package nl.NG.Jetfightergame.Controllers;
 
 import nl.NG.Jetfightergame.Tools.Logger;
 
-import java.util.Arrays;
-
+import static nl.NG.Jetfightergame.Settings.KeyBindings.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 /**
@@ -11,55 +10,67 @@ import static org.lwjgl.glfw.GLFW.*;
  */
 public class XBoxController implements Controller {
 
+    private int xbox;
+    private final byte[] buttons = new byte[14];
+    private final float[] axes = new float[6];
+    private float[] t = new float[1];
+
     public XBoxController() {
-        int xbox = GLFW_JOYSTICK_1;
+        xbox = GLFW_JOYSTICK_1;
 
         if (!glfwJoystickPresent(xbox)) {
             Logger.printError("No controller connected!");
             return;
         }
 
-        byte[] buttonPresses = new byte[14];
-        float[] axes = new float[6];
+        update();
 
-        Logger.printOnline(() -> {
-            glfwGetJoystickButtons(xbox).get(buttonPresses);
-            return "Buttons: " + Arrays.toString(buttonPresses);
-        });
-        Logger.printOnline(() -> {
-            glfwGetJoystickAxes(xbox).get(axes);
-            return "Axes: " + Arrays.toString(axes);
-        });
+        Logger.printOnline(() -> String.format("Throttle: %5f", t[0]));
+    }
+
+    @Override
+    public void update() {
+        glfwGetJoystickButtons(xbox).get(buttons);
+        glfwGetJoystickAxes(xbox).get(axes);
     }
 
     @Override
     public float throttle() {
-        return 0;
+        // 1/2(RT + 1) - 1/2(LT + 1)
+        t[0] = (axes[XBOX_AXIS_RT] - axes[XBOX_AXIS_LT]) / 2;
+        return t[0];
     }
 
     @Override
     public float pitch() {
-        return 0;
+        return axes[XBOX_AXIS_LS_VERT];
     }
 
     @Override
     public float yaw() {
-        return 0;
+        boolean lt = buttons[XBOX_AXIS_LT] == GLFW_PRESS;
+        boolean rt = buttons[XBOX_AXIS_RT] == GLFW_PRESS;
+
+        if (lt == rt) {
+            return 0;
+        } else {
+            return lt ? 1 : -1;
+        }
     }
 
     @Override
     public float roll() {
-        return 0;
+        return axes[XBOX_AXIS_LS_HOR];
     }
 
     @Override
     public boolean primaryFire() {
-        return false;
+        return buttons[XBOX_BUTTON_A] == GLFW_PRESS;
     }
 
     @Override
     public boolean secondaryFire() {
-        return false;
+        return buttons[XBOX_BUTTON_B] == GLFW_PRESS;
     }
 
     @Override

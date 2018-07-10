@@ -11,6 +11,7 @@ import nl.NG.Jetfightergame.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
@@ -43,7 +44,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         super("Server", ServerSettings.TARGET_TPS, true);
         this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true);
         this.raceWorld = raceWorld;
-        this.globalTime = new GameTimer();
+        this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
         this.connections = new ArrayList<>();
 
         gameWorld.build();

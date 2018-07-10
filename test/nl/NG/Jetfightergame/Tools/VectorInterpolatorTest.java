@@ -15,7 +15,7 @@ public class VectorInterpolatorTest {
 
     @Before
     public void setUp() throws Exception {
-        instance = new VectorInterpolator(10, PosVector.zeroVector());
+        instance = new VectorInterpolator(10, PosVector.zeroVector(), 0);
 
         instance.add(new PosVector(1, 0, 0), 1);
         instance.add(new PosVector(0, 1, 1), 1.5f);

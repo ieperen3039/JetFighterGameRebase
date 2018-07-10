@@ -29,7 +29,7 @@ public class IslandMap extends GameState {
         PosVector position = new PosVector();
         DirVector direction = new DirVector(1, 1, 0.2f);
         for (int i = 1; i < 15; i++) {
-            position.add(direction.reducedTo(70, new DirVector()));
+            position.add(direction.reducedTo(72, new DirVector()));
             direction.rotateZ((float) Math.PI / 4);
             entities.add(raceProgress.addCheckpoint(
                     new PosVector(position), new DirVector(direction), 20, Color4f.BLUE
@@ -57,7 +57,7 @@ public class IslandMap extends GameState {
 
     @Override
     public Color4f fogColor() {
-        return new Color4f(0.6f, 0.6f, 0.9f);
+        return new Color4f(0.6f, 0.6f, 0.9f, 1f / 500);
     }
 
     @Override

@@ -2,6 +2,7 @@
 
 in vec3 mVertexNormal;
 in vec3 mVertexPosition;
+in float cameraDistance;
 
 out vec4 fragColor;
 
@@ -29,6 +30,7 @@ uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform vec3 ambientLight;
 // in model space
 uniform vec3 cameraPosition;
+uniform float fogRange;
 
 vec4 materialColor;
 vec4 diffuseC;
@@ -67,4 +69,9 @@ void main()
     }
 
     fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
+
+    float fogObscurity = cameraDistance / fogRange;
+    fogObscurity = max(0.0, min(1.0, fogObscurity * fogObscurity));
+
+    fragColor = ((1 - fogObscurity) * fragColor) + vec4(fogObscurity * ambientLight, 1.0);
 }

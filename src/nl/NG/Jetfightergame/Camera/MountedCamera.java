@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
-import nl.NG.Jetfightergame.Tools.Tracked.SmoothTracked;
+import nl.NG.Jetfightergame.Tools.Tracked.SmoothTrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 public class MountedCamera implements Camera {
 
     private final AbstractJet target;
-    private final SmoothTracked<DirVector> eye;
+    private final SmoothTrackedVector<DirVector> eye;
 
     public MountedCamera(AbstractJet target) {
         this.target = target;

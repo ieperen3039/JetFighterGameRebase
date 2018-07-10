@@ -27,6 +27,7 @@ public class PhongShader extends AbstractShader {
         createUniform("specularPower");
         createUniform("ambientLight");
         createUniform("cameraPosition");
+        createUniform("fogRange");
         createPointLightsUniform(MAX_POINT_LIGHTS);
     }
 
@@ -42,8 +43,8 @@ public class PhongShader extends AbstractShader {
      * set the maximum vision radius to the specified range. Fog will become thicker and take the color of ambientlight
      * inversely to the range.
      */
-    public void setFog(float range){
-//        setUniform("fogThickness", value);
+    public void setFogRange(float range) {
+        setUniform("fogRange", range);
     }
 
     public void setCameraPosition(Vector3f mPosition){

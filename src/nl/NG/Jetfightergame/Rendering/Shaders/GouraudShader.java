@@ -26,6 +26,7 @@ public class GouraudShader extends AbstractShader {
         // Create the lighting uniforms
         createUniform("ambientLight");
         createUniform("cameraPosition");
+        createUniform("fogRange");
         createPointLightsUniform(MAX_POINT_LIGHTS);
     }
 
@@ -38,7 +39,7 @@ public class GouraudShader extends AbstractShader {
      * inversely to the range.
      */
     public void setFog(float range){
-//        setUniform("fogThickness", value);//TODO implement fog
+        setUniform("fogRange", range);
     }
 
     public void setCameraPosition(Vector3f mPosition){

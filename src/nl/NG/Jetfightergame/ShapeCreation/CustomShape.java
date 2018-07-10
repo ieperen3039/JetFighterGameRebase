@@ -75,6 +75,7 @@ public class CustomShape {
         if (currentNormal.dot(normal) >= 0) {
             addFinalQuad(A, B, C, D, currentNormal);
         } else {
+            currentNormal.negate();
             addFinalQuad(D, C, B, A, currentNormal);
         }
     }
@@ -144,6 +145,7 @@ public class CustomShape {
         if (currentNormal.dot(normal) >= 0) {
             addFinalTriangle(A, B, C, currentNormal);
         } else {
+            currentNormal.negate();
             addFinalTriangle(C, B, A, currentNormal);
         }
     }

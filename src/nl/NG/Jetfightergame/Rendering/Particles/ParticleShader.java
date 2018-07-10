@@ -31,7 +31,7 @@ public class ParticleShader {
         final String vertexCode = Resources.loadText(shaders.pathOf("Particle/vertex.vert"));
         vertexShaderId = AbstractShader.createShader(programId, GL_VERTEX_SHADER, vertexCode);
 
-        final String fragmentCode = Resources.loadText(shaders.pathOf("Gouraud/fragment.frag"));
+        final String fragmentCode = Resources.loadText(shaders.pathOf("Particle/fragment.frag"));
         fragmentShaderId = AbstractShader.createShader(programId, GL_FRAGMENT_SHADER, fragmentCode);
 
         link();

@@ -71,7 +71,7 @@ public abstract class Process592 {
      *                          a server
      */
     public void buildScene(SpawnReceiver deposit, int collisionDetLevel, boolean loadDynamic) {
-        clientControl.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf());
+        clientControl.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), 0);
     }
 
     public MovingEntity.State getNewSpawn() {

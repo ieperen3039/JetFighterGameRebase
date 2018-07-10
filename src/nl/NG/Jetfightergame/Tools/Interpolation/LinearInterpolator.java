@@ -11,13 +11,30 @@ public abstract class LinearInterpolator<T> extends BlockingTimedArrayQueue<T> {
     protected T activeElement;
 
     /**
-     * @param capacity the initial expected maximum number of entries
-     * @param initialItem this item will initially be placed in the queue twice.
+     * @param capacity the expected maximum number of entries
+     * @param initialElement this item will initially be placed in the queue twice.
+     * @param initialTime the time of starting
      */
-    public LinearInterpolator(int capacity, T initialItem) {
+    public LinearInterpolator(int capacity, T initialElement, float initialTime) {
         super(capacity);
-        add(initialItem, -1);
-        add(initialItem, 0);
+        activeTime = initialTime;
+        activeElement = initialElement;
+        add(initialElement, initialTime + 1);
+    }
+
+    /**
+     * crates an interpolator with the first two values already given
+     * @param capacity      the expected maximum number of entries
+     * @param firstElement  the item that occurs first
+     * @param firstTime     the time of occurence
+     * @param secondElement the item that occurs second
+     * @param secondTime    the time of occurence of the second, where first < second
+     */
+    public LinearInterpolator(int capacity, T firstElement, float firstTime, T secondElement, float secondTime) {
+        super(capacity);
+        activeTime = firstTime;
+        activeElement = firstElement;
+        add(secondElement, secondTime);
     }
 
     /**

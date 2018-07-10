@@ -109,7 +109,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 game.setContext(this, gameProgress);
                 EnvironmentClass world = JetFighterProtocol.worldSwitchRead(serverIn);
                 game.switchTo(world);
-                gameProgress.forEachPlayer(player -> game.addEntity(player.jet()));
+
+                gameProgress.players()
+                        .stream()
+                        .map(Player::jet)
+                        .forEach(game::addEntity);
                 break;
 
             case SHUTDOWN_GAME:
@@ -128,7 +132,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     /**
-     * sends a single command to the server
+     * sends a single command to the server and flushes
      */
     public void sendCommand(MessageType type) {
         sendLock.lock();
@@ -185,7 +189,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 // binary controls
                 send(serverOut, PRIMARY_FIRE, input.primaryFire());
                 send(serverOut, SECONDARY_FIRE, input.secondaryFire());
-
             }
 
             serverOut.flush();

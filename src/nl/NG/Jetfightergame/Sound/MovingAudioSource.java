@@ -19,7 +19,7 @@ public class MovingAudioSource extends AudioSource {
     public MovingAudioSource(AudioFile data, PosVector sourcePos, float pitch, float gain) {
         super(data, sourcePos, pitch, gain);
 
-        movement = new VectorInterpolator(10, sourcePos);
+        movement = new VectorInterpolator(10, sourcePos, 0);
         lastPosition = sourcePos;
     }
 
