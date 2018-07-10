@@ -1,12 +1,12 @@
-package nl.NG.Jetfightergame.Primitives.Surfaces;
+package nl.NG.Jetfightergame.Primitives;
 
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
-/** TODO: allow quads in meshes and optimize CustomShape accordingly
- * @author Geert van Ieperen
- *         created on 29-10-2017.
+/**
+ * TODO: allow quads in meshes and optimize CustomShape accordingly
+ * @author Geert van Ieperen created on 29-10-2017.
  */
 public class Quad extends Plane {
 

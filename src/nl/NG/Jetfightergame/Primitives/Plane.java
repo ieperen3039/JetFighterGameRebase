@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Primitives.Surfaces;
+package nl.NG.Jetfightergame.Primitives;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -9,14 +9,13 @@ import java.util.Arrays;
 
 /**
  * @author Geert van Ieperen
- *
- * a plane with hitbox, allowing checks whether a line-piece hits the plane.
- * all vectors are in a given frame of reference
+ *         <p>
+ *         a plane with hitbox, allowing checks whether a line-piece hits the plane. all vectors are in a given frame of
+ *         reference
  */
 public abstract class Plane {
     /**
-     * a summation of references to define the bounding box of this plane.
-     * often, these refer to the same vectors
+     * a summation of references to define the bounding box of this plane. often, these refer to the same vectors
      */
     protected float leastX = Float.MAX_VALUE;
     protected float mostX = -Float.MAX_VALUE;
@@ -36,7 +35,7 @@ public abstract class Plane {
 
     /**
      * @param vertices the vertices in counterclockwise order
-     * @param normal the normal vector in opposite direction of how it is visible
+     * @param normal   the normal vector in opposite direction of how it is visible
      */
     public Plane(PosVector[] vertices, DirVector normal) {
         this.normal = normal;
@@ -54,14 +53,12 @@ public abstract class Plane {
     }
 
     /**
-     * given a point on position {@code linePosition} moving in the direction of {@code direction},
-     * calculates the movement it is allowed to do before hitting this plane
-     * (template design)
-     *
+     * given a point on position {@code linePosition} moving in the direction of {@code direction}, calculates the
+     * movement it is allowed to do before hitting this plane (template design)
      * @param linePosition a position vector on the line in local space
      * @param direction    the direction vector of the line in local space
-     * @param endPoint     the endpoint of this vector, defined as {@code linePosition.add(direction)}
-     *                     if this vector is null, an infinite line is assumed
+     * @param endPoint     the endpoint of this vector, defined as {@code linePosition.add(direction)} if this vector is
+     *                     null, an infinite line is assumed
      * @return {@code null} if it does not hit with direction scalar < 1
      */
     public Collision getCollisionWith(PosVector linePosition, DirVector direction, PosVector endPoint) {
@@ -90,9 +87,8 @@ public abstract class Plane {
     }
 
     /**
-     * returns whether two points are completely on one side of the plane
-     * this standard implementation uses the predefined hitbox, may be overridden for efficiency
-     *
+     * returns whether two points are completely on one side of the plane this standard implementation uses the
+     * predefined hitbox, may be overridden for efficiency
      * @param alpha a point in local space
      * @param beta  another point in local space
      * @return true if both points exceed the extremest vector in either x, y, z, -x, -y or -z direction.
@@ -107,9 +103,8 @@ public abstract class Plane {
     }
 
     /**
-     * determines whether the given point lies on or within the boundary, given that it lies on
-     * the infinite extension of this plane
-     *
+     * determines whether the given point lies on or within the boundary, given that it lies on the infinite extension
+     * of this plane
      * @param hitPos a point on this plane
      * @return true if the point is not outside the boundary of this plane
      * @precondition hitPos lies on the plane of the points of {@code boundary}
@@ -117,12 +112,10 @@ public abstract class Plane {
     protected abstract boolean encapsulates(PosVector hitPos);
 
     /**
-     * calculates the new {@param direction}, relative to {@param linePosition}
-     * where the given line will hit this plane if this plane was infinite
-     *
-     * @return Vector D such that (linePosition.add(D)) will give the position of the hitPoint.
-     * D lies in the extend, but not necessarily on the plane.
-     * D is given by ((p0 - l0)*n) \ (l*n)
+     * calculates the new {@param direction}, relative to {@param linePosition} where the given line will hit this plane
+     * if this plane was infinite
+     * @return Vector D such that (linePosition.add(D)) will give the position of the hitPoint. D lies in the extend,
+     *         but not necessarily on the plane. D is given by ((p0 - l0)*n) \ (l*n)
      */
     protected float hitScalar(PosVector linePosition, DirVector direction) {
         relativePosition.set(boundary[0]);
@@ -156,11 +149,11 @@ public abstract class Plane {
 
     /**
      * given a ray, determines whether it intersects this plane.
-     * @param position the starting point of the line
+     * @param position  the starting point of the line
      * @param direction the direction vector of the line
      * @return true if this plane intersects with the line extended toward infinity
      */
-    public boolean intersectWithRay(PosVector position, DirVector direction){
+    public boolean intersectWithRay(PosVector position, DirVector direction) {
         DirVector hitDir = direction.scale(hitScalar(position, direction), new DirVector());
 
         if (hitDir.dot(direction) < 0) return false;
@@ -173,7 +166,7 @@ public abstract class Plane {
      * @return the local average of all border positions
      */
     public PosVector getMiddle() {
-        if (middle == null){
+        if (middle == null) {
             middle = PosVector.zeroVector();
             int i = 0;
             while (i < boundary.length) {
@@ -205,7 +198,6 @@ public abstract class Plane {
 
     /**
      * evaluates a beziér curve defined by vectors. The given ABCD vectors are kept intact.
-     *
      * @param A starting point
      * @param B first control point
      * @param C second control point
@@ -226,7 +218,6 @@ public abstract class Plane {
 
     /**
      * evaluates the derivative of a beziér curve on a point defined by u
-     *
      * @see #bezierPoint(PosVector, PosVector, PosVector, PosVector, double)
      */
     public static DirVector bezierDerivative(PosVector A, PosVector B, PosVector C, PosVector D, double u) {

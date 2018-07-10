@@ -1,11 +1,10 @@
-package nl.NG.Jetfightergame.Primitives.Surfaces;
+package nl.NG.Jetfightergame.Primitives;
 
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
- * @author Geert van Ieperen
- *         created on 29-10-2017.
+ * @author Geert van Ieperen created on 29-10-2017.
  */
 public class Triangle extends Plane {
 
