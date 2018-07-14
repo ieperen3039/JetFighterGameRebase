@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -27,7 +28,7 @@ public class PlayerJetLaboratory extends GameState {
     private static final int LAB_SIZE = 200;
 
     @Override
-    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         ArrayList<Touchable> entities = new ArrayList<>();
 
         entities.add(new StaticEntity(

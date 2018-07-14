@@ -50,7 +50,7 @@ public interface Touchable extends Drawable {
     }
 
     /**
-     * react on collision
+     * react on collision with a projectile
      * @param power magnitude of the impact
      */
     default void impact(float power) {

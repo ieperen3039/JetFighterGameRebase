@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.PowerupType;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
@@ -27,10 +28,12 @@ public class ServerConnection implements BlockingListener, Player {
 
     private final GameServer server;
     private final AbstractJet playerJet;
-    private Lock sendLock = new ReentrantLock();
-
     private final RemoteControlReceiver controls;
+    private final JetFighterProtocol protocol;
+
+    private Lock sendLock = new ReentrantLock();
     private volatile boolean isClosed;
+    private PowerupType currentPowerup;
 
     /**
      * construct a server-side connection to a player
@@ -55,15 +58,13 @@ public class ServerConnection implements BlockingListener, Player {
         this.hasAdminCapabilities = isAdmin;
         this.server = server;
         this.controls = new RemoteControlReceiver();
-        // notify client
-        clientOut.write(MessageType.CONFIRM_CONNECTION.ordinal());
-        clientOut.flush();
+        this.protocol = new JetFighterProtocol(clientIn, clientOut);
 
         // get player properties
-        JetFighterProtocol.syncTimerSource(clientIn, clientOut, server.getTimer());
-        JetFighterProtocol.worldSwitchSend(clientOut, worldType);
+        protocol.syncTimerSource(server.getTimer());
+        protocol.worldSwitchSend(worldType);
         clientOut.flush();
-        Pair<String, AbstractJet> p = JetFighterProtocol.playerSpawnAccept(clientIn, clientOut, playerSpawn, server, controls, spawnAccept);
+        Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, spawnAccept);
         clientName = p.left;
         playerJet = p.right;
     }
@@ -87,7 +88,7 @@ public class ServerConnection implements BlockingListener, Player {
         }
 
         if (type.isOf(MessageType.controls)) {
-            JetFighterProtocol.controlRead(clientIn, controls, type);
+            protocol.controlRead(controls, type);
 
         } else switch (type) {
             case PING:
@@ -129,7 +130,7 @@ public class ServerConnection implements BlockingListener, Player {
      */
     public void sendEntityUpdate(MovingEntity entity, float currentTime) {
         sendMessage(MessageType.ENTITY_UPDATE, () ->
-                JetFighterProtocol.entityUpdateSend(clientOut, entity, currentTime)
+                protocol.entityUpdateSend(entity, currentTime)
         );
     }
 
@@ -140,37 +141,37 @@ public class ServerConnection implements BlockingListener, Player {
      */
     public void sendEntitySpawn(Prentity entity, int id) {
         sendMessage(MessageType.ENTITY_SPAWN, () ->
-                JetFighterProtocol.newEntitySend(clientOut, entity, id)
+                protocol.newEntitySend(entity, id)
         );
     }
 
     public void sendExplosionSpawn(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
         sendMessage(MessageType.EXPLOSION_SPAWN, () ->
-                JetFighterProtocol.explosionSend(clientOut, position, direction, spread, color1, color2)
+                protocol.explosionSend(position, direction, spread, color1, color2)
         );
     }
 
     public void sendEntityRemove(MovingEntity entity) {
         sendMessage(MessageType.ENTITY_REMOVE, () ->
-                JetFighterProtocol.entityRemoveSend(clientOut, entity)
+                protocol.entityRemoveSend(entity)
         );
     }
 
     public void sendProgress(String playerName, int checkPointNr, int roundNr) {
         sendMessage(MessageType.RACE_PROGRESS, () ->
-                JetFighterProtocol.raceProgressSend(clientOut, playerName, checkPointNr, roundNr)
+                protocol.raceProgressSend(playerName, checkPointNr, roundNr)
         );
     }
 
     public void sendPlayerSpawn(Player player) {
         sendMessage(MessageType.PLAYER_SPAWN, () ->
-                JetFighterProtocol.playerSpawnSend(clientOut, player.playerName(), player.jet())
+                protocol.playerSpawnSend(player.playerName(), player.jet())
         );
     }
 
     public void sendWorldSwitch(EnvironmentClass world) {
         sendMessage(MessageType.WORLD_SWITCH, () ->
-                JetFighterProtocol.worldSwitchSend(clientOut, world)
+                protocol.worldSwitchSend(world)
         );
     }
 
@@ -214,6 +215,23 @@ public class ServerConnection implements BlockingListener, Player {
     @Override
     public AbstractJet jet() {
         return playerJet;
+    }
+
+    @Override
+    public PowerupType getCurrentPowerup() {
+        return currentPowerup;
+    }
+
+    @Override
+    public boolean addPowerup(PowerupType.Primitive type) {
+        PowerupType next = currentWith(type);
+        if (next == currentPowerup) return false;
+
+        sendMessage(MessageType.POWERUP_COLLECT, () ->
+                protocol.powerupCollectSend(type)
+        );
+        currentPowerup = next;
+        return true;
     }
 
     @Override

@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -58,7 +59,7 @@ public class MissionSnake extends GameState {
 
 
     @Override
-    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         Collection<Touchable> staticEntities = new ArrayList<>();
         staticEntities.add(new StaticEntity(gameFloor, WORLD_MATERIAL, Color4f.BLUE));
 

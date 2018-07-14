@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Assets.WorldObjects;
 
-import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Primitives.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;

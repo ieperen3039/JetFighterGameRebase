@@ -1,9 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
-import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
+import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
@@ -18,7 +15,10 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -29,9 +29,10 @@ import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
  * @author Geert van Ieperen created on 6-5-2018.
  */
 public class ClientConnection extends AbstractGameLoop implements BlockingListener, SpawnReceiver, ClientControl {
-    private final DataOutputStream serverOut;
-    private final DataInputStream serverIn;
+    private final OutputStream serverOut;
+    private final InputStream serverIn;
     private final EnvironmentManager game;
+    private final JetFighterProtocol protocol;
 
     private Lock sendLock = new ReentrantLock();
     private GameTimer time;
@@ -40,30 +41,25 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final AbstractJet jet;
     private RaceProgress gameProgress;
     private String name;
+    private PowerupType currentPowerup = null;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
-        this.serverOut = new DataOutputStream(new BufferedOutputStream(sendChannel));
-        this.serverIn = new DataInputStream(receiveChannel);
+        this.serverOut = new BufferedOutputStream(sendChannel);
+        this.serverIn = receiveChannel;
         this.name = name;
         this.input = new SubControl(EmptyController);
         this.gameProgress = new RaceProgress();
         this.game = new EnvironmentManager(null, this, gameProgress, false);
         game.build();
-
         gameProgress.addPlayer(this);
 
-        // wait for confirmation of connection
-        int reply = serverIn.read();
-        if (reply != MessageType.CONFIRM_CONNECTION.ordinal())
-            throw new IOException("Received " + MessageType.asString(reply) + " as reaction on connection");
-
-        this.time = JetFighterProtocol.syncTimerTarget(serverIn, serverOut);
-
-        EnvironmentClass type = JetFighterProtocol.worldSwitchRead(serverIn);
+        this.protocol = new JetFighterProtocol(serverIn, serverOut);
+        this.time = protocol.syncTimerTarget();
+        EnvironmentClass type = protocol.worldSwitchRead();
         game.switchTo(type);
 
-        this.jet = JetFighterProtocol.playerSpawnRequest(serverOut, serverIn, name, EntityClass.BASIC_JET, input, this);
+        this.jet = protocol.playerSpawnRequest(name, EntityClass.BASIC_JET, input, this);
         game.addEntity(jet);
     }
 
@@ -73,16 +69,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         switch (type) {
             case ENTITY_SPAWN:
-                MovingEntity newEntity = JetFighterProtocol.newEntityRead(serverIn, this, Controller.EMPTY);
+                MovingEntity newEntity = protocol.newEntityRead(this, Controller.EMPTY);
                 game.addEntity(newEntity);
                 break;
 
             case ENTITY_UPDATE:
-                JetFighterProtocol.entityUpdateRead(serverIn, game);
+                protocol.entityUpdateRead(game);
                 break;
 
             case ENTITY_REMOVE:
-                MovingEntity entity = JetFighterProtocol.entityRemoveRead(serverIn, game);
+                MovingEntity entity = protocol.entityRemoveRead(game);
                 game.removeEntity(entity);
 
                 if (entity instanceof TemporalEntity) {
@@ -92,22 +88,25 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case PLAYER_SPAWN:
-                Player newPlayer = JetFighterProtocol.playerSpawnRead(serverIn, game);
+                Player newPlayer = protocol.playerSpawnRead(game);
                 gameProgress.addPlayer(newPlayer);
                 break;
 
             case RACE_PROGRESS:
-                JetFighterProtocol.raceProgressRead(serverIn, gameProgress);
+                protocol.raceProgressRead(gameProgress);
                 break;
 
+            case POWERUP_COLLECT:
+                addPowerup(protocol.powerupCollectRead());
+
             case EXPLOSION_SPAWN:
-                JetFighterProtocol.explosionRead(serverIn, game);
+                protocol.explosionRead(game);
                 break;
 
             case WORLD_SWITCH:
                 gameProgress = new RaceProgress(gameProgress);
                 game.setContext(this, gameProgress);
-                EnvironmentClass world = JetFighterProtocol.worldSwitchRead(serverIn);
+                EnvironmentClass world = protocol.worldSwitchRead();
                 game.switchTo(world);
 
                 gameProgress.players()
@@ -166,7 +165,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         sendLock.lock();
         try {
             serverOut.write(type.ordinal());
-            JetFighterProtocol.controlSend(serverOut, value);
+            protocol.controlSend(value);
             serverOut.flush();
 
         } finally {
@@ -182,13 +181,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         try {
             if (!input.isActiveController()) {
                 // axis controls
-                send(serverOut, THROTTLE, input.throttle());
-                send(serverOut, PITCH, input.pitch());
-                send(serverOut, YAW, input.yaw());
-                send(serverOut, ROLL, input.roll());
+                send(THROTTLE, input.throttle());
+                send(PITCH, input.pitch());
+                send(YAW, input.yaw());
+                send(ROLL, input.roll());
                 // binary controls
-                send(serverOut, PRIMARY_FIRE, input.primaryFire());
-                send(serverOut, SECONDARY_FIRE, input.secondaryFire());
+                send(PRIMARY_FIRE, input.primaryFire());
+                send(SECONDARY_FIRE, input.secondaryFire());
             }
 
             serverOut.flush();
@@ -197,16 +196,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         }
     }
 
-    private static void send(DataOutputStream serverOut, MessageType type, boolean isEnabled) throws IOException {
+    private void send(MessageType type, boolean isEnabled) throws IOException {
         byte asByte = RemoteControlReceiver.toByte(isEnabled);
         serverOut.write(type.ordinal());
-        JetFighterProtocol.controlSend(serverOut, asByte);
+        protocol.controlSend(asByte);
     }
 
-    private static void send(DataOutputStream serverOut, MessageType type, float value) throws IOException {
+    private void send(MessageType type, float value) throws IOException {
         byte asByte = RemoteControlReceiver.toByte(value);
         serverOut.write(type.ordinal());
-        JetFighterProtocol.controlSend(serverOut, asByte);
+        protocol.controlSend(asByte);
     }
 
     @Override
@@ -254,6 +253,19 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         return jet;
     }
 
+    @Override
+    public PowerupType getCurrentPowerup() {
+        return currentPowerup;
+    }
+
+    @Override
+    public boolean addPowerup(PowerupType.Primitive type) {
+        PowerupType next = currentWith(type);
+        if (next == null || next == currentPowerup) return false;
+        currentPowerup = next;
+        return true;
+    }
+
     public RaceProgress getRaceProgress() {
         return gameProgress;
     }
@@ -294,6 +306,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     /** a representation of players other than this player (to be used client-side) */
     public static class OtherPlayer implements Player {
+        private PowerupType currentPowerup = null;
         private AbstractJet jet;
         private String name;
 
@@ -310,6 +323,19 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         @Override
         public AbstractJet jet() {
             return jet;
+        }
+
+        @Override
+        public PowerupType getCurrentPowerup() {
+            return currentPowerup;
+        }
+
+        @Override
+        public boolean addPowerup(PowerupType.Primitive type) {
+            PowerupType next = currentWith(type);
+            if (next == currentPowerup) return false;
+            currentPowerup = next;
+            return true;
         }
     }
 }

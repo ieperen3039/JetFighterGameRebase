@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.ShapeCreation;
 
-import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
-import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.Primitives.Plane;
+import nl.NG.Jetfightergame.Primitives.Triangle;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedObject;

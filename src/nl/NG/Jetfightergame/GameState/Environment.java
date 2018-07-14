@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -88,7 +89,7 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         }
 
         @Override
-        protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
+        protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
             return Collections.EMPTY_SET;
         }
 

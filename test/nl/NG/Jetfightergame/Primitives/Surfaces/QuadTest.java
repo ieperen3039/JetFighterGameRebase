@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Primitives.Surfaces;
 
+import nl.NG.Jetfightergame.Primitives.Quad;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.junit.Before;

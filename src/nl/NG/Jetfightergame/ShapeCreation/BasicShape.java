@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.ShapeCreation;
 
-import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
-import nl.NG.Jetfightergame.Primitives.Surfaces.Quad;
-import nl.NG.Jetfightergame.Primitives.Surfaces.Triangle;
+import nl.NG.Jetfightergame.Primitives.Plane;
+import nl.NG.Jetfightergame.Primitives.Quad;
+import nl.NG.Jetfightergame.Primitives.Triangle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -13,6 +13,7 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Geert van Ieperen
@@ -121,6 +122,16 @@ public class BasicShape implements Shape {
     @Override
     public Iterable<PosVector> getPoints() {
         return Collections.unmodifiableList(vertices);
+    }
+
+    @Override
+    public Stream<? extends Plane> getPlaneStream() {
+        return triangles.stream();
+    }
+
+    @Override
+    public Stream<? extends PosVector> getPointStream() {
+        return vertices.stream();
     }
 
     @Override

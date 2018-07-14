@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -45,7 +46,7 @@ public abstract class GameState implements Environment {
      *                          a server
      */
     public void buildScene(SpawnReceiver deposit, RaceProgress raceProgress, int collisionDetLevel, boolean loadDynamic) {
-        final Collection<Touchable> staticEntities = createWorld(raceProgress);
+        final Collection<Touchable> staticEntities = createWorld(raceProgress, deposit.getTimer());
 
         switch (collisionDetLevel) {
             case 0:
@@ -65,9 +66,10 @@ public abstract class GameState implements Environment {
 
     /**
      * @param raceProgress the progress tracker.
+     * @param timer the timer for this world
      * @return all the static entities that are part of this world
      */
-    protected abstract Collection<Touchable> createWorld(RaceProgress raceProgress);
+    protected abstract Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer);
 
     /**
      * @return all the dynamic entities that are standard part of this world

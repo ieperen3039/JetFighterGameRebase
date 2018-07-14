@@ -2,7 +2,7 @@ package nl.NG.Jetfightergame.Assets.WorldObjects;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Primitives.Plane;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;

@@ -14,7 +14,7 @@ public enum MessageType {
     PAUSE_GAME, UNPAUSE_GAME, START_GAME, SHUTDOWN_GAME, WORLD_SWITCH,
     THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE,
     ENTITY_UPDATE, ENTITY_SPAWN, ENTITY_REMOVE, EXPLOSION_SPAWN,
-    PLAYER_SPAWN, PLAYER_UPDATE, RACE_PROGRESS;
+    PLAYER_SPAWN, PLAYER_UPDATE, RACE_PROGRESS, POWERUP_COLLECT;
 
     private static final MessageType[] VALUES = values();
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
@@ -33,9 +33,9 @@ public enum MessageType {
     }
 
     public static String asString(int id) {
-        if (id >= VALUES.length) {
+        if (id >= VALUES.length || id < -1) {
             return id + " (Invalid message id)";
-        } else if (id < 0) {
+        } else if (id == -1) {
             return id + " (Connection close)";
         } else {
             return VALUES[id].toString();

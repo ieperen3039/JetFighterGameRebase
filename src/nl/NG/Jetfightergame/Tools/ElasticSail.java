@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Primitives.Surfaces.Plane;
+import nl.NG.Jetfightergame.Primitives.Plane;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 

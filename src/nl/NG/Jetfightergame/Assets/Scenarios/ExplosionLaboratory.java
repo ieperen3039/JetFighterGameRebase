@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -31,7 +32,7 @@ public class ExplosionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         lights.add(new Pair<>(new PosVector(0, 0, 10), Color4f.RED));
         return Collections.EMPTY_LIST;
     }

@@ -1,10 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
-import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -23,7 +21,7 @@ import java.util.List;
  */
 public class IslandMap extends GameState {
     @Override
-    protected Collection<Touchable> createWorld(RaceProgress raceProgress) {
+    protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         List<Touchable> entities = new ArrayList<>();
 
         PosVector position = new PosVector();
@@ -35,6 +33,10 @@ public class IslandMap extends GameState {
                     new PosVector(position), new DirVector(direction), 20, Color4f.BLUE
             ));
         }
+
+        entities.add(new PowerupEntity(
+                PowerupType.Primitive.TIME, position, raceProgress, timer
+        ));
 
         for (Shape s : GeneralShapes.ISLAND1) {
             entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
