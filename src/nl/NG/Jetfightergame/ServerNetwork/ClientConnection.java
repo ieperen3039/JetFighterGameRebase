@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.*;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
 import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
@@ -59,7 +60,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         EnvironmentClass type = protocol.worldSwitchRead();
         game.switchTo(type);
 
-        this.jet = protocol.playerSpawnRequest(name, EntityClass.BASIC_JET, input, this);
+        this.jet = protocol.playerSpawnRequest(name, BasicJet.TYPE, input, this);
         game.addEntity(jet);
     }
 
@@ -69,7 +70,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         switch (type) {
             case ENTITY_SPAWN:
-                MovingEntity newEntity = protocol.newEntityRead(this, Controller.EMPTY);
+                MovingEntity newEntity = protocol.newEntityRead(this);
                 game.addEntity(newEntity);
                 break;
 
@@ -120,7 +121,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 return false;
 
             case CONNECTION_CLOSE:
-                Logger.print("Received CONNECTION_CLOSE");
                 return false;
 
             default:
@@ -150,7 +150,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public void addSpawn(Prentity prentity) {
         Logger.printError("Client added an entity to its own world entity (" + prentity + ")");
-        game.addEntity(prentity.construct(this, null));
+        game.addEntity(prentity.construct(this));
     }
 
     /**
@@ -213,7 +213,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         try {
             serverIn.close();
             serverOut.close();
-            Logger.print(this + " connection is closed");
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

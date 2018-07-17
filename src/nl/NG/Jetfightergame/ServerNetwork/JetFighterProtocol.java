@@ -19,6 +19,7 @@ import java.io.*;
 import java.util.function.BiConsumer;
 
 /**
+ *
  * @author Geert van Ieperen created on 9-5-2018.
  */
 public class JetFighterProtocol {
@@ -29,7 +30,7 @@ public class JetFighterProtocol {
 
     /**
      * creates and connects to the other side. Blocks until the protocol on the other side has also been initialized.
-     * @param in  the incomming data sent from the other side
+     * @param in  the incoming data sent from the other side
      * @param out the outgoing data to the other side
      * @throws IOException if the other side runs a different protocol version
      */
@@ -37,7 +38,7 @@ public class JetFighterProtocol {
         this.input = new DataInputStream(in);
         this.output = new DataOutputStream(out);
 
-        output.write(versionNumber);
+        output.writeInt(versionNumber);
         output.flush();
         int reply = input.readInt();
 
@@ -83,9 +84,9 @@ public class JetFighterProtocol {
 
     /** server sending a new entity */
     public void newEntitySend(Prentity entity, int id) throws IOException {
-        output.write(entity.type.ordinal());
-        // identity number
+        // identity
         output.writeInt(id);
+        output.writeUTF(entity.type);
         // state
         DataIO.writeVector(output, entity.position);
         DataIO.writeQuaternion(output, entity.rotation);
@@ -93,16 +94,16 @@ public class JetFighterProtocol {
     }
 
     /** client reading an entity off the DataInputStream and creates an instance of it */
-    public MovingEntity newEntityRead(SpawnReceiver world, Controller controller) throws IOException {
-        EntityClass type = EntityClass.get(input.read());
-        // identity number
+    public MovingEntity newEntityRead(SpawnReceiver world) throws IOException {
+        // identity
         int id = input.readInt();
+        String type = input.readUTF();
         // state
         PosVector position = DataIO.readPosVector(input);
         Quaternionf rotation = DataIO.readQuaternion(input);
         DirVector velocity = DataIO.readDirVector(input);
 
-        return type.construct(id, world, controller, position, rotation, velocity);
+        return MovingEntity.get(type, id, position, rotation, velocity, world);
     }
 
     /** read a control message off the DataInputStream */
@@ -125,33 +126,37 @@ public class JetFighterProtocol {
      * @param deposit    the deposit for new entities
      * @return the jet received from the server. Not necessarily the one requested.
      */
-    public AbstractJet playerSpawnRequest(String playerName, EntityClass type, Controller controls, SpawnReceiver deposit) throws IOException {
-        output.write(type.ordinal());
+    public AbstractJet playerSpawnRequest(String playerName, String type, Controller controls, SpawnReceiver deposit) throws IOException {
+        output.writeUTF(type);
         output.writeUTF(playerName);
         output.flush();
 
-        return (AbstractJet) newEntityRead(deposit, controls);
+        AbstractJet jet = (AbstractJet) newEntityRead(deposit);
+        jet.setController(controls);
+        return jet;
     }
 
     /**
      * @return a pair with on left the name of this player, and on right the jet of this player
-     * @see #playerSpawnRequest(String, EntityClass, Controller, SpawnReceiver)
+     * @see #playerSpawnRequest(String, String, Controller, SpawnReceiver)
      */
     public Pair<String, AbstractJet> playerSpawnAccept(MovingEntity.State position,
             SpawnReceiver server, Controller controls, BiConsumer<Prentity, Integer> others
     ) throws IOException {
-        EntityClass type = EntityClass.get(input.read());
+        String type = input.readUTF();
         String name = input.readUTF();
 
         Prentity prentity = new Prentity(type, position);
-        MovingEntity construct = prentity.construct(server, controls);
+        MovingEntity construct = prentity.construct(server);
         assert construct instanceof AbstractJet : "player tried flying on something that is not a jet.";
+        AbstractJet jet = (AbstractJet) construct;
+        jet.setController(controls);
 
-        newEntitySend(prentity, construct.idNumber());
+        newEntitySend(prentity, jet.idNumber());
         output.flush();
 
-        others.accept(prentity, construct.idNumber());
-        return new Pair<>(name, (AbstractJet) construct);
+        others.accept(prentity, jet.idNumber());
+        return new Pair<>(name, jet);
     }
 
     /**

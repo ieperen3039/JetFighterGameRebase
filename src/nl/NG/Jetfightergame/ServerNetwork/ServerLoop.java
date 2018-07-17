@@ -4,7 +4,6 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.EnvironmentManager;
@@ -68,7 +67,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         // send all entities until this point (excluding the player jet himself)
         for (MovingEntity entity : gameWorld.getEntities()) {
-            EntityClass type = EntityClass.get(entity);
+            String type = entity.getType();
             Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
             player.sendEntitySpawn(prentity, entity.idNumber());
         }
@@ -85,7 +84,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     public void addSpawn(Prentity prentity) {
-        MovingEntity entity = prentity.construct(this, Controller.EMPTY);
+        MovingEntity entity = prentity.construct(this);
         gameWorld.addEntity(entity);
         connections.forEach(conn -> conn.sendEntitySpawn(prentity, entity.idNumber()));
     }
@@ -183,7 +182,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
             // send all entities (excluding all player jets)
             for (MovingEntity entity : gameWorld.getEntities()) {
-                EntityClass type = EntityClass.get(entity);
+                String type = entity.getType();
                 Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
                 player.sendEntitySpawn(prentity, entity.idNumber());
             }

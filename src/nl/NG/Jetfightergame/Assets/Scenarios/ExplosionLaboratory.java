@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Assets.Entities.SimpleRocket;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.ServerNetwork.EntityClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -47,7 +47,7 @@ public class ExplosionLaboratory extends GameState {
             final DirVector vel = new DirVector();
             pos.negate(vel).add(DirVector.random(), vel);
             dynamicEntities.add(
-                    new Prentity(EntityClass.SIMPLE_ROCKET, pos, new Quaternionf(), vel.reducedTo(10, vel))
+                    new Prentity(SimpleRocket.TYPE, pos, new Quaternionf(), vel.reducedTo(10, vel))
             );
         }
 

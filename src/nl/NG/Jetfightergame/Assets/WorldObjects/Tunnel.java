@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 
 /**
  * one curve of a Tunnel
- * @deprecated
  */
 public class Tunnel implements Touchable {
     private final PosVector startPosition;

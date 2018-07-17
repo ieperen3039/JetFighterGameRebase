@@ -11,7 +11,10 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
@@ -21,8 +24,8 @@ import java.util.function.BiConsumer;
  * @author Geert van Ieperen created on 5-5-2018.
  */
 public class ServerConnection implements BlockingListener, Player {
-    private final DataInputStream clientIn;
-    private final DataOutputStream clientOut;
+    private final InputStream clientIn;
+    private final OutputStream clientOut;
     private final String clientName;
     private final boolean hasAdminCapabilities;
 
@@ -53,8 +56,8 @@ public class ServerConnection implements BlockingListener, Player {
             GameServer server, BiConsumer<Prentity, Integer> spawnAccept, MovingEntity.State playerSpawn,
             EnvironmentClass worldType, boolean isAdmin
     ) throws IOException {
-        this.clientOut = new DataOutputStream(new BufferedOutputStream(outputStream));
-        this.clientIn = new DataInputStream(inputStream);
+        this.clientOut = new BufferedOutputStream(outputStream);
+        this.clientIn = inputStream;
         this.hasAdminCapabilities = isAdmin;
         this.server = server;
         this.controls = new RemoteControlReceiver();
@@ -72,8 +75,6 @@ public class ServerConnection implements BlockingListener, Player {
     @Override
     public boolean handleMessage() throws IOException {
         MessageType type = MessageType.get(clientIn.read());
-
-//        if (type == CONNECTION_CLOSE || type == SHUTDOWN_GAME) Logger.print(type);
 
         if (type == MessageType.CONNECTION_CLOSE) {
             isClosed = true;

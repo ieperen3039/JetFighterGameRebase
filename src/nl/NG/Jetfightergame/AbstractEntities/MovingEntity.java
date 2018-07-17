@@ -1,6 +1,10 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.Entities.SimpleBullet;
+import nl.NG.Jetfightergame.Assets.Entities.SimpleRocket;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -28,6 +32,8 @@ import static java.lang.StrictMath.sqrt;
  * @author Geert van Ieperen created on 29-10-2017.
  */
 public abstract class MovingEntity implements Touchable {
+    private static Map<String, Constructable> entityClasses = new HashMap<>();
+    private String type;
 
     private final float spawnTime;
     /** particles and new entities should be passed to this object */
@@ -65,9 +71,16 @@ public abstract class MovingEntity implements Touchable {
     protected final float scale;
     protected final float mass;
 
+    public static void init() {
+        BasicJet.init();
+        FallingCube.init();
+        SimpleBullet.init();
+        SimpleRocket.init();
+    }
+
     /**
      * any object that may be moved and may hit other objects, is a game object. All vectors are newly instantiated.
-     * @param id              an unique identifier for this entity
+     * @param id              an unique type for this entity
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
@@ -524,6 +537,10 @@ public abstract class MovingEntity implements Touchable {
         resetCache(currentTime);
     }
 
+    public String getType() {
+        return type;
+    }
+
     public static class State {
         private final PosVector firstPos;
         private final PosVector secondPos;
@@ -577,4 +594,38 @@ public abstract class MovingEntity implements Touchable {
         }
     }
 
+    // factory methods (to sync construction of objects along server/client)
+
+    protected static void addConstructor(String type, Constructable constructor) {
+        if (entityClasses.containsKey(type))
+            throw new IllegalArgumentException("Tried loading '" + type + "' a second time");
+        entityClasses.put(type, constructor);
+    }
+
+    public static MovingEntity get(String type, int id, PosVector position, Quaternionf rotation, DirVector velocity, SpawnReceiver game) {
+        Constructable constructor = entityClasses.get(type);
+        if (constructor == null)
+            throw new NoSuchElementException("No entity of type '" + type + "' has been registered");
+
+        MovingEntity instance = constructor.apply(id, position, rotation, velocity, game);
+        instance.type = type;
+        return instance;
+    }
+
+    public static Collection<String> getLoadedTypes() {
+        return new ArrayList<>(entityClasses.keySet());
+    }
+
+    public interface Constructable {
+        /**
+         * calls the constructor of the represented class
+         * @param id       the identity of the newly created entity
+         * @param position the position where the object will be located
+         * @param rotation the rotation of the object upon spawning
+         * @param velocity the initial velocity of the spawned object
+         * @param game     the object to deposit newly created entities or particles
+         * @return an implementation of the class represented by this enum
+         */
+        MovingEntity apply(int id, PosVector position, Quaternionf rotation, DirVector velocity, SpawnReceiver game);
+    }
 }

@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -134,6 +135,7 @@ public class JetFighterServer {
     /** starts a test-server */
     public static void main(String[] args) throws IOException {
         GeneralShapes.init(false);
+        MovingEntity.init();
         JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
         server.listenForHost();
 

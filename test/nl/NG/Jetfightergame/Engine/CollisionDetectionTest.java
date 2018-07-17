@@ -1,14 +1,11 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.Assets.GeneralEntities.FallingCube;
+import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
 import nl.NG.Jetfightergame.GameState.CollisionDetection;
-import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Quaternionf;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -98,12 +95,12 @@ public class CollisionDetectionTest extends CollisionDetection {
 
     private class TestEntity extends CollisionEntity {
         public TestEntity(float zPos, int id) {
-            super(new FallingCube(id, Material.SILVER, 10f, 1f, new PosVector(0, 0, zPos), DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null));
+            super(new FallingCube(id, new PosVector(0, 0, zPos)));
             setId(id);
         }
 
         public TestEntity(float x, float y, float z, int id) {
-            super(new FallingCube(id, Material.SILVER, 10f, 1f, new PosVector(x, y, z), DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null));
+            super(new FallingCube(id, new PosVector(x, y, z)));
             setId(id);
         }
     }

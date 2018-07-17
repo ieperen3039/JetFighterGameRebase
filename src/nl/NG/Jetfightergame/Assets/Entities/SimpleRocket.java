@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Assets.Weapons;
+package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
@@ -29,13 +29,22 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
  */
 public class SimpleRocket extends AbstractProjectile {
 
+    public static final String TYPE = "Simple rocket";
     private static final float MASS = 0.1f;
     private static final float AIR_RESIST_COEFF = 0.001f;
     private static final float IMPACT_POWER = 20;
     private static final int DENSITY = 1000;
 
-    public SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-                        GameTimer gameTimer, SpawnReceiver entityDeposit
+    /**
+     * enables the use of 'Simple rocket'
+     */
+    public static void init() {
+        addConstructor(TYPE, (id, position, rotation, velocity, game) ->
+                new SimpleRocket(id, position, velocity, rotation, game.getTimer(), game));
+    }
+
+    private SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
+                         GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,

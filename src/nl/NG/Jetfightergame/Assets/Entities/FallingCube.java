@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Assets.GeneralEntities;
+package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -11,38 +11,35 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
+import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
+
 /**
  * @author Geert van Ieperen created on 26-12-2017.
  */
 public class FallingCube extends MovingEntity {
 
+    public static final String SMALL = "Falling cube small";
+    public static final String LARGE = "Falling cube large";
     private final float range;
     private Material surfaceMaterial;
 
     /**
-     * a cube that can be moved around, and has all physic properties
-     * @param id            the id of this gameEntity
-     * @param renderTimer   the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
-     *                      return the interpolated position
-     * @param entityDeposit new entities are passed here
+     * enables the use of 'Falling cube large' and 'Falling cube small'
      */
-    public FallingCube(int id, GameTimer renderTimer, SpawnReceiver entityDeposit) {
-        this(id, Material.ROUGH, 1, 1, PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), renderTimer, entityDeposit);
+    public static void init() {
+        addConstructor(SMALL, (id, position, rotation, velocity, game) ->
+                new FallingCube(id, Material.SILVER, CUBE_MASS_SMALL, CUBE_SIZE_SMALL, position, velocity, rotation, game.getTimer(), game)
+        );
+        addConstructor(LARGE, (id, position, rotation, velocity, game) ->
+                new FallingCube(id, Material.SILVER, CUBE_MASS_LARGE, CUBE_SIZE_LARGE, position, velocity, rotation, game.getTimer(), game)
+        );
     }
 
     /**
-     * a cube that can be moved around, and has all physic properties
-     * @param id            the id of this gameEntity
-     * @param initialPosition position of spawining (of the origin) in world coordinates
-     * @param initialVelocity the initial speed of this object in world coordinates
-     * @param initialRotation the initial rotation of this object
-     * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
-     *                        return the interpolated position
-     * @param entityDeposit   new entities are passed here, when this entity seizes control of it
+     * test entity cube of size 2*2*2 and mass 10.
      */
-    public FallingCube(int id, PosVector initialPosition,
-                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit) {
-        this(id, Material.ROUGH, 1, 1, initialPosition, initialVelocity, initialRotation, renderTimer, entityDeposit);
+    public FallingCube(int id, PosVector position) {
+        this(id, Material.SILVER, 10f, 1f, position, DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null);
     }
 
     /**
@@ -59,8 +56,9 @@ public class FallingCube extends MovingEntity {
      *                        return the interpolated position
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
-    public FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
-                       DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit) {
+    private FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
+                        DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit
+    ) {
         super(id, initialPosition, initialVelocity, initialRotation, mass, scale, renderTimer, entityDeposit);
         this.range = (float) Math.sqrt(3 * scale * scale);
         this.surfaceMaterial = surfaceMaterial;

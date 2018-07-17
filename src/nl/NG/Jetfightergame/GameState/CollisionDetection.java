@@ -108,7 +108,7 @@ public class CollisionDetection implements EntityManagement {
 
     @Override
     public void analyseCollisions(float currentTime, float deltaTime, PathDescription path) {
-        if (DEBUG) testInvariants();
+//        if (DEBUG) testInvariants();
 
         int remainingLoops = MAX_COLLISION_ITERATIONS;
         int nOfCollisions = 0;

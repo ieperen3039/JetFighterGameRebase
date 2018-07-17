@@ -14,8 +14,8 @@ public enum Directory {
     fonts("res/fonts/"),
     shaders("res/shaders/"),
     meshes("res/models/"),
-    pictures("res/pictures/");
-
+    pictures("res/pictures/"),
+    recordings("ScreenShots/");
 
     private final String path;
 

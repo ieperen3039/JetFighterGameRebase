@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Settings;
 
-import nl.NG.Jetfightergame.Assets.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
 
 /**
  * a class that harbours the variables that may or may not be changed by the player
@@ -33,7 +33,7 @@ public final class ServerSettings {
 
     /** shape constants */
     public static final int CUBE_SIZE_SMALL = 2;
-    public static final int CUBE_SIZE_LARGE = 50;
+    public static final int CUBE_SIZE_LARGE = 25;
     public static final float CUBE_MASS_SMALL = CUBE_SIZE_SMALL * CUBE_SIZE_SMALL * CUBE_SIZE_SMALL * 0.001f;
     public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.001f;
 }

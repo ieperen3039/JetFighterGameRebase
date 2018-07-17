@@ -56,7 +56,6 @@ public abstract class AbstractJet extends MovingEntity {
     /**
      * You are defining a complete Fighterjet here. good luck.
      * @param id                       unique identifier for this entity
-     * @param input                    controller input, either player or AI.
      * @param initialPosition          position of spawning (of the origin) in world coordinates
      * @param initialRotation          the initial rotation of spawning
      * @param scale                    scale factor applied to this object. the scale is in global space and executed in
@@ -82,7 +81,7 @@ public abstract class AbstractJet extends MovingEntity {
      * @param entityDeposit            the class that allows new entities and particles to be added to the environment
      */
     public AbstractJet(
-            int id, Controller input, PosVector initialPosition, Quaternionf initialRotation, float scale,
+            int id, PosVector initialPosition, Quaternionf initialRotation, float scale,
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
@@ -90,7 +89,6 @@ public abstract class AbstractJet extends MovingEntity {
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, gameTimer, entityDeposit);
 
-        this.input = input;
         this.airResistCoeff = airResistanceCoefficient;
         this.throttlePower = throttlePower;
         this.brakePower = brakePower;
@@ -104,6 +102,7 @@ public abstract class AbstractJet extends MovingEntity {
         this.gunAlpha = gunAlpha;
         this.gunBeta = gunBeta;
         this.surfaceMaterial = material;
+        this.input = Controller.EMPTY;
 
         float time = gameTimer.time();
         forward = DirVector.xVector();
@@ -259,5 +258,9 @@ public abstract class AbstractJet extends MovingEntity {
 
     public void set(State spawn) {
         set(spawn.position(0), spawn.velocity(), spawn.rotation(0), 0);
+    }
+
+    public void setController(Controller input) {
+        this.input = input;
     }
 }
