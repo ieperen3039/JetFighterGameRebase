@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Tools.Vectors;
 
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -88,6 +89,14 @@ public class Color4f {
 
     public Color4f(float[] values) {
         this(values[0], values[1], values[2], values[3]);
+    }
+
+    public static Color4f randomBetween(Color4f color1, Color4f color2) {
+        float red = Toolbox.randomBetween(color1.red, color2.red);
+        float green = Toolbox.randomBetween(color1.green, color2.green);
+        float blue = Toolbox.randomBetween(color1.blue, color2.blue);
+        float alpha = Toolbox.randomBetween(color1.alpha, color2.alpha);
+        return new Color4f(red, green, blue, alpha);
     }
 
     /**

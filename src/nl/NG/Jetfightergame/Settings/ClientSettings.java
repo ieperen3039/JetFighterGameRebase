@@ -34,7 +34,7 @@ public final class ClientSettings {
     public static final boolean CULL_FACES = true;
     public static Boolean INVERT_CAMERA_ROTATION = false;
     public static boolean V_SYNC = true;
-    public static int ANTIALIAS = 3;
+    public static int ANTIALIAS = 1;
     public static final int MAX_POINT_LIGHTS = 10;
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final boolean ITERATIVE_ROTATION_INTERPOLATION = true;
@@ -42,7 +42,7 @@ public final class ClientSettings {
 
     /** particle settings */
     public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles in total
-    public static final float FIRE_PARTICLE_SIZE = 0.3f;
+    public static final float FIRE_PARTICLE_SIZE = 0.8f;
     public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
     public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
     public static final int PARTICLE_SPLITS = 0;

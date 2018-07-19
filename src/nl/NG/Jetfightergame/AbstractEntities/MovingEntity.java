@@ -3,8 +3,8 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
-import nl.NG.Jetfightergame.Assets.Entities.SimpleBullet;
-import nl.NG.Jetfightergame.Assets.Entities.SimpleRocket;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleBullet;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleRocket;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -13,14 +13,13 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Matrix3f;
 import org.joml.Quaternionf;
 
 import java.util.*;
@@ -59,13 +58,13 @@ public abstract class MovingEntity implements Touchable {
     private VectorInterpolator positionInterpolator;
     private QuaternionInterpolator rotationInterpolator;
     /** cached positions of the hitpoints */
-    private Collection<TrackedVector<PosVector>> hitPoints = null;
+    private PairList<PosVector, PosVector> hitPoints = null;
 
     /**
      * The render timer. gameTime.getRenderTime().current() will provide the current time for interpolation, and
      * renderTime.difference() provides the deltaTime
      */
-    private GameTimer gameTimer;
+    protected GameTimer gameTimer;
 
     /** worldspace / localspace */
     protected final float scale;
@@ -226,45 +225,44 @@ public abstract class MovingEntity implements Touchable {
         // projectiles cannot be hit
         if (other instanceof AbstractProjectile) return null;
 
-        Collision newCollision = hitPoints.stream()
-                // see which points collide with the other
-                .map(point -> getPointCollision(point, other, deltaTime))
-                // exclude points that didn't hit
-                .filter(Objects::nonNull)
-                // select first point hit
-                .min(Collision::compareTo)
-                // if there has been no collision, return null
-                .orElse(null);
+        Collision best = null;
+        for (int i = 0; i < hitPoints.size(); i++) {
+            Collision newCollision = getPointCollision(hitPoints.left(i), hitPoints.right(i), other, deltaTime);
+            if (newCollision != null && (best == null || newCollision.compareTo(best) < 0)) {
+                best = newCollision;
+            }
+        }
 
-        if (newCollision == null) return null;
+        if (best == null) return null;
 
-        other.acceptCollision(newCollision);
+        other.acceptCollision(best);
         // if the other is a spectral, pretend it didn't hit
         if (other instanceof Spectral) return null;
 
-        return newCollision;
+        return best;
     }
 
     /**
      * returns the collisions caused by {@code point} in the given reference frame. the returned collision is caused by
      * the first plane of #other, as it is hit by #point
-     * @param point     the movement of a point in global space
+     * @param lastPosition   the position of this point at the last game-loop
+     * @param next the expected position of this point at the current game loop
      * @param other     another object
      * @param deltaTime time-difference of this loop
      * @return the first collision caused by this point on the other object
      */
-    private Collision getPointCollision(TrackedVector<PosVector> point, Touchable other, float deltaTime) {
+    private Collision getPointCollision(PosVector lastPosition, PosVector next, Touchable other, float deltaTime) {
         Extreme<Collision> firstHit = new Extreme<>(false);
-        // copy previous, because we may want to temporarily override it.
-        final PosVector previous = new PosVector(point.previous());
-        final PosVector current = point.current();
+
+        // copy, because we may want to change it
+        PosVector previous = new PosVector(lastPosition);
 
         // collect the collisions
         final ShadowMatrix sm = new ShadowMatrix();
         final Consumer<Shape> addCollisions = shape -> {
             // map point to local space
             PosVector startPoint = sm.mapToLocal(previous);
-            PosVector endPoint = sm.mapToLocal(current);
+            PosVector endPoint = sm.mapToLocal(next);
             DirVector direction = startPoint.to(endPoint, new DirVector());
 
             // search hitpoint, add it when found
@@ -290,17 +288,13 @@ public abstract class MovingEntity implements Touchable {
         return firstHit.get();
     }
 
-    protected List<TrackedVector<PosVector>> calculateHitpointMovement() {
+    protected PairList<PosVector, PosVector> calculateHitpointMovement() {
         final List<PosVector> previous = getPointPositions(false);
         final List<PosVector> next = getPointPositions(true);
 
         // combine both lists into one list
-        List<TrackedVector<PosVector>> points = new ArrayList<>(previous.size());
-        Iterator<PosVector> previousPoints = previous.iterator();
-        Iterator<PosVector> nextPoints = next.iterator();
-        while (previousPoints.hasNext()) {
-            points.add(new TrackedVector<>(previousPoints.next(), nextPoints.next()));
-        }
+        PairList<PosVector, PosVector> points = new PairList<>(next.size());
+        points.addAll(previous, next);
         return points;
     }
 
@@ -470,7 +464,7 @@ public abstract class MovingEntity implements Touchable {
      */
     public float getKineticEnergy(DirVector vector) {
         float leftSpeed = extraVelocity.dot(vector);
-        return 0.5f * leftSpeed * leftSpeed * mass;
+        return leftSpeed * leftSpeed * mass;
     }
 
     protected DirVector velocityAtRenderTime() {
@@ -485,11 +479,11 @@ public abstract class MovingEntity implements Touchable {
      */
     public void terrainCollision(float deltaTime, Collision collision) {
         // calculate inverse inertia tensor
-        Matrix3f inertTensor = new Matrix3f().scale(1 / mass);
-        Matrix3f rotMatrix = rotation.get(new Matrix3f());
-        Matrix3f rotInert = rotMatrix.mul(inertTensor, inertTensor);
-        Matrix3f rotTranspose = rotMatrix.transpose();
-        Matrix3f invInertTensor = rotInert.mul(rotTranspose).invert();
+//        Matrix3f inertTensor = new Matrix3f().scale(1 / mass);
+//        Matrix3f rotMatrix = rotation.get(new Matrix3f());
+//        Matrix3f rotInert = rotMatrix.mul(inertTensor, inertTensor);
+//        Matrix3f rotTranspose = rotMatrix.transpose();
+//        Matrix3f invInertTensor = rotInert.mul(rotTranspose).invert();
 
         DirVector contactNormal = collision.normal();
         PosVector hitPosition = collision.hitPosition();
@@ -537,7 +531,7 @@ public abstract class MovingEntity implements Touchable {
         resetCache(currentTime);
     }
 
-    public String getType() {
+    public String getTypeName() {
         return type;
     }
 

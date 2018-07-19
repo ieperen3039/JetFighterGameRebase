@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame;
+package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;

@@ -111,11 +111,12 @@ public class CollisionDetection implements EntityManagement {
 //        if (DEBUG) testInvariants();
 
         int remainingLoops = MAX_COLLISION_ITERATIONS;
-        int nOfCollisions = 0;
+        int nOfCollisions;
+
         do {
+            nOfCollisions = 0;
             /* as a single collision may result in a previously not-intersecting pair to collide,
              * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
-             * We should add some form of caching for getIntersectingPairs, to make short-followed calls more efficient.
              * On the other hand, we may assume collisions of that magnitude appear seldom
              */
             PairList<Touchable, MovingEntity> pairs = getIntersectingPairs();
@@ -205,7 +206,7 @@ public class CollisionDetection implements EntityManagement {
         }
 
         // this matrix is indexed using the entity id values, with i > j
-        // if (adjacencyMatrix[i][j] == 2) then entityArray[i] and entityArray[j] have 2 coordinates with coinciding intervals
+        // if (adjacencyMatrix[i][j] == n) then entityArray[i] and entityArray[j] have n coordinates with coinciding intervals
         int[][] adjacencyMatrix = new int[nOfEntities][nOfEntities];
 
         checkOverlap(adjacencyMatrix, xLowerSorted, CollisionEntity::xLower, CollisionEntity::xUpper);
@@ -231,8 +232,8 @@ public class CollisionDetection implements EntityManagement {
         }
 
         if (DEBUG) {
-            long equals = allEntityPairs.stream().filter(p -> p.left.equals(p.right)).count();
-            if (equals > 0) Logger.print("duplicates found in intersecting pairs: " + equals);
+            boolean anyMatch = allEntityPairs.stream().anyMatch(p -> p.left.equals(p.right));
+            if (anyMatch) Logger.print("duplicates found in intersecting pairs");
         }
 
         avgCollision.add(allEntityPairs.size());

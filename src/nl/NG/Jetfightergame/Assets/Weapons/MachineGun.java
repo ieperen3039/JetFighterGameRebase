@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Assets.Weapons;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractWeapon;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
-import nl.NG.Jetfightergame.Assets.Entities.SimpleBullet;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleBullet;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;

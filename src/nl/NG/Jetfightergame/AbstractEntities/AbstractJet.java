@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -18,6 +17,8 @@ import org.joml.Quaternionf;
 
 import java.util.Collection;
 import java.util.function.Supplier;
+
+import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
 
 /**
  * @author Geert van Ieperen created on 30-10-2017.
@@ -42,6 +43,7 @@ public abstract class AbstractJet extends MovingEntity {
     protected Controller input;
     protected Material surfaceMaterial;
     private DirVector forward;
+    private float baseThrust;
 
     /** time left in slow */
     protected float slowTimeLeft = 0;
@@ -51,7 +53,7 @@ public abstract class AbstractJet extends MovingEntity {
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
-    private float baseThrust;
+    private PowerupType currentPowerup = null;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -107,8 +109,8 @@ public abstract class AbstractJet extends MovingEntity {
         float time = gameTimer.time();
         forward = DirVector.xVector();
         relativeStateDirection(forward).normalize(forward);
-        forwardInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
-        velocityInterpolator = new VectorInterpolator(ServerSettings.INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
+        forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
+        velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
         baseThrust = ClientSettings.BASE_SPEED * ClientSettings.BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
 
         Supplier<String> slowTimer = () -> slowTimeLeft > 0 ? String.format("%3d%% slow for %.1f seconds", ((int) (slowFactor * 100)), slowTimeLeft) : "";
@@ -128,7 +130,7 @@ public abstract class AbstractJet extends MovingEntity {
         // in case of no guns
         if (gunAlpha == null) return;
 
-        DirVector relativeGun = relativeStateDirection(new DirVector(5, 0, -1));
+        DirVector relativeGun = relativeStateDirection(new DirVector(5, 0, -2f));
 
         final PosVector gunMount = position.add(relativeGun, new PosVector());
         final PosVector gunMount2 = extraPosition.add(relativeGun, new PosVector());
@@ -142,9 +144,9 @@ public abstract class AbstractJet extends MovingEntity {
     /**
      * updates the firing of the gun
      */
-    private void updateGun(float deltaTime, State interpolator, AbstractWeapon gunAlpha, boolean isFiring) {
+    private void updateGun(float deltaTime, State interpolator, AbstractWeapon theGun, boolean isFiring) {
         final Collection<Prentity> bullets;
-        bullets = gunAlpha.update(deltaTime, isFiring, interpolator, entityDeposit);
+        bullets = theGun.update(deltaTime, isFiring, interpolator, entityDeposit);
         entityDeposit.addSpawns(bullets);
     }
 
@@ -262,5 +264,33 @@ public abstract class AbstractJet extends MovingEntity {
 
     public void setController(Controller input) {
         this.input = input;
+    }
+
+    /**
+     * @return the current combination of powerups or null if the player has none
+     */
+    public PowerupType getCurrentPowerup() {
+        return currentPowerup;
+    }
+
+    /**
+     * adds the given primitive to the current powerup
+     * @param type the added primitive
+     * @return the new powerup.
+     */
+    private PowerupType currentWith(PowerupColor type) {
+        PowerupType current = getCurrentPowerup();
+        return current == null ? PowerupType.get(type) : current.with(type);
+    }
+
+    /**
+     * adds one of the given type to the player's current powerup
+     * @return true iff the powerup is accepted by the player
+     */
+    public boolean addPowerup(PowerupColor type) {
+        PowerupType next = currentWith(type);
+        if (next == currentPowerup) return false;
+        currentPowerup = next;
+        return true;
     }
 }

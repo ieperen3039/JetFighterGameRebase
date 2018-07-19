@@ -3,18 +3,15 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.PowerupDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
-import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
-import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
-import nl.NG.Jetfightergame.ServerNetwork.MessageType;
+import nl.NG.Jetfightergame.ServerNetwork.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;
@@ -116,6 +113,7 @@ public class JetFighterGame extends GLFWGameEngine {
             Logger.print("Received " + playerJet + " from the server");
 
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
+            hud = hud.andThen(new PowerupDisplay(player));
 
             renderLoop = new JetFighterRenderer(
                     this, gameState, window, camera, player.getInputControl(), hud

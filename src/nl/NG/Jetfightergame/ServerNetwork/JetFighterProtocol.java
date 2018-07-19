@@ -3,7 +3,10 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
-import nl.NG.Jetfightergame.GameState.*;
+import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.Player;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
@@ -207,7 +210,7 @@ public class JetFighterProtocol {
     }
 
     /** sends an explosion or other effect to the client
-     * @see #explosionRead(EnvironmentManager)  */
+     * @see #explosionRead(Environment)  */
     public void explosionSend(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
         DataIO.writeVector(output, position);
         DataIO.writeVector(output, direction);
@@ -218,7 +221,7 @@ public class JetFighterProtocol {
 
     /** reads an explosion off the DataInputStream
      * @see #explosionSend(PosVector, DirVector, float, Color4f, Color4f)  */
-    public void explosionRead(EnvironmentManager game) throws IOException {
+    public void explosionRead(Environment game) throws IOException {
         PosVector position = DataIO.readPosVector(input);
         DirVector direction = DataIO.readDirVector(input);
         float power = input.readFloat();
@@ -283,11 +286,19 @@ public class JetFighterProtocol {
         return EnvironmentClass.get(input.read());
     }
 
-    public void powerupCollectSend(PowerupType.Primitive type) throws IOException {
-        output.write(type.ordinal());
+    public void powerupUpdateSend(PowerupEntity powerup, float collectionTime, PowerupColor newType) throws IOException {
+        output.writeInt(powerup.idNumber());
+        output.writeFloat(collectionTime);
+        output.write(newType.ordinal());
     }
 
-    public PowerupType.Primitive powerupCollectRead() throws IOException {
-        return PowerupType.Primitive.get(input.read());
+    public void powerupUpdateRead(EntityMapping world, SpawnReceiver game) throws IOException {
+        int id = input.readInt();
+        float time = input.readFloat();
+        PowerupColor newType = PowerupColor.get(input.read());
+
+        MovingEntity entity = world.getEntity(id);
+        assert entity instanceof PowerupEntity : String.format("Entity with id %d was supposed to be a powerup, was %s", id, entity);
+        game.powerupCollect((PowerupEntity) entity, time, newType);
     }
 }

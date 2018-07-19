@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.PowerupColor;
+import nl.NG.Jetfightergame.AbstractEntities.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -39,4 +41,11 @@ public interface SpawnReceiver {
      * @see nl.NG.Jetfightergame.Rendering.Particles.Particles#explosion(PosVector, DirVector, Color4f, Color4f, float, int)
      */
     void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density);
+
+    /**
+     * notifies about the collection of a powerup. The given entity has already processed the collection with success
+     * @param powerup the entity that is collected
+     * @param newType
+     */
+    void powerupCollect(PowerupEntity powerup, float collectionTime, PowerupColor newType);
 }

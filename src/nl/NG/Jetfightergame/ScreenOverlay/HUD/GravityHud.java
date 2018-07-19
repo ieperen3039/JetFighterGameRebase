@@ -2,16 +2,13 @@ package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_COLOR;
-import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_STROKE_WIDTH;
-import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.LUCIDA_CONSOLE;
+import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.*;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
 
@@ -21,7 +18,7 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
  */
 public class GravityHud implements Consumer<ScreenOverlay.Painter> {
 
-    private static final float FPV_SENSITIVITY = 400f;
+    private static final float FPV_SENSITIVITY = 600f;
     private static final float BS_SENSITIVITY = 2000f;
     private final AbstractJet target;
     private final Camera camera;
@@ -37,7 +34,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
         final int height = hud.windowHeight;
         final int xMid = width / 2;
         final int yMid = height / 2;
-        final float barMargin = (1 - HUDStyleSettings.ALTVEL_BAR_SIZE) / 2;
+        final float barMargin = (1 - ALTVEL_BAR_SIZE) / 2;
         final float inverseBarMargin = 1 - barMargin;
         final DirVector lookDirection = new DirVector(camera.vectorToFocus());
         final DirVector upVector = new DirVector(camera.getUpVector());
@@ -60,16 +57,16 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
 
             float[] velocityTicks = ticks(currentVelocity, 25, 100);
             for (float tick : velocityTicks) {
-                int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
+                int yPos = (int) (((-1 * tick * (ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR,
                         xPosVelocityBar, yPos,
-                        xPosVelocityBar + HUDStyleSettings.TICKSIZE, yPos
+                        xPosVelocityBar + TICKSIZE, yPos
                 );
             }
 
             hud.text(
-                    xPosVelocityBar - (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
-                    HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_RIGHT, HUD_COLOR,
+                    xPosVelocityBar - (10 + TEXT_SIZE_LARGE), yMid,
+                    TEXT_SIZE_LARGE, FONT, NVG_ALIGN_RIGHT, HUD_COLOR,
                     Integer.toString((int) currentVelocity)
             );
         }
@@ -85,13 +82,13 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
 
             float[] heightTicks = ticks(currentAltitude, 25, 100);
             for (float tick : heightTicks) {
-                int yPos = (int) (((-1 * tick * (HUDStyleSettings.ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
-                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosAltitudeBar, yPos, xPosAltitudeBar + HUDStyleSettings.TICKSIZE, yPos);
+                int yPos = (int) (((-1 * tick * (ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
+                hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosAltitudeBar, yPos, xPosAltitudeBar + TICKSIZE, yPos);
             }
 
             hud.text(
-                    xPosAltitudeBar + (10 + HUDStyleSettings.TEXT_SIZE_LARGE), yMid,
-                    HUDStyleSettings.TEXT_SIZE_LARGE, LUCIDA_CONSOLE, NVG_ALIGN_LEFT, HUD_COLOR,
+                    xPosAltitudeBar + (10 + TEXT_SIZE_LARGE), yMid,
+                    TEXT_SIZE_LARGE, FONT, NVG_ALIGN_LEFT, HUD_COLOR,
                     Integer.toString((int) currentAltitude)
             );
         }
@@ -106,9 +103,9 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
             int BSY = (int) (BS_SENSITIVITY * yComp) + yMid;
             hud.line(
                     HUD_STROKE_WIDTH, HUD_COLOR,
-                    BSX - HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE,
+                    BSX - BORESIGHT_SIZE, BSY + BORESIGHT_SIZE,
                     BSX, BSY,
-                    BSX + HUDStyleSettings.BORESIGHT_SIZE, BSY + HUDStyleSettings.BORESIGHT_SIZE
+                    BSX + BORESIGHT_SIZE, BSY + BORESIGHT_SIZE
             );
         }
 

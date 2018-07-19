@@ -1,9 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
-import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
+import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.EnvironmentManager;
@@ -67,7 +64,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         // send all entities until this point (excluding the player jet himself)
         for (MovingEntity entity : gameWorld.getEntities()) {
-            String type = entity.getType();
+            String type = entity.getTypeName();
             Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
             player.sendEntitySpawn(prentity, entity.idNumber());
         }
@@ -100,6 +97,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
+    public void powerupCollect(PowerupEntity powerup, float collectionTime, PowerupColor newType) {
+        connections.forEach(conn -> conn.sendPowerupUpdate(powerup, collectionTime, newType));
+    }
+
+    @Override
     protected void update(float deltaTime) {
         if (worldShouldSwitch) setWorld(raceWorld);
         connections.removeIf(ServerConnection::isClosed);
@@ -111,6 +113,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         Collection<MovingEntity> entities = gameWorld.getEntities();
 
         for (MovingEntity ety : entities) {
+            if (ety instanceof PowerupEntity) continue;
+
             if (TemporalEntity.isOverdue(ety)) {
                 connections.forEach(conn -> conn.sendEntityRemove(ety));
                 gameWorld.removeEntity(ety);
@@ -182,7 +186,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
             // send all entities (excluding all player jets)
             for (MovingEntity entity : gameWorld.getEntities()) {
-                String type = entity.getType();
+                String type = entity.getTypeName();
                 Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
                 player.sendEntitySpawn(prentity, entity.idNumber());
             }

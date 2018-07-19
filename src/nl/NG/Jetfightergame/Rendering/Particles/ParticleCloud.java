@@ -12,8 +12,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLECLOUD_MIN_TIME;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLECLOUD_SPLIT_SIZE;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -296,8 +295,8 @@ public class ParticleCloud {
             this.timeToLive = timeToLive;
 
             // random positions
-            PosVector A = Vector.random().toPosVector();
-            PosVector B = Vector.random().toPosVector();
+            PosVector A = Vector.random().scale(FIRE_PARTICLE_SIZE).toPosVector();
+            PosVector B = Vector.random().scale(FIRE_PARTICLE_SIZE).toPosVector();
             PosVector C = A.add(B, new PosVector()).scale(-0.5f); // C = -1 * (A + B)/2
             this.sides = new PosVector[]{A, B, C};
         }

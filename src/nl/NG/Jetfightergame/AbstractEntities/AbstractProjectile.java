@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -27,16 +28,22 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     private final float airResistCoeff;
 
     protected float timeToLive;
+    private float turnAcc;
+    private Controller input;
+    private float thrustPower;
 
     public AbstractProjectile(
             int id, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity, float scale,
-            float mass, Material surfaceMaterial, float airResistCoeff, float timeToLive, GameTimer gameTimer,
-            SpawnReceiver particleDeposit
+            float mass, Material surfaceMaterial, float airResistCoeff, float timeToLive, float turnAcc, Controller input,
+            float thrustPower, SpawnReceiver particleDeposit, GameTimer gameTimer
     ) {
         super(id, initialPosition, initialVelocity, initialRotation, mass, scale, gameTimer, particleDeposit);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
         this.surfaceMaterial = surfaceMaterial;
+        this.turnAcc = turnAcc;
+        this.input = input;
+        this.thrustPower = thrustPower;
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
@@ -44,25 +51,39 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
-        timeToLive -= deltaTime;
+        DirVector temp = new DirVector();
 
-        netForce.add(forward.reducedTo(getThrust(forward), new DirVector()), netForce);
+        // thrust forces
+        float throttle = input.throttle();
+        float thrust = (throttle > 0) ? throttle * thrustPower : 0;
+        netForce.add(forward.reducedTo(thrust, temp), netForce);
 
+        // rotational forces
+        float instYawAcc = turnAcc * deltaTime;
+        float instPitchAcc = turnAcc * deltaTime;
+        float instRollAcc = turnAcc * deltaTime;
+        yawSpeed += input.yaw() * instYawAcc;
+        pitchSpeed += input.pitch() * instPitchAcc;
+        rollSpeed += input.roll() * instRollAcc;
+
+        // air-resistance
         DirVector airResistance = new DirVector();
-        float speed = velocity.length();
-        velocity.reducedTo(speed * speed * airResistCoeff * -1, airResistance);
-        velocity.add(airResistance.scale(deltaTime, airResistance));
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        float speedSq = velocity.lengthSquared();
+        velocity.reducedTo(speedSq * airResistCoeff * -1, airResistance);
+        netForce.add(airResistance);
 
-        adjustOrientation(extraPosition, extraRotation, extraVelocity, forward, deltaTime);
+        // F = m * a ; a = dv/dt
+        // a = F/m ; dv = a * dt = F * (dt/m)
+        extraVelocity.add(netForce.scale(deltaTime / mass, temp));
 
         // collect extrapolated variables
-        position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
+        position.add(extraVelocity.scale(deltaTime, temp), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
     }
 
     @Override
     public ParticleCloud explode() {
+        timeToLive = 0;
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
         return Particles.explosion(interpolatedPosition(), DirVector.zeroVector(), Color4f.WHITE, EXPLOSION_COLOR_2, IMPACT_POWER, SPARK_DENSITY);
     }
@@ -87,21 +108,16 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         return extraPosition;
     }
 
-    /**
-     * update state of this projectile according to input. This method is called after the physics are applied
-     * @param extraPosition the place to store the new position
-     * @param extraRotation the place to store the new rotation
-     * @param extraVelocity the place to store the new velocity
-     * @param forward       vector pointing along the x-axis of the projectile in world-space
-     * @param deltaTime     time difference
-     */
-    protected abstract void adjustOrientation(
-            PosVector extraPosition, Quaternionf extraRotation, DirVector extraVelocity, DirVector forward, float deltaTime);
-
-    protected abstract float getThrust(DirVector forward);
-
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
+    }
+
+    /** a controller that returns throttle = 1, and 0 for all else */
+    public static class JustForward extends Controller.EmptyController {
+        @Override
+        public float throttle() {
+            return 1;
+        }
     }
 }

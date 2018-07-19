@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Assets.Entities.SimpleRocket;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleRocket;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;

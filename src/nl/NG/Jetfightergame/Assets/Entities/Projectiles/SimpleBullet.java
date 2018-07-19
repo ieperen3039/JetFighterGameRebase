@@ -1,22 +1,21 @@
-package nl.NG.Jetfightergame.Assets.Entities;
+package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
+import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -43,7 +42,7 @@ public class SimpleBullet extends AbstractProjectile {
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
-                AIR_RESIST_COEFF, 10, gameTimer, entityDeposit
+                AIR_RESIST_COEFF, 10, 0, Controller.EMPTY, 0, entityDeposit, gameTimer
         );
     }
 
@@ -71,8 +70,10 @@ public class SimpleBullet extends AbstractProjectile {
     }
 
     @Override
-    protected List<TrackedVector<PosVector>> calculateHitpointMovement() {
-        return Collections.singletonList(new TrackedVector<>(position, extraPosition));
+    protected PairList<PosVector, PosVector> calculateHitpointMovement() {
+        PairList<PosVector, PosVector> pairs = new PairList<>(1);
+        pairs.add(position, extraPosition);
+        return pairs;
     }
 
     @Override
@@ -80,12 +81,4 @@ public class SimpleBullet extends AbstractProjectile {
         return 0;
     }
 
-    @Override
-    protected void adjustOrientation(PosVector extraPosition, Quaternionf extraRotation, DirVector extraVelocity, DirVector forward, float deltaTime) {
-    }
-
-    @Override
-    protected float getThrust(DirVector forward) {
-        return 0;
-    }
 }

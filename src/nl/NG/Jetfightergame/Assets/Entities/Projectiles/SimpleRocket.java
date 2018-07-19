@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Assets.Entities;
+package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
@@ -11,13 +11,11 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
+import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_1;
@@ -28,12 +26,14 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
  * created on 28-1-2018.
  */
 public class SimpleRocket extends AbstractProjectile {
-
     public static final String TYPE = "Simple rocket";
-    private static final float MASS = 0.1f;
-    private static final float AIR_RESIST_COEFF = 0.001f;
-    private static final float IMPACT_POWER = 20;
+
+    private static final float MASS = 5f;
+    private static final float AIR_RESIST_COEFF = 0.01f;
+    private static final float IMPACT_POWER = 5f;
+    private static final float EXPLOSION_POWER = 20f;
     private static final int DENSITY = 1000;
+    private static final int THRUST = 100;
 
     /**
      * enables the use of 'Simple rocket'
@@ -49,7 +49,7 @@ public class SimpleRocket extends AbstractProjectile {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
                 AIR_RESIST_COEFF, 10,
-                gameTimer, entityDeposit
+                0, new JustForward(), THRUST, entityDeposit, gameTimer
         );
     }
 
@@ -85,23 +85,21 @@ public class SimpleRocket extends AbstractProjectile {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
         return Particles.explosion(
                 interpolatedPosition(), DirVector.zeroVector(),
-                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, IMPACT_POWER, DENSITY
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, DENSITY
         );
-    }
-
-    @Override
-    public boolean isOverdue() {
-        return timeToLive <= 0;
     }
 
     @Override
     protected void updateShape(float deltaTime) {
         timeToLive -= deltaTime;
+        // sparkles
     }
 
     @Override
-    protected List<TrackedVector<PosVector>> calculateHitpointMovement() {
-        return Collections.singletonList(new TrackedVector<>(position, extraPosition));
+    protected PairList<PosVector, PosVector> calculateHitpointMovement() {
+        PairList<PosVector, PosVector> pairs = new PairList<>(1);
+        pairs.add(position, extraPosition);
+        return pairs;
     }
 
     @Override
@@ -109,13 +107,4 @@ public class SimpleRocket extends AbstractProjectile {
         return 0;
     }
 
-    @Override
-    protected void adjustOrientation(PosVector extraPosition, Quaternionf extraRotation, DirVector extraVelocity, DirVector forward, float deltaTime) {
-
-    }
-
-    @Override
-    protected float getThrust(DirVector forward) {
-        return 100;
-    }
 }

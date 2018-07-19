@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
-import nl.NG.Jetfightergame.ClientControl;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -42,7 +41,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final AbstractJet jet;
     private RaceProgress gameProgress;
     private String name;
-    private PowerupType currentPowerup = null;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
@@ -98,7 +96,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case POWERUP_COLLECT:
-                addPowerup(protocol.powerupCollectRead());
+                protocol.powerupUpdateRead(game, this);
+                break;
 
             case EXPLOSION_SPAWN:
                 protocol.explosionRead(game);
@@ -238,6 +237,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
+    public void powerupCollect(PowerupEntity powerup, float collectionTime, PowerupColor newType) {
+        Logger.printError("Clientside powerup collection");
+    }
+
+    @Override
     public Controller getInput() {
         return input;
     }
@@ -250,19 +254,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public AbstractJet jet() {
         return jet;
-    }
-
-    @Override
-    public PowerupType getCurrentPowerup() {
-        return currentPowerup;
-    }
-
-    @Override
-    public boolean addPowerup(PowerupType.Primitive type) {
-        PowerupType next = currentWith(type);
-        if (next == null || next == currentPowerup) return false;
-        currentPowerup = next;
-        return true;
     }
 
     public RaceProgress getRaceProgress() {
@@ -305,7 +296,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     /** a representation of players other than this player (to be used client-side) */
     public static class OtherPlayer implements Player {
-        private PowerupType currentPowerup = null;
         private AbstractJet jet;
         private String name;
 
@@ -322,19 +312,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         @Override
         public AbstractJet jet() {
             return jet;
-        }
-
-        @Override
-        public PowerupType getCurrentPowerup() {
-            return currentPowerup;
-        }
-
-        @Override
-        public boolean addPowerup(PowerupType.Primitive type) {
-            PowerupType next = currentWith(type);
-            if (next == currentPowerup) return false;
-            currentPowerup = next;
-            return true;
         }
     }
 }

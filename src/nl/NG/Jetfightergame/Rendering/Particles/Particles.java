@@ -28,6 +28,17 @@ public final class Particles {
     private static final float FIRE_LINGER_TIME = 10;
     private static final int METAL_LINGER_TIME = 10;
 
+    /**
+     * creates an explosion of particles from the given position, using a blend of the two colors
+     * @param position  source position where all particles come from
+     * @param direction movement of the average position of the cloud
+     * @param color1    first color extreme
+     * @param color2    second color extreme. Each particle has a color where each color primitive is individually
+     *                  randomized.
+     * @param power     the speed of the fastest particle relative to the middle of the cloud
+     * @param density   the number of particles generated
+     * @return
+     */
     public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density){
         ParticleCloud result = new ParticleCloud();
 
@@ -54,7 +65,6 @@ public final class Particles {
         ShadowMatrix sm = new ShadowMatrix();
 
         Consumer<Shape> particleMapper = (shape) -> shape.getPlaneStream()
-//                .parallel()
                 .map(p -> Particles.splitIntoParticles(p, sm, target.getPosition(), force, Color4f.GREY, target.getVelocity()))
                 .forEach(result::addAll);
 

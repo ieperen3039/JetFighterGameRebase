@@ -12,14 +12,16 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Geert van Ieperen. Created on 5-7-2018.
  */
 public class IslandMap extends GameState {
+    private static final int FOG_DIST = 500;
+
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         List<Touchable> entities = new ArrayList<>();
@@ -34,10 +36,6 @@ public class IslandMap extends GameState {
             ));
         }
 
-        entities.add(new PowerupEntity(
-                PowerupType.Primitive.TIME, position, raceProgress, timer
-        ));
-
         for (Shape s : GeneralShapes.ISLAND1) {
             entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
         }
@@ -47,7 +45,20 @@ public class IslandMap extends GameState {
 
     @Override
     protected Collection<Prentity> getInitialEntities() {
-        return Collections.EMPTY_SET;
+        PosVector position = new PosVector();
+
+        { // obnoxious supertriguous calculation
+            DirVector direction = new DirVector(1, 1, 0.2f);
+            for (int i = 1; i < 15; i++) {
+                position.add(direction.reducedTo(72, new DirVector()));
+                direction.rotateZ((float) Math.PI / 4);
+            }
+        }
+
+        return Arrays.asList(
+                new Prentity("Powerup_" + PowerupColor.TIME, position, null, null),
+                new Prentity("Powerup_" + PowerupColor.ENERGY, new PosVector(30, 0, 10), null, null)
+        );
     }
 
     @Override
@@ -59,7 +70,7 @@ public class IslandMap extends GameState {
 
     @Override
     public Color4f fogColor() {
-        return new Color4f(0.6f, 0.6f, 0.9f, 1f / 500);
+        return new Color4f(0.6f, 0.6f, 0.9f, 1f / FOG_DIST);
     }
 
     @Override

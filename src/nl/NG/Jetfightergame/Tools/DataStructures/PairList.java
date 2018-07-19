@@ -156,6 +156,16 @@ public class PairList<L, R> extends AbstractList<Pair<L, R>> {
         return new PairListIterator(index);
     }
 
+    public void addAll(List<L> leftNew, List<R> rightNew) {
+        if (leftNew.size() != rightNew.size())
+            throw new IllegalArgumentException(
+                    "Given lists are of unequal size: " + leftNew.size() + ", " + rightNew.size()
+            );
+
+        leftList.addAll(leftNew);
+        rightList.addAll(rightNew);
+    }
+
     /**
      * allows iteration over this pairList
      */

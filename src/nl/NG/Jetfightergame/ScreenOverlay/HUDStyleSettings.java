@@ -21,4 +21,5 @@ public final class HUDStyleSettings {
 
     public static final int TICKSIZE = 15;
     public static final int TEXT_SIZE_LARGE = 30;
+    public static final ScreenOverlay.Font FONT = ScreenOverlay.Font.LUCIDA_CONSOLE;
 }

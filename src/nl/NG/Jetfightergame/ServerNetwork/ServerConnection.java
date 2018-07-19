@@ -1,9 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.PowerupType;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
+import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -36,7 +33,6 @@ public class ServerConnection implements BlockingListener, Player {
 
     private Lock sendLock = new ReentrantLock();
     private volatile boolean isClosed;
-    private PowerupType currentPowerup;
 
     /**
      * construct a server-side connection to a player
@@ -176,6 +172,12 @@ public class ServerConnection implements BlockingListener, Player {
         );
     }
 
+    public void sendPowerupUpdate(PowerupEntity powerup, float collectionTime, PowerupColor newType) {
+        sendMessage(MessageType.POWERUP_COLLECT, () ->
+                protocol.powerupUpdateSend(powerup, collectionTime, newType)
+        );
+    }
+
     private void sendMessage(MessageType type, IOAction action) {
         sendLock.lock();
         try {
@@ -219,26 +221,10 @@ public class ServerConnection implements BlockingListener, Player {
     }
 
     @Override
-    public PowerupType getCurrentPowerup() {
-        return currentPowerup;
-    }
-
-    @Override
-    public boolean addPowerup(PowerupType.Primitive type) {
-        PowerupType next = currentWith(type);
-        if (next == currentPowerup) return false;
-
-        sendMessage(MessageType.POWERUP_COLLECT, () ->
-                protocol.powerupCollectSend(type)
-        );
-        currentPowerup = next;
-        return true;
-    }
-
-    @Override
     public String playerName() {
         return clientName;
     }
+
 
     /** executes the action, which may throw an IOException */
     private interface IOAction {
