@@ -32,7 +32,7 @@ public class JetFighterServerTest {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             ClientConnection cc = new ClientConnection("TheLegend27", client.getOutputStream(), client.getInputStream());
-            Logger.print("received a " + cc);
+            Logger.DEBUG.print("received a " + cc);
         } catch (IOException e) {
             return e;
         }

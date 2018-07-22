@@ -1,17 +1,25 @@
 package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.ArtificalIntelligence.AI;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.Quaternionf;
+
+import java.util.function.Consumer;
 
 /**
  * @author Geert van Ieperen. Created on 17-7-2018.
@@ -29,6 +37,8 @@ public class Seeker extends AbstractProjectile {
     public static final int NOF_PARTICLES = 5;
     public static final float PARTICLE_SIZE = 0.2f;
     public static final float EXPLOSION_CLOUD_POWER = 10f;
+    public static final float POWER = 1f;
+    private Touchable sourceJet;
 
     /**
      * enables the use of 'Seeker'
@@ -41,9 +51,13 @@ public class Seeker extends AbstractProjectile {
     private Seeker(int id, PosVector position, Quaternionf rotation, DirVector velocity, GameTimer timer, SpawnReceiver game) {
         super(
                 id, position, rotation, velocity,
-                1f, MASS, Material.GLOWING, AIR_RESIST, TIME_TO_LIVE, TURN_ACC, AI.EMPTY, THRUST_POWER,
+                1f, MASS, Material.GLOWING, AIR_RESIST, TIME_TO_LIVE, TURN_ACC, THRUST_POWER,
                 game, timer
         );
+    }
+
+    public void setTarget(MovingEntity target) {
+        setInput(new RocketAI(2, this, target, THRUST_POWER / AIR_RESIST));
     }
 
     @Override
@@ -74,4 +88,21 @@ public class Seeker extends AbstractProjectile {
         return result;
     }
 
+    @Override
+    protected void collideWithOther(Touchable other, Collision collision) {
+        if (other != sourceJet) {
+            timeToLive = 0;
+            other.impact(POWER);
+        }
+    }
+
+    @Override
+    public void create(MatrixStack ms, Consumer<Shape> action) {
+        //TODO create shape
+        action.accept(GeneralShapes.ARROW);
+    }
+
+    public void setSource(Touchable sourceJet) {
+        this.sourceJet = sourceJet;
+    }
 }

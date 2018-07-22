@@ -1,15 +1,19 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
+
+import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
 
@@ -93,6 +97,11 @@ public class FallingCube extends MovingEntity {
     @Override
     public PosVector getExpectedMiddle() {
         return extraPosition;
+    }
+
+    @Override
+    public void create(MatrixStack ms, Consumer<Shape> action) {
+        action.accept(GeneralShapes.CUBE);
     }
 
     @Override

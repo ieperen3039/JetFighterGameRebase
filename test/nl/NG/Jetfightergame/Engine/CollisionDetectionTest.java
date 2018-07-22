@@ -26,7 +26,7 @@ public class CollisionDetectionTest extends CollisionDetection {
         int id = 1;
         Pair[] nums = {new Pair(1f, id++), new Pair(2f, id++), new Pair(3f, id++), new Pair(2f, id++), new Pair(2.01f, id++), new Pair(4f, id++)};
         Toolbox.insertionSort(nums, p -> (Float) p.left);
-        Logger.print(Arrays.asList(nums));
+        Logger.DEBUG.print(Arrays.asList(nums));
     }
 
     @Test

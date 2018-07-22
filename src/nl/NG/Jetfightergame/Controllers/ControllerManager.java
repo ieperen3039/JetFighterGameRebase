@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Controllers;
 
-import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Tools.Manager;
@@ -45,9 +44,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
     }
 
     public void switchTo(ControllerImpl type){
-        if (instance instanceof TrackerListener) {
-            ((TrackerListener) instance).cleanUp();
-        }
+        instance.cleanUp();
 
         if (hud != null) hud.removeHudItem(instance.hudElement());
 

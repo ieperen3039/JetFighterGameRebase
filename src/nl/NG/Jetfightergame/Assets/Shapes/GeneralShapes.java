@@ -20,17 +20,17 @@ public final class GeneralShapes {
     private static final float CONTAINER_SIZE = 200f;
     private static boolean isLoaded = false;
 
-    /** a 2*2*2 cube with center on (0, 0, 0) */
-    public static Shape CUBE;
-    public static Shape INVERSE_CUBE;
-    public static CheckpointRing CHECKPOINTRING;
-
     /** an arrow along the Z-axis, 1 long */
     public static Shape ARROW;
+    /** a 2*2*2 cube with center on (0, 0, 0) */
+    public static Shape CUBE;
+
+    public static Shape LAB_CUBE;
+    public static Shape INVERSE_CUBE;
+    public static CheckpointRing CHECKPOINTRING;
     public static Shape CONCEPT_BLUEPRINT;
 
     public static List<Shape> ISLAND1;
-
 
     /**
      * loads the shapes into memory. This method may be split into several selections of models
@@ -40,7 +40,7 @@ public final class GeneralShapes {
     public static void init(boolean doLoadMesh) {
         ServerSettings.RENDER_ENABLED = doLoadMesh;
         if (isLoaded) {
-            Logger.printError("Tried loading shapes while they where already loaded");
+            Logger.ERROR.print("Tried loading shapes while they where already loaded");
             return;
         }
         isLoaded = true;
@@ -48,6 +48,7 @@ public final class GeneralShapes {
         CONCEPT_BLUEPRINT = new BasicShape("ConceptBlueprint.obj", doLoadMesh);
         ARROW = new BasicShape("arrow.obj", doLoadMesh);
         INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
+        LAB_CUBE = makeInverseCube(3, doLoadMesh);
         CUBE = makeCube(doLoadMesh);
         ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", doLoadMesh, CONTAINER_SIZE, 50f);
 //        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));

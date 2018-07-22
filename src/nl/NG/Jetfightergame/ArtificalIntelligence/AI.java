@@ -16,4 +16,10 @@ public abstract class AI extends AbstractGameLoop implements Controller {
     public boolean isActiveController() {
         return false;
     }
+
+    /** not to be confused with {@link AbstractGameLoop#cleanup()} */
+    @Override
+    public void cleanUp() {
+        stopLoop();
+    }
 }

@@ -2,7 +2,9 @@ package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -48,8 +50,8 @@ public class SimpleRocket extends AbstractProjectile {
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
-                AIR_RESIST_COEFF, 10,
-                0, new JustForward(), THRUST, entityDeposit, gameTimer
+                AIR_RESIST_COEFF, 10, 0, THRUST,
+                entityDeposit, gameTimer
         );
     }
 
@@ -64,20 +66,16 @@ public class SimpleRocket extends AbstractProjectile {
         ms.popMatrix();
     }
 
-    /**
-     * @param other an object that may hit this object
-     * @return null
-     */
-    @Override
-    public Collision checkCollisionWith(Touchable other, float deltaTime) {
-//        if (other instanceof Projectile); // reward 'crimera war' achievement
+    public void setTarget(MovingEntity target) {
+        setInput(new RocketAI(2, this, target, THRUST / AIR_RESIST_COEFF));
+    }
 
-        if (super.checkCollisionWith(other, deltaTime) != null) {
-            other.impact(IMPACT_POWER);
-            this.timeToLive = 0;
-        }
-        // there is no physical effect of projectile impact
-        return null;
+
+    @Override
+    public void collideWithOther(Touchable other, Collision collision) {
+//        if (other instanceof Projectile); // reward 'crimera war' achievement
+        other.impact(IMPACT_POWER);
+        this.timeToLive = 0;
     }
 
     @Override

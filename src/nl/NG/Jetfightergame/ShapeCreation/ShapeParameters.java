@@ -74,7 +74,7 @@ public class ShapeParameters {
         }
 
         if (vertices.isEmpty() || faces.isEmpty()) {
-            Logger.printError("Empty mesh loaded: " + fileName + " (this may result in errors)");
+            Logger.ERROR.print("Empty mesh loaded: " + fileName + " (this may result in errors)");
         }
     }
 

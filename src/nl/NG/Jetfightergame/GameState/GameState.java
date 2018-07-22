@@ -117,7 +117,6 @@ public abstract class GameState implements Environment {
         if (physicsEngine == null) return;
 
         glDisable(GL_CULL_FACE); // TODO when the meshes are fixed or new meshes are created, this should be removed
-//        Toolbox.drawAxisFrame(gl);
         physicsEngine.getStaticEntities().forEach(d -> d.draw(gl));
         physicsEngine.getDynamicEntities().forEach(d -> d.draw(gl));
     }
@@ -188,12 +187,20 @@ public abstract class GameState implements Environment {
             }
 
         } else {
-            Logger.printError("Tried adding particles that are either already loaded, or without particles");
+            Logger.ERROR.print("Tried adding particles that are either already loaded, or without particles");
         }
     }
 
     public PosVector getMiddleOfPath(PosVector position) {
         return PosVector.zeroVector();
+    }
+
+
+    public String toString() {
+        StringBuilder s = new StringBuilder();
+        s.append(super.toString());
+        physicsEngine.getDynamicEntities().forEach(e -> s.append("\n\t").append(e));
+        return s.toString();
     }
 
     @Override

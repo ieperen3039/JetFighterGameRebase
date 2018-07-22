@@ -75,7 +75,7 @@ public class JetFighterServer {
      */
     public void shortConnect(InputStream receive, OutputStream send, boolean asHost) {
         try {
-            Logger.print("Creating internal connection" + (asHost ? " with host privileges" : ""));
+            Logger.DEBUG.print("Creating internal connection" + (asHost ? " with host privileges" : ""));
             game.connectToPlayer(receive, send, asHost);
 
         } catch (IOException e) {
@@ -92,12 +92,12 @@ public class JetFighterServer {
         }
 
         try {
-            Logger.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
+            Logger.DEBUG.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
             acceptConnection(true);
             currentPhase = PREPARATION;
 
         } catch (IOException ex) {
-            Logger.printError(ex);
+            Logger.ERROR.print(ex);
         }
     }
 
@@ -108,20 +108,20 @@ public class JetFighterServer {
     public void listen() throws IOException {
         if (currentPhase != PREPARATION)
             throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
-        Logger.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
+        Logger.DEBUG.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
 
         while (currentPhase == PREPARATION) {
             acceptConnection(false);
         }
 
-        Logger.print("Stopped listening for new players");
+        Logger.DEBUG.print("Stopped listening for new players");
         currentPhase = STARTING;
     }
 
     public void acceptConnection(boolean asAdmin) throws IOException {
         Socket client = socket.accept();
 
-        Logger.print("Connection made with " + client + (asAdmin ? " with host privileges" : ""));
+        Logger.DEBUG.print("Connection made with " + client + (asAdmin ? " with host privileges" : ""));
         InputStream in = client.getInputStream();
         OutputStream out = client.getOutputStream();
         game.connectToPlayer(in, out, asAdmin);

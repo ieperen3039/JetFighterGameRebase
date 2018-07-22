@@ -30,7 +30,7 @@ public final class ServerSettings {
     /** miscellaneous */
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final int PLAYERS_PER_RACE = 8;
-    public static final float POWERUP_COLLECTION_RANGE = 10;
+    public static final float POWERUP_COLLECTION_RANGE = 5;
     public static boolean RENDER_ENABLED = false;
 
     /** shape constants */

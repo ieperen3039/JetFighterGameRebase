@@ -113,7 +113,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         Collection<MovingEntity> entities = gameWorld.getEntities();
 
         for (MovingEntity ety : entities) {
-            if (ety instanceof PowerupEntity) continue;
+//            if (ety instanceof PowerupEntity) continue;
 
             if (TemporalEntity.isOverdue(ety)) {
                 connections.forEach(conn -> conn.sendEntityRemove(ety));
@@ -159,37 +159,20 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         gameWorld.cleanUp();
     }
 
-    public String toString() {
-        StringBuilder s = new StringBuilder();
-        s.append(super.toString());
-        gameWorld.getEntities().forEach(e -> s.append("\n").append(e));
-        return s.toString();
-    }
-
     private void setWorld(EnvironmentClass world) {
-        Logger.print("Switching world to " + world);
+        Logger.DEBUG.print("Switching world to " + world);
+        connections.forEach(conn -> conn.sendWorldSwitch(world));
         // startup new world
         Player[] asArray = connections.toArray(new Player[0]);
         RaceProgress raceProgress = new RaceProgress(asArray.length, this, asArray);
         gameWorld.setContext(this, raceProgress);
         gameWorld.switchTo(world);
 
-        // notify clients
-        connections.forEach(conn -> conn.sendWorldSwitch(world));
-
-
         // progress this change to all clients
         for (ServerConnection player : connections) {
             AbstractJet playerJet = player.jet();
             MovingEntity.State spawn = gameWorld.getNewSpawnPosition();
             playerJet.set(spawn);
-
-            // send all entities (excluding all player jets)
-            for (MovingEntity entity : gameWorld.getEntities()) {
-                String type = entity.getTypeName();
-                Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
-                player.sendEntitySpawn(prentity, entity.idNumber());
-            }
         }
 
         connections.forEach(conn -> gameWorld.addEntity(conn.jet()));

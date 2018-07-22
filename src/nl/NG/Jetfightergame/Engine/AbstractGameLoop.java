@@ -62,13 +62,16 @@ public abstract class AbstractGameLoop extends Thread {
         pauseBlock.countDown();
     }
 
+    /**
+     * is always called when this gameloop terminates
+     */
     protected abstract void cleanup();
 
     /**
      * start the loop, running until {@link #stopLoop()} is called.
      */
     public void run() {
-        if (ServerSettings.DEBUG) Logger.print(loopName + " enabled");
+        if (ServerSettings.DEBUG) Logger.DEBUG.print(loopName + " enabled");
         float deltaTime = 0;
 
         Logger.printOnline(tickCounter);
@@ -112,7 +115,7 @@ public abstract class AbstractGameLoop extends Thread {
                 isPaused = false;
             }
         } catch (Exception ex) {
-            System.err.println(loopName + " has Crashed! Blame Menno.");
+            Logger.ERROR.print(loopName + " has Crashed! Blame Menno.");
             ex.printStackTrace();
             exceptionHandler(ex);
         } finally {
@@ -122,7 +125,7 @@ public abstract class AbstractGameLoop extends Thread {
         }
 
         // terminate engine
-        Logger.print(loopName + " is stopped");
+        Logger.DEBUG.print(loopName + " is stopped");
     }
 
     /**
@@ -138,12 +141,12 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void unPause(){
         pauseBlock.countDown();
-        if (ServerSettings.DEBUG) Logger.printFrom(2, "unpaused " + loopName);
+        if (ServerSettings.DEBUG) Logger.DEBUG.printFrom(2, "unpaused " + loopName);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        if (ServerSettings.DEBUG) Logger.printFrom(2, "paused " + loopName);
+        if (ServerSettings.DEBUG) Logger.DEBUG.printFrom(2, "paused " + loopName);
     }
 
     /**

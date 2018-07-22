@@ -83,7 +83,7 @@ public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderP
 
         } else {
             String name = instance.getClass().getSimpleName();
-            Logger.printSpamless(name, "loaded shader without advanced parameters: " + name);
+            Logger.DEBUG.printSpamless(name, "loaded shader without advanced parameters: " + name);
         }
     }
 

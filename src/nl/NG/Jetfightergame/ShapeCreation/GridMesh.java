@@ -66,7 +66,7 @@ public class GridMesh implements Shape {
 
         this.graphicalGrid = frame.asMesh();
 
-        Logger.print("created Grid [ " + xSize + " x " + ySize + " ]");
+        Logger.DEBUG.print("created Grid [ " + xSize + " x " + ySize + " ]");
     }
 
     public GridMesh(float[][] heightMap, float xStep, float yStep) {

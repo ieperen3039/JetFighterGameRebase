@@ -63,7 +63,7 @@ public class Mesh implements Renderable {
             case GL_QUAD_STRIP:
                 return 4;
         }
-        Logger.printError("Could not determine number of edges of draw method " + glGetString(drawMethod));
+        Logger.ERROR.print("Could not determine number of edges of draw method " + glGetString(drawMethod));
         return 3;
     }
 

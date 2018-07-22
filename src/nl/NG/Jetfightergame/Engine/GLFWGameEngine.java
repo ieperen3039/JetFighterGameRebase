@@ -43,8 +43,9 @@ public abstract class GLFWGameEngine {
             renderingLoop().unPause();
             renderingLoop().run(); // blocks until the client is quit
 
-            for (AbstractGameLoop abstractGameLoop : secondaryGameLoops()) {
-                abstractGameLoop.join();
+            for (AbstractGameLoop gameLoop : secondaryGameLoops()) {
+                Logger.DEBUG.print("Waiting for " + gameLoop + " to stop");
+                gameLoop.join();
             }
 
         } catch (Exception e) {
@@ -59,7 +60,7 @@ public abstract class GLFWGameEngine {
             window.cleanup();
         }
 
-        Logger.print("Game has stopped! Bye ~");
+        Logger.DEBUG.print("Game has stopped! Bye ~");
         // Finish execution
     }
 
@@ -72,7 +73,7 @@ public abstract class GLFWGameEngine {
         try { Thread.sleep(10); } catch (InterruptedException ignored) {} // wait for possible error-printing
 
         System.out.println();
-        Logger.printFrom(2, "Stopping game...");
+        Logger.DEBUG.printFrom(2, "Stopping game...");
 
         renderingLoop().stopLoop();
         secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);
@@ -148,7 +149,7 @@ public abstract class GLFWGameEngine {
         public void run() {
             try {
                 Thread.sleep(millis);
-                Logger.printError(name + " timed out!");
+                Logger.ERROR.print(name + " timed out!");
                 action.run();
             } catch (InterruptedException e) {
                 e.printStackTrace();

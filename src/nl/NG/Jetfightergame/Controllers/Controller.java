@@ -83,6 +83,10 @@ public interface Controller {
     /** @return true iff this controller does not need passive synchronisation */
     boolean isActiveController();
 
+    /** return any resources associated with this controller */
+    default void cleanUp() {
+    }
+
     /**
      * a controller that does nothing
      */

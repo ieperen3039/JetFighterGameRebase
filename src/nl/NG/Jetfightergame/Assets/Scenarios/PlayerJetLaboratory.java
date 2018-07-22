@@ -10,7 +10,6 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -32,7 +31,7 @@ public class PlayerJetLaboratory extends GameState {
         ArrayList<Touchable> entities = new ArrayList<>();
 
         entities.add(new StaticEntity(
-                GeneralShapes.makeInverseCube(3, ServerSettings.RENDER_ENABLED),
+                GeneralShapes.LAB_CUBE,
                 Material.CYBERGLASSMETAL, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
         ));
 

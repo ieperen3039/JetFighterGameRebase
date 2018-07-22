@@ -19,7 +19,7 @@ public class XBoxController implements Controller {
         xbox = GLFW_JOYSTICK_1;
 
         if (!glfwJoystickPresent(xbox)) {
-            Logger.printError("No controller connected!");
+            Logger.ERROR.print("No controller connected!");
             return;
         }
 

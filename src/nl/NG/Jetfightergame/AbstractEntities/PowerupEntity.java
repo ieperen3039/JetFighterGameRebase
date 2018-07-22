@@ -9,9 +9,11 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.function.Consumer;
 
@@ -19,10 +21,12 @@ import java.util.function.Consumer;
  * refers to the entity as visible in the world
  * @author Geert van Ieperen. Created on 9-7-2018.
  */
-public class PowerupEntity extends MovingEntity {
+public class PowerupEntity extends MovingEntity implements Spectral {
     private static final float DESPAWN_TIME = 0.5f;
     private static final float RESPAWN_TIME = 20f;
-    private static final float SCALING = 10f;
+    private static final float SCALING = 3f;
+    private static final Quaternionf BASE_ROTATION = new Quaternionf()
+            .rotateTo(new Vector3f(-1, -1, -1), new Vector3f(0, 0, -1));
 
     private final PowerupColor type;
 
@@ -30,6 +34,12 @@ public class PowerupEntity extends MovingEntity {
     private float collectionTime = 0;
     private Shape shape;
 
+    private int debugValue = 0;
+
+    /**
+     * allows for using values "Powerup_TYPE" where TYPE must be replaced with any of the {@link PowerupColor} enum
+     * values
+     */
     public static void init() {
         for (PowerupColor type : PowerupColor.values()) {
             addConstructor("Powerup_" + type, (id, position, rotation, velocity, game) ->
@@ -46,17 +56,18 @@ public class PowerupEntity extends MovingEntity {
      * @param timer    the timer (used for rendering animations)
      * @param game the place to deposit particles
      */
-    public PowerupEntity(int id, PowerupColor type, PosVector position, GameTimer timer, SpawnReceiver game) {
+    private PowerupEntity(int id, PowerupColor type, PosVector position, GameTimer timer, SpawnReceiver game) {
         super(id, position, DirVector.zeroVector(), new Quaternionf(), 0, 1, timer, game);
         this.type = type;
         this.position = position;
         shape = GeneralShapes.CUBE;
+        Logger.printOnline(() -> String.valueOf(debugValue));
     }
 
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
         if (isCollected) return;
-        ms.scale(10);
+        ms.scale(ServerSettings.POWERUP_COLLECTION_RANGE/2);
         action.accept(GeneralShapes.CUBE);
     }
 
@@ -73,11 +84,9 @@ public class PowerupEntity extends MovingEntity {
 
             float rot = 1f * renderTime();
             gl.rotate(DirVector.zVector(), rot);
+            gl.scale(s);
 
-            if (isCollected) {
-                gl.scale(s);
-            }
-
+            gl.rotate(BASE_ROTATION);
             gl.draw(shape);
         }
         gl.popMatrix();
@@ -85,6 +94,7 @@ public class PowerupEntity extends MovingEntity {
 
     @Override
     public void update(float currentTime) {
+        debugValue++;
         if (isCollected && (currentTime > (collectionTime + RESPAWN_TIME))) {
             isCollected = false;
         }

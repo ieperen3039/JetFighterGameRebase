@@ -37,7 +37,7 @@ public class ActionButtonHandler implements TrackerKeyListener {
             else client.setMenuMode();
 
         } else if (key == TOGGLE_FULLSCREEN) {
-            Logger.print("Switching fullscreen");
+            Logger.DEBUG.print("Switching fullscreen");
             client.getWindow().toggleFullScreen();
 
         } else if (key == PRINT_SCREEN) {
@@ -46,7 +46,7 @@ public class ActionButtonHandler implements TrackerKeyListener {
 
             boolean success = client.getWindow().printScreen(name);
             if (success) {
-                Logger.print("Saved screenshot as \"" + name + "\"");
+                Logger.DEBUG.print("Saved screenshot as \"" + name + "\"");
             }
 
         }

@@ -77,7 +77,7 @@ public class JetFighterProtocol {
         // set the entity state
         MovingEntity target = entities.getEntity(id);
         if (target == null) {
-            Logger.printError("Entity with id " + id + " not found");
+            Logger.ERROR.print("Entity with id " + id + " not found");
             return null;
         }
 
@@ -240,7 +240,7 @@ public class JetFighterProtocol {
 
         int reply = input.read();
         if (reply != MessageType.PONG.ordinal())
-            Logger.printError("Unexpected reply on " + MessageType.PONG + ": " + MessageType.asString(reply));
+            Logger.ERROR.print("Unexpected reply on " + MessageType.PONG + ": " + MessageType.asString(reply));
 
         int deltaNanos = (int) (System.nanoTime() - start);
         return deltaNanos * 1E-9f;

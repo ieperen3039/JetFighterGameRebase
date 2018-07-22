@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -23,8 +24,8 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     protected static final float IMPACT_POWER = 5f;
     private static final int SPARK_DENSITY = 10;
-    protected Material surfaceMaterial;
-    private DirVector forward;
+    private Material surfaceMaterial;
+    protected DirVector forward;
     private final float airResistCoeff;
 
     protected float timeToLive;
@@ -34,19 +35,23 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     public AbstractProjectile(
             int id, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity, float scale,
-            float mass, Material surfaceMaterial, float airResistCoeff, float timeToLive, float turnAcc, Controller input,
-            float thrustPower, SpawnReceiver particleDeposit, GameTimer gameTimer
+            float mass, Material surfaceMaterial, float airResistCoeff, float timeToLive, float turnAcc, float thrustPower,
+            SpawnReceiver particleDeposit, GameTimer gameTimer
     ) {
         super(id, initialPosition, initialVelocity, initialRotation, mass, scale, gameTimer, particleDeposit);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
         this.surfaceMaterial = surfaceMaterial;
         this.turnAcc = turnAcc;
-        this.input = input;
         this.thrustPower = thrustPower;
+        this.input = new JustForward();
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
+    }
+
+    public void setInput(Controller input) {
+        this.input = input;
     }
 
     @Override
@@ -112,6 +117,18 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
     }
+
+    @Override
+    public Collision checkCollisionWith(Touchable other, float deltaTime) {
+        Collision collision = super.checkCollisionWith(other, deltaTime);
+        if (collision != null) {
+            collideWithOther(other, collision);
+        }
+        return null;
+    }
+
+    /** progress a collision with the given entity. */
+    protected abstract void collideWithOther(Touchable other, Collision collision);
 
     /** a controller that returns throttle = 1, and 0 for all else */
     public static class JustForward extends Controller.EmptyController {

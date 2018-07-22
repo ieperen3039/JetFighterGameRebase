@@ -46,14 +46,14 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
+        this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.name = name;
         this.input = new SubControl(EmptyController);
         this.gameProgress = new RaceProgress();
+        gameProgress.addPlayer(this);
         this.game = new EnvironmentManager(null, this, gameProgress, false);
         game.build();
-        gameProgress.addPlayer(this);
 
-        this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.time = protocol.syncTimerTarget();
         EnvironmentClass type = protocol.worldSwitchRead();
         game.switchTo(type);
@@ -123,7 +123,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 return false;
 
             default:
-                Logger.print("Inappropriate message: " + type);
+                Logger.DEBUG.print("Inappropriate message: " + type);
         }
 
         return true;
@@ -139,7 +139,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             serverOut.flush();
 
         } catch (IOException ex) {
-            Logger.printError(ex);
+            Logger.ERROR.print(ex);
 
         } finally {
             sendLock.unlock();
@@ -148,7 +148,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public void addSpawn(Prentity prentity) {
-        Logger.printError("Client added an entity to its own world entity (" + prentity + ")");
+        Logger.ERROR.print("Client added an entity to its own world entity (" + prentity + ")");
         game.addEntity(prentity.construct(this));
     }
 
@@ -238,7 +238,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public void powerupCollect(PowerupEntity powerup, float collectionTime, PowerupColor newType) {
-        Logger.printError("Clientside powerup collection");
+        Logger.ERROR.print("Clientside powerup collection");
     }
 
     @Override

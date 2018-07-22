@@ -34,7 +34,7 @@ public class BasicShape implements Shape {
         this(model.vertices, model.normals, model.faces, loadMesh, GL11.GL_TRIANGLES);
 
         if (ServerSettings.DEBUG)
-            Logger.print("loaded model " + model.name + ": [Faces: " + model.faces.size() + ", vertices: " + model.vertices.size() + "]");
+            Logger.DEBUG.print("loaded model " + model.name + ": [Faces: " + model.faces.size() + ", vertices: " + model.vertices.size() + "]");
     }
 
     /**
@@ -98,14 +98,14 @@ public class BasicShape implements Shape {
                 normal.normalize();
             } else {
                 normal = null;
-                Logger.printSpamless(fileName, fileName + " has at least one not-computed normal");
+                Logger.DEBUG.printSpamless(fileName, fileName + " has at least one not-computed normal");
             }
 
             container.addPlane(normal, edges);
         }
 
         Collection<CustomShape> containers = world.values();
-        Logger.print("Loaded model " + file.name + " in " + containers.size() + " parts");
+        Logger.DEBUG.print("Loaded model " + file.name + " in " + containers.size() + " parts");
 
         List<Shape> shapes = new ArrayList<>();
         for (CustomShape frame : containers) {

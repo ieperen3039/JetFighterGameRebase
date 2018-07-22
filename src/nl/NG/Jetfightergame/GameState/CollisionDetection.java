@@ -145,7 +145,7 @@ public class CollisionDetection implements EntityManagement {
         } while ((nOfCollisions > 0) && (--remainingLoops > 0) && !Thread.interrupted());
 
         if (nOfCollisions > 0) {
-            Logger.printError(nOfCollisions + " collisions not resolved");
+            Logger.ERROR.print(nOfCollisions + " collisions not resolved");
         }
     }
 
@@ -233,7 +233,7 @@ public class CollisionDetection implements EntityManagement {
 
         if (DEBUG) {
             boolean anyMatch = allEntityPairs.stream().anyMatch(p -> p.left.equals(p.right));
-            if (anyMatch) Logger.print("duplicates found in intersecting pairs");
+            if (anyMatch) Logger.DEBUG.print("duplicates found in intersecting pairs");
         }
 
         avgCollision.add(allEntityPairs.size());
@@ -246,11 +246,11 @@ public class CollisionDetection implements EntityManagement {
      */
     private void testInvariants() {
         String source = Logger.getCallingMethod(1);
-        Logger.printSpamless(source, "\n    " + source + " Checking collision detection invariants");
+        Logger.DEBUG.printSpamless(source, "\n    " + source + " Checking collision detection invariants");
 
         // all arrays are of equal length
         if ((xLowerSorted.length != yLowerSorted.length) || (xLowerSorted.length != zLowerSorted.length)) {
-            Logger.printError(toString(entityArray()));
+            Logger.ERROR.print(toString(entityArray()));
             throw new IllegalStateException("Entity arrays have different lengths: "
                     + xLowerSorted.length + ", " + yLowerSorted.length + ", " + zLowerSorted.length
             );
@@ -282,8 +282,8 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < xLowerSorted.length; i++) {
             CollisionEntity collisionEntity = xLowerSorted[i];
             if (collisionEntity.xLower() < init) {
-                Logger.printError("Sorting error on x = " + i);
-                Logger.printError(toString(xLowerSorted));
+                Logger.ERROR.print("Sorting error on x = " + i);
+                Logger.ERROR.print(toString(xLowerSorted));
                 throw new IllegalStateException("Sorting error on x = " + i);
             }
             init = collisionEntity.xLower();
@@ -294,8 +294,8 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < yLowerSorted.length; i++) {
             CollisionEntity collisionEntity = yLowerSorted[i];
             if (collisionEntity.yLower() < init) {
-                Logger.printError("Sorting error on y = " + i);
-                Logger.printError(toString(yLowerSorted));
+                Logger.ERROR.print("Sorting error on y = " + i);
+                Logger.ERROR.print(toString(yLowerSorted));
                 throw new IllegalStateException("Sorting error on y = " + i);
             }
             init = collisionEntity.yLower();
@@ -306,8 +306,8 @@ public class CollisionDetection implements EntityManagement {
         for (int i = 0; i < zLowerSorted.length; i++) {
             CollisionEntity collisionEntity = zLowerSorted[i];
             if (collisionEntity.zLower() < init) {
-                Logger.printError("Sorting error on z = " + i);
-                Logger.printError(toString(zLowerSorted));
+                Logger.ERROR.print("Sorting error on z = " + i);
+                Logger.ERROR.print(toString(zLowerSorted));
                 throw new IllegalStateException("Sorting error on z = " + i);
             }
             init = collisionEntity.zLower();

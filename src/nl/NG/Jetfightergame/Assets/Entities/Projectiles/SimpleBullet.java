@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -42,7 +41,7 @@ public class SimpleBullet extends AbstractProjectile {
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
-                AIR_RESIST_COEFF, 10, 0, Controller.EMPTY, 0, entityDeposit, gameTimer
+                AIR_RESIST_COEFF, 10, 0, 0, entityDeposit, gameTimer
         );
     }
 
@@ -58,15 +57,10 @@ public class SimpleBullet extends AbstractProjectile {
     }
 
     @Override
-    public Collision checkCollisionWith(Touchable other, float deltaTime) {
+    public void collideWithOther(Touchable other, Collision collision) {
 //        if (other instanceof Projectile); // reward 'crimera war' achievement
-
-        if (super.checkCollisionWith(other, deltaTime) != null) {
-            other.impact(IMPACT_POWER);
-            this.timeToLive = 0;
-        }
-        // there is no physical effect of projectile impact
-        return null;
+        other.impact(IMPACT_POWER);
+        this.timeToLive = 0;
     }
 
     @Override

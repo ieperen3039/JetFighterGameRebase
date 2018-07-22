@@ -3,9 +3,9 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
 import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleBullet;
 import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleRocket;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -75,6 +75,8 @@ public abstract class MovingEntity implements Touchable {
         FallingCube.init();
         SimpleBullet.init();
         SimpleRocket.init();
+        PowerupEntity.init();
+        Seeker.init();
     }
 
     /**
@@ -179,7 +181,7 @@ public abstract class MovingEntity implements Touchable {
      * considers the scaling of the vector; it can be used for relative positions The returned direction is based on
      * rendertime interpolated direction, for gamestate changes use {@link #relativeStateDirection(DirVector)}
      * @param relative a vector relative to this object
-     * @return a vector in {@code sm}'s frame of reference
+     * @return a vector in the current frame of reference
      */
     public DirVector relativeInterpolatedDirection(DirVector relative) {
         final DirVector[] axis = new DirVector[1];
@@ -505,11 +507,6 @@ public abstract class MovingEntity implements Touchable {
     /** @return an unique number given by the server */
     public int idNumber() {
         return thisID;
-    }
-
-    @Override
-    public void create(MatrixStack ms, Consumer<Shape> action) {
-        action.accept(GeneralShapes.CUBE);
     }
 
     /**

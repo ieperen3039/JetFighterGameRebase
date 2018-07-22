@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.Arrays;
@@ -35,7 +36,7 @@ public final class Toolbox {
 
         String source = Logger.getCallingMethod(1);
         if (!Logger.callerBlacklist.contains(source)) {
-            Logger.print(source, " - draws axis frame");
+            Logger.DEBUG.printFrom(2, " - draws axis frame on " + gl.getPosition(new PosVector(0, 0, 0)));
             Logger.callerBlacklist.add(source);
         }
 
@@ -62,7 +63,7 @@ public final class Toolbox {
         int error;
         int i = 0;
         while ((error = glGetError()) != GL_NO_ERROR) {
-            Logger.printFrom(2, "glError " + asHex(error) + ": " + getMessage(error));
+            Logger.DEBUG.printFrom(2, "glError " + asHex(error) + ": " + getMessage(error));
             if (++i == 10) throw new IllegalStateException("Context is probably not current for this thread");
         }
     }
@@ -94,7 +95,7 @@ public final class Toolbox {
         if (!ServerSettings.DEBUG) return;
         int error;
         while ((error = alGetError()) != AL_NO_ERROR) {
-            Logger.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
+            Logger.DEBUG.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
             if (error == AL_INVALID_OPERATION)
                 break; // check for when method is called outside the AL context
         }
@@ -106,12 +107,12 @@ public final class Toolbox {
     public static void exitJava() {
         if (!ServerSettings.DEBUG) {
             final StackTraceElement caller = new Exception().getStackTrace()[1];
-            Logger.printError(": Tried to exit JVM while DEBUG mode is false.");
+            Logger.ERROR.print(": Tried to exit JVM while DEBUG mode is false.");
         }
 
         try {
             System.out.println();
-            Logger.printFrom(2, "Ending JVM");
+            Logger.DEBUG.printFrom(2, "Ending JVM");
             Thread.sleep(10);
             new Exception().printStackTrace();
             System.exit(1);

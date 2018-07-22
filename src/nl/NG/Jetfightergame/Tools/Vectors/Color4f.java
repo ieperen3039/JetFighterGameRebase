@@ -6,8 +6,6 @@ import org.joml.Vector4f;
 
 import java.nio.FloatBuffer;
 
-import static java.lang.Math.min;
-
 /**
  * @author Geert van Ieperen
  *         created on 21-11-2017.
@@ -38,11 +36,17 @@ public class Color4f {
         this(target.getRed(), target.getGreen(), target.getBlue(), target.getAlpha());
     }
 
+    /**
+     * @param red   the red intensity [0...1]
+     * @param green the green intensity [0...1]
+     * @param blue  the blue intensity [0...1]
+     * @param alpha the opacity of the color
+     */
     public Color4f(float red, float green, float blue, float alpha) {
-        this.red = min(red, 1f);
-        this.blue = min(blue, 1f);
-        this.green = min(green, 1f);
-        this.alpha = min(alpha, 1f);
+        this.red = cap(red);
+        this.green = cap(green);
+        this.blue = cap(blue);
+        this.alpha = cap(alpha);
     }
 
     /**
@@ -68,11 +72,11 @@ public class Color4f {
      * create a color using integer arguments [0 - 255]
      * with 0 = none and 255 = max
      */
-    public Color4f(int ired, int igreen, int iblue, int ialpha){
-        red = ired/255f;
-        green = igreen/255f;
-        blue = iblue/255f;
-        alpha = ialpha/255f;
+    public Color4f(int ired, int igreen, int iblue, int ialpha) {
+        red = cap(ired / 255f);
+        green = cap(igreen / 255f);
+        blue = cap(iblue / 255f);
+        alpha = cap(ialpha / 255f);
     }
 
     /**
@@ -145,7 +149,7 @@ public class Color4f {
 
     /** culls parameter to [0, 1] */
     private float cap(float input) {
-         return Math.min(Math.max(input, 0f), 1f);
+        return (input < 0) ? 0 : ((input > 1) ? 1 : input);
     }
 
     /**

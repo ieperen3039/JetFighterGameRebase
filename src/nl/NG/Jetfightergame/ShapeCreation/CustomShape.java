@@ -341,7 +341,7 @@ public class CustomShape {
 
         writer.close();
 
-        Logger.print("Successfully created obj file: " + filename);
+        Logger.DEBUG.print("Successfully created obj file: " + filename);
     }
 
     private static String readVertex(int vertex, int normal) {

@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Settings.ServerSettings;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,43 +10,13 @@ import java.util.function.Supplier;
 /**
  * @author Geert van Ieperen created on 2-6-2018.
  */
-public class Logger {
+public enum Logger {
+    DEBUG, INFO, WARNING, ERROR;
+
     private static Consumer<String> out = System.out::println;
     private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
     /** prevents spamming the chat */
     static Set<String> callerBlacklist = new HashSet<>();
-
-    /**
-     * prints the toString method of the given objects to System.out, preceded with calling method
-     */
-    public static void print(Object... o) {
-        printFrom(2, o);
-    }
-
-    /**
-     * the system error version of {@link #print(Object...)}, but always print caller
-     * @param o the objects to print
-     */
-    public static void printError(Object... o) {
-        int level = 1;
-        StackTraceElement caller;
-        StackTraceElement[] stackTrace = new Exception().getStackTrace();
-        do {
-            caller = stackTrace[level++];
-        } while (caller.isNativeMethod());
-
-        System.err.println(caller + ": " + concatenate(o));
-    }
-
-    /**
-     * prints the toString method of the given objects to the debug output, preceded with the method caller specified by
-     * the given call depth
-     * @param level 0 = this method, 1 = the calling method (yourself)
-     */
-    public static void printFrom(int level, Object... o) {
-        String source = getCallingMethod(level);
-        write(source, o);
-    }
 
     /** the actual writing function */
     private static synchronized void write(String source, Object[] o) {
@@ -69,26 +37,12 @@ public class Logger {
     }
 
     /**
-     * prints the toString method of the given objects to System.out, preceded with calling method. Every unique
-     * callside will only be allowed to print once. For recursive calls, every level will be regarded as a new level,
-     * thus print once for every unique depth
-     * @param identifier
-     * @param o
-     */
-    public static synchronized void printSpamless(String identifier, Object... o) {
-        if (!callerBlacklist.contains(identifier)) {
-            printFrom(2, o);
-            callerBlacklist.add(identifier);
-        }
-    }
-
-    /**
      * sets the debug output of the print methods to the specified file
      * @param newOutput
      */
     public static void setOutput(Consumer<String> newOutput) {
         if (newOutput == null) {
-            printError("New output is null");
+            Logger.ERROR.print("New output is null");
             return;
         }
 
@@ -101,7 +55,7 @@ public class Logger {
      */
     public static void printOnline(Supplier<String> source) {
         if (source == null) {
-            printError("source is null");
+            Logger.ERROR.print("source is null");
         }
         onlinePrints.add(source);
     }
@@ -125,8 +79,6 @@ public class Logger {
      *         If DEBUG == false, return an empty string
      */
     public static String getCallingMethod(int level) {
-        if (!ServerSettings.DEBUG) return "";
-
         StackTraceElement caller;
         Exception exception = new Exception();
         do {
@@ -142,5 +94,47 @@ public class Logger {
      */
     public static void removeOnlineUpdate(Supplier<String> source) {
         onlinePrints.remove(source);
+    }
+
+    /**
+     * prints the toString method of the given objects to System.out, preceded with calling method. Every unique
+     * callside will only be allowed to print once. For recursive calls, every level will be regarded as a new level,
+     * thus print once for every unique depth
+     * @param identifier the string that identifies this call as unique
+     * @param s          the strings to print
+     */
+    public synchronized void printSpamless(String identifier, Object... s) {
+        if (!callerBlacklist.contains(identifier)) {
+            printFrom(2, s);
+            callerBlacklist.add(identifier);
+        }
+    }
+
+    /**
+     * prints the toString method of the given objects to the debug output, preceded with the method caller specified by
+     * the given call depth
+     * @param depth 0 = this method, 1 = the calling method (yourself)
+     */
+    public void printFrom(int depth, Object... s) {
+        String source = "";
+        switch (this) {
+            case DEBUG:
+                source = getCallingMethod(depth);
+            case INFO:
+                write(source, s);
+                break;
+            case ERROR:
+                source = getCallingMethod(depth);
+            case WARNING:
+                System.err.println(source + ": " + concatenate(s));
+                break;
+        }
+    }
+
+    /**
+     * prints the toString method of the given objects to System.out, preceded with calling method
+     */
+    public void print(Object... s) {
+        printFrom(2, s);
     }
 }

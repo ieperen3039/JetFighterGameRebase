@@ -72,7 +72,7 @@ public class JetFighterGame extends GLFWGameEngine {
             InputStream receiveChannel;
 
             if (ClientSettings.LOCAL_SERVER) {
-                Logger.print("Creating new local server");
+                Logger.DEBUG.print("Creating new local server");
 
                 if (USE_SOCKET_FOR_OFFLINE) {
                     Socket client = new Socket();
@@ -96,7 +96,7 @@ public class JetFighterGame extends GLFWGameEngine {
                 }
 
             } else {
-                Logger.print("Searching local server");
+                Logger.DEBUG.print("Searching local server");
                 Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
                 sendChannel = socket.getOutputStream();
@@ -110,7 +110,7 @@ public class JetFighterGame extends GLFWGameEngine {
             ClientControl player = connection;
             Environment gameState = connection.getWorld();
             AbstractJet playerJet = player.jet();
-            Logger.print("Received " + playerJet + " from the server");
+            Logger.DEBUG.print("Received " + playerJet + " from the server");
 
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
             hud = hud.andThen(new PowerupDisplay(player));
@@ -133,7 +133,7 @@ public class JetFighterGame extends GLFWGameEngine {
 
         // reclaim all space used for initialisation
         System.gc();
-        Logger.print("Initialisation complete\n");
+        Logger.DEBUG.print("Initialisation complete\n");
     }
 
     @Override

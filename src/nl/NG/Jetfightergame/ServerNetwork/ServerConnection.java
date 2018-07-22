@@ -76,11 +76,11 @@ public class ServerConnection implements BlockingListener, Player {
             isClosed = true;
             clientIn.close();
             clientOut.close();
-            Logger.print("Connection to " + clientName + " has been closed");
+            Logger.DEBUG.print("Connection to " + clientName + " has been closed");
             return false;
 
         } else if (type.isOf(MessageType.adminOnly) && !hasAdminCapabilities) {
-            Logger.printError(this + " sent a " + type + " command, while it has no access to it");
+            Logger.ERROR.print(this + " sent a " + type + " command, while it has no access to it");
             return true;
         }
 
@@ -110,7 +110,7 @@ public class ServerConnection implements BlockingListener, Player {
 
             default:
                 long bits = clientIn.skip(type.nOfArgs());
-                Logger.printError("Message caused an error: " + type, "skipping " + bits + " bits");
+                Logger.ERROR.print("Message caused an error: " + type, "skipping " + bits + " bits");
         }
 
         return true;

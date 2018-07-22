@@ -67,7 +67,7 @@ public class ParticleShader {
 
         glValidateProgram(programId);
         if (glGetProgrami(programId, GL_VALIDATE_STATUS) == 0) {
-            Logger.printError("Warning validating Shader code: " + glGetProgramInfoLog(programId, 1024));
+            Logger.ERROR.print("Warning validating Shader code: " + glGetProgramInfoLog(programId, 1024));
         }
     }
 

@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class IslandMap extends GameState {
     protected Collection<Prentity> getInitialEntities() {
         PosVector position = new PosVector();
 
-        { // obnoxious supertriguous calculation
+        { // obnoxious calculation
             DirVector direction = new DirVector(1, 1, 0.2f);
             for (int i = 1; i < 15; i++) {
                 position.add(direction.reducedTo(72, new DirVector()));
@@ -56,8 +57,8 @@ public class IslandMap extends GameState {
         }
 
         return Arrays.asList(
-                new Prentity("Powerup_" + PowerupColor.TIME, position, null, null),
-                new Prentity("Powerup_" + PowerupColor.ENERGY, new PosVector(30, 0, 10), null, null)
+                new Prentity("Powerup_" + PowerupColor.TIME, position, new Quaternionf(), new DirVector()),
+                new Prentity("Powerup_" + PowerupColor.ENERGY, new PosVector(50, 50, 5f), new Quaternionf(), new DirVector())
         );
     }
 
