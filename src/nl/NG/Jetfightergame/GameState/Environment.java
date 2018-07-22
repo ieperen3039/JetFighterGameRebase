@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -151,7 +152,7 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         }
 
         @Override
-        public PosVector getMiddleOfPath(PosVector position) {
+        public PosVector getMiddleOfPath(Collision collision) {
             return PosVector.zeroVector();
         }
 

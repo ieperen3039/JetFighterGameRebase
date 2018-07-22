@@ -40,7 +40,7 @@ public abstract class AbstractJet extends MovingEntity {
     protected final MachineGun gunAlpha;
     protected final SpecialWeapon gunBeta;
 
-    protected Controller input;
+    protected Controller controller;
     protected Material surfaceMaterial;
     private DirVector forward;
     private float baseThrust;
@@ -104,7 +104,7 @@ public abstract class AbstractJet extends MovingEntity {
         this.gunAlpha = gunAlpha;
         this.gunBeta = gunBeta;
         this.surfaceMaterial = material;
-        this.input = Controller.EMPTY;
+        this.controller = Controller.EMPTY;
 
         float time = gameTimer.time();
         forward = DirVector.xVector();
@@ -119,6 +119,7 @@ public abstract class AbstractJet extends MovingEntity {
 
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
+        controller.update();
         slowTimeLeft -= deltaTime;
         if (slowTimeLeft <= 0) {
             slowTimeLeft = 0;
@@ -137,8 +138,8 @@ public abstract class AbstractJet extends MovingEntity {
 
         State interpolator = new State(gunMount, gunMount2, rotation, extraRotation, velocity, forward);
 
-        updateGun(deltaTime, interpolator, gunAlpha, input.primaryFire());
-        updateGun(deltaTime, interpolator, gunBeta, input.secondaryFire());
+        updateGun(deltaTime, interpolator, gunAlpha, controller.primaryFire());
+        updateGun(deltaTime, interpolator, gunBeta, controller.secondaryFire());
     }
 
     /**
@@ -160,7 +161,7 @@ public abstract class AbstractJet extends MovingEntity {
         DirVector temp = new DirVector();
 
         // thrust forces
-        float throttle = input.throttle();
+        float throttle = controller.throttle();
         float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
         thrust = thrust > throttlePower ? throttlePower : thrust;
         netForce.add(forward.reducedTo(thrust, temp), netForce);
@@ -183,9 +184,9 @@ public abstract class AbstractJet extends MovingEntity {
         float instYawAcc = yawAcc * deltaTime;
         float instPitchAcc = pitchAcc * deltaTime;
         float instRollAcc = rollAcc * deltaTime;
-        yawSpeed += input.yaw() * instYawAcc;
-        pitchSpeed += input.pitch() * instPitchAcc;
-        rollSpeed += input.roll() * instRollAcc;
+        yawSpeed += controller.yaw() * instYawAcc;
+        pitchSpeed += controller.pitch() * instPitchAcc;
+        rollSpeed += controller.roll() * instRollAcc;
 
         // air-resistance
         DirVector airResistance = new DirVector();
@@ -263,7 +264,7 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     public void setController(Controller input) {
-        this.input = input;
+        this.controller = input;
     }
 
     /**

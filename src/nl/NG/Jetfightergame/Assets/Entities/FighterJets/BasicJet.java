@@ -30,8 +30,9 @@ public class BasicJet extends AbstractJet {
     public static final float YAW_POWER = 2f;
     public static final float PITCH_POWER = 3f;
     public static final float ROLL_POWER = 3f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
-    private static final MachineGun GUN = new MachineGun(0.1f);
+    //    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0;
+    private static final MachineGun GUN = new MachineGun(1);
 
     private final Shape shape;
     private final PosVector shapeMiddle;

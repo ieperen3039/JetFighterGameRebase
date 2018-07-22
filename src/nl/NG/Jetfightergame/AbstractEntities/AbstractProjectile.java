@@ -30,7 +30,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     protected float timeToLive;
     private float turnAcc;
-    private Controller input;
+    private Controller controller;
     private float thrustPower;
 
     public AbstractProjectile(
@@ -44,22 +44,23 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         this.surfaceMaterial = surfaceMaterial;
         this.turnAcc = turnAcc;
         this.thrustPower = thrustPower;
-        this.input = new JustForward();
+        this.controller = new JustForward();
 
         forward = new DirVector();
         relativeStateDirection(DirVector.xVector()).normalize(forward);
     }
 
-    public void setInput(Controller input) {
-        this.input = input;
+    public void setController(Controller con) {
+        this.controller = con;
     }
 
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
         DirVector temp = new DirVector();
+        controller.update();
 
         // thrust forces
-        float throttle = input.throttle();
+        float throttle = controller.throttle();
         float thrust = (throttle > 0) ? throttle * thrustPower : 0;
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
@@ -67,9 +68,9 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         float instYawAcc = turnAcc * deltaTime;
         float instPitchAcc = turnAcc * deltaTime;
         float instRollAcc = turnAcc * deltaTime;
-        yawSpeed += input.yaw() * instYawAcc;
-        pitchSpeed += input.pitch() * instPitchAcc;
-        rollSpeed += input.roll() * instRollAcc;
+        yawSpeed += controller.yaw() * instYawAcc;
+        pitchSpeed += controller.pitch() * instPitchAcc;
+        rollSpeed += controller.roll() * instRollAcc;
 
         // air-resistance
         DirVector airResistance = new DirVector();

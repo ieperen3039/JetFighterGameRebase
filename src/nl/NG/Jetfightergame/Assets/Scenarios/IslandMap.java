@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,6 +21,7 @@ import java.util.List;
  */
 public class IslandMap extends GameState {
     private static final int FOG_DIST = 500;
+    private PosVector nextSpawnPosition = PosVector.zeroVector();
 
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
@@ -46,6 +46,8 @@ public class IslandMap extends GameState {
 
     @Override
     protected Collection<Prentity> getInitialEntities() {
+        List<Prentity> entities = new ArrayList<>();
+
         PosVector position = new PosVector();
 
         { // obnoxious calculation
@@ -56,17 +58,24 @@ public class IslandMap extends GameState {
             }
         }
 
-        return Arrays.asList(
-                new Prentity("Powerup_" + PowerupColor.TIME, position, new Quaternionf(), new DirVector()),
-                new Prentity("Powerup_" + PowerupColor.ENERGY, new PosVector(50, 50, 5f), new Quaternionf(), new DirVector())
-        );
+        entities.add(new Prentity(
+                "Powerup_" + PowerupColor.TIME, position, new Quaternionf(), new DirVector()
+        ));
+        entities.add(new Prentity(
+                "Powerup_" + PowerupColor.ENERGY, new PosVector(50, 50, 5f), new Quaternionf(), new DirVector()
+        ));
+        return entities;
+
     }
 
     @Override
     public MovingEntity.State getNewSpawnPosition() {
         DirVector direction = new DirVector(1, 1, 0);
         direction.normalize();
-        return new MovingEntity.State(PosVector.zeroVector(), direction, DirVector.zeroVector());
+        PosVector pos = new PosVector(nextSpawnPosition);
+
+        nextSpawnPosition.add(new PosVector(20, 0, 0));
+        return new MovingEntity.State(pos, direction, DirVector.zeroVector());
     }
 
     @Override

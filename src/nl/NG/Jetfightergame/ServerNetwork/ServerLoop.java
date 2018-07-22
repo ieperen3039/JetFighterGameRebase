@@ -1,6 +1,10 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.*;
+import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
+import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.EnvironmentManager;
@@ -14,6 +18,7 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -113,7 +118,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         Collection<MovingEntity> entities = gameWorld.getEntities();
 
         for (MovingEntity ety : entities) {
-//            if (ety instanceof PowerupEntity) continue;
+            if (ety instanceof PowerupEntity) continue;
 
             if (TemporalEntity.isOverdue(ety)) {
                 connections.forEach(conn -> conn.sendEntityRemove(ety));
@@ -178,6 +183,17 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         connections.forEach(conn -> gameWorld.addEntity(conn.jet()));
 
         worldShouldSwitch = false;
+
+        new Thread(() -> {
+            MovingEntity target = connections.get(0).jet();
+            Prentity blueprint = new Prentity(BasicJet.TYPE, new PosVector(100, 0, 30), new Quaternionf(), DirVector.zeroVector());
+
+            AbstractJet npc = (AbstractJet) blueprint.construct(this);
+            Controller controller = new RocketAI(npc, target, MachineGun.BULLET_SPEED);
+            npc.setController(controller);
+            gameWorld.addEntity(npc);
+            connections.forEach(conn -> conn.sendEntitySpawn(blueprint, npc.idNumber()));
+        }).start();
     }
 
     public void playerCheckpointUpdate(Player p, int checkpointProgress, int roundProgress) {

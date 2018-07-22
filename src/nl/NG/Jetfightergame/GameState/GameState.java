@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -191,8 +192,10 @@ public abstract class GameState implements Environment {
         }
     }
 
-    public PosVector getMiddleOfPath(PosVector position) {
-        return PosVector.zeroVector();
+    public PosVector getMiddleOfPath(Collision collision) {
+        PosVector pos = collision.source().getPosition();
+        pos.add(collision.normal());
+        return pos;
     }
 
 

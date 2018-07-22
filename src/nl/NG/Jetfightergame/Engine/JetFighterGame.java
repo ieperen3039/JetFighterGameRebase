@@ -72,7 +72,7 @@ public class JetFighterGame extends GLFWGameEngine {
             InputStream receiveChannel;
 
             if (ClientSettings.LOCAL_SERVER) {
-                Logger.DEBUG.print("Creating new local server");
+                Logger.INFO.print("Creating new local server");
 
                 if (USE_SOCKET_FOR_OFFLINE) {
                     Socket client = new Socket();
@@ -96,7 +96,7 @@ public class JetFighterGame extends GLFWGameEngine {
                 }
 
             } else {
-                Logger.DEBUG.print("Searching local server");
+                Logger.INFO.print("Searching local server");
                 Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
                 sendChannel = socket.getOutputStream();
@@ -133,7 +133,7 @@ public class JetFighterGame extends GLFWGameEngine {
 
         // reclaim all space used for initialisation
         System.gc();
-        Logger.DEBUG.print("Initialisation complete\n");
+        Logger.INFO.print("Initialisation complete\n");
     }
 
     @Override
@@ -200,7 +200,7 @@ public class JetFighterGame extends GLFWGameEngine {
                 final BufferedImage splashImage = ImageIO.read(Directory.pictures.getFile(image));
                 setImage(this, splashImage);
             } catch (Exception e) {
-                System.err.println("Could not load splash image " + Directory.pictures.getFile(image));
+                Logger.ERROR.print("Could not load splash image " + Directory.pictures.getFile(image));
                 e.printStackTrace();
                 setSize(new Dimension(500, 300));
             }

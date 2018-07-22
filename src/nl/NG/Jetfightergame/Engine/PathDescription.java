@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
@@ -9,9 +10,9 @@ public interface PathDescription {
 
     /**
      * calculates a position that is on 1 accuracy the closest to the nearest middle of the path.
-     * @param position the position of some entity
+     * @param collision the position of some entity
      * @return the nearest middle of the path.
      */
-    PosVector getMiddleOfPath(PosVector position);
+    PosVector getMiddleOfPath(Collision collision);
 
 }

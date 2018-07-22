@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
@@ -145,8 +146,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     }
 
     @Override
-    public PosVector getMiddleOfPath(PosVector position) {
-        return instance.getMiddleOfPath(position);
+    public PosVector getMiddleOfPath(Collision collision) {
+        return instance.getMiddleOfPath(collision);
     }
 }
 

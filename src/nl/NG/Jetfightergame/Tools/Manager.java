@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Tools;
 
+import java.util.Arrays;
+
 /**
  * A manager represents some implementation of some interface.
  * Objects implementing Manager should also implement the common interface of the implementations that it represent,
@@ -38,13 +40,6 @@ public interface Manager<E extends Enum> {
      * @return a list of the names representing the accepted implementations
      */
     default String[] names(){
-        Enum[] values = implementations();
-        String[] result = new String[values.length];
-
-        for (int i = 0; i < values.length; i++) {
-            result[i] = values[i].toString();
-        }
-
-        return result;
+        return Arrays.stream(implementations()).map(Object::toString).toArray(String[]::new);
     }
 }

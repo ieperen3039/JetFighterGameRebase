@@ -57,7 +57,7 @@ public class Seeker extends AbstractProjectile {
     }
 
     public void setTarget(MovingEntity target) {
-        setInput(new RocketAI(2, this, target, THRUST_POWER / AIR_RESIST));
+        setController(new RocketAI(this, target, THRUST_POWER / AIR_RESIST));
     }
 
     @Override

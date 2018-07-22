@@ -67,7 +67,7 @@ public class SimpleRocket extends AbstractProjectile {
     }
 
     public void setTarget(MovingEntity target) {
-        setInput(new RocketAI(2, this, target, THRUST / AIR_RESIST_COEFF));
+        setController(new RocketAI(this, target, THRUST / AIR_RESIST_COEFF));
     }
 
 

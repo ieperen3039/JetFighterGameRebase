@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -33,8 +32,6 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     private boolean isCollected = false;
     private float collectionTime = 0;
     private Shape shape;
-
-    private int debugValue = 0;
 
     /**
      * allows for using values "Powerup_TYPE" where TYPE must be replaced with any of the {@link PowerupColor} enum
@@ -61,7 +58,6 @@ public class PowerupEntity extends MovingEntity implements Spectral {
         this.type = type;
         this.position = position;
         shape = GeneralShapes.CUBE;
-        Logger.printOnline(() -> String.valueOf(debugValue));
     }
 
     @Override
@@ -94,7 +90,6 @@ public class PowerupEntity extends MovingEntity implements Spectral {
 
     @Override
     public void update(float currentTime) {
-        debugValue++;
         if (isCollected && (currentTime > (collectionTime + RESPAWN_TIME))) {
             isCollected = false;
         }

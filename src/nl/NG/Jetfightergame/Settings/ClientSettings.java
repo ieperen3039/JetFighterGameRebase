@@ -11,7 +11,7 @@ public final class ClientSettings {
 
     /** engine settings */
     // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
-    public static final float RENDER_DELAY = 2f/ ServerSettings.TARGET_TPS;
+    public static final float RENDER_DELAY = 1f / ServerSettings.TARGET_TPS;
     public static final int COLLISION_DETECTION_LEVEL = 0;
     public static final boolean LOCAL_SERVER = true;
 

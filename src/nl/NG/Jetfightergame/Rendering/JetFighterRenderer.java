@@ -89,7 +89,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         Float currentRenderTime = timer.getRenderTime().current();
         Float deltaRenderTime = timer.getRenderTime().difference();
 
-        controller.update();
         activeCamera.updatePosition(deltaRenderTime);
         frameNumber++;
 

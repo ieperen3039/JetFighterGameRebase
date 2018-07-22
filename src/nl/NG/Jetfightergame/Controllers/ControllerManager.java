@@ -52,18 +52,23 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
             case MouseAbsolute:
                 instance = new PassivePCControllerAbsolute();
                 break;
+
             case MouseRelative:
                 instance = new PassivePCControllerRelative();
                 break;
+
             case XBoxController:
                 instance = new XBoxController();
                 break;
+
             case MouseAbsoluteActive:
                 instance = new ActivePCControllerAbsolute(controlReceiver);
                 break;
+
             case EmptyController:
                 instance = new EmptyController();
                 break;
+
             default:
                 throw new UnsupportedOperationException("unknown enum: " + type);
         }

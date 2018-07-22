@@ -15,6 +15,8 @@ import org.joml.Quaternionf;
  * @deprecated should function through powerup
  */
 public class MachineGun extends AbstractWeapon {
+    public static final int BULLET_SPEED = 50;
+
     public MachineGun(float timeBetweenShots) {
         super(timeBetweenShots);
     }
@@ -22,7 +24,7 @@ public class MachineGun extends AbstractWeapon {
     @Override
     protected Prentity newProjectile(MovingEntity.State source, SpawnReceiver entityDeposit, float timeFraction) {
         DirVector vel = source.velocity();
-        vel.add(source.forward().mul(200));
+        vel.add(source.forward().mul(BULLET_SPEED));
         final PosVector pos = source.position(timeFraction);
         final Quaternionf rot = source.rotation(timeFraction);
         return new Prentity(SimpleBullet.TYPE, pos, rot, vel);

@@ -131,10 +131,11 @@ public abstract class MovingEntity implements Touchable {
     }
 
     /** @see #entityCollision(MovingEntity, MovingEntity, float) */
-    private void collideWith(MovingEntity right, float deltaTime, DirVector rightToLeft) {
-        float dotProduct1 = extraVelocity.sub(right.extraVelocity, new DirVector()).dot(rightToLeft);
-        float scalarLeft1 = (2 * right.mass / (mass + right.mass)) * (dotProduct1 / rightToLeft.lengthSquared());
-        extraVelocity.sub(rightToLeft.mul(scalarLeft1));
+    private void collideWith(MovingEntity other, float deltaTime, DirVector otherToThis) {
+        float dotProduct = other.extraVelocity.to(extraVelocity, new DirVector()).dot(otherToThis);
+        dotProduct = Math.abs(dotProduct);
+        float scalarLeft = (2 * other.mass / (mass + other.mass)) * (dotProduct / otherToThis.lengthSquared());
+        extraVelocity.sub(otherToThis.mul(scalarLeft));
         recalculateMovement(deltaTime);
     }
 
