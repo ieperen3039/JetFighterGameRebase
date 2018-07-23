@@ -1,11 +1,7 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleBullet;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleRocket;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -22,7 +18,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static java.lang.StrictMath.sqrt;
@@ -31,9 +28,6 @@ import static java.lang.StrictMath.sqrt;
  * @author Geert van Ieperen created on 29-10-2017.
  */
 public abstract class MovingEntity implements Touchable {
-    private static Map<String, Constructable> entityClasses = new HashMap<>();
-    private String type;
-
     private final float spawnTime;
     /** particles and new entities should be passed to this object */
     protected transient SpawnReceiver entityDeposit;
@@ -69,15 +63,6 @@ public abstract class MovingEntity implements Touchable {
     /** worldspace / localspace */
     protected final float scale;
     protected final float mass;
-
-    public static void init() {
-        BasicJet.init();
-        FallingCube.init();
-        SimpleBullet.init();
-        SimpleRocket.init();
-        PowerupEntity.init();
-        Seeker.init();
-    }
 
     /**
      * any object that may be moved and may hit other objects, is a game object. All vectors are newly instantiated.
@@ -132,8 +117,8 @@ public abstract class MovingEntity implements Touchable {
 
     /** @see #entityCollision(MovingEntity, MovingEntity, float) */
     private void collideWith(MovingEntity other, float deltaTime, DirVector otherToThis) {
-        float dotProduct = other.extraVelocity.to(extraVelocity, new DirVector()).dot(otherToThis);
-        dotProduct = Math.abs(dotProduct);
+        float dotProduct = extraVelocity.sub(other.extraVelocity, new DirVector()).dot(otherToThis);
+//        dotProduct = Math.abs(dotProduct);
         float scalarLeft = (2 * other.mass / (mass + other.mass)) * (dotProduct / otherToThis.lengthSquared());
         extraVelocity.sub(otherToThis.mul(scalarLeft));
         recalculateMovement(deltaTime);
@@ -529,8 +514,21 @@ public abstract class MovingEntity implements Touchable {
         resetCache(currentTime);
     }
 
-    public String getTypeName() {
-        return type;
+    public abstract EntityFactory getFactory();
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof MovingEntity) {
+            MovingEntity mov = (MovingEntity) obj;
+            return mov.idNumber() == this.idNumber();
+        }
+
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return idNumber() >> 3; // for spreading in hashtables
     }
 
     public static class State {
@@ -570,11 +568,13 @@ public abstract class MovingEntity implements Touchable {
         }
 
         public PosVector position(float timeFraction) {
-            return firstPos.interpolateTo(secondPos, timeFraction);
+            if (timeFraction == 0) return new PosVector(firstPos);
+            else return firstPos.interpolateTo(secondPos, timeFraction);
         }
 
         public Quaternionf rotation(float timeFraction) {
-            return firstRot.nlerp(secondRot, timeFraction);
+            if (timeFraction == 0) return new Quaternionf(firstRot);
+            else return firstRot.nlerp(secondRot, timeFraction);
         }
 
         public DirVector velocity() {
@@ -584,40 +584,5 @@ public abstract class MovingEntity implements Touchable {
         public DirVector forward() {
             return forward;
         }
-    }
-
-    // factory methods (to sync construction of objects along server/client)
-
-    protected static void addConstructor(String type, Constructable constructor) {
-        if (entityClasses.containsKey(type))
-            throw new IllegalArgumentException("Tried loading '" + type + "' a second time");
-        entityClasses.put(type, constructor);
-    }
-
-    public static MovingEntity get(String type, int id, PosVector position, Quaternionf rotation, DirVector velocity, SpawnReceiver game) {
-        Constructable constructor = entityClasses.get(type);
-        if (constructor == null)
-            throw new NoSuchElementException("No entity of type '" + type + "' has been registered");
-
-        MovingEntity instance = constructor.apply(id, position, rotation, velocity, game);
-        instance.type = type;
-        return instance;
-    }
-
-    public static Collection<String> getLoadedTypes() {
-        return new ArrayList<>(entityClasses.keySet());
-    }
-
-    public interface Constructable {
-        /**
-         * calls the constructor of the represented class
-         * @param id       the identity of the newly created entity
-         * @param position the position where the object will be located
-         * @param rotation the rotation of the object upon spawning
-         * @param velocity the initial velocity of the spawned object
-         * @param game     the object to deposit newly created entities or particles
-         * @return an implementation of the class represented by this enum
-         */
-        MovingEntity apply(int id, PosVector position, Quaternionf rotation, DirVector velocity, SpawnReceiver game);
     }
 }

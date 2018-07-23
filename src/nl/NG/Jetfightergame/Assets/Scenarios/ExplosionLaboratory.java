@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleRocket;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -15,7 +15,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
-import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,17 +37,19 @@ public class ExplosionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Prentity> getInitialEntities() {
-        Collection<Prentity> dynamicEntities = new ArrayList<>(20);
+    protected Collection<EntityFactory> getInitialEntities() {
+        Collection<EntityFactory> dynamicEntities = new ArrayList<>(20);
 
         for (int i = 0; i < 20; i++) {
             final PosVector pos = Vector.random().toPosVector();
             pos.mul((3 * i) + 20);
             final DirVector vel = new DirVector();
             pos.negate(vel).add(DirVector.random(), vel);
-            dynamicEntities.add(
-                    new Prentity(SimpleRocket.TYPE, pos, new Quaternionf(), vel.reducedTo(10, vel))
-            );
+
+            SimpleRocket.Factory rocket = new SimpleRocket.Factory();
+            rocket.set(new MovingEntity.State(pos, new DirVector(), vel.reducedTo(10, vel)), 0);
+
+            dynamicEntities.add(rocket);
         }
 
         return dynamicEntities;

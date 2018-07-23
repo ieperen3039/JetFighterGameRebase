@@ -1,9 +1,13 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.*;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
-import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -18,7 +22,6 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Quaternionf;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +46,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true);
+        this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true, 1);
         this.raceWorld = raceWorld;
         this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
         this.connections = new ArrayList<>();
@@ -62,16 +65,14 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         // establish communication handler
         ServerConnection player = new ServerConnection(
                 receive, send,
-                this, (spawn, id) -> connections.forEach(conn -> conn.sendEntitySpawn(spawn, id)),
-                gameWorld.getNewSpawnPosition(), gameWorld.getCurrentType(),
+                this, (spawn, id) -> connections.forEach(conn -> conn.sendEntitySpawn(spawn)),
+                gameWorld.getNewSpawnPosition(), gameWorld.getCurrentType(), gameWorld,
                 asAdmin
         );
 
         // send all entities until this point (excluding the player jet himself)
         for (MovingEntity entity : gameWorld.getEntities()) {
-            String type = entity.getTypeName();
-            Prentity prentity = new Prentity(type, entity.getPosition(), entity.getRotation(), entity.getVelocity());
-            player.sendEntitySpawn(prentity, entity.idNumber());
+            player.sendEntitySpawn(entity.getFactory());
         }
 
         AbstractJet entity = player.jet();
@@ -85,10 +86,10 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
-    public void addSpawn(Prentity prentity) {
-        MovingEntity entity = prentity.construct(this);
+    public void addSpawn(EntityFactory entityFactory) {
+        MovingEntity entity = entityFactory.construct(this, gameWorld);
         gameWorld.addEntity(entity);
-        connections.forEach(conn -> conn.sendEntitySpawn(prentity, entity.idNumber()));
+        connections.forEach(conn -> conn.sendEntitySpawn(entityFactory));
     }
 
     @Override
@@ -184,15 +185,15 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         worldShouldSwitch = false;
 
-        new Thread(() -> {
+        if (ServerSettings.FUN) new Thread(() -> {
             MovingEntity target = connections.get(0).jet();
-            Prentity blueprint = new Prentity(BasicJet.TYPE, new PosVector(100, 0, 30), new Quaternionf(), DirVector.zeroVector());
+            EntityFactory blueprint = new BasicJet.Factory(new PosVector(100, 0, 30), DirVector.xVector(), DirVector.zeroVector());
 
-            AbstractJet npc = (AbstractJet) blueprint.construct(this);
-            Controller controller = new RocketAI(npc, target, MachineGun.BULLET_SPEED);
+            AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
+            Controller controller = new RocketAI(npc, target, BasicJet.THROTTLE_POWER / BasicJet.AIR_RESISTANCE_COEFFICIENT, false);
             npc.setController(controller);
             gameWorld.addEntity(npc);
-            connections.forEach(conn -> conn.sendEntitySpawn(blueprint, npc.idNumber()));
+            connections.forEach(conn -> conn.sendEntitySpawn(blueprint));
         }).start();
     }
 

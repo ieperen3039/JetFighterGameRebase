@@ -1,7 +1,12 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.*;
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -24,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
 
 /**
  * @author Geert van Ieperen created on 6-5-2018.
@@ -46,19 +52,18 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
-        this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.name = name;
         this.input = new SubControl(EmptyController);
         this.gameProgress = new RaceProgress();
         gameProgress.addPlayer(this);
-        this.game = new EnvironmentManager(null, this, gameProgress, false);
+        this.game = new EnvironmentManager(null, this, gameProgress, false, COLLISION_DETECTION_LEVEL);
         game.build();
 
+        this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.time = protocol.syncTimerTarget();
         EnvironmentClass type = protocol.worldSwitchRead();
         game.switchTo(type);
-
-        this.jet = protocol.playerSpawnRequest(name, BasicJet.TYPE, input, this);
+        this.jet = protocol.playerSpawnRequest(name, EntityClass.BASIC_JET, input, this, game);
         game.addEntity(jet);
     }
 
@@ -68,7 +73,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         switch (type) {
             case ENTITY_SPAWN:
-                MovingEntity newEntity = protocol.newEntityRead(this);
+                MovingEntity newEntity = protocol.newEntityRead(this, game);
                 game.addEntity(newEntity);
                 break;
 
@@ -84,6 +89,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                     ParticleCloud explosion = ((TemporalEntity) entity).explode();
                     game.addParticles(explosion);
                 }
+
                 break;
 
             case PLAYER_SPAWN:
@@ -147,9 +153,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addSpawn(Prentity prentity) {
-        Logger.ERROR.print("Client added an entity to its own world entity (" + prentity + ")");
-        game.addEntity(prentity.construct(this));
+    public void addSpawn(EntityFactory entityFactory) {
+        Logger.ERROR.print("Client added an entity to its own world entity (" + entityFactory + ")");
+        game.addEntity(entityFactory.construct(this, game));
     }
 
     /**
@@ -233,7 +239,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density) {
-        game.addParticles(Particles.explosion(position, direction, color1, color2, power, density));
+        game.addParticles(Particles.explosion(position, direction, color1, color2, power, density, Particles.FIRE_LINGER_TIME));
     }
 
     @Override

@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -28,8 +28,6 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
  * created on 28-1-2018.
  */
 public class SimpleRocket extends AbstractProjectile {
-    public static final String TYPE = "Simple rocket";
-
     private static final float MASS = 5f;
     private static final float AIR_RESIST_COEFF = 0.01f;
     private static final float IMPACT_POWER = 5f;
@@ -37,21 +35,13 @@ public class SimpleRocket extends AbstractProjectile {
     private static final int DENSITY = 1000;
     private static final int THRUST = 100;
 
-    /**
-     * enables the use of 'Simple rocket'
-     */
-    public static void init() {
-        addConstructor(TYPE, (id, position, rotation, velocity, game) ->
-                new SimpleRocket(id, position, velocity, rotation, game.getTimer(), game));
-    }
-
     private SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-                         GameTimer gameTimer, SpawnReceiver entityDeposit
+                         GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
                 AIR_RESIST_COEFF, 10, 0, THRUST,
-                entityDeposit, gameTimer
+                0.2f, entityDeposit, gameTimer, src
         );
     }
 
@@ -66,24 +56,12 @@ public class SimpleRocket extends AbstractProjectile {
         ms.popMatrix();
     }
 
-    public void setTarget(MovingEntity target) {
-        setController(new RocketAI(this, target, THRUST / AIR_RESIST_COEFF));
-    }
-
-
-    @Override
-    public void collideWithOther(Touchable other, Collision collision) {
-//        if (other instanceof Projectile); // reward 'crimera war' achievement
-        other.impact(IMPACT_POWER);
-        this.timeToLive = 0;
-    }
-
     @Override
     public ParticleCloud explode() {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
         return Particles.explosion(
                 interpolatedPosition(), DirVector.zeroVector(),
-                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, DENSITY
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, DENSITY, Particles.FIRE_LINGER_TIME
         );
     }
 
@@ -101,8 +79,31 @@ public class SimpleRocket extends AbstractProjectile {
     }
 
     @Override
+    public EntityFactory getFactory() {
+        return new Factory(this);
+    }
+
+    @Override
     public float getRange() {
         return 0;
     }
 
+    @Override
+    protected void collideWithOther(Touchable other) {
+        other.impact(IMPACT_POWER);
+    }
+
+    public static class Factory extends RocketFactory {
+        public Factory() {
+        }
+
+        public Factory(SimpleRocket rocket) {
+            super(EntityClass.SIMPLE_ROCKET, rocket);
+        }
+
+        @Override
+        public MovingEntity construct(SpawnReceiver game, MovingEntity src, MovingEntity tgt) {
+            return new SimpleRocket(id, position, velocity, rotation, game.getTimer(), game, src);
+        }
+    }
 }

@@ -231,4 +231,8 @@ public final class Toolbox {
             throw new RuntimeException(ex);
         }
     }
+
+    public static float instantPreserveFraction(float rotationPreserveFactor, float deltaTime) {
+        return (float) (StrictMath.pow(rotationPreserveFactor, deltaTime));
+    }
 }

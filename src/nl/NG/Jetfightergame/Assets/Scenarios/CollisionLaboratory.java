@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
@@ -11,6 +11,7 @@ import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -56,13 +57,13 @@ public class CollisionLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Prentity> getInitialEntities() {
+    protected Collection<EntityFactory> getInitialEntities() {
         int gridSize = (int) Math.ceil(Math.cbrt(nrOfCubes));
         int interSpace = (2 * labSize) / (gridSize + 1);
 
         int remainingCubes = nrOfCubes;
 
-        Collection<Prentity> cubes = new ArrayList<>(nrOfCubes);
+        Collection<EntityFactory> cubes = new ArrayList<>(nrOfCubes);
 
         cubing:
         for (int x = 0; x < gridSize; x++) {
@@ -78,7 +79,7 @@ public class CollisionLaboratory extends GameState {
         return cubes;
     }
 
-    private Prentity makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
+    private EntityFactory makeCube(int labSize, float speeds, int interSpace, int x, int y, int z) {
         final PosVector pos = new PosVector(
                 -labSize + ((x + 1) * interSpace), -labSize + ((y + 1) * interSpace), -labSize + ((z + 1) * interSpace)
         );
@@ -86,7 +87,10 @@ public class CollisionLaboratory extends GameState {
         DirVector random = Vector.random();
         random.scale(speeds, random);
 
-        return new Prentity(FallingCube.SMALL, pos, new Quaternionf(), random);
+        return new FallingCube.Factory(
+                pos, new Quaternionf(), random,
+                Material.ROUGH, ServerSettings.CUBE_MASS_LARGE, ServerSettings.CUBE_SIZE_LARGE
+        );
     }
 
     @SuppressWarnings("ConstantConditions")

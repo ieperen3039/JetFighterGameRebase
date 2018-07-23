@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.PowerupColor;
-import nl.NG.Jetfightergame.AbstractEntities.PowerupEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -20,16 +20,16 @@ public interface SpawnReceiver {
 
     /**
      * adds an moving entity to the game's collision detection and rendering
-     * @param prentity the new entity
+     * @param entityFactory the new entity
      */
-    void addSpawn(Prentity prentity);
+    void addSpawn(EntityFactory entityFactory);
 
     /**
      * add multiple new entities
-     * @see #addSpawn(Prentity)
+     * @see #addSpawn(EntityFactory)
      */
-    default void addSpawns(Collection<Prentity> prentity) {
-        for (Prentity entity : prentity) {
+    default void addSpawns(Collection<EntityFactory> entityFactory) {
+        for (EntityFactory entity : entityFactory) {
             addSpawn(entity);
         }
     }

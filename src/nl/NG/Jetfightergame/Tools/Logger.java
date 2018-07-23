@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Tools;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
@@ -11,16 +12,18 @@ import java.util.function.Supplier;
  * @author Geert van Ieperen created on 2-6-2018.
  */
 public enum Logger {
-    DEBUG, INFO, WARNING, ERROR;
+    DEBUG, INFO, WARN, ERROR;
 
+    private static final String EMTPY = String.format("%100s ", "");
     private static Consumer<String> out = System.out::println;
     private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
     /** prevents spamming the chat */
     static Set<String> callerBlacklist = new HashSet<>();
+    private String codeName = String.format("[%-5s]", this);
 
     /** the actual writing function */
-    private static synchronized void write(String source, Object[] o) {
-        out.accept(source + ": " + concatenate(o));
+    private static synchronized void write(Consumer<String> out, String prefix, Object[] s) {
+        out.accept(prefix + ": " + concatenate(s));
     }
 
     private static String concatenate(Object[] x) {
@@ -85,7 +88,7 @@ public enum Logger {
             caller = exception.getStackTrace()[++level]; // level + 1
         } while (caller.isNativeMethod());
 
-        return caller.toString();
+        return String.format("%-100s ", caller);
     }
 
     /**
@@ -116,17 +119,19 @@ public enum Logger {
      * @param depth 0 = this method, 1 = the calling method (yourself)
      */
     public void printFrom(int depth, Object... s) {
-        String source = "";
+        String prefix = codeName;
         switch (this) {
             case DEBUG:
-                source = getCallingMethod(depth);
+                write(out, getCallingMethod(depth) + prefix, s);
+                break;
             case INFO:
-                write(source, s);
+                write(out, EMTPY + prefix, s);
                 break;
             case ERROR:
-                source = getCallingMethod(depth);
-            case WARNING:
-                System.err.println(source + ": " + concatenate(s));
+                write(System.err::println, getCallingMethod(depth) + prefix, s);
+                break;
+            case WARN:
+                write(System.err::println, EMTPY + prefix, s);
                 break;
         }
     }
@@ -136,5 +141,9 @@ public enum Logger {
      */
     public void print(Object... s) {
         printFrom(2, s);
+    }
+
+    public void printf(String format, Object... arguments) {
+        print(String.format(Locale.US, format, arguments));
     }
 }

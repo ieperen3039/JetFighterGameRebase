@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
-import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -11,11 +11,11 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
-import java.util.Collection;
 import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
@@ -37,11 +37,9 @@ public abstract class AbstractJet extends MovingEntity {
     protected final float zPreservation;
     protected final float rotationPreserveFactor;
 
-    protected final MachineGun gunAlpha;
-    protected final SpecialWeapon gunBeta;
-
     protected Controller controller;
     protected Material surfaceMaterial;
+    protected final EntityMapping entityMapping;
     private DirVector forward;
     private float baseThrust;
 
@@ -74,20 +72,19 @@ public abstract class AbstractJet extends MovingEntity {
      * @param pitchAcc                 acceleration over the Y-axis when pitching up at full power in rad/ss
      * @param rollAcc                  acceleration over the X-axis when rolling at full power in rad/ss
      * @param rotationReductionFactor  the fraction that the rotationspeed is reduced every second [0, 1]
-     * @param gameTimer              the timer that determines the "current rendering time" for {@link
+     * @param gameTimer                the timer that determines the "current rendering time" for {@link
      *                                 MovingEntity#interpolatedPosition()}
      * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
      * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
-     * @param gunAlpha                 the primary firing method
-     * @param gunBeta                  the secondary gun. If this gun can be switched, this should be a GunManager.
-     * @param entityDeposit            the class that allows new entities and particles to be added to the environment
+     * @param entityDeposit            the class that allows new entityMapping and particles to be added to the environment
+     * @param entityMapping                 a mapping that allows binding id's to entityMapping
      */
     public AbstractJet(
             int id, PosVector initialPosition, Quaternionf initialRotation, float scale,
             Material material, float mass, float liftFactor, float airResistanceCoefficient,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
-            MachineGun gunAlpha, SpecialWeapon gunBeta, SpawnReceiver entityDeposit
+            SpawnReceiver entityDeposit, EntityMapping entityMapping
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, gameTimer, entityDeposit);
 
@@ -101,9 +98,8 @@ public abstract class AbstractJet extends MovingEntity {
         this.rotationPreserveFactor = 1 - rotationReductionFactor;
         this.yPreservation = 1 - yReduction;
         this.zPreservation = 1 - zReduction;
-        this.gunAlpha = gunAlpha;
-        this.gunBeta = gunBeta;
         this.surfaceMaterial = material;
+        this.entityMapping = entityMapping;
         this.controller = Controller.EMPTY;
 
         float time = gameTimer.time();
@@ -127,28 +123,6 @@ public abstract class AbstractJet extends MovingEntity {
         }
 
         gyroPhysics(deltaTime, netForce, velocity);
-
-        // in case of no guns
-        if (gunAlpha == null) return;
-
-        DirVector relativeGun = relativeStateDirection(new DirVector(5, 0, -2f));
-
-        final PosVector gunMount = position.add(relativeGun, new PosVector());
-        final PosVector gunMount2 = extraPosition.add(relativeGun, new PosVector());
-
-        State interpolator = new State(gunMount, gunMount2, rotation, extraRotation, velocity, forward);
-
-        updateGun(deltaTime, interpolator, gunAlpha, controller.primaryFire());
-        updateGun(deltaTime, interpolator, gunBeta, controller.secondaryFire());
-    }
-
-    /**
-     * updates the firing of the gun
-     */
-    private void updateGun(float deltaTime, State interpolator, AbstractWeapon theGun, boolean isFiring) {
-        final Collection<Prentity> bullets;
-        bullets = theGun.update(deltaTime, isFiring, interpolator, entityDeposit);
-        entityDeposit.addSpawns(bullets);
     }
 
     /**
@@ -166,8 +140,8 @@ public abstract class AbstractJet extends MovingEntity {
         thrust = thrust > throttlePower ? throttlePower : thrust;
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
-        float yPres = instantPreserveFraction(yPreservation, deltaTime);
-        float zPres = instantPreserveFraction(zPreservation, deltaTime);
+        float yPres = Toolbox.instantPreserveFraction(yPreservation, deltaTime);
+        float zPres = Toolbox.instantPreserveFraction(zPreservation, deltaTime);
 
         // transform velocity to local, reduce drifting, then transform back to global space
         Quaternionf turnBack = rotation.invert(new Quaternionf());
@@ -175,7 +149,7 @@ public abstract class AbstractJet extends MovingEntity {
         extraVelocity.mul(1f, yPres, zPres);
         extraVelocity.rotate(rotation);
 
-        float rotationPreserveFraction = instantPreserveFraction(rotationPreserveFactor, deltaTime);
+        float rotationPreserveFraction = Toolbox.instantPreserveFraction(rotationPreserveFactor, deltaTime);
         yawSpeed *= rotationPreserveFraction;
         pitchSpeed *= rotationPreserveFraction;
         rollSpeed *= rotationPreserveFraction;
@@ -241,10 +215,6 @@ public abstract class AbstractJet extends MovingEntity {
      * @return current position of the pilot's eyes in world-space
      */
     public abstract PosVector getPilotEyePosition();
-
-    private static float instantPreserveFraction(float rotationPreserveFactor, float deltaTime) {
-        return (float) (StrictMath.pow(rotationPreserveFactor, deltaTime));
-    }
 
     /**
      * set the position of the jet

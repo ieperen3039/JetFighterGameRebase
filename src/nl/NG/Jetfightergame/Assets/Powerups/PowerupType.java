@@ -1,8 +1,8 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.Assets.Powerups;
 
 import java.util.EnumSet;
 
-import static nl.NG.Jetfightergame.AbstractEntities.PowerupColor.*;
+import static nl.NG.Jetfightergame.Assets.Powerups.PowerupColor.*;
 
 /**
  * @author Geert van Ieperen. Created on 11-7-2018.

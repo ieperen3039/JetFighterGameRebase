@@ -68,7 +68,7 @@ public class EntityList implements EntityManagement {
 
     @Override
     public void removeEntity(MovingEntity entity) {
-        boolean success = dynamicEntities.remove(entity);
-        assert success : "Could not remove entity " + entity;
+        dynamicEntities.remove(entity);
+        assert getDynamicEntities().stream().noneMatch(e -> e.idNumber() == entity.idNumber()) : "Could not remove entity " + entity;
     }
 }

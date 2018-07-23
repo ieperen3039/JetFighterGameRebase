@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
@@ -43,7 +42,7 @@ import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCentered
  *         a class that manages all game objects, and houses both the rendering- and the gameloop
  */
 public class JetFighterGame extends GLFWGameEngine {
-    private static final boolean USE_SOCKET_FOR_OFFLINE = !ServerSettings.DEBUG;
+    private static final boolean USE_SOCKET_FOR_OFFLINE = false;
     private final ActionButtonHandler actionHandler;
     private AbstractGameLoop renderLoop;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
@@ -54,7 +53,6 @@ public class JetFighterGame extends GLFWGameEngine {
     public JetFighterGame() throws Exception {
         super();
         GeneralShapes.init(true);
-        MovingEntity.init();
 
         MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
         MouseTracker.getInstance().listenTo(window);

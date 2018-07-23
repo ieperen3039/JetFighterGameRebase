@@ -1,9 +1,9 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.PathDescription;
@@ -13,8 +13,10 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author Geert van Ieperen. Created on 4-7-2018.
@@ -95,7 +97,7 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         }
 
         @Override
-        protected Collection<Prentity> getInitialEntities() {
+        protected Collection<EntityFactory> getInitialEntities() {
             return Collections.EMPTY_SET;
         }
 
@@ -109,6 +111,12 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
 
         @Override
         public void drawObjects(GL2 gl) {
+        }
+
+        @Nonnull
+        @Override
+        public Iterator<MovingEntity> iterator() {
+            return getEntities().iterator();
         }
 
         @Override

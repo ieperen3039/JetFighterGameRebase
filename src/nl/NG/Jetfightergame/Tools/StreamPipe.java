@@ -226,7 +226,7 @@ public class StreamPipe {
             bufferHead = (bufferHead + length) % bufferSize;
             unFlushed += length;
 
-//            Logger.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, offset + length)));
+//            Logger.DEBUG.print(Arrays.toString(Arrays.copyOfRange(bytes, offset, offset + length)));
         }
 
         private void writeInChunks(byte[] bytes, int offset, int targetLength, int chunkSize) throws IOException {

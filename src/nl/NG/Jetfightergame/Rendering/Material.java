@@ -74,6 +74,8 @@ public enum Material {
             0.5f
     );
 
+    private static final Material[] VALUES = values();
+
     /**
      * The material natural color.
      */
@@ -96,5 +98,15 @@ public enum Material {
         this.specular = specular;
         this.lineColor = lineColor;
         this.shininess = shininess;
+    }
+
+    /**
+     * @param id a number n corresponing to an enum ordinal
+     * @return the enum e such that {@code e.ordinal() == n}
+     * @throws IllegalArgumentException if the id does not correspond to a valid message
+     */
+    public static Material get(int id) {
+        if (id >= VALUES.length) throw new IllegalArgumentException("Invalid material identifier " + id);
+        else return VALUES[id];
     }
 }

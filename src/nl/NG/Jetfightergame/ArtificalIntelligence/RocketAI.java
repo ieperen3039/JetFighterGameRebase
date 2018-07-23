@@ -10,11 +10,13 @@ import org.joml.Vector3f;
  * @author Geert van Ieperen. Created on 21-7-2018.
  */
 public class RocketAI implements Controller {
-    private static final float DIRECTION_THROTTLE_MODIFIER = 0.6f;
+    private static final float DIRECTION_THROTTLE_MODIFIER = 0.5f;
     private static final float DIRECTION_ROLL_MODIFIER = 2.0f;
     private static final float DIRECTION_PITCH_MODIFIER = 1.5f;
     private static final float DIRECTION_YAW_MODIFIER = 0.5f;
-    private static final float BLOW_DIST_SQ = 10;
+    private static final float BLOW_DIST_SQ = 100;
+    public static final float THROTTLE_DOT_IGNORE = 0.3f;
+    public static final float SHOOT_ACCURACY = 0.01f;
 
     private final MovingEntity projectile;
 
@@ -26,17 +28,20 @@ public class RocketAI implements Controller {
     private DirVector xVec;
     private DirVector yVec;
     private DirVector zVec;
+    private boolean doAim;
 
     /**
      * a controller that tries to send the projectile in the anticipated direction of target, assuming the given speed
      * @param projectile      the projectile that is controlled by this controller
      * @param target          the target entity that this projectile tries to hit
      * @param projectileSpeed the assumed (and preferably over-estimated) maximum speed of the given projectile
+     * @param doAim
      */
-    public RocketAI(MovingEntity projectile, MovingEntity target, float projectileSpeed) {
+    public RocketAI(MovingEntity projectile, MovingEntity target, float projectileSpeed, boolean doAim) {
         this.projectile = projectile;
         this.target = target;
         this.pSpeedSq = projectileSpeed * projectileSpeed;
+        this.doAim = doAim;
         update();
     }
 
@@ -81,6 +86,7 @@ public class RocketAI implements Controller {
     @Override
     public float throttle() {
         float dot = xVec.dot(vecToTarget);
+        dot -= THROTTLE_DOT_IGNORE;
         return Math.min(1, Math.max(0, dot * DIRECTION_THROTTLE_MODIFIER));
     }
 
@@ -105,7 +111,11 @@ public class RocketAI implements Controller {
 
     @Override
     public boolean primaryFire() {
-        return vecToTarget.lengthSquared() < BLOW_DIST_SQ;
+        if (doAim) {
+            return xVec.dot(vecToTarget) > (1 - SHOOT_ACCURACY);
+        } else {
+            return projectile.getPosition().sub(targetPos).lengthSquared() < BLOW_DIST_SQ;
+        }
     }
 
     @Override

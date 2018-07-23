@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -39,8 +40,8 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    protected Collection<Prentity> getInitialEntities() {
-        Collection<Prentity> dynamicEntities = new ArrayList<>();
+    protected Collection<EntityFactory> getInitialEntities() {
+        Collection<EntityFactory> dynamicEntities = new ArrayList<>();
 
         int[] vals = new int[]{-1, 1};
         // for x = -1 and x = 1
@@ -49,9 +50,10 @@ public class PlayerJetLaboratory extends GameState {
             for (int y : vals) {
                 // etc.
                 for (int z : vals) {
-                    dynamicEntities.add(new Prentity(FallingCube.LARGE,
+                    dynamicEntities.add(new FallingCube.Factory(
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
-                            new Quaternionf(), new DirVector()
+                            new Quaternionf(), new DirVector(),
+                            Material.ROUGH, ServerSettings.CUBE_MASS_LARGE, ServerSettings.CUBE_SIZE_LARGE
                     ));
                 }
             }

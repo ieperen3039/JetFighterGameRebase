@@ -1,18 +1,23 @@
 package nl.NG.Jetfightergame.Assets.Entities.FighterJets;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Assets.Weapons.MachineGun;
-import nl.NG.Jetfightergame.Assets.Weapons.SpecialWeapon;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.function.Consumer;
 
@@ -20,8 +25,6 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen created on 11-11-2017.
  */
 public class BasicJet extends AbstractJet {
-    public static final String TYPE = "Basic jet";
-
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 800f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
@@ -30,33 +33,21 @@ public class BasicJet extends AbstractJet {
     public static final float YAW_POWER = 2f;
     public static final float PITCH_POWER = 3f;
     public static final float ROLL_POWER = 3f;
-    //    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0;
-    private static final MachineGun GUN = new MachineGun(1);
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
 
     private final Shape shape;
     private final PosVector shapeMiddle;
     private final float shapeRange;
 
-    /**
-     * enables the use of 'Basic jet'
-     */
-    public static void init() {
-        addConstructor(TYPE, (id, position, rotation, velocity, game) ->
-                new BasicJet(id, position, rotation, game.getTimer(), game, new SpecialWeapon(1))
-        );
-    }
-
     private BasicJet(
             int id, PosVector initialPosition, Quaternionf initialRotation, GameTimer renderTimer,
-            SpawnReceiver entityDeposit, SpecialWeapon specialWeapon
+            SpawnReceiver entityDeposit, EntityMapping entities
     ) {
         super(
                 id, initialPosition, initialRotation, 0.5f,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.7f, renderTimer, 0.3f, 0.5f,
-                GUN, specialWeapon, entityDeposit
+                0.7f, renderTimer, 0.3f, 0.5f, entityDeposit, entities
         );
 
         shape = GeneralShapes.CONCEPT_BLUEPRINT; // SCALE IS 0.5
@@ -75,7 +66,35 @@ public class BasicJet extends AbstractJet {
 
     @Override
     protected void updateShape(float deltaTime) {
+        if (controller.primaryFire()) {
+            DirVector randDirection = DirVector.random().scale(2);
+            randDirection.add(velocity);
+            State interpolator = new State(position, extraPosition, Toolbox.xTo(randDirection), this.rotation, randDirection, getForward());
 
+            float min = -1;
+            MovingEntity tgt = null;
+            PosVector pos = getPosition();
+
+            for (MovingEntity entity : entityMapping) {
+                if (entity == this) continue;
+
+                Vector3f relPos = entity.getPosition().sub(pos).normalize();
+                float dot = getForward().normalize().dot(relPos);
+
+                if (dot > min) {
+                    min = dot;
+                    tgt = entity;
+                }
+            }
+
+            Seeker.Factory newSeeker = new Seeker.Factory(interpolator, 0, this, tgt);
+            entityDeposit.addSpawn(newSeeker);
+        }
+    }
+
+    @Override
+    public EntityFactory getFactory() {
+        return new Factory(this);
     }
 
     @Override
@@ -91,5 +110,24 @@ public class BasicJet extends AbstractJet {
     @Override
     public PosVector getExpectedMiddle() {
         return extraPosition.add(shapeMiddle, new PosVector());
+    }
+
+    public static class Factory extends EntityFactory {
+        public Factory() {
+            super();
+        }
+
+        public Factory(PosVector position, DirVector direction, DirVector velocity) {
+            super(EntityClass.BASIC_JET, position, Toolbox.xTo(direction), velocity);
+        }
+
+        public Factory(BasicJet jet) {
+            super(EntityClass.BASIC_JET, jet);
+        }
+
+        @Override
+        public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
+            return new BasicJet(id, position, rotation, game.getTimer(), game, entities);
+        }
     }
 }

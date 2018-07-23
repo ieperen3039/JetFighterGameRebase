@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * created on 12-1-2018.
  */
 public final class Particles {
-    private static final float FIRE_LINGER_TIME = 10;
+    public static final float FIRE_LINGER_TIME = 10;
     private static final int METAL_LINGER_TIME = 10;
 
     /**
@@ -37,9 +37,10 @@ public final class Particles {
      *                  randomized.
      * @param power     the speed of the fastest particle relative to the middle of the cloud
      * @param density   the number of particles generated
-     * @return
+     * @param lingerTime
+     * @return a new explosion, not written to the GPU yet.
      */
-    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density){
+    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density, float lingerTime) {
         ParticleCloud result = new ParticleCloud();
 
         for (int i = 0; i < (density); i++) {
@@ -49,7 +50,7 @@ public final class Particles {
             float green = Toolbox.randomBetween(color1.green, color2.green);
             float blue = Toolbox.randomBetween(color1.blue, color2.blue);
             float alpha = Toolbox.randomBetween(color1.alpha, color2.alpha);
-            result.addParticle(position, movement, power, FIRE_LINGER_TIME, new Color4f(red, green, blue, alpha));
+            result.addParticle(position, movement, power, lingerTime, new Color4f(red, green, blue, alpha));
         }
         return result;
     }

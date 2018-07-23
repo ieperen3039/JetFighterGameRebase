@@ -17,8 +17,8 @@ public final class ServerSettings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static final short TARGET_TPS = 20;
-    public static final short COLLISION_DETECTION_LEVEL = 1;
+    public static final short TARGET_TPS = 19;
+    public static final short COLLISION_DETECTION_LEVEL = 0;
 
     /** connection settings */
     public static final int SERVER_PORT = 3039;
@@ -28,14 +28,12 @@ public final class ServerSettings {
     public static final float BASE_BUMPOFF_ENERGY = (BasicJet.MASS * BASE_SPEED * BASE_SPEED * 0.01f); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
+    public static final boolean FUN = true;
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final int PLAYERS_PER_RACE = 8;
     public static final float POWERUP_COLLECTION_RANGE = 5;
     public static boolean RENDER_ENABLED = false;
 
-    /** shape constants */
-    public static final int CUBE_SIZE_SMALL = 2;
     public static final int CUBE_SIZE_LARGE = 25;
-    public static final float CUBE_MASS_SMALL = CUBE_SIZE_SMALL * CUBE_SIZE_SMALL * CUBE_SIZE_SMALL * 0.001f;
     public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.001f;
 }

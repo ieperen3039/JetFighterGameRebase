@@ -1,7 +1,9 @@
 package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -22,26 +24,15 @@ import java.util.function.Consumer;
  * created on 28-1-2018.
  */
 public class SimpleBullet extends AbstractProjectile {
-
-    public static final String TYPE = "Simple bullet";
     private static final float MASS = 0.1f;
     private static final float AIR_RESIST_COEFF = 0f;
 
-    /**
-     * enables the use of 'Simple Bullet'
-     */
-    public static void init() {
-        MovingEntity.addConstructor(TYPE, (id, position, rotation, velocity, game) ->
-                new SimpleBullet(id, position, velocity, rotation, game.getTimer(), game)
-        );
-    }
-
     private SimpleBullet(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-                         GameTimer gameTimer, SpawnReceiver entityDeposit
+                         GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
-                AIR_RESIST_COEFF, 10, 0, 0, entityDeposit, gameTimer
+                AIR_RESIST_COEFF, 10, 0, 0, 0.2f, entityDeposit, gameTimer, src
         );
     }
 
@@ -57,13 +48,6 @@ public class SimpleBullet extends AbstractProjectile {
     }
 
     @Override
-    public void collideWithOther(Touchable other, Collision collision) {
-//        if (other instanceof Projectile); // reward 'crimera war' achievement
-        other.impact(IMPACT_POWER);
-        this.timeToLive = 0;
-    }
-
-    @Override
     protected PairList<PosVector, PosVector> calculateHitpointMovement() {
         PairList<PosVector, PosVector> pairs = new PairList<>(1);
         pairs.add(position, extraPosition);
@@ -71,8 +55,32 @@ public class SimpleBullet extends AbstractProjectile {
     }
 
     @Override
+    public EntityFactory getFactory() {
+        return new Factory(this);
+    }
+
+    @Override
     public float getRange() {
         return 0;
     }
 
+    @Override
+    protected void collideWithOther(Touchable other) {
+        other.impact(5);
+    }
+
+    public static class Factory extends EntityFactory {
+        public Factory() {
+            super();
+        }
+
+        public Factory(SimpleBullet bullet) {
+            super(EntityClass.SIMPLE_BULLET, bullet);
+        }
+
+        @Override
+        public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
+            return new SimpleBullet(id, position, velocity, rotation, game.getTimer(), game, null);
+        }
+    }
 }

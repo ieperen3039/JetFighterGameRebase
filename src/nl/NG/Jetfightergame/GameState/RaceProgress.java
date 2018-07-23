@@ -15,8 +15,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Geert van Ieperen created on 28-6-2018.
@@ -142,7 +142,7 @@ public class RaceProgress {
         return new Pair<>(progressRound[pInd], progressCheckpoint[pInd]);
     }
 
-    public Collection<Player> players() {
+    public List<Player> players() {
         return Collections.unmodifiableList(Arrays.asList(players));
     }
 

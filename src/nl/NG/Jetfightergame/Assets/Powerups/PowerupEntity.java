@@ -1,6 +1,12 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.Assets.Powerups;
 
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Spectral;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -14,6 +20,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.function.Consumer;
 
 /**
@@ -32,18 +41,6 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     private boolean isCollected = false;
     private float collectionTime = 0;
     private Shape shape;
-
-    /**
-     * allows for using values "Powerup_TYPE" where TYPE must be replaced with any of the {@link PowerupColor} enum
-     * values
-     */
-    public static void init() {
-        for (PowerupColor type : PowerupColor.values()) {
-            addConstructor("Powerup_" + type, (id, position, rotation, velocity, game) ->
-                    new PowerupEntity(id, type, position, game.getTimer(), game)
-            );
-        }
-    }
 
     /**
      * creates a collectible power-up on the given fixed position in the world
@@ -86,6 +83,11 @@ public class PowerupEntity extends MovingEntity implements Spectral {
             gl.draw(shape);
         }
         gl.popMatrix();
+    }
+
+    @Override
+    public EntityFactory getFactory() {
+        return new Factory(this);
     }
 
     @Override
@@ -146,5 +148,40 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     @Override
     public PosVector getExpectedMiddle() {
         return new PosVector(position);
+    }
+
+    public static class Factory extends EntityFactory {
+        private PowerupColor color;
+
+        public Factory() {
+            super();
+        }
+
+        public Factory(PowerupEntity e) {
+            super(EntityClass.POWERUP, e);
+            this.color = e.type;
+        }
+
+        public Factory(PosVector position, PowerupColor color) {
+            super(EntityClass.POWERUP, position, new Quaternionf(), new DirVector());
+            this.color = color;
+        }
+
+        @Override
+        public void writeInternal(DataOutput out) throws IOException {
+            super.writeInternal(out);
+            out.writeByte(color.ordinal());
+        }
+
+        @Override
+        public void readInternal(DataInput in) throws IOException {
+            super.readInternal(in);
+            color = PowerupColor.get(in.readByte());
+        }
+
+        @Override
+        public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
+            return new PowerupEntity(id, color, position, game.getTimer(), game);
+        }
     }
 }

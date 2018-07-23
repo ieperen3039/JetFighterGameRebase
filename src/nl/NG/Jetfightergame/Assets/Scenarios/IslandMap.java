@@ -1,6 +1,11 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.*;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Touchable;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
@@ -10,7 +15,6 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import org.joml.Quaternionf;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,8 +49,8 @@ public class IslandMap extends GameState {
     }
 
     @Override
-    protected Collection<Prentity> getInitialEntities() {
-        List<Prentity> entities = new ArrayList<>();
+    protected Collection<EntityFactory> getInitialEntities() {
+        List<EntityFactory> entities = new ArrayList<>();
 
         PosVector position = new PosVector();
 
@@ -58,12 +62,8 @@ public class IslandMap extends GameState {
             }
         }
 
-        entities.add(new Prentity(
-                "Powerup_" + PowerupColor.TIME, position, new Quaternionf(), new DirVector()
-        ));
-        entities.add(new Prentity(
-                "Powerup_" + PowerupColor.ENERGY, new PosVector(50, 50, 5f), new Quaternionf(), new DirVector()
-        ));
+        entities.add(new PowerupEntity.Factory(position, PowerupColor.ENERGY));
+        entities.add(new PowerupEntity.Factory(new PosVector(40, 40, 5f), PowerupColor.TIME));
         return entities;
 
     }

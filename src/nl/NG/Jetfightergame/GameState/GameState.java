@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Prentity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -16,8 +16,10 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -75,7 +77,7 @@ public abstract class GameState implements Environment {
     /**
      * @return all the dynamic entities that are standard part of this world
      */
-    protected abstract Collection<Prentity> getInitialEntities();
+    protected abstract Collection<EntityFactory> getInitialEntities();
 
     @Override
     @SuppressWarnings("ConstantConditions")
@@ -148,17 +150,26 @@ public abstract class GameState implements Environment {
         return physicsEngine.getDynamicEntities();
     }
 
+    @Nonnull
+    @Override
+    public Iterator<MovingEntity> iterator() {
+        return physicsEngine.getDynamicEntities().iterator();
+    }
+
     /**
      * Searches the entity corresponding to the given ID, or null if no such entity exists
      * @param entityID the ID number of an existing entity
      * @return the entity with the given entityID, or null if no such entity exists
      */
     public MovingEntity getEntity(int entityID) {
+        if (entityID < 0) return null;
+
         for (MovingEntity entity : physicsEngine.getDynamicEntities()) {
             if (entity.idNumber() == entityID) {
                 return entity;
             }
         }
+
         return null;
     }
 

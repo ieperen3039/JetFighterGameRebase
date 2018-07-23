@@ -1,6 +1,12 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.*;
+import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
@@ -26,7 +32,7 @@ import java.util.function.BiConsumer;
  * @author Geert van Ieperen created on 9-5-2018.
  */
 public class JetFighterProtocol {
-    private static final int versionNumber = 1;
+    private static final int versionNumber = 2;
 
     private final DataInputStream input;
     private final DataOutputStream output;
@@ -38,14 +44,15 @@ public class JetFighterProtocol {
      * @throws IOException if the other side runs a different protocol version
      */
     public JetFighterProtocol(InputStream in, OutputStream out) throws IOException {
-        this.input = new DataInputStream(in);
         this.output = new DataOutputStream(out);
-
         output.writeInt(versionNumber);
         output.flush();
+
+        this.input = new DataInputStream(in);
         int reply = input.readInt();
 
-        if (reply != versionNumber) throw new IOException("connected client has different version");
+        if (reply != versionNumber)
+            throw new IOException("connected client has version " + reply + " and we have " + versionNumber);
     }
 
     /**
@@ -86,27 +93,14 @@ public class JetFighterProtocol {
     }
 
     /** server sending a new entity */
-    public void newEntitySend(Prentity entity, int id) throws IOException {
-        // identity
-        output.writeInt(id);
-        output.writeUTF(entity.type);
-        // state
-        DataIO.writeVector(output, entity.position);
-        DataIO.writeQuaternion(output, entity.rotation);
-        DataIO.writeVector(output, entity.velocity);
+    public void newEntitySend(EntityFactory entity) throws IOException {
+        entity.writeFactory(output);
     }
 
     /** client reading an entity off the DataInputStream and creates an instance of it */
-    public MovingEntity newEntityRead(SpawnReceiver world) throws IOException {
-        // identity
-        int id = input.readInt();
-        String type = input.readUTF();
-        // state
-        PosVector position = DataIO.readPosVector(input);
-        Quaternionf rotation = DataIO.readQuaternion(input);
-        DirVector velocity = DataIO.readDirVector(input);
-
-        return MovingEntity.get(type, id, position, rotation, velocity, world);
+    public MovingEntity newEntityRead(SpawnReceiver world, EntityMapping entities) throws IOException {
+        EntityFactory pre = EntityFactory.readFactory(input);
+        return pre.construct(world, entities);
     }
 
     /** read a control message off the DataInputStream */
@@ -127,38 +121,41 @@ public class JetFighterProtocol {
      * @param type       the entity you wish to fly. Should be an AbstractJet.
      * @param controls   the controls used for the resulting jet
      * @param deposit    the deposit for new entities
+     * @param entities
      * @return the jet received from the server. Not necessarily the one requested.
      */
-    public AbstractJet playerSpawnRequest(String playerName, String type, Controller controls, SpawnReceiver deposit) throws IOException {
-        output.writeUTF(type);
+    public AbstractJet playerSpawnRequest(String playerName, EntityClass type, Controller controls, SpawnReceiver deposit, EntityMapping entities) throws IOException {
         output.writeUTF(playerName);
+        output.writeInt(type.ordinal());
         output.flush();
 
-        AbstractJet jet = (AbstractJet) newEntityRead(deposit);
+        AbstractJet jet = (AbstractJet) newEntityRead(deposit, entities);
         jet.setController(controls);
         return jet;
     }
 
     /**
      * @return a pair with on left the name of this player, and on right the jet of this player
-     * @see #playerSpawnRequest(String, String, Controller, SpawnReceiver)
+     * @see #playerSpawnRequest(String, EntityClass, Controller, SpawnReceiver, EntityMapping)
      */
-    public Pair<String, AbstractJet> playerSpawnAccept(MovingEntity.State position,
-            SpawnReceiver server, Controller controls, BiConsumer<Prentity, Integer> others
+    public Pair<String, AbstractJet> playerSpawnAccept(
+            MovingEntity.State spawnState, SpawnReceiver server, Controller controls,
+            BiConsumer<EntityFactory, Integer> others, EntityMapping entities
     ) throws IOException {
-        String type = input.readUTF();
-        String name = input.readUTF();
 
-        Prentity prentity = new Prentity(type, position);
-        MovingEntity construct = prentity.construct(server);
+        String name = input.readUTF();
+        EntityClass type = EntityClass.get(input.readInt());
+        EntityFactory factory = EntityFactory.newFactoryOf(type, spawnState, 0);
+
+        MovingEntity construct = factory.construct(server, entities);
         assert construct instanceof AbstractJet : "player tried flying on something that is not a jet.";
         AbstractJet jet = (AbstractJet) construct;
         jet.setController(controls);
 
-        newEntitySend(prentity, jet.idNumber());
+        newEntitySend(factory);
         output.flush();
 
-        others.accept(prentity, jet.idNumber());
+        others.accept(factory, jet.idNumber());
         return new Pair<>(name, jet);
     }
 
@@ -228,12 +225,13 @@ public class JetFighterProtocol {
         Color4f color1 = DataIO.readColor(input);
         Color4f color2 = DataIO.readColor(input);
 
-        ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY);
+        ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY, Particles.FIRE_LINGER_TIME);
         game.addParticles(cloud);
     }
 
     /** @return the RTT in seconds */
     public float ping() throws IOException {
+        output.flush();
         output.write(MessageType.PING.ordinal());
         output.flush();
         long start = System.nanoTime();
@@ -249,7 +247,7 @@ public class JetFighterProtocol {
     /**
      * reacts on an expected ping message
      */
-    private void pong() throws IOException {
+    public void pong() throws IOException {
         int ping = input.read();
         if (ping != MessageType.PING.ordinal()) throw new IOException("unexpected reply: " + ping);
         output.write(MessageType.PONG.ordinal());

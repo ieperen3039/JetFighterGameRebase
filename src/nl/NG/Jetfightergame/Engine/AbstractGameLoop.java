@@ -94,7 +94,7 @@ public abstract class AbstractGameLoop extends Thread {
                 // number of milliseconds remaining in this loop
                 float remainingTime = targetDeltaMillis - loopTimer.getTimeSinceLastUpdate();
                 if (ServerSettings.DEBUG && notifyDelay && (remainingTime < 0))
-                    System.err.printf("%s can't keep up! Running %d milliseconds behind%n", loopName, (int) -remainingTime);
+                    Logger.ERROR.printf("%s can't keep up! Running %d milliseconds behind%n", loopName, (int) -remainingTime);
 
                 // sleep at least one millisecond
                 long correctedTime = (long) Math.max(remainingTime, 1f);

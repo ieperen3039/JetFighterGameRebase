@@ -6,8 +6,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 
 /**
@@ -16,45 +16,45 @@ import java.io.IOException;
  */
 public class DataIO {
     /** writes the given rotation to the given output stream */
-    public static void writeQuaternion(DataOutputStream DOS, Quaternionf rot) throws IOException {
-        DOS.writeFloat(rot.x);
-        DOS.writeFloat(rot.y);
-        DOS.writeFloat(rot.z);
-        DOS.writeFloat(rot.w);
+    public static void writeQuaternion(DataOutput out, Quaternionf rot) throws IOException {
+        out.writeFloat(rot.x);
+        out.writeFloat(rot.y);
+        out.writeFloat(rot.z);
+        out.writeFloat(rot.w);
     }
 
-    /** @see #writeQuaternion(DataOutputStream, Quaternionf) */
-    public static Quaternionf readQuaternion(DataInputStream DIS) throws IOException {
-        return new Quaternionf(DIS.readFloat(), DIS.readFloat(), DIS.readFloat(), DIS.readFloat());
+    /** @see #writeQuaternion(DataOutput, Quaternionf) */
+    public static Quaternionf readQuaternion(DataInput in) throws IOException {
+        return new Quaternionf(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat());
     }
 
     /** writes the given vector to the given output stream */
-    public static void writeVector(DataOutputStream DOS, Vector3f v) throws IOException {
-        DOS.writeFloat(v.x);
-        DOS.writeFloat(v.y);
-        DOS.writeFloat(v.z);
+    public static void writeVector(DataOutput out, Vector3f v) throws IOException {
+        out.writeFloat(v.x);
+        out.writeFloat(v.y);
+        out.writeFloat(v.z);
     }
 
-    /** @see #writeVector(DataOutputStream, Vector3f)  */
-    public static PosVector readPosVector(DataInputStream DIS) throws IOException {
-        return new PosVector(DIS.readFloat(), DIS.readFloat(), DIS.readFloat());
+    /** @see #writeVector(DataOutput, Vector3f) */
+    public static PosVector readPosVector(DataInput in) throws IOException {
+        return new PosVector(in.readFloat(), in.readFloat(), in.readFloat());
     }
 
     /** reads the next 3 floats on the stream as vector */
-    public static DirVector readDirVector(DataInputStream DIS) throws IOException {
-        return new DirVector(DIS.readFloat(), DIS.readFloat(), DIS.readFloat());
+    public static DirVector readDirVector(DataInput in) throws IOException {
+        return new DirVector(in.readFloat(), in.readFloat(), in.readFloat());
     }
 
     /** writes a color to the output stream */
-    public static void writeColor(DataOutputStream DOS, Color4f c) throws IOException {
-        DOS.writeFloat(c.red);
-        DOS.writeFloat(c.green);
-        DOS.writeFloat(c.blue);
-        DOS.writeFloat(c.alpha);
+    public static void writeColor(DataOutput out, Color4f c) throws IOException {
+        out.writeFloat(c.red);
+        out.writeFloat(c.green);
+        out.writeFloat(c.blue);
+        out.writeFloat(c.alpha);
     }
 
-    /** @see #writeColor(DataOutputStream, Color4f)  */
-    public static Color4f readColor(DataInputStream DIS) throws IOException {
-        return new Color4f(DIS.readFloat(), DIS.readFloat(), DIS.readFloat(), DIS.readFloat());
+    /** @see #writeColor(DataOutput, Color4f) */
+    public static Color4f readColor(DataInput in) throws IOException {
+        return new Color4f(in.readFloat(), in.readFloat(), in.readFloat(), in.readFloat());
     }
 }

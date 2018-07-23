@@ -1,5 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
+import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -13,9 +16,10 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.function.Consumer;
-
-import static nl.NG.Jetfightergame.Settings.ServerSettings.*;
 
 /**
  * @author Geert van Ieperen created on 26-12-2017.
@@ -26,18 +30,6 @@ public class FallingCube extends MovingEntity {
     public static final String LARGE = "Falling cube large";
     private final float range;
     private Material surfaceMaterial;
-
-    /**
-     * enables the use of 'Falling cube large' and 'Falling cube small'
-     */
-    public static void init() {
-        addConstructor(SMALL, (id, position, rotation, velocity, game) ->
-                new FallingCube(id, Material.SILVER, CUBE_MASS_SMALL, CUBE_SIZE_SMALL, position, velocity, rotation, game.getTimer(), game)
-        );
-        addConstructor(LARGE, (id, position, rotation, velocity, game) ->
-                new FallingCube(id, Material.SILVER, CUBE_MASS_LARGE, CUBE_SIZE_LARGE, position, velocity, rotation, game.getTimer(), game)
-        );
-    }
 
     /**
      * test entity cube of size 2*2*2 and mass 10.
@@ -90,6 +82,11 @@ public class FallingCube extends MovingEntity {
     }
 
     @Override
+    public EntityFactory getFactory() {
+        return new Factory(this);
+    }
+
+    @Override
     public float getRange() {
         return range;
     }
@@ -107,5 +104,50 @@ public class FallingCube extends MovingEntity {
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(surfaceMaterial);
+    }
+
+    public static class Factory extends EntityFactory {
+        private Material material;
+        private float mass;
+        private float size;
+
+        public Factory() {
+            super();
+        }
+
+        public Factory(FallingCube cube) {
+            super(EntityClass.FALLING_CUBE, cube);
+            material = cube.surfaceMaterial;
+            mass = cube.mass;
+            size = cube.scale;
+        }
+
+        public Factory(PosVector pos, Quaternionf rot, DirVector vel, Material material, float mass, int size) {
+            super(EntityClass.FALLING_CUBE, pos, rot, vel);
+            this.material = material;
+            this.mass = mass;
+            this.size = size;
+        }
+
+        @Override
+        public void writeInternal(DataOutput out) throws IOException {
+            super.writeInternal(out);
+            out.writeInt(material.ordinal());
+            out.writeFloat(mass);
+            out.writeFloat(size);
+        }
+
+        @Override
+        public void readInternal(DataInput in) throws IOException {
+            super.readInternal(in);
+            material = Material.get(in.readInt());
+            mass = in.readFloat();
+            size = in.readFloat();
+        }
+
+        @Override
+        public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
+            return new FallingCube(id, material, mass, size, position, velocity, rotation, game.getTimer(), game);
+        }
     }
 }

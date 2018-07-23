@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
-import nl.NG.Jetfightergame.AbstractEntities.PowerupType;
+import nl.NG.Jetfightergame.Assets.Powerups.PowerupType;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
