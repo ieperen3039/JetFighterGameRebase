@@ -190,6 +190,7 @@ public abstract class GameState implements Environment {
 
     @Override
     public void addParticles(ParticleCloud cloud) {
+        if (cloud == null) return;
         if (cloud.readyToLoad()) {
             addParticleLock.lock();
             try {

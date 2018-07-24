@@ -3,11 +3,11 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
-import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
+import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -98,13 +98,20 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
-    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density) {
-        connections.forEach(conn -> conn.sendExplosionSpawn(position, direction, power, color1, color2));
+    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density, float lingerTime, float particleSize) {
+        connections.forEach(conn -> conn.sendExplosionSpawn(position, direction, power, density, color1, color2, lingerTime, particleSize));
     }
 
     @Override
-    public void powerupCollect(PowerupEntity powerup, float collectionTime, PowerupColor newType) {
-        connections.forEach(conn -> conn.sendPowerupUpdate(powerup, collectionTime, newType));
+    public void powerupCollect(PowerupEntity powerup, float collectionTime, boolean isCollected) {
+        connections.forEach(conn -> conn.sendPowerupUpdate(powerup, collectionTime, isCollected));
+    }
+
+    @Override
+    public void playerPowerupState(AbstractJet jet, PowerupType newType) {
+        connections.stream()
+                .filter(conn -> conn.jet() == jet).findFirst()
+                .ifPresent(conn -> conn.sendPowerupCollect(newType));
     }
 
     @Override
@@ -166,7 +173,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     private void setWorld(EnvironmentClass world) {
-        Logger.DEBUG.print("Switching world to " + world);
+        Logger.INFO.print("Switching world to " + world);
         connections.forEach(conn -> conn.sendWorldSwitch(world));
         // startup new world
         Player[] asArray = connections.toArray(new Player[0]);
@@ -174,14 +181,17 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         gameWorld.setContext(this, raceProgress);
         gameWorld.switchTo(world);
 
-        // progress this change to all clients
         for (ServerConnection player : connections) {
-            AbstractJet playerJet = player.jet();
-            MovingEntity.State spawn = gameWorld.getNewSpawnPosition();
-            playerJet.set(spawn);
-        }
+            AbstractJet jet = player.jet();
+            jet.set(gameWorld.getNewSpawnPosition());
+            player.sendEntityUpdate(jet, globalTime.time());
+            jet.setPowerup(PowerupType.NONE);
+            player.sendPowerupCollect(PowerupType.NONE);
 
-        connections.forEach(conn -> gameWorld.addEntity(conn.jet()));
+            gameWorld.addEntity(jet);
+            EntityFactory jetFactory = jet.getFactory();
+            connections.stream().filter(o -> o != player).forEach(conn -> conn.sendEntitySpawn(jetFactory));
+        }
 
         worldShouldSwitch = false;
 
@@ -190,7 +200,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
             EntityFactory blueprint = new BasicJet.Factory(new PosVector(100, 0, 30), DirVector.xVector(), DirVector.zeroVector());
 
             AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
-            Controller controller = new RocketAI(npc, target, BasicJet.THROTTLE_POWER / BasicJet.AIR_RESISTANCE_COEFFICIENT, false);
+            Controller controller = new HunterAI(npc, target, gameWorld, BasicJet.THROTTLE_POWER / BasicJet.AIR_RESISTANCE_COEFFICIENT);
             npc.setController(controller);
             gameWorld.addEntity(npc);
             connections.forEach(conn -> conn.sendEntitySpawn(blueprint));

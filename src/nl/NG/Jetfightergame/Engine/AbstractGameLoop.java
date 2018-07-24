@@ -141,12 +141,12 @@ public abstract class AbstractGameLoop extends Thread {
 
     public void unPause(){
         pauseBlock.countDown();
-        if (ServerSettings.DEBUG) Logger.DEBUG.printFrom(2, "unpaused " + loopName);
+        Logger.DEBUG.printFrom(2, "unpaused " + loopName);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        if (ServerSettings.DEBUG) Logger.DEBUG.printFrom(2, "paused " + loopName);
+        Logger.DEBUG.printFrom(2, "paused " + loopName);
     }
 
     /**

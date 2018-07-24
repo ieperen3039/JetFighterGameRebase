@@ -21,6 +21,7 @@ public class ActivePCControllerAbsolute extends PassivePCControllerAbsolute impl
     @Override
     public void mouseMoved(int deltaX, int deltaY) {
         super.mouseMoved(deltaX, deltaY);
+        update();
         try {
             target.sendControl(MessageType.PITCH, toByte(pitch()));
             target.sendControl(MessageType.ROLL, toByte(roll()));
@@ -31,6 +32,7 @@ public class ActivePCControllerAbsolute extends PassivePCControllerAbsolute impl
 
     @Override
     public void keyPressed(int key) {
+        update();
         try {
             target.sendControl(MessageType.YAW, toByte(yaw()));
             target.sendControl(MessageType.THROTTLE, toByte(throttle()));

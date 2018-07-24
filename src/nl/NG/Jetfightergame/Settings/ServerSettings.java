@@ -32,6 +32,7 @@ public final class ServerSettings {
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final int PLAYERS_PER_RACE = 8;
     public static final float POWERUP_COLLECTION_RANGE = 5;
+    public static final int NOF_SEEKERS_LAUNCHED = 20;
     public static boolean RENDER_ENABLED = false;
 
     public static final int CUBE_SIZE_LARGE = 25;

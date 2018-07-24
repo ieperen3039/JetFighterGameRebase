@@ -41,7 +41,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     public EnvironmentManager(
             EnvironmentClass initial, SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic, int collisionDetectionLevel
     ) {
-        instance = (initial != null) ? initial.create() : new Void();
+        instance = (initial != null) ? initial.create() : null;
         currentType = initial;
         this.loadDynamic = loadDynamic;
         setContext(deposit, raceProgress);
@@ -139,10 +139,10 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
 
     @Override
     public void switchTo(EnvironmentClass type) {
-        GameState newInstance = (type != null) ? type.create() : new Void();
-        newInstance.buildScene(deposit, raceProgress, colDetLevel, loadDynamic);
-        instance.cleanUp();
-        instance = newInstance;
+        GameState oldInst = instance;
+        instance = (type != null) ? type.create() : new Void();
+        build();
+        if (oldInst != null) oldInst.cleanUp();
         currentType = type;
     }
 

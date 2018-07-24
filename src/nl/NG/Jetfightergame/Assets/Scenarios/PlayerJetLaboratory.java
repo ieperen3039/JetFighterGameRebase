@@ -2,6 +2,8 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
@@ -32,8 +34,7 @@ public class PlayerJetLaboratory extends GameState {
         ArrayList<Touchable> entities = new ArrayList<>();
 
         entities.add(new StaticEntity(
-                GeneralShapes.LAB_CUBE,
-                Material.CYBERGLASSMETAL, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
+                GeneralShapes.LAB_CUBE, Material.CYBERGLASSMETAL, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
         ));
 
         return entities;
@@ -41,7 +42,7 @@ public class PlayerJetLaboratory extends GameState {
 
     @Override
     protected Collection<EntityFactory> getInitialEntities() {
-        Collection<EntityFactory> dynamicEntities = new ArrayList<>();
+        Collection<EntityFactory> entities = new ArrayList<>();
 
         int[] vals = new int[]{-1, 1};
         // for x = -1 and x = 1
@@ -50,7 +51,7 @@ public class PlayerJetLaboratory extends GameState {
             for (int y : vals) {
                 // etc.
                 for (int z : vals) {
-                    dynamicEntities.add(new FallingCube.Factory(
+                    entities.add(new FallingCube.Factory(
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new Quaternionf(), new DirVector(),
                             Material.ROUGH, ServerSettings.CUBE_MASS_LARGE, ServerSettings.CUBE_SIZE_LARGE
@@ -58,8 +59,9 @@ public class PlayerJetLaboratory extends GameState {
                 }
             }
         }
+        entities.add(new PowerupEntity.Factory(new PosVector(40, 0, 0), PowerupColor.ENERGY));
 
-        return dynamicEntities;
+        return entities;
     }
 
     @Override

@@ -12,6 +12,7 @@ import static org.lwjgl.glfw.GLFW.glfwPollEvents;
  * @author Geert van Ieperen
  *         created on 31-10-2017.
  *         TODO multiply output with how long the button was pressed in respect to deltaTime
+ *         TODO create keyboard and mouse tracker combined
  */
 public abstract class PassivePCController implements TrackerMoveListener, TrackerClickListener, Controller {
 

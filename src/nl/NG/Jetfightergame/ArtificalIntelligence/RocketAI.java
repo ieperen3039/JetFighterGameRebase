@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -11,9 +12,9 @@ import org.joml.Vector3f;
  */
 public class RocketAI implements Controller {
     private static final float DIRECTION_THROTTLE_MODIFIER = 0.5f;
-    private static final float DIRECTION_ROLL_MODIFIER = 2.0f;
-    private static final float DIRECTION_PITCH_MODIFIER = 1.5f;
-    private static final float DIRECTION_YAW_MODIFIER = 0.5f;
+    private static final float DIRECTION_ROLL_MODIFIER = 0.1f;
+    private static final float DIRECTION_PITCH_MODIFIER = 2f;
+    private static final float DIRECTION_YAW_MODIFIER = 2f;
     private static final float BLOW_DIST_SQ = 100;
     public static final float THROTTLE_DOT_IGNORE = 0.3f;
     public static final float SHOOT_ACCURACY = 0.01f;
@@ -42,16 +43,16 @@ public class RocketAI implements Controller {
         this.target = target;
         this.pSpeedSq = projectileSpeed * projectileSpeed;
         this.doAim = doAim;
-        update();
     }
 
     public void setTarget(MovingEntity target) {
         this.target = target;
-        update();
     }
 
     @Override
     public void update() {
+        if (TemporalEntity.isOverdue(target)) return;
+
         DirVector tVel = target.getVelocity();
         PosVector tPos = target.getPosition();
         PosVector prPos = projectile.getPosition();
@@ -126,5 +127,17 @@ public class RocketAI implements Controller {
     @Override
     public boolean isActiveController() {
         return false;
+    }
+
+    public MovingEntity getProjectile() {
+        return projectile;
+    }
+
+    public MovingEntity getTarget() {
+        return target;
+    }
+
+    public PosVector getTargetPos() {
+        return targetPos;
     }
 }

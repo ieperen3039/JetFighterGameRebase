@@ -1,7 +1,9 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupType;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -9,15 +11,19 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.function.Supplier;
 
+import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
 
 /**
@@ -25,6 +31,7 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_S
  */
 public abstract class AbstractJet extends MovingEntity {
 
+    private static final int SMOKE_DISTRACTION_ELEMENTS = 3;
     protected final float liftFactor;
     protected final float airResistCoeff;
 
@@ -47,11 +54,15 @@ public abstract class AbstractJet extends MovingEntity {
     protected float slowTimeLeft = 0;
     /** fraction of speed lost by slow. higher slow factor is more slow */
     protected float slowFactor = 0;
+    /** time left in boost */
+    private float boostDuration = 0;
+    /** fraction of speed gained by boost. higher boost factor is more speed */
+    private float boostFactor = 0;
 
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
-    private PowerupType currentPowerup = null;
+    private PowerupType currentPowerup = PowerupType.NONE;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -116,13 +127,87 @@ public abstract class AbstractJet extends MovingEntity {
     @Override
     public void applyPhysics(DirVector netForce, float deltaTime) {
         controller.update();
+
         slowTimeLeft -= deltaTime;
         if (slowTimeLeft <= 0) {
             slowTimeLeft = 0;
             slowFactor = 0;
         }
 
+        boostDuration -= deltaTime;
+        if (boostDuration <= 0) {
+            boostDuration = 0;
+            boostFactor = 0;
+        }
+
         gyroPhysics(deltaTime, netForce, velocity);
+
+        if (currentPowerup != PowerupType.NONE && controller.primaryFire()) {
+            usePowerup(currentPowerup);
+
+            currentPowerup = PowerupType.NONE;
+            entityDeposit.playerPowerupState(this, PowerupType.NONE);
+        }
+    }
+
+    private void usePowerup(PowerupType type) {
+        switch (type) {
+            case SPEED:
+                boostDuration = PowerupType.SPEED_BOOST_DURATION;
+                boostFactor = PowerupType.SPEED_BOOST_FACTOR;
+                break;
+            case SHIELD:
+                break;
+            case ROCKET:
+                launchSeekers();
+                break;
+            case SMOKE:
+                launchSmokeCloud();
+                break;
+        }
+    }
+
+    private void launchSmokeCloud() {
+        DirVector dir = getForward();
+        dir.scale(-SMOKE_LAUNCH_SPEED).add(velocity.scale(0.5f, new DirVector()));
+        entityDeposit.addExplosion(
+                position, dir,
+                Color4f.BLACK, Color4f.GREY,
+                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 10f
+        );
+        // distraction
+        for (int i = 0; i < SMOKE_DISTRACTION_ELEMENTS; i++) {
+            DirVector move = new DirVector(dir);
+            move.add(DirVector.random().scale(SMOKE_SPREAD / 10));
+            entityDeposit.addSpawn(new InvisibleEntity.Factory(position, move, SMOKE_LINGER_TIME));
+        }
+    }
+
+    private void launchSeekers() {
+        float min = -1;
+        MovingEntity tgt = null;
+        PosVector pos = getPosition();
+
+        for (MovingEntity entity : entityMapping) {
+            if (entity == this || entity instanceof AbstractProjectile || entity instanceof PowerupEntity) continue;
+
+            Vector3f relPos = entity.getPosition().sub(pos).normalize();
+            float dot = getForward().dot(relPos);
+
+            if (dot > min) {
+                min = dot;
+                tgt = entity;
+            }
+        }
+
+        for (int i = 0; i < ServerSettings.NOF_SEEKERS_LAUNCHED; i++) {
+            DirVector randDirection = DirVector.random().scale(PowerupType.SEEKER_LAUNCH_SPEED);
+            randDirection.add(velocity);
+            State interpolator = new State(position, extraPosition, Toolbox.xTo(randDirection), rotation, randDirection, getForward());
+
+            Seeker.Factory newSeeker = new Seeker.Factory(interpolator, 0, this, tgt);
+            entityDeposit.addSpawn(newSeeker);
+        }
     }
 
     /**
@@ -138,6 +223,7 @@ public abstract class AbstractJet extends MovingEntity {
         float throttle = controller.throttle();
         float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
         thrust = thrust > throttlePower ? throttlePower : thrust;
+        thrust *= boostFactor + 1;
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         float yPres = Toolbox.instantPreserveFraction(yPreservation, deltaTime);
@@ -195,7 +281,7 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     /**
-     * @return forward in world-space (safe copy)
+     * @return forward in world-space (normalized, safe copy)
      */
     public DirVector getForward() {
         return new DirVector(forward);
@@ -245,23 +331,17 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     /**
-     * adds the given primitive to the current powerup
-     * @param type the added primitive
-     * @return the new powerup.
-     */
-    private PowerupType currentWith(PowerupColor type) {
-        PowerupType current = getCurrentPowerup();
-        return current == null ? PowerupType.get(type) : current.with(type);
-    }
-
-    /**
      * adds one of the given type to the player's current powerup
      * @return true iff the powerup is accepted by the player
      */
     public boolean addPowerup(PowerupColor type) {
-        PowerupType next = currentWith(type);
-        if (next == currentPowerup) return false;
+        PowerupType next = getCurrentPowerup().with(type);
+        if (next == currentPowerup || next == NONE) return false;
         currentPowerup = next;
         return true;
+    }
+
+    public void setPowerup(PowerupType color) {
+        currentPowerup = color;
     }
 }

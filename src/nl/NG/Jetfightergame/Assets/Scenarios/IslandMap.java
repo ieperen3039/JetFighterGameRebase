@@ -2,10 +2,10 @@ package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.GameState;
@@ -51,19 +51,11 @@ public class IslandMap extends GameState {
     @Override
     protected Collection<EntityFactory> getInitialEntities() {
         List<EntityFactory> entities = new ArrayList<>();
-
-        PosVector position = new PosVector();
-
-        { // obnoxious calculation
-            DirVector direction = new DirVector(1, 1, 0.2f);
-            for (int i = 1; i < 15; i++) {
-                position.add(direction.reducedTo(72, new DirVector()));
-                direction.rotateZ((float) Math.PI / 4);
-            }
-        }
-
-        entities.add(new PowerupEntity.Factory(position, PowerupColor.ENERGY));
-        entities.add(new PowerupEntity.Factory(new PosVector(40, 40, 5f), PowerupColor.TIME));
+        entities.add(new PowerupEntity.Factory(new PosVector(40, 40, 0), PowerupColor.TIME));
+        entities.add(new PowerupEntity.Factory(new PosVector(-100, 100, 100), PowerupColor.ENERGY));
+        entities.add(new PowerupEntity.Factory(new PosVector(-100, -50, 50), PowerupColor.SPACE));
+        entities.add(new PowerupEntity.Factory(new PosVector(0, 100, 20), PowerupColor.ENERGY));
+        entities.add(new PowerupEntity.Factory(new PosVector(0, -50, 150), PowerupColor.SPACE));
         return entities;
 
     }

@@ -12,7 +12,8 @@ import org.lwjgl.system.MemoryUtil;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLECLOUD_MIN_TIME;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLECLOUD_SPLIT_SIZE;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -61,19 +62,20 @@ public class ParticleCloud {
 *               If direction is the zero vector, the actual speed will be random linear distributed between this and 0
      * @param maxTTL maximum time to live. Actual time will be random quadratic distributed between this and 0
      * @param color color of this particle
+     * @param particleSize
      */
-    public void addParticle(PosVector position, DirVector direction, float jitter, float maxTTL, Color4f color){
+    public void addParticle(PosVector position, DirVector direction, float jitter, float maxTTL, Color4f color, float particleSize) {
         final float randFloat = Toolbox.random.nextFloat();
         final DirVector random = DirVector.randomOrb();
 
         final float rotationSpeed = 2 + (2 / randFloat);
         random.mul(jitter * randFloat).add(direction);
 
-        addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * maxTTL);
+        addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * maxTTL, particleSize);
     }
 
-    public void addParticle(PosVector position, DirVector movement, Color4f color, DirVector rotationVector, float rotationSpeed, float timeToLive) {
-        addParticle(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive));
+    public void addParticle(PosVector position, DirVector movement, Color4f color, DirVector rotationVector, float rotationSpeed, float timeToLive, float particleSize) {
+        addParticle(new Particle(position, movement, color, rotationVector, rotationSpeed, timeToLive, particleSize));
     }
 
     private void addParticle(Particle p) {
@@ -287,7 +289,7 @@ public class ParticleCloud {
             this.timeToLive = timeToLive;
         }
 
-        public Particle(PosVector position, DirVector movement, Color4f color, Vector3f angVec, float rotationSpeed, float timeToLive) {
+        public Particle(PosVector position, DirVector movement, Color4f color, Vector3f angVec, float rotationSpeed, float timeToLive, float particleSize) {
             this.position = position;
             this.movement = movement;
             this.color = color;
@@ -295,8 +297,8 @@ public class ParticleCloud {
             this.timeToLive = timeToLive;
 
             // random positions
-            PosVector A = Vector.random().scale(FIRE_PARTICLE_SIZE).toPosVector();
-            PosVector B = Vector.random().scale(FIRE_PARTICLE_SIZE).toPosVector();
+            PosVector A = Vector.random().scale(particleSize / 2).toPosVector();
+            PosVector B = Vector.random().scale(particleSize / 2).toPosVector();
             PosVector C = A.add(B, new PosVector()).scale(-0.5f); // C = -1 * (A + B)/2
             this.sides = new PosVector[]{A, B, C};
         }

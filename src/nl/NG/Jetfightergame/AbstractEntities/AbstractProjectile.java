@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -21,7 +20,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
 import static nl.NG.Jetfightergame.Tools.Toolbox.instantPreserveFraction;
 
 /**
@@ -108,14 +107,18 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     public void setTarget(MovingEntity target) {
         targetID = target.idNumber();
-        setController(new RocketAI(this, target, 50f, false));
+        setController(new RocketAI(this, target, 200f, false));
     }
 
     @Override
     public ParticleCloud explode() {
         timeToLive = 0;
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
-        return Particles.explosion(interpolatedPosition(), DirVector.zeroVector(), Color4f.WHITE, EXPLOSION_COLOR_2, IMPACT_POWER, SPARK_DENSITY, Particles.FIRE_LINGER_TIME);
+        return Particles.explosion(
+                interpolatedPosition(), DirVector.zeroVector(),
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2,
+                IMPACT_POWER, SPARK_DENSITY, Particles.FIRE_LINGER_TIME, FIRE_PARTICLE_SIZE
+        );
     }
 
     @Override

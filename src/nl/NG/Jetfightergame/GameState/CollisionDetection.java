@@ -145,7 +145,7 @@ public class CollisionDetection implements EntityManagement {
         } while ((nOfCollisions > 0) && (--remainingLoops > 0) && !Thread.interrupted());
 
         if (nOfCollisions > 0) {
-            Logger.ERROR.print(nOfCollisions + " collisions not resolved");
+            Logger.WARN.print(nOfCollisions + " collisions not resolved");
         }
     }
 

@@ -4,8 +4,8 @@ import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -146,9 +146,9 @@ public class ServerConnection implements BlockingListener, Player {
         );
     }
 
-    public void sendExplosionSpawn(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) {
+    public void sendExplosionSpawn(PosVector position, DirVector direction, float spread, int density, Color4f color1, Color4f color2, float lingerTime, float particleSize) {
         sendMessage(MessageType.EXPLOSION_SPAWN, () ->
-                protocol.explosionSend(position, direction, spread, color1, color2)
+                protocol.explosionSend(position, direction, spread, density, color1, color2, lingerTime, particleSize)
         );
     }
 
@@ -176,9 +176,15 @@ public class ServerConnection implements BlockingListener, Player {
         );
     }
 
-    public void sendPowerupUpdate(PowerupEntity powerup, float collectionTime, PowerupColor newType) {
+    public void sendPowerupUpdate(PowerupEntity powerup, float collectionTime, boolean isCollected) {
+        sendMessage(MessageType.POWERUP_STATE, () ->
+                protocol.powerupUpdateSend(powerup, collectionTime, isCollected)
+        );
+    }
+
+    public void sendPowerupCollect(PowerupType powerupType) {
         sendMessage(MessageType.POWERUP_COLLECT, () ->
-                protocol.powerupUpdateSend(powerup, collectionTime, newType)
+                protocol.powerupCollectSend(powerupType)
         );
     }
 

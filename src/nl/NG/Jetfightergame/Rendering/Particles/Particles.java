@@ -32,25 +32,39 @@ public final class Particles {
      * creates an explosion of particles from the given position, using a blend of the two colors
      * @param position  source position where all particles come from
      * @param direction movement of the average position of the cloud
-     * @param color1    first color extreme
      * @param color2    second color extreme. Each particle has a color where each color primitive is individually
      *                  randomized.
      * @param power     the speed of the fastest particle relative to the middle of the cloud
-     * @param density   the number of particles generated
-     * @param lingerTime
      * @return a new explosion, not written to the GPU yet.
      */
-    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density, float lingerTime) {
+    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color2, float power) {
+        return explosion(
+                position, direction, Color4f.WHITE, color2, power,
+                ClientSettings.EXPLOSION_PARTICLE_DENSITY, FIRE_LINGER_TIME, ClientSettings.FIRE_PARTICLE_SIZE
+        );
+    }
+
+    /**
+     * creates an explosion of particles from the given position, using a blend of the two colors
+     * @param position  source position where all particles come from
+     * @param direction movement of the average position of the cloud
+     * @param color1    first color extreme
+     * @param color2    second color extreme. Each particle has a color between color1 and color2
+     * @param power     the speed of the fastest particle relative to the middle of the cloud
+     * @param density   the number of particles generated
+     * @param lingerTime the maximal lifetime of the particles. Actual duration is exponentially distributed.
+     * @param particleSize roughly the actual size of the particle
+     * @return a new explosion, not written to the GPU yet.
+     */
+    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density, float lingerTime, float particleSize) {
         ParticleCloud result = new ParticleCloud();
 
         for (int i = 0; i < (density); i++) {
             DirVector movement = DirVector.random();
             movement.add(direction);
-            float red = Toolbox.randomBetween(color1.red, color2.red);
-            float green = Toolbox.randomBetween(color1.green, color2.green);
-            float blue = Toolbox.randomBetween(color1.blue, color2.blue);
-            float alpha = Toolbox.randomBetween(color1.alpha, color2.alpha);
-            result.addParticle(position, movement, power, lingerTime, new Color4f(red, green, blue, alpha));
+            float rand = Toolbox.random.nextFloat();
+            Color4f interColor = color1.interpolateTo(color2, rand);
+            result.addParticle(position, movement, power, lingerTime, interColor, particleSize);
         }
         return result;
     }
@@ -119,8 +133,10 @@ public final class Particles {
         return getParticles(splittedTriangles, launchDir, jitter, deprecationTime, particleSpeed, planeColor);
     }
 
-    private static ParticleCloud getParticles(Collection<PosVector[]> splittedTriangles, DirVector launchDir, float jitter,
-                                                     int deprecationTime, float speed, Color4f particleColor) {
+    private static ParticleCloud getParticles(
+            Collection<PosVector[]> splittedTriangles, DirVector launchDir, float jitter,
+            int deprecationTime, float speed, Color4f particleColor
+    ) {
         ParticleCloud particles = new ParticleCloud();
         for (PosVector[] p : splittedTriangles){
             DirVector movement = new DirVector();
@@ -132,7 +148,7 @@ public final class Particles {
                     .scale(speed * (1 - randFloat), movement);
 
             particles.addParticle(
-                    p[0], p[1], p[2], movement, random, particleColor, randFloat, randFloat * randFloat * randFloat * deprecationTime
+                    p[0], p[1], p[2], movement, random, particleColor, randFloat, randFloat * randFloat * deprecationTime
             );
         }
         return particles;

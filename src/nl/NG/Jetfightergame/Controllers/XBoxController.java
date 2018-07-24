@@ -22,10 +22,7 @@ public class XBoxController implements Controller {
             Logger.ERROR.print("No controller connected!");
             return;
         }
-
         update();
-
-        Logger.printOnline(() -> String.format("Throttle: %5f", t[0]));
     }
 
     @Override

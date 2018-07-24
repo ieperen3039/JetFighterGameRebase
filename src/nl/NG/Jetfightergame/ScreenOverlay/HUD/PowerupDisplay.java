@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupType;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -39,7 +39,7 @@ public class PowerupDisplay implements Consumer<ScreenOverlay.Painter> {
         hud.text(
                 xMin + MARGIN / 2, yMin + MARGIN / 2, TEXT_SIZE,
                 FONT, NanoVG.NVG_ALIGN_LEFT, HUD_COLOR,
-                (power == null) ? "-" : power.toString()
+                (power == PowerupType.NONE) ? "-" : power.toString()
         );
     }
 }

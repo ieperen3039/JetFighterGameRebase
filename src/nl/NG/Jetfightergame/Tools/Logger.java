@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.Settings.ServerSettings;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -120,18 +122,19 @@ public enum Logger {
      */
     public void printFrom(int depth, Object... s) {
         String prefix = codeName;
+        String source = ServerSettings.DEBUG ? "" : getCallingMethod(depth);
         switch (this) {
             case DEBUG:
-                write(out, getCallingMethod(depth) + prefix, s);
+                if (ServerSettings.DEBUG) write(out, source + prefix, s);
                 break;
             case INFO:
-                write(out, EMTPY + prefix, s);
-                break;
-            case ERROR:
-                write(System.err::println, getCallingMethod(depth) + prefix, s);
+                write(out, source + prefix, s);
                 break;
             case WARN:
-                write(System.err::println, EMTPY + prefix, s);
+                write(System.err::println, source + prefix, s);
+                break;
+            case ERROR:
+                write(System.err::println, source + prefix, s);
                 break;
         }
     }
@@ -144,6 +147,6 @@ public enum Logger {
     }
 
     public void printf(String format, Object... arguments) {
-        print(String.format(Locale.US, format, arguments));
+        printFrom(2, String.format(Locale.US, format, arguments));
     }
 }

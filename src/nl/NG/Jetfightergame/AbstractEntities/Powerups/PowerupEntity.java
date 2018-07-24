@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Assets.Powerups;
+package nl.NG.Jetfightergame.AbstractEntities.Powerups;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 public class PowerupEntity extends MovingEntity implements Spectral {
     private static final float DESPAWN_TIME = 0.5f;
     private static final float RESPAWN_TIME = 20f;
-    private static final float SCALING = 3f;
+    private static final float SCALING = 2f;
     private static final Quaternionf BASE_ROTATION = new Quaternionf()
             .rotateTo(new Vector3f(-1, -1, -1), new Vector3f(0, 0, -1));
 
@@ -66,23 +66,25 @@ public class PowerupEntity extends MovingEntity implements Spectral {
 
     @Override
     public void draw(GL2 gl) {
-        float s = isCollected ? SCALING * ((renderTime() - collectionTime) / DESPAWN_TIME) : SCALING;
-        if (s < 0) return;
+        float s;
+        if (isCollected && renderTime() > collectionTime) {
+            float timeSince = renderTime() - collectionTime;
+            s = SCALING * (1 - (timeSince / DESPAWN_TIME));
+            if (s < 0) return;
+        } else {
+            s = SCALING;
+        }
 
         // TODO model and animation
         gl.setMaterial(Material.GLOWING, type.color);
-        gl.pushMatrix();
-        {
-            gl.translate(position);
-
+        toLocalSpace(gl, () -> {
             float rot = 1f * renderTime();
             gl.rotate(DirVector.zVector(), rot);
             gl.scale(s);
 
             gl.rotate(BASE_ROTATION);
             gl.draw(shape);
-        }
-        gl.popMatrix();
+        });
     }
 
     @Override
@@ -93,6 +95,7 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     @Override
     public void update(float currentTime) {
         if (isCollected && (currentTime > (collectionTime + RESPAWN_TIME))) {
+            entityDeposit.powerupCollect(this, collectionTime, false);
             isCollected = false;
         }
     }
@@ -127,11 +130,14 @@ public class PowerupEntity extends MovingEntity implements Spectral {
         MovingEntity source = cause.source();
         if (source instanceof AbstractJet) {
             // if the player accepts it, remove from field
-            isCollected = ((AbstractJet) source).addPowerup(type);
+            AbstractJet jet = (AbstractJet) source;
+            isCollected = jet.addPowerup(type);
 
             if (isCollected) {
                 float time = cause.timeScalar * gameTimer.getRenderTime().difference() + gameTimer.time();
-                entityDeposit.powerupCollect(this, time, PowerupColor.NONE);
+                entityDeposit.powerupCollect(this, time, true);
+                entityDeposit.playerPowerupState(jet, jet.getCurrentPowerup());
+                collectionTime = time;
             }
         }
     }
@@ -148,6 +154,15 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     @Override
     public PosVector getExpectedMiddle() {
         return new PosVector(position);
+    }
+
+    public void setState(boolean isCollected, float collectionTime) {
+        this.isCollected = isCollected;
+        this.collectionTime = collectionTime;
+    }
+
+    public boolean isCollected() {
+        return isCollected;
     }
 
     public static class Factory extends EntityFactory {

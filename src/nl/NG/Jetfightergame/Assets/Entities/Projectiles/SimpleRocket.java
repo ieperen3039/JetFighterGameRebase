@@ -20,8 +20,7 @@ import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_1;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
 
 /**
  * @author Geert van Ieperen
@@ -61,7 +60,7 @@ public class SimpleRocket extends AbstractProjectile {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
         return Particles.explosion(
                 interpolatedPosition(), DirVector.zeroVector(),
-                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, DENSITY, Particles.FIRE_LINGER_TIME
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, DENSITY, Particles.FIRE_LINGER_TIME, FIRE_PARTICLE_SIZE
         );
     }
 

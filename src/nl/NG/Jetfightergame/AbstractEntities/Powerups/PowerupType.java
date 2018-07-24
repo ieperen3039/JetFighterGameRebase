@@ -1,15 +1,22 @@
-package nl.NG.Jetfightergame.Assets.Powerups;
+package nl.NG.Jetfightergame.AbstractEntities.Powerups;
 
 import java.util.EnumSet;
 
-import static nl.NG.Jetfightergame.Assets.Powerups.PowerupColor.*;
+import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor.*;
 
 /**
  * @author Geert van Ieperen. Created on 11-7-2018.
  */
 public enum PowerupType {
-    SPEED(TIME), SHIELD(INFO), ROCKET(ENERGY), SMOKE(SPACE);
+    NONE(PowerupColor.NONE), SPEED(TIME), SHIELD(INFO), ROCKET(ENERGY), SMOKE(SPACE);
 
+    public static final float SEEKER_LAUNCH_SPEED = 3f;
+    public static final float SMOKE_LAUNCH_SPEED = 20f;
+    public static final float SMOKE_SPREAD = 10f;
+    public static final int SMOKE_DENSITY = 1_000;
+    public static final float SPEED_BOOST_DURATION = 5f;
+    public static final float SPEED_BOOST_FACTOR = 2f;
+    public static final float SMOKE_LINGER_TIME = 30f;
     private static final EnumSet<PowerupType> VALUE_SET = EnumSet.allOf(PowerupType.class);
     private static final PowerupType[] VALUE_ARRAY = values();
 
@@ -29,7 +36,7 @@ public enum PowerupType {
                 .filter(pwr -> pwr.required.containsAll(resources))
                 .filter(pwr -> resources.containsAll(pwr.required))
                 .findAny()
-                .orElse(null);
+                .orElse(NONE);
     }
 
     public static PowerupType get(PowerupColor source) {
@@ -53,6 +60,8 @@ public enum PowerupType {
     }
 
     public PowerupType with(PowerupColor type) {
+        if (this == NONE) return get(type);
+
         EnumSet<PowerupColor> types = required.clone();
         types.add(type);
         return get(types);

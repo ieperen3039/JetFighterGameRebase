@@ -12,7 +12,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public class FollowingCamera implements Camera {
     /** camera settings */
-    private static final DirVector eyeRelative = new DirVector(-7, 0, 2);
+    private static final DirVector eyeRelative = new DirVector(-20, 0, 3);
     private static final DirVector focusRelativeToEye = new DirVector(5, 0, 0);
     private static final float CAMERA_CATCHUP = 0.99999f; // speed of camera positioning
     private static final float CAMERA_ORIENT = 0.9999f; // linear speed of camera orientation

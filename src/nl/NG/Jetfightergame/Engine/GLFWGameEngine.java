@@ -73,7 +73,7 @@ public abstract class GLFWGameEngine {
         try { Thread.sleep(10); } catch (InterruptedException ignored) {} // wait for possible error-printing
 
         System.out.println();
-        Logger.DEBUG.printFrom(2, "Stopping game...");
+        Logger.INFO.print("Stopping game...");
 
         renderingLoop().stopLoop();
         secondaryGameLoops().forEach(AbstractGameLoop::stopLoop);

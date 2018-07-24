@@ -24,16 +24,17 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 17-7-2018.
  */
 public class Seeker extends AbstractProjectile {
-    public static final int THRUST_POWER = 300;
+    public static final int THRUST_POWER = 200;
     public static final float TURN_ACC = 3f;
     public static final float AIR_RESIST = 0.02f;
     public static final float TIME_TO_LIVE = 30f;
-    public static final float MASS = 2f;
+    public static final float MASS = 1f;
     public static final Color4f COLOR_1 = new Color4f(0.1f, 0, 0);
     public static final Color4f COLOR_2 = new Color4f(0.6f, 0.1f, 0.1f);
     public static final int NOF_PARTICLES = 10;
     public static final float EXPLOSION_CLOUD_POWER = 1f;
     public static final float ROTATION_REDUCTION = 0.8f;
+    public static final float PARTICLE_SIZE = 0.3f;
 
 
     private Seeker(
@@ -50,7 +51,7 @@ public class Seeker extends AbstractProjectile {
 
     @Override
     public ParticleCloud explode() {
-        return Particles.explosion(position, velocity, COLOR_1, COLOR_2, EXPLOSION_CLOUD_POWER, NOF_PARTICLES, 4f);
+        return Particles.explosion(position, velocity, COLOR_1, COLOR_2, EXPLOSION_CLOUD_POWER, NOF_PARTICLES, 4f, PARTICLE_SIZE);
     }
 
     @Override

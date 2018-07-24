@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Assets.Powerups;
+package nl.NG.Jetfightergame.AbstractEntities.Powerups;
 
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 

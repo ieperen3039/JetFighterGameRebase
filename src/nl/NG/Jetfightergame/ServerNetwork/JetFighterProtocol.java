@@ -5,8 +5,8 @@ import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.Assets.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Environment;
@@ -208,24 +208,32 @@ public class JetFighterProtocol {
 
     /** sends an explosion or other effect to the client
      * @see #explosionRead(Environment)  */
-    public void explosionSend(PosVector position, DirVector direction, float spread, Color4f color1, Color4f color2) throws IOException {
+    public void explosionSend(PosVector position, DirVector direction, float spread, int density, Color4f color1, Color4f color2, float lingerTime, float particleSize) throws IOException {
         DataIO.writeVector(output, position);
         DataIO.writeVector(output, direction);
         output.writeFloat(spread);
+        output.writeInt(density);
         DataIO.writeColor(output, color1);
         DataIO.writeColor(output, color2);
+        output.writeFloat(lingerTime);
+        output.writeFloat(particleSize);
     }
 
     /** reads an explosion off the DataInputStream
-     * @see #explosionSend(PosVector, DirVector, float, Color4f, Color4f)  */
+     * @see #explosionSend(PosVector, DirVector, float, int, Color4f, Color4f, float, float)  */
     public void explosionRead(Environment game) throws IOException {
         PosVector position = DataIO.readPosVector(input);
         DirVector direction = DataIO.readDirVector(input);
         float power = input.readFloat();
+        int density = input.readInt();
         Color4f color1 = DataIO.readColor(input);
         Color4f color2 = DataIO.readColor(input);
+        float lingerTime = input.readFloat();
+        float particleSize = input.readFloat();
 
-        ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, ClientSettings.EXPLOSION_PARTICLE_DENSITY, Particles.FIRE_LINGER_TIME);
+        if (density == 0) density = ClientSettings.EXPLOSION_PARTICLE_DENSITY;
+
+        ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, density, lingerTime, particleSize);
         game.addParticles(cloud);
     }
 
@@ -284,19 +292,29 @@ public class JetFighterProtocol {
         return EnvironmentClass.get(input.read());
     }
 
-    public void powerupUpdateSend(PowerupEntity powerup, float collectionTime, PowerupColor newType) throws IOException {
+    public void powerupUpdateSend(PowerupEntity powerup, float collectionTime, boolean isCollected) throws IOException {
         output.writeInt(powerup.idNumber());
         output.writeFloat(collectionTime);
-        output.write(newType.ordinal());
+        output.writeBoolean(isCollected);
     }
 
-    public void powerupUpdateRead(EntityMapping world, SpawnReceiver game) throws IOException {
+    public void powerupUpdateRead(EntityMapping world) throws IOException {
         int id = input.readInt();
         float time = input.readFloat();
-        PowerupColor newType = PowerupColor.get(input.read());
+        boolean isCollected = input.readBoolean();
 
         MovingEntity entity = world.getEntity(id);
         assert entity instanceof PowerupEntity : String.format("Entity with id %d was supposed to be a powerup, was %s", id, entity);
-        game.powerupCollect((PowerupEntity) entity, time, newType);
+        PowerupEntity powerup = (PowerupEntity) entity;
+
+        powerup.setState(isCollected, time);
+    }
+
+    public void powerupCollectSend(PowerupType type) throws IOException {
+        output.write(type.ordinal());
+    }
+
+    public PowerupType powerupCollectRead() throws IOException {
+        return PowerupType.get(input.read());
     }
 }

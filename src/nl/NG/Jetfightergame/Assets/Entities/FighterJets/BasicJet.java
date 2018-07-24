@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -17,7 +16,6 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.util.function.Consumer;
 
@@ -66,30 +64,6 @@ public class BasicJet extends AbstractJet {
 
     @Override
     protected void updateShape(float deltaTime) {
-        if (controller.primaryFire()) {
-            DirVector randDirection = DirVector.random().scale(2);
-            randDirection.add(velocity);
-            State interpolator = new State(position, extraPosition, Toolbox.xTo(randDirection), this.rotation, randDirection, getForward());
-
-            float min = -1;
-            MovingEntity tgt = null;
-            PosVector pos = getPosition();
-
-            for (MovingEntity entity : entityMapping) {
-                if (entity == this) continue;
-
-                Vector3f relPos = entity.getPosition().sub(pos).normalize();
-                float dot = getForward().normalize().dot(relPos);
-
-                if (dot > min) {
-                    min = dot;
-                    tgt = entity;
-                }
-            }
-
-            Seeker.Factory newSeeker = new Seeker.Factory(interpolator, 0, this, tgt);
-            entityDeposit.addSpawn(newSeeker);
-        }
     }
 
     @Override

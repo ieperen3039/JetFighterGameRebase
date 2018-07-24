@@ -228,4 +228,12 @@ public class Color4f {
     public FloatBuffer toFloatBuffer() {
         return FloatBuffer.wrap(new float[]{red, green, blue, alpha});
     }
+
+    public Color4f interpolateTo(Color4f other, float value) {
+        return new Color4f(
+                red + ((other.red - red) * value),
+                green + ((other.green - green) * value),
+                blue + ((other.blue - blue) * value)
+        );
+    }
 }

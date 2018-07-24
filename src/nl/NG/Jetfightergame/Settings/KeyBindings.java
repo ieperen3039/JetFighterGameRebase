@@ -42,4 +42,6 @@ public final class KeyBindings {
     public static int KEY_THROTTLE_DOWN = GLFW_KEY_S;
     public static int KEY_YAW_UP = GLFW_KEY_A;
     public static int KEY_YAW_DOWN = GLFW_KEY_D;
+    public static int KEY_PRIMARY_FIRE = MOUSE_BUTTON_LEFT;
+    public static int KEY_SECONDARY_FIRE = MOUSE_BUTTON_RIGHT;
 }

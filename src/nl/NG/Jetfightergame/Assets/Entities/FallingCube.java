@@ -40,7 +40,7 @@ public class FallingCube extends MovingEntity {
 
     /**
      * a cube that can be moved around, and has all physic properties
-     * @param id            the id of this gameEntity
+     * @param id              the id of this gameEntity
      * @param surfaceMaterial material properties
      * @param mass            in kg
      * @param scale           scalefactor applied to this object. the scale is in global space and executed in {@link
@@ -52,8 +52,8 @@ public class FallingCube extends MovingEntity {
      *                        return the interpolated position
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
-    private FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
-                        DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit
+    protected FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
+                          DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit
     ) {
         super(id, initialPosition, initialVelocity, initialRotation, mass, scale, renderTimer, entityDeposit);
         this.range = (float) Math.sqrt(3 * scale * scale);
@@ -122,7 +122,7 @@ public class FallingCube extends MovingEntity {
             size = cube.scale;
         }
 
-        public Factory(PosVector pos, Quaternionf rot, DirVector vel, Material material, float mass, int size) {
+        public Factory(PosVector pos, Quaternionf rot, DirVector vel, Material material, float mass, float size) {
             super(EntityClass.FALLING_CUBE, pos, rot, vel);
             this.material = material;
             this.mass = mass;
