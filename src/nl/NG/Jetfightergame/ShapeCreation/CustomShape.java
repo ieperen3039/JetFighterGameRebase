@@ -112,6 +112,7 @@ public class CustomShape {
 
     /**
      * Adds a quad which is mirrored in the XZ-plane
+     * @see #addQuad(PosVector, PosVector, PosVector, PosVector, DirVector)
      */
     public void addMirrorQuad(PosVector A, PosVector B, PosVector C, PosVector D) {
         addQuad(A, B, C, D);

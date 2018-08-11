@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.AbstractEntities;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -11,11 +10,9 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -31,7 +28,6 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_S
  */
 public abstract class AbstractJet extends MovingEntity {
 
-    private static final int SMOKE_DISTRACTION_ELEMENTS = 3;
     protected final float liftFactor;
     protected final float airResistCoeff;
 
@@ -66,40 +62,40 @@ public abstract class AbstractJet extends MovingEntity {
 
     /**
      * You are defining a complete Fighterjet here. good luck.
-     * @param id                       unique identifier for this entity
-     * @param initialPosition          position of spawning (of the origin) in world coordinates
-     * @param initialRotation          the initial rotation of spawning
-     * @param scale                    scale factor applied to this object. the scale is in global space and executed in
-     *                                 {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
-     * @param material                 the default material properties of the whole object.
-     * @param mass                     the mass of the object in kilograms.
-     * @param liftFactor               arbitrary factor of the lift-effect of the wings in gravitational situations.
-     *                                 This is applied only on the vector of external influences, thus not in
-     *                                 zero-gravity.
-     * @param airResistanceCoefficient 0.5 * A * Cw.
-     * @param throttlePower            force of the engines at full power in Newton
-     * @param brakePower               air resistance is multiplied with this value when braking
-     * @param yawAcc                   acceleration over the Z-axis when moving right at full power in rad/ss
-     * @param pitchAcc                 acceleration over the Y-axis when pitching up at full power in rad/ss
-     * @param rollAcc                  acceleration over the X-axis when rolling at full power in rad/ss
-     * @param rotationReductionFactor  the fraction that the rotationspeed is reduced every second [0, 1]
-     * @param gameTimer                the timer that determines the "current rendering time" for {@link
-     *                                 MovingEntity#interpolatedPosition()}
-     * @param yReduction               reduces drifting/stalling in horizontal direction by this fraction
-     * @param zReduction               reduces drifting/stalling in vertical direction by this fraction
-     * @param entityDeposit            the class that allows new entityMapping and particles to be added to the environment
-     * @param entityMapping                 a mapping that allows binding id's to entityMapping
+     * @param id                      unique identifier for this entity
+     * @param initialPosition         position of spawning (of the origin) in world coordinates
+     * @param initialRotation         the initial rotation of spawning
+     * @param scale                   scale factor applied to this object. the scale is in global space and executed in
+     *                                {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
+     * @param material                the default material properties of the whole object.
+     * @param mass                    the mass of the object in kilograms.
+     * @param liftFactor              arbitrary factor of the lift-effect of the wings in gravitational situations. This
+     *                                is applied only on the vector of external influences, thus not in zero-gravity.
+     * @param airResistanceCoeff      Air resistance coefficient Cw as in Fwl = 0.5 * A * Cw.
+     * @param throttlePower           force of the engines at full power in Newton
+     * @param brakePower              air resistance is multiplied with this value when braking
+     * @param yawAcc                  acceleration over the Z-axis when moving right at full power in rad/ss
+     * @param pitchAcc                acceleration over the Y-axis when pitching up at full power in rad/ss
+     * @param rollAcc                 acceleration over the X-axis when rolling at full power in rad/ss
+     * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
+     * @param gameTimer               the timer that determines the "current rendering time" for {@link
+     *                                MovingEntity#interpolatedPosition()}
+     * @param yReduction              reduces drifting/stalling in horizontal direction by this fraction
+     * @param zReduction              reduces drifting/stalling in vertical direction by this fraction
+     * @param entityDeposit           the class that allows new entityMapping and particles to be added to the
+     *                                environment
+     * @param entityMapping           a mapping that allows binding id's to entityMapping
      */
     public AbstractJet(
             int id, PosVector initialPosition, Quaternionf initialRotation, float scale,
-            Material material, float mass, float liftFactor, float airResistanceCoefficient,
+            Material material, float mass, float liftFactor, float airResistanceCoeff,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
             SpawnReceiver entityDeposit, EntityMapping entityMapping
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, gameTimer, entityDeposit);
 
-        this.airResistCoeff = airResistanceCoefficient;
+        this.airResistCoeff = airResistanceCoeff;
         this.throttlePower = throttlePower;
         this.brakePower = brakePower;
         this.yawAcc = yawAcc;
@@ -136,54 +132,22 @@ public abstract class AbstractJet extends MovingEntity {
 
         boostDuration -= deltaTime;
         if (boostDuration <= 0) {
-            boostDuration = 0;
-            boostFactor = 0;
+            setBoost(0, 0);
         }
 
         gyroPhysics(deltaTime, netForce, velocity);
 
         if (currentPowerup != PowerupType.NONE && controller.primaryFire()) {
-            usePowerup(currentPowerup);
-
-            currentPowerup = PowerupType.NONE;
-            entityDeposit.playerPowerupState(this, PowerupType.NONE);
+            usePowerup();
         }
     }
 
-    private void usePowerup(PowerupType type) {
-        switch (type) {
-            case SPEED:
-                boostDuration = PowerupType.SPEED_BOOST_DURATION;
-                boostFactor = PowerupType.SPEED_BOOST_FACTOR;
-                break;
-            case SHIELD:
-                break;
-            case ROCKET:
-                launchSeekers();
-                break;
-            case SMOKE:
-                launchSmokeCloud();
-                break;
-        }
+    private void setBoost(float duration, float factor) {
+        boostDuration = duration;
+        boostFactor = factor;
     }
 
-    private void launchSmokeCloud() {
-        DirVector dir = getForward();
-        dir.scale(-SMOKE_LAUNCH_SPEED).add(velocity.scale(0.5f, new DirVector()));
-        entityDeposit.addExplosion(
-                position, dir,
-                Color4f.BLACK, Color4f.GREY,
-                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 10f
-        );
-        // distraction
-        for (int i = 0; i < SMOKE_DISTRACTION_ELEMENTS; i++) {
-            DirVector move = new DirVector(dir);
-            move.add(DirVector.random().scale(SMOKE_SPREAD / 10));
-            entityDeposit.addSpawn(new InvisibleEntity.Factory(position, move, SMOKE_LINGER_TIME));
-        }
-    }
-
-    private void launchSeekers() {
+    public MovingEntity getTarget() {
         float min = -1;
         MovingEntity tgt = null;
         PosVector pos = getPosition();
@@ -199,15 +163,7 @@ public abstract class AbstractJet extends MovingEntity {
                 tgt = entity;
             }
         }
-
-        for (int i = 0; i < ServerSettings.NOF_SEEKERS_LAUNCHED; i++) {
-            DirVector randDirection = DirVector.random().scale(PowerupType.SEEKER_LAUNCH_SPEED);
-            randDirection.add(velocity);
-            State interpolator = new State(position, extraPosition, Toolbox.xTo(randDirection), rotation, randDirection, getForward());
-
-            Seeker.Factory newSeeker = new Seeker.Factory(interpolator, 0, this, tgt);
-            entityDeposit.addSpawn(newSeeker);
-        }
+        return tgt;
     }
 
     /**
@@ -315,8 +271,8 @@ public abstract class AbstractJet extends MovingEntity {
         gl.setMaterial(surfaceMaterial);
     }
 
-    public void set(State spawn) {
-        set(spawn.position(0), spawn.velocity(), spawn.rotation(0), 0);
+    public void set(EntityState spawn) {
+        set(spawn.position(0), spawn.velocity(0), spawn.rotation(0), 0);
     }
 
     public void setController(Controller input) {
@@ -343,5 +299,25 @@ public abstract class AbstractJet extends MovingEntity {
 
     public void setPowerup(PowerupType color) {
         currentPowerup = color;
+    }
+
+    private void usePowerup() {
+        switch (currentPowerup) {
+            case SPEED:
+                setBoost(PowerupType.SPEED_BOOST_DURATION, PowerupType.SPEED_BOOST_FACTOR);
+                break;
+            case CLUSTER_ROCKET:
+                launchClusterRocket(this, getTarget(), entityDeposit);
+                break;
+            case ROCKET:
+                launchSeekers(this, entityDeposit, getTarget());
+                break;
+            case SMOKE:
+                launchSmokeCloud(this, entityDeposit);
+                break;
+        }
+
+        currentPowerup = PowerupType.NONE;
+        entityDeposit.playerPowerupState(this, PowerupType.NONE);
     }
 }

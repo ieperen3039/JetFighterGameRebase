@@ -122,19 +122,19 @@ public enum Logger {
      */
     public void printFrom(int depth, Object... s) {
         String prefix = codeName;
-        String source = ServerSettings.DEBUG ? "" : getCallingMethod(depth);
+        if (ServerSettings.DEBUG) prefix = getCallingMethod(depth) + prefix;
+
         switch (this) {
             case DEBUG:
-                if (ServerSettings.DEBUG) write(out, source + prefix, s);
-                break;
+                if (!ServerSettings.DEBUG) break;
             case INFO:
-                write(out, source + prefix, s);
+                write(out, prefix, s);
                 break;
             case WARN:
-                write(System.err::println, source + prefix, s);
+                write(System.err::println, prefix, s);
                 break;
             case ERROR:
-                write(System.err::println, source + prefix, s);
+                write(System.err::println, prefix, s);
                 break;
         }
     }

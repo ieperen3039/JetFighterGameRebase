@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
@@ -55,7 +56,7 @@ public class ServerConnection implements BlockingListener, Player {
      */
     public ServerConnection(
             InputStream inputStream, OutputStream outputStream,
-            GameServer server, BiConsumer<EntityFactory, Integer> spawnAccept, MovingEntity.State playerSpawn,
+            GameServer server, BiConsumer<EntityFactory, Integer> spawnAccept, EntityState playerSpawn,
             EnvironmentClass worldType, EntityMapping entities, boolean isAdmin
     ) throws IOException {
         this.clientOut = new BufferedOutputStream(outputStream);
@@ -79,7 +80,6 @@ public class ServerConnection implements BlockingListener, Player {
 
         if (type == MessageType.CONNECTION_CLOSE) {
             isClosed = true;
-            clientIn.close();
             clientOut.close();
             Logger.DEBUG.print("Connection to " + clientName + " has been closed");
             return false;

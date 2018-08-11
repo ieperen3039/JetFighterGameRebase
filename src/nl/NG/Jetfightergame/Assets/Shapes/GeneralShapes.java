@@ -12,6 +12,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.List;
 
+import static nl.NG.Jetfightergame.Tools.Toolbox.PHI;
+
 /**
  * @author Geert van Ieperen
  *         created on 7-11-2017.
@@ -25,10 +27,11 @@ public final class GeneralShapes {
     /** a 2*2*2 cube with center on (0, 0, 0) */
     public static Shape CUBE;
 
+    private static Shape ICOSAHEDRON;
+
     public static Shape LAB_CUBE;
     public static Shape INVERSE_CUBE;
     public static CheckpointRing CHECKPOINTRING;
-    public static Shape CONCEPT_BLUEPRINT;
 
     public static List<Shape> ISLAND1;
 
@@ -45,7 +48,6 @@ public final class GeneralShapes {
         }
         isLoaded = true;
 
-        CONCEPT_BLUEPRINT = new BasicShape("ConceptBlueprint.obj", doLoadMesh);
         ARROW = new BasicShape("arrow.obj", doLoadMesh);
         INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
         LAB_CUBE = makeInverseCube(3, doLoadMesh);
@@ -53,6 +55,51 @@ public final class GeneralShapes {
         ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", doLoadMesh, CONTAINER_SIZE, 50f);
 //        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));
         CHECKPOINTRING = new CheckpointRing(10, 0.04f, doLoadMesh);
+
+        ICOSAHEDRON = makeIcosahedron(doLoadMesh);
+    }
+
+    private static Shape makeIcosahedron(boolean loadMesh) {
+        CustomShape frame = new CustomShape();
+
+        PosVector A1 = new PosVector(0, 1, (float) PHI);
+        PosVector B1 = new PosVector(1, (float) PHI, 0);
+        PosVector C1 = new PosVector((float) PHI, 0, 1);
+
+        PosVector A2 = new PosVector(0, -1, (float) PHI);
+        PosVector B2 = new PosVector(-1, (float) PHI, 0);
+        PosVector C2 = new PosVector((float) -PHI, 0, 1);
+
+        PosVector A3 = new PosVector(0, -1, (float) -PHI);
+        PosVector B3 = new PosVector(-1, (float) -PHI, 0);
+        PosVector C3 = new PosVector((float) -PHI, 0, -1);
+
+        PosVector A4 = new PosVector(0, 1, (float) -PHI);
+        PosVector B4 = new PosVector(1, (float) -PHI, 0);
+        PosVector C4 = new PosVector((float) PHI, 0, -1);
+
+        frame.addTriangle(A1, B1, C1);
+        frame.addTriangle(A1, B1, C4);
+//        frame.addTriangle(A1, B2 ,C);
+//        frame.addTriangle(A1, B2 ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+//        frame.addTriangle(A, B ,C);
+
+        return frame.wrapUp(loadMesh);
     }
 
     private static Shape makeCube(boolean loadMesh) {

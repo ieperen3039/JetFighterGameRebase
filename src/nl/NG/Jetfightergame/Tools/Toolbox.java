@@ -25,8 +25,10 @@ public final class Toolbox {
 
     // universal random to be used everywhere
     public static final Random random = new Random();
+    public static final double PHI = 1.6180339887498948;
 
     private static final float ROUNDINGERROR = 1E-6F;
+    public static final float CURSOR_WIDTH = 0.05f;
 
     /**
      * Draws the x-axis (red), y-axis (green), z-axis (blue), and origin (yellow).
@@ -53,6 +55,34 @@ public final class Toolbox {
             gl.draw(GeneralShapes.ARROW);
             gl.scale(0.2f);
             gl.setMaterial(Material.ROUGH, Color4f.WHITE);
+            gl.draw(GeneralShapes.CUBE);
+        }
+        gl.popMatrix();
+    }
+
+    public static void draw3DPointer(GL2 gl) {
+        Material mat = Material.GLOWING;
+
+        gl.setMaterial(mat, Color4f.BLUE);
+        gl.pushMatrix();
+        {
+            gl.scale(1, CURSOR_WIDTH, CURSOR_WIDTH);
+            gl.draw(GeneralShapes.CUBE);
+        }
+        gl.popMatrix();
+
+        gl.setMaterial(mat, Color4f.RED);
+        gl.pushMatrix();
+        {
+            gl.scale(CURSOR_WIDTH, 1, CURSOR_WIDTH);
+            gl.draw(GeneralShapes.CUBE);
+        }
+        gl.popMatrix();
+
+        gl.setMaterial(mat, Color4f.GREEN);
+        gl.pushMatrix();
+        {
+            gl.scale(CURSOR_WIDTH, CURSOR_WIDTH, 1);
             gl.draw(GeneralShapes.CUBE);
         }
         gl.popMatrix();
@@ -205,6 +235,16 @@ public final class Toolbox {
     /** returns a uniformly distributed random value between val1 and val2 */
     public static float randomBetween(float val1, float val2) {
         return val1 + ((val2 - val1) * random.nextFloat());
+    }
+
+    /** transforms a double to an int, by drawing a random variable for the remainder */
+    public static int randomToInt(float value) {
+        int base = (int) value;
+
+        value -= base;
+        if (random.nextFloat() < value) base++;
+
+        return base;
     }
 
     /**

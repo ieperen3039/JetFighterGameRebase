@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
@@ -139,7 +140,7 @@ public class JetFighterProtocol {
      * @see #playerSpawnRequest(String, EntityClass, Controller, SpawnReceiver, EntityMapping)
      */
     public Pair<String, AbstractJet> playerSpawnAccept(
-            MovingEntity.State spawnState, SpawnReceiver server, Controller controls,
+            EntityState spawnState, SpawnReceiver server, Controller controls,
             BiConsumer<EntityFactory, Integer> others, EntityMapping entities
     ) throws IOException {
 

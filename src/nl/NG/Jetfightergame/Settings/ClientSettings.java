@@ -19,6 +19,10 @@ public final class ClientSettings {
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
+    public static final float THRUST_PARTICLE_SIZE = 0.5f;
+    public static final float THRUST_PARTICLE_SPEED = 10f;
+    public static final float THRUST_PARTICLE_LINGER_TIME = 2f;
+    public static final float THRUST_PARTICLES_PER_SECOND = 10f;
     public static boolean SAVE_PLAYBACK = false;
 
     /** controller settings; these modifiers are also used to inverse direction */

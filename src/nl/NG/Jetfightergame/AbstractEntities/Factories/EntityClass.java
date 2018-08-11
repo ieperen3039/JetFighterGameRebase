@@ -3,7 +3,9 @@ package nl.NG.Jetfightergame.AbstractEntities.Factories;
 import nl.NG.Jetfightergame.AbstractEntities.InvisibleEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSptiz;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.ClusterRocket;
 import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
 import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleBullet;
 import nl.NG.Jetfightergame.Assets.Entities.Projectiles.SimpleRocket;
@@ -15,12 +17,14 @@ import java.util.function.Supplier;
  * @see EntityFactory for how to create entities
  */
 public enum EntityClass {
-    BASIC_JET(BasicJet.Factory::new),
+    JET_BASIC(JetBasic.Factory::new),
+    JET_SPITZ(JetSptiz.Factory::new),
     SIMPLE_BULLET(SimpleBullet.Factory::new),
     FALLING_CUBE(FallingCube.Factory::new),
     INVISIBLE_ENTITY(InvisibleEntity.Factory::new),
     SIMPLE_ROCKET(SimpleRocket.Factory::new),
     SEEKER(Seeker.Factory::new),
+    CLUSTER_ROCKET(ClusterRocket.Factory::new),
     POWERUP(PowerupEntity.Factory::new);
 
     private static final EntityClass[] VALUES = values();

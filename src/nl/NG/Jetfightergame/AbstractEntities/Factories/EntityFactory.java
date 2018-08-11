@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.AbstractEntities.Factories;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
@@ -41,11 +42,11 @@ public abstract class EntityFactory implements Externalizable {
         this.position = position;
         this.rotation = rotation;
         this.velocity = velocity;
-        id = Identity.next();
+        this.id = Identity.next();
     }
 
-    public EntityFactory(EntityClass type, MovingEntity.State state, float fraction) {
-        this(type, state.position(fraction), state.rotation(fraction), state.velocity());
+    public EntityFactory(EntityClass type, EntityState state, float fraction) {
+        this(type, state.position(fraction), state.rotation(fraction), state.velocity(0));
     }
 
     /**
@@ -55,7 +56,7 @@ public abstract class EntityFactory implements Externalizable {
      * @param fraction the faction of the state where this entity is spawned
      * @return a new factory with a unique id and with only the basic parameters set
      */
-    public static EntityFactory newFactoryOf(EntityClass type, MovingEntity.State state, float fraction) {
+    public static EntityFactory newFactoryOf(EntityClass type, EntityState state, float fraction) {
         EntityFactory factory = type.getFactory();
         factory.id = Identity.next();
         factory.set(state, fraction);
@@ -86,10 +87,10 @@ public abstract class EntityFactory implements Externalizable {
     protected EntityFactory() {
     }
 
-    public void set(MovingEntity.State state, float fraction) {
+    public void set(EntityState state, float fraction) {
         position = state.position(fraction);
         rotation = state.rotation(fraction);
-        velocity = state.velocity();
+        velocity = state.velocity(0);
     }
 
     /**

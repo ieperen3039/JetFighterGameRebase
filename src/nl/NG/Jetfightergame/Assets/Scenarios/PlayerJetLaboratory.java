@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
@@ -59,7 +60,9 @@ public class PlayerJetLaboratory extends GameState {
                 }
             }
         }
-        entities.add(new PowerupEntity.Factory(new PosVector(40, 0, 0), PowerupColor.ENERGY));
+
+        entities.add(new PowerupEntity.Factory(new PosVector(30, 0, 0), PowerupColor.SPACE));
+        entities.add(new PowerupEntity.Factory(new PosVector(60, 0, 20), PowerupColor.ENERGY));
 
         return entities;
     }
@@ -75,7 +78,7 @@ public class PlayerJetLaboratory extends GameState {
     }
 
     @Override
-    public MovingEntity.State getNewSpawnPosition() {
-        return new MovingEntity.State();
+    public EntityState getNewSpawnPosition() {
+        return new EntityState();
     }
 }

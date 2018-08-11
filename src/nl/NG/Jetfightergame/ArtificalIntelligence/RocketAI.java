@@ -11,69 +11,70 @@ import org.joml.Vector3f;
  * @author Geert van Ieperen. Created on 21-7-2018.
  */
 public class RocketAI implements Controller {
-    private static final float DIRECTION_THROTTLE_MODIFIER = 0.5f;
-    private static final float DIRECTION_ROLL_MODIFIER = 0.1f;
-    private static final float DIRECTION_PITCH_MODIFIER = 2f;
-    private static final float DIRECTION_YAW_MODIFIER = 2f;
-    private static final float BLOW_DIST_SQ = 100;
-    public static final float THROTTLE_DOT_IGNORE = 0.3f;
-    public static final float SHOOT_ACCURACY = 0.01f;
+    private static final float ROLL_MULTIPLIER = 0.1f;
+    private static final float PITCH_MODIFIER = 3f;
+    private static final float YAW_MULTIPLIER = 3f;
+    private static final float THROTTLE_DOT_IGNORE = 0.4f;
+    private static final float THROTTLE_MULTIPLIER = 1 / (1 - THROTTLE_DOT_IGNORE);
 
-    private final MovingEntity projectile;
+    public final MovingEntity projectile;
 
-    private MovingEntity target;
-    private final float pSpeedSq;
+    protected MovingEntity target;
+    private final float pSpeed;
     private PosVector targetPos = new PosVector();
 
-    private DirVector vecToTarget;
-    private DirVector xVec;
-    private DirVector yVec;
-    private DirVector zVec;
-    private boolean doAim;
+    protected DirVector vecToTarget;
+    protected DirVector xVec;
+    protected DirVector yVec;
+    protected DirVector zVec;
+    protected float explodeDistSq;
+    private final boolean doExtrapolate;
 
     /**
      * a controller that tries to send the projectile in the anticipated direction of target, assuming the given speed
      * @param projectile      the projectile that is controlled by this controller
      * @param target          the target entity that this projectile tries to hit
      * @param projectileSpeed the assumed (and preferably over-estimated) maximum speed of the given projectile
-     * @param doAim
+     * @param explodeDistance only if the controlled entity is within a range of explodeDistance, primaryFire() will return true
      */
-    public RocketAI(MovingEntity projectile, MovingEntity target, float projectileSpeed, boolean doAim) {
+    public RocketAI(MovingEntity projectile, MovingEntity target, float projectileSpeed, float explodeDistance) {
         this.projectile = projectile;
         this.target = target;
-        this.pSpeedSq = projectileSpeed * projectileSpeed;
-        this.doAim = doAim;
+        this.pSpeed = projectileSpeed;
+        this.explodeDistSq = explodeDistance * explodeDistance;
+        doExtrapolate = true;
     }
 
-    public void setTarget(MovingEntity target) {
+    /**
+     * a controller that sends the given projectile to the given target
+     * @param projectile      the projectile that is controlled by this controller
+     * @param target          the target entity that this projectile tries to hit
+     * @param explodeDistance only if the controlled entity is within a range of explodeDistance, primaryFire() will
+     *                        return true
+     */
+    public RocketAI(MovingEntity projectile, MovingEntity target, float explodeDistance) {
+        this.projectile = projectile;
         this.target = target;
+        this.pSpeed = 0;
+        this.explodeDistSq = explodeDistance * explodeDistance;
+        doExtrapolate = false;
     }
 
     @Override
     public void update() {
         if (TemporalEntity.isOverdue(target)) return;
 
-        DirVector tVel = target.getVelocity();
+        PosVector pPos = projectile.getPosition();
         PosVector tPos = target.getPosition();
-        PosVector prPos = projectile.getPosition();
-        Vector3f relPos = prPos.to(tPos, new DirVector());
 
-        float a = tVel.lengthSquared() - pSpeedSq;
-        float b = 2 * tVel.dot(relPos);
-        float c = relPos.lengthSquared();
-        float d = (b * b) - (4 * a * c);
-
-        if (d > 0) {
-            float lambda1 = (-b + (float) Math.sqrt(d)) / (2 * a);
-            float lambda2 = (-b - (float) Math.sqrt(d)) / (2 * a);
-            float exFac = Math.max(lambda1, lambda2);
-            tPos.add(tVel.scale(exFac, new DirVector()), targetPos); // S
+        if (doExtrapolate && pPos.to(tPos, new DirVector()).lengthSquared() > (0.5f * pSpeed * pSpeed)) {
+            targetPos = extrapolateTarget(target.getVelocity(), tPos, pPos, pSpeed);
 
         } else {
             targetPos = tPos;
         }
 
-        vecToTarget = prPos.to(targetPos, new DirVector());
+        vecToTarget = pPos.to(targetPos, new DirVector());
         vecToTarget.normalize();
         xVec = projectile.relativeStateDirection(DirVector.xVector());
         yVec = projectile.relativeStateDirection(DirVector.yVector());
@@ -84,39 +85,70 @@ public class RocketAI implements Controller {
         zVec.normalize();
     }
 
+    /**
+     * @param tVel   velocity of the target
+     * @param tPos   current position of the target
+     * @param sPos   current position of the source
+     * @param sSpeed the estimated speed of source
+     * @return position S such that if a position on sPos would move with a speed of sSpeed toward S, he would meet the
+     *         target at S
+     */
+    public static PosVector extrapolateTarget(DirVector tVel, PosVector tPos, PosVector sPos, float sSpeed) {
+        Vector3f relPos = sPos.to(tPos, new DirVector());
+
+        // || xA + B || = v
+        // with A is the target velocity and B the relative position of the target to the projectile
+        // solving for x gives a quadratic function, which can be solved using the ABC formula
+        float a = tVel.lengthSquared() - sSpeed * sSpeed;
+        float b = 2 * tVel.dot(relPos);
+        float c = relPos.lengthSquared();
+        float d = (b * b) - (4 * a * c);
+
+        if (d > 0) {
+            // one of these solutions is negative
+            float lambda1 = (-b + (float) Math.sqrt(d)) / (2 * a);
+            float lambda2 = (-b - (float) Math.sqrt(d)) / (2 * a);
+            float exFac = Math.max(lambda1, lambda2);
+            tPos.add(tVel.scale(exFac), tPos);
+        }
+
+        return tPos;
+    }
+
     @Override
     public float throttle() {
         float dot = xVec.dot(vecToTarget);
         dot -= THROTTLE_DOT_IGNORE;
-        return Math.min(1, Math.max(0, dot * DIRECTION_THROTTLE_MODIFIER));
+        return bound(dot * THROTTLE_MULTIPLIER, 0, 1);
     }
 
     @Override
     public float pitch() {
         float dot = zVec.dot(vecToTarget);
-        return Math.min(1, Math.max(-1, -dot * DIRECTION_PITCH_MODIFIER));
+        return bound(-dot * PITCH_MODIFIER, -1, 1);
     }
 
     @Override
     public float yaw() {
         float dot = yVec.dot(vecToTarget);
-        return Math.min(1, Math.max(-1, dot * DIRECTION_YAW_MODIFIER));
+        return bound(dot * YAW_MULTIPLIER, -1, 1);
     }
 
     @Override
     public float roll() {
         DirVector cross = vecToTarget.cross(xVec, new DirVector());
         float dot = zVec.dot(cross);
-        return Math.min(1, Math.max(-1, dot * DIRECTION_ROLL_MODIFIER));
+        return bound(dot * ROLL_MULTIPLIER, -1, 1);
+    }
+
+
+    private float bound(float input, float lower, float upper) {
+        return (input < lower) ? lower : ((input > upper) ? upper : input);
     }
 
     @Override
     public boolean primaryFire() {
-        if (doAim) {
-            return xVec.dot(vecToTarget) > (1 - SHOOT_ACCURACY);
-        } else {
-            return projectile.getPosition().sub(targetPos).lengthSquared() < BLOW_DIST_SQ;
-        }
+        return projectile.getPosition().sub(targetPos).lengthSquared() < explodeDistSq;
     }
 
     @Override
@@ -127,14 +159,6 @@ public class RocketAI implements Controller {
     @Override
     public boolean isActiveController() {
         return false;
-    }
-
-    public MovingEntity getProjectile() {
-        return projectile;
-    }
-
-    public MovingEntity getTarget() {
-        return target;
     }
 
     public PosVector getTargetPos() {

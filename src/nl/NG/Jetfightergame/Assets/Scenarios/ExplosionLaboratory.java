@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
@@ -47,7 +48,7 @@ public class ExplosionLaboratory extends GameState {
             pos.negate(vel).add(DirVector.random(), vel);
 
             SimpleRocket.Factory rocket = new SimpleRocket.Factory();
-            rocket.set(new MovingEntity.State(pos, new DirVector(), vel.reducedTo(10, vel)), 0);
+            rocket.set(new EntityState(pos, new DirVector(), vel.reducedTo(10, vel)), 0);
 
             dynamicEntities.add(rocket);
         }
@@ -72,7 +73,7 @@ public class ExplosionLaboratory extends GameState {
     }
 
     @Override
-    public MovingEntity.State getNewSpawnPosition() {
-        return new MovingEntity.State();
+    public EntityState getNewSpawnPosition() {
+        return new EntityState();
     }
 }

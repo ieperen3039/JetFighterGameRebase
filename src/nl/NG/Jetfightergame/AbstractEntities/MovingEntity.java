@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -30,7 +29,7 @@ import static java.lang.StrictMath.sqrt;
 public abstract class MovingEntity implements Touchable {
     private final float spawnTime;
     /** particles and new entities should be passed to this object */
-    protected transient SpawnReceiver entityDeposit;
+    protected SpawnReceiver entityDeposit;
     private final int thisID;
 
     /** worldspace position in m */
@@ -46,7 +45,7 @@ public abstract class MovingEntity implements Touchable {
     protected PosVector extraPosition;
     /** expected rotation */
     protected Quaternionf extraRotation;
-    /** expected velocity */
+    /** expected firstVel */
     protected DirVector extraVelocity;
 
     private VectorInterpolator positionInterpolator;
@@ -178,8 +177,8 @@ public abstract class MovingEntity implements Touchable {
 
     /**
      * apply net force on this object and possibly read input. Should not change the current state except for {@link
-     * #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}. The current values of {@link #extraPosition},
-     * {@link #extraRotation} and {@link #extraVelocity} are invalid.
+     * #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}.
+     * @implNote The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity} are invalid.
      * @param netForce  accumulated external forces on this object
      * @param deltaTime time-difference, cannot be 0
      */
@@ -339,7 +338,7 @@ public abstract class MovingEntity implements Touchable {
     }
 
     /**
-     * applies a change in velocity by applying the given momentum to the velocity. This may only be applied between
+     * applies a change in firstVel by applying the given momentum to the firstVel. This may only be applied between
      * calls to {@link #preUpdate(float, DirVector)} and {@link #update(float)}
      * @param direction the normalized direction in which the force is applied
      * @param energy    the energy in Newton to be applied to the gravity center of this entity
@@ -371,6 +370,14 @@ public abstract class MovingEntity implements Touchable {
         preDraw(gl);
         Consumer<Shape> painter = gl::draw;
         toLocalSpace(gl, () -> create(gl, painter), pos, rot);
+    }
+
+    /** adds a position state for rendering on the specified time */
+    public void addStatePoint(float currentTime, PosVector newPosition, Quaternionf newRotation) {
+        position.set(newPosition);
+        rotation.set(newRotation);
+        positionInterpolator.add(newPosition, currentTime);
+        rotationInterpolator.add(newRotation, currentTime);
     }
 
     /**
@@ -411,12 +418,8 @@ public abstract class MovingEntity implements Touchable {
         return new DirVector(velocity);
     }
 
-    /** adds a position state for rendering on the specified time */
-    public void addStatePoint(float currentTime, PosVector newPosition, Quaternionf newRotation) {
-        position.set(newPosition);
-        rotation.set(newRotation);
-        positionInterpolator.add(newPosition, currentTime);
-        rotationInterpolator.add(newRotation, currentTime);
+    public EntityState getState() {
+        return new EntityState(position, extraPosition, rotation, extraRotation, velocity, extraVelocity);
     }
 
     /**
@@ -528,61 +531,6 @@ public abstract class MovingEntity implements Touchable {
 
     @Override
     public int hashCode() {
-        return idNumber() >> 3; // for spreading in hashtables
-    }
-
-    public static class State {
-        private final PosVector firstPos;
-        private final PosVector secondPos;
-        private final Quaternionf firstRot;
-        private final Quaternionf secondRot;
-        private final DirVector velocity;
-        private final DirVector forward;
-
-        public State() {
-            this(
-                    PosVector.zeroVector(),
-                    PosVector.zeroVector(),
-                    new Quaternionf(),
-                    new Quaternionf(),
-                    DirVector.zeroVector(),
-                    DirVector.xVector()
-            );
-        }
-
-        public State(PosVector position, DirVector direction, DirVector velocity) {
-            this(position, Toolbox.xTo(direction), velocity, direction);
-        }
-
-        public State(PosVector firstPos, PosVector secondPos, Quaternionf firstRot, Quaternionf secondRot, DirVector velocity, DirVector forward) {
-            this.firstPos = firstPos;
-            this.secondPos = secondPos;
-            this.firstRot = firstRot;
-            this.secondRot = secondRot;
-            this.velocity = new DirVector(velocity);
-            this.forward = new DirVector(forward);
-        }
-
-        public State(PosVector position, Quaternionf rotation, DirVector velocity, DirVector forward) {
-            this(position, position, rotation, rotation, velocity, forward);
-        }
-
-        public PosVector position(float timeFraction) {
-            if (timeFraction == 0) return new PosVector(firstPos);
-            else return firstPos.interpolateTo(secondPos, timeFraction);
-        }
-
-        public Quaternionf rotation(float timeFraction) {
-            if (timeFraction == 0) return new Quaternionf(firstRot);
-            else return firstRot.nlerp(secondRot, timeFraction);
-        }
-
-        public DirVector velocity() {
-            return velocity;
-        }
-
-        public DirVector forward() {
-            return forward;
-        }
+        return idNumber() ^ Float.hashCode(spawnTime) ^ Float.hashCode(mass); // for spreading in hashtables
     }
 }

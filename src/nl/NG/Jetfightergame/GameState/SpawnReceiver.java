@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -51,4 +52,10 @@ public interface SpawnReceiver {
     void powerupCollect(PowerupEntity powerup, float collectionTime, boolean isCollected);
 
     void playerPowerupState(AbstractJet jet, PowerupType newType);
+
+    /**
+     * adds the given ParticleCloud to the game's rendering
+     * @param particles the particles to add
+     */
+    void addParticles(ParticleCloud particles);
 }

@@ -1,11 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.*;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
@@ -31,8 +28,8 @@ public class SimpleBullet extends AbstractProjectile {
                          GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
     ) {
         super(
-                id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
-                AIR_RESIST_COEFF, 10, 0, 0, 0.2f, entityDeposit, gameTimer, src
+                id, initialPosition, initialRotation, initialVelocity, MASS, Material.SILVER,
+                AIR_RESIST_COEFF, 10, 0, 0f, 0, 0.2f, entityDeposit, gameTimer, src
         );
     }
 
@@ -76,6 +73,10 @@ public class SimpleBullet extends AbstractProjectile {
 
         public Factory(SimpleBullet bullet) {
             super(EntityClass.SIMPLE_BULLET, bullet);
+        }
+
+        public Factory(EntityState state) {
+            super(EntityClass.SIMPLE_BULLET, state, 0);
         }
 
         @Override

@@ -1,5 +1,14 @@
 package nl.NG.Jetfightergame.AbstractEntities.Powerups;
 
+import nl.NG.Jetfightergame.AbstractEntities.*;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.ClusterRocket;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+
 import java.util.EnumSet;
 
 import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor.*;
@@ -8,9 +17,10 @@ import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor.*;
  * @author Geert van Ieperen. Created on 11-7-2018.
  */
 public enum PowerupType {
-    NONE(PowerupColor.NONE), SPEED(TIME), SHIELD(INFO), ROCKET(ENERGY), SMOKE(SPACE);
+    NONE(PowerupColor.NONE), SPEED(TIME), SHIELD(INFO), ROCKET(ENERGY), SMOKE(SPACE),
+    CLUSTER_ROCKET(ENERGY, SPACE);
 
-    public static final float SEEKER_LAUNCH_SPEED = 3f;
+    public static final float SEEKER_LAUNCH_SPEED = 4f;
     public static final float SMOKE_LAUNCH_SPEED = 20f;
     public static final float SMOKE_SPREAD = 10f;
     public static final int SMOKE_DENSITY = 1_000;
@@ -19,6 +29,7 @@ public enum PowerupType {
     public static final float SMOKE_LINGER_TIME = 30f;
     private static final EnumSet<PowerupType> VALUE_SET = EnumSet.allOf(PowerupType.class);
     private static final PowerupType[] VALUE_ARRAY = values();
+    private static final int SMOKE_DISTRACTION_ELEMENTS = 3;
 
     private final EnumSet<PowerupColor> required;
 
@@ -32,6 +43,8 @@ public enum PowerupType {
      * @return the powerup that encapsulates exactly the given primitives
      */
     public static PowerupType get(EnumSet<PowerupColor> resources) {
+        if (resources.size() == 1) return get(resources.iterator().next());
+
         return VALUE_SET.stream()
                 .filter(pwr -> pwr.required.containsAll(resources))
                 .filter(pwr -> resources.containsAll(pwr.required))
@@ -57,6 +70,34 @@ public enum PowerupType {
     public static PowerupType get(int id) {
         if (id >= VALUE_ARRAY.length) throw new IllegalArgumentException("Invalid power-up identifier " + id);
         else return VALUE_ARRAY[id];
+    }
+
+    public static void launchClusterRocket(AbstractJet jet, MovingEntity target, SpawnReceiver deposit) {
+        EntityState spawnState = jet.getState();
+        deposit.addSpawn(new ClusterRocket.Factory(spawnState, jet, target));
+    }
+
+    public static void launchSmokeCloud(AbstractJet jet, SpawnReceiver deposit) {
+        DirVector dir = jet.getForward();
+        dir.scale(-SMOKE_LAUNCH_SPEED).add(jet.getVelocity().scale(0.5f));
+        deposit.addExplosion(
+                jet.getPosition(), dir,
+                Color4f.BLACK, Color4f.GREY,
+                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 10f
+        );
+        // distraction
+        for (int i = 0; i < SMOKE_DISTRACTION_ELEMENTS; i++) {
+            DirVector move = new DirVector(dir);
+            move.add(DirVector.random().scale(SMOKE_SPREAD / 10));
+            deposit.addSpawn(new InvisibleEntity.Factory(jet.getPosition(), move, SMOKE_LINGER_TIME));
+        }
+    }
+
+    public static void launchSeekers(AbstractJet jet, SpawnReceiver deposit, MovingEntity target) {
+        deposit.addSpawns(AbstractProjectile.createCloud(
+                jet, ServerSettings.NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
+                (state) -> new Seeker.Factory(state, Toolbox.random.nextFloat(), jet, target)
+        ));
     }
 
     public PowerupType with(PowerupColor type) {

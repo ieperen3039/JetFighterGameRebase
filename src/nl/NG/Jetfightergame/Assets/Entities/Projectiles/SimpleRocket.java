@@ -9,11 +9,15 @@ import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -33,14 +37,25 @@ public class SimpleRocket extends AbstractProjectile {
     private static final float EXPLOSION_POWER = 20f;
     private static final int DENSITY = 1000;
     private static final int THRUST = 100;
+    private static final Color4f THRUST_COLOR = Color4f.ORANGE;
+    private static final float THRUST_PARTICLE_DENSITY = 5f;
+    private BoosterLine nuzzle;
 
     private SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
                          GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
     ) {
         super(
-                id, initialPosition, initialRotation, initialVelocity, 1f, MASS, Material.SILVER,
-                AIR_RESIST_COEFF, 10, 0, THRUST,
+                id, initialPosition, initialRotation, initialVelocity, MASS, Material.SILVER,
+                AIR_RESIST_COEFF, 10, 0, 0f, THRUST,
                 0.2f, entityDeposit, gameTimer, src
+        );
+
+        DirVector back = new DirVector();
+        forward.negate(back).reducedTo(ClientSettings.THRUST_PARTICLE_SPEED, back).add(forward);
+        PosVector pos = PosVector.zeroVector();
+        nuzzle = new BoosterLine(
+                pos, pos, back,
+                THRUST_PARTICLE_DENSITY, ClientSettings.THRUST_PARTICLE_LINGER_TIME, THRUST_COLOR, THRUST_COLOR, ClientSettings.THRUST_PARTICLE_SIZE
         );
     }
 
@@ -53,6 +68,19 @@ public class SimpleRocket extends AbstractProjectile {
             action.accept(GeneralShapes.ARROW);
         }
         ms.popMatrix();
+    }
+
+    @Override
+    public void draw(GL2 gl) {
+        super.draw(gl);
+
+        float deltaTime = gameTimer.getRenderTime().difference();
+        PosVector pos = getPosition();
+        DirVector back = new DirVector();
+        forward.negate(back).reducedTo(ClientSettings.THRUST_PARTICLE_SPEED, back).add(forward);
+
+        ParticleCloud cloud = nuzzle.update(pos, pos, back, deltaTime);
+        entityDeposit.addParticles(cloud);
     }
 
     @Override

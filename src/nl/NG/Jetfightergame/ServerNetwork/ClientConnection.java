@@ -63,7 +63,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.time = protocol.syncTimerTarget();
         EnvironmentClass type = protocol.worldSwitchRead();
         game.switchTo(type);
-        this.jet = protocol.playerSpawnRequest(name, EntityClass.BASIC_JET, input, this, game);
+        this.jet = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
         game.addEntity(jet);
     }
 
@@ -216,7 +216,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     protected void cleanup() {
         try {
-            serverIn.close();
             serverOut.close();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -250,6 +249,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public void playerPowerupState(AbstractJet jet, PowerupType newType) {
         Logger.WARN.print("Clientside powerup collection");
+    }
+
+    @Override
+    public void addParticles(ParticleCloud particles) {
+        game.addParticles(particles);
     }
 
     @Override

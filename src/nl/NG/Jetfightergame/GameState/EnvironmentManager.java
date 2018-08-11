@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -88,7 +89,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     }
 
     @Override
-    public MovingEntity.State getNewSpawnPosition() {
+    public EntityState getNewSpawnPosition() {
         return instance.getNewSpawnPosition();
     }
 

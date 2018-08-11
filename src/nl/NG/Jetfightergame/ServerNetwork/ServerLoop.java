@@ -7,7 +7,7 @@ import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
 import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.BasicJet;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -197,10 +197,10 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         if (ServerSettings.FUN) new Thread(() -> {
             MovingEntity target = connections.get(0).jet();
-            EntityFactory blueprint = new BasicJet.Factory(new PosVector(100, 0, 30), DirVector.xVector(), DirVector.zeroVector());
+            EntityFactory blueprint = new JetBasic.Factory(new PosVector(100, 0, 30), DirVector.xVector(), DirVector.zeroVector());
 
             AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
-            Controller controller = new HunterAI(npc, target, gameWorld, BasicJet.THROTTLE_POWER / BasicJet.AIR_RESISTANCE_COEFFICIENT);
+            Controller controller = new HunterAI(npc, target, gameWorld, JetBasic.THROTTLE_POWER / JetBasic.AIR_RESISTANCE_COEFFICIENT);
             npc.setController(controller);
             gameWorld.addEntity(npc);
             connections.forEach(conn -> conn.sendEntitySpawn(blueprint));

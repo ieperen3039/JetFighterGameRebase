@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
@@ -53,6 +54,7 @@ public class JetFighterGame extends GLFWGameEngine {
     public JetFighterGame() throws Exception {
         super();
         GeneralShapes.init(true);
+        CustomJetShapes.init(true);
 
         MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
         MouseTracker.getInstance().listenTo(window);

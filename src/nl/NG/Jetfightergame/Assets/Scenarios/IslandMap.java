@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
@@ -55,19 +56,19 @@ public class IslandMap extends GameState {
         entities.add(new PowerupEntity.Factory(new PosVector(-100, 100, 100), PowerupColor.ENERGY));
         entities.add(new PowerupEntity.Factory(new PosVector(-100, -50, 50), PowerupColor.SPACE));
         entities.add(new PowerupEntity.Factory(new PosVector(0, 100, 20), PowerupColor.ENERGY));
-        entities.add(new PowerupEntity.Factory(new PosVector(0, -50, 150), PowerupColor.SPACE));
+        entities.add(new PowerupEntity.Factory(new PosVector(0, -50, 150), PowerupColor.INFO));
         return entities;
 
     }
 
     @Override
-    public MovingEntity.State getNewSpawnPosition() {
+    public EntityState getNewSpawnPosition() {
         DirVector direction = new DirVector(1, 1, 0);
         direction.normalize();
         PosVector pos = new PosVector(nextSpawnPosition);
 
         nextSpawnPosition.add(new PosVector(20, 0, 0));
-        return new MovingEntity.State(pos, direction, DirVector.zeroVector());
+        return new EntityState(pos, direction, DirVector.zeroVector());
     }
 
     @Override

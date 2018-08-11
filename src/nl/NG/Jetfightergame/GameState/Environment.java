@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
@@ -24,7 +25,7 @@ import java.util.Iterator;
 public interface Environment extends EntityManagement.NetForceProvider, PathDescription, EntityMapping {
 
     /** @return a unique place for a new player to spawn */
-    MovingEntity.State getNewSpawnPosition();
+    EntityState getNewSpawnPosition();
 
     /**
      * update the physics of all game objects and check for collisions
@@ -87,18 +88,18 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
     class Void extends GameState {
 
         @Override
-        public MovingEntity.State getNewSpawnPosition() {
-            return new MovingEntity.State();
+        public EntityState getNewSpawnPosition() {
+            return new EntityState();
         }
 
         @Override
         protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         @Override
         protected Collection<EntityFactory> getInitialEntities() {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         @Override
@@ -130,7 +131,7 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
 
         @Override
         public Collection<MovingEntity> getEntities() {
-            return Collections.EMPTY_SET;
+            return Collections.emptySet();
         }
 
         @Override

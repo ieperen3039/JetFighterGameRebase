@@ -5,11 +5,14 @@ import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
  * @author Geert van Ieperen. Created on 23-7-2018.
  */
 public class HunterAI extends RocketAI {
+    private static final float SHOOT_ACCURACY = 0.05f;
+
     private final AbstractJet jet;
     private final MovingEntity actualTarget;
     private final EntityMapping entities;
@@ -21,7 +24,7 @@ public class HunterAI extends RocketAI {
      * @param projectileSpeed the assumed (and preferably over-estimated) maximum speed of the given jet
      */
     public HunterAI(AbstractJet jet, MovingEntity target, EntityMapping entities, float projectileSpeed) {
-        super(jet, target, projectileSpeed, true);
+        super(jet, target, projectileSpeed, 10f);
         this.jet = jet;
         actualTarget = target;
         this.entities = entities;
@@ -30,20 +33,20 @@ public class HunterAI extends RocketAI {
     @Override
     public void update() {
         PowerupType currPop = jet.getCurrentPowerup();
-        if (getTarget() != actualTarget && currPop != PowerupType.NONE) {
+        if (target != actualTarget && currPop != PowerupType.NONE) {
             if (currPop == PowerupType.SPEED || currPop == PowerupType.SMOKE) {
-                setTarget(getClosestPowerup());
+                this.target = getClosestPowerup();
             } else {
-                setTarget(actualTarget);
+                this.target = actualTarget;
             }
 
-        } else if (getTarget() == actualTarget && currPop == PowerupType.NONE) {
-            setTarget(getClosestPowerup());
+        } else if (target == actualTarget && currPop == PowerupType.NONE) {
+            this.target = getClosestPowerup();
         }
 
-        if (getTarget() instanceof PowerupEntity) {
-            PowerupEntity pop = (PowerupEntity) getTarget();
-            if (pop.isCollected()) setTarget(getClosestPowerup());
+        if (target instanceof PowerupEntity) {
+            PowerupEntity pop = (PowerupEntity) target;
+            if (pop.isCollected()) this.target = getClosestPowerup();
         }
 
         super.update();
@@ -52,13 +55,14 @@ public class HunterAI extends RocketAI {
     private MovingEntity getClosestPowerup() {
         float min = Float.MAX_VALUE;
         MovingEntity thing = actualTarget;
+        PosVector jetPos = jet.getPosition();
 
         for (MovingEntity entity : entities) {
             if (entity instanceof PowerupEntity) {
                 PowerupEntity pop = (PowerupEntity) entity;
 
                 if (!pop.isCollected()) {
-                    float dist = jet.getPosition().sub(entity.getPosition()).lengthSquared();
+                    float dist = entity.getPosition().sub(jetPos).lengthSquared();
 
                     if (dist < min) {
                         min = dist;
@@ -68,5 +72,10 @@ public class HunterAI extends RocketAI {
             }
         }
         return thing;
+    }
+
+    @Override
+    public boolean primaryFire() {
+        return xVec.dot(vecToTarget) > (1 - SHOOT_ACCURACY);
     }
 }

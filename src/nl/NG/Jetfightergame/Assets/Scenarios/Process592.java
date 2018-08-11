@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.AbstractEntities.EntityState;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -74,8 +75,8 @@ public abstract class Process592 {
         clientControl.jet().set(PosVector.zeroVector(), DirVector.zeroVector(), new Quaternionf(), 0);
     }
 
-    public MovingEntity.State getNewSpawn() {
-        return new MovingEntity.State();
+    public EntityState getNewSpawn() {
+        return new EntityState();
     }
 
     /**
@@ -182,7 +183,7 @@ public abstract class Process592 {
 
     /** all entities added by the constructor or using {@link #addEntity(MovingEntity) */
     public Collection<MovingEntity> getEntities() {
-        return Collections.EMPTY_SET;
+        return Collections.emptySet();
     }
 
     /**

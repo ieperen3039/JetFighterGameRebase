@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
 import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 /**
  * @author Geert van Ieperen created on 11-11-2017.
  */
-public class BasicJet extends AbstractJet {
+public class JetBasic extends AbstractJet {
     public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 800f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
@@ -33,11 +33,10 @@ public class BasicJet extends AbstractJet {
     public static final float ROLL_POWER = 3f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
 
-    private final Shape shape;
     private final PosVector shapeMiddle;
     private final float shapeRange;
 
-    private BasicJet(
+    private JetBasic(
             int id, PosVector initialPosition, Quaternionf initialRotation, GameTimer renderTimer,
             SpawnReceiver entityDeposit, EntityMapping entities
     ) {
@@ -48,8 +47,8 @@ public class BasicJet extends AbstractJet {
                 0.7f, renderTimer, 0.3f, 0.5f, entityDeposit, entities
         );
 
-        shape = GeneralShapes.CONCEPT_BLUEPRINT; // SCALE IS 0.5
-        Pair<PosVector, Float> minimalCircle = shape.getMinimalCircle();
+        // SCALE IS 0.5
+        Pair<PosVector, Float> minimalCircle = CustomJetShapes.BASIC.getMinimalCircle();
         shapeMiddle = minimalCircle.left;
         shapeRange = minimalCircle.right;
     }
@@ -58,7 +57,7 @@ public class BasicJet extends AbstractJet {
     public void create(MatrixStack ms, Consumer<Shape> action) {
         ms.pushMatrix();
         ms.scale(-1, 1, 1);
-        action.accept(shape);
+        action.accept(CustomJetShapes.BASIC);
         ms.popMatrix();
     }
 
@@ -92,16 +91,16 @@ public class BasicJet extends AbstractJet {
         }
 
         public Factory(PosVector position, DirVector direction, DirVector velocity) {
-            super(EntityClass.BASIC_JET, position, Toolbox.xTo(direction), velocity);
+            super(EntityClass.JET_BASIC, position, Toolbox.xTo(direction), velocity);
         }
 
-        public Factory(BasicJet jet) {
-            super(EntityClass.BASIC_JET, jet);
+        public Factory(JetBasic jet) {
+            super(EntityClass.JET_BASIC, jet);
         }
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
-            return new BasicJet(id, position, rotation, game.getTimer(), game, entities);
+            return new JetBasic(id, position, rotation, game.getTimer(), game, entities);
         }
     }
 }
