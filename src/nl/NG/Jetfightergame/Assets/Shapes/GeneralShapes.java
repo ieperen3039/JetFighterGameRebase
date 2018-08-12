@@ -12,11 +12,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.List;
 
-import static nl.NG.Jetfightergame.Tools.Toolbox.PHI;
-
 /**
- * @author Geert van Ieperen
- *         created on 7-11-2017.
+ * @author Geert van Ieperen created on 7-11-2017.
  */
 public final class GeneralShapes {
     private static final float CONTAINER_SIZE = 200f;
@@ -27,7 +24,7 @@ public final class GeneralShapes {
     /** a 2*2*2 cube with center on (0, 0, 0) */
     public static Shape CUBE;
 
-    private static Shape ICOSAHEDRON;
+    public static Shape ICOSAHEDRON;
 
     public static Shape LAB_CUBE;
     public static Shape INVERSE_CUBE;
@@ -37,8 +34,8 @@ public final class GeneralShapes {
 
     /**
      * loads the shapes into memory. This method may be split into several selections of models
-     * @param doLoadMesh whether the meshes should be loaded. If this is false, calling {@link Shape#render(GL2.Painter)}
-     *                 will result in a {@link NullPointerException}
+     * @param doLoadMesh whether the meshes should be loaded. If this is false, calling {@link
+     *                   Shape#render(GL2.Painter)} will result in a {@link NullPointerException}
      */
     public static void init(boolean doLoadMesh) {
         ServerSettings.RENDER_ENABLED = doLoadMesh;
@@ -62,42 +59,28 @@ public final class GeneralShapes {
     private static Shape makeIcosahedron(boolean loadMesh) {
         CustomShape frame = new CustomShape();
 
-        PosVector A1 = new PosVector(0, 1, (float) PHI);
-        PosVector B1 = new PosVector(1, (float) PHI, 0);
-        PosVector C1 = new PosVector((float) PHI, 0, 1);
+        float A = 0.5257311f;
+        float B = 0.8506508f;
+        PosVector[] vdata = new PosVector[]{
+                new PosVector(-A, 0, B), new PosVector(A, 0, B), new PosVector(-A, 0, -B), new PosVector(A, 0, -B),
+                new PosVector(0, B, A), new PosVector(0, B, -A), new PosVector(0, -B, A), new PosVector(0, -B, -A),
+                new PosVector(B, A, 0), new PosVector(-B, A, 0), new PosVector(B, -A, 0), new PosVector(-B, -A, 0),
+        };
 
-        PosVector A2 = new PosVector(0, -1, (float) PHI);
-        PosVector B2 = new PosVector(-1, (float) PHI, 0);
-        PosVector C2 = new PosVector((float) -PHI, 0, 1);
+        int[][] indices = {
+                {0, 4, 1}, {0, 9, 4}, {9, 5, 4}, {4, 5, 8}, {4, 8, 1},
+                {8, 10, 1}, {8, 3, 10}, {5, 3, 8}, {5, 2, 3}, {2, 7, 3},
+                {7, 10, 3}, {7, 6, 10}, {7, 11, 6}, {11, 0, 6}, {0, 1, 6},
+                {6, 1, 10}, {9, 0, 11}, {9, 11, 2}, {9, 2, 5}, {7, 2, 11}
+        };
 
-        PosVector A3 = new PosVector(0, -1, (float) -PHI);
-        PosVector B3 = new PosVector(-1, (float) -PHI, 0);
-        PosVector C3 = new PosVector((float) -PHI, 0, -1);
-
-        PosVector A4 = new PosVector(0, 1, (float) -PHI);
-        PosVector B4 = new PosVector(1, (float) -PHI, 0);
-        PosVector C4 = new PosVector((float) PHI, 0, -1);
-
-        frame.addTriangle(A1, B1, C1);
-        frame.addTriangle(A1, B1, C4);
-//        frame.addTriangle(A1, B2 ,C);
-//        frame.addTriangle(A1, B2 ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
-//        frame.addTriangle(A, B ,C);
+        for (int[] index : indices) {
+            frame.addTriangle(
+                    vdata[index[0]],
+                    vdata[index[1]],
+                    vdata[index[2]]
+            );
+        }
 
         return frame.wrapUp(loadMesh);
     }
@@ -121,11 +104,11 @@ public final class GeneralShapes {
 
     /**
      * create a new inverse cube
-     * @param splits number of splits on each side.
+     * @param splits   number of splits on each side.
      * @param loadMesh
      * @return a cube with normals pointing inside, made out of {@code 6 * 2 ^ splits} quads
      */
-    public static Shape makeInverseCube(int splits, boolean loadMesh){
+    public static Shape makeInverseCube(int splits, boolean loadMesh) {
         CustomShape frame = new CustomShape();
 
         PosVector PPP = new PosVector(1, 1, 1);
