@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -25,11 +25,9 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen created on 26-12-2017.
  */
 public class FallingCube extends MovingEntity {
-
-    public static final String SMALL = "Falling cube small";
-    public static final String LARGE = "Falling cube large";
     private final float range;
     private Material surfaceMaterial;
+    private final float scale;
 
     /**
      * test entity cube of size 2*2*2 and mass 10.
@@ -55,7 +53,8 @@ public class FallingCube extends MovingEntity {
     protected FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,
                           DirVector initialVelocity, Quaternionf initialRotation, GameTimer renderTimer, SpawnReceiver entityDeposit
     ) {
-        super(id, initialPosition, initialVelocity, initialRotation, mass, scale, renderTimer, entityDeposit);
+        super(id, initialPosition, initialVelocity, initialRotation, mass, renderTimer, entityDeposit);
+        this.scale = scale;
         this.range = (float) Math.sqrt(3 * scale * scale);
         this.surfaceMaterial = surfaceMaterial;
     }
@@ -98,12 +97,15 @@ public class FallingCube extends MovingEntity {
 
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
+        ms.pushMatrix();
+        ms.scale(scale);
         action.accept(GeneralShapes.CUBE);
+        ms.popMatrix();
     }
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(surfaceMaterial);
+        gl.setMaterial(Material.ROUGH);
     }
 
     public static class Factory extends EntityFactory {

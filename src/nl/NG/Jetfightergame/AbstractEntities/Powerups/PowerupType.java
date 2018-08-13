@@ -17,8 +17,12 @@ import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor.*;
  * @author Geert van Ieperen. Created on 11-7-2018.
  */
 public enum PowerupType {
-    NONE(PowerupColor.NONE), SPEED(TIME), SHIELD(INFO), ROCKET(ENERGY), SMOKE(SPACE),
-    CLUSTER_ROCKET(ENERGY, SPACE);
+    NONE(PowerupColor.NONE),
+    SPEED(GREEN), SHIELD(BLUE), ROCKET(RED), SMOKE(YELLOW),
+    SEEKERS(RED, YELLOW),
+    REFLECTOR_SHIELD(BLUE, YELLOW),
+    DEATHICOSAHEDRON(RED, BLUE),
+    GRAPPLING_HOOK(RED, GREEN);
 
     public static final float SEEKER_LAUNCH_SPEED = 4f;
     public static final float SMOKE_LAUNCH_SPEED = 20f;
@@ -27,8 +31,7 @@ public enum PowerupType {
     public static final float SPEED_BOOST_DURATION = 5f;
     public static final float SPEED_BOOST_FACTOR = 2f;
     public static final float SMOKE_LINGER_TIME = 30f;
-    private static final EnumSet<PowerupType> VALUE_SET = EnumSet.allOf(PowerupType.class);
-    private static final PowerupType[] VALUE_ARRAY = values();
+    private static final PowerupType[] VALUES = values();
     private static final int SMOKE_DISTRACTION_ELEMENTS = 3;
 
     private final EnumSet<PowerupColor> required;
@@ -45,22 +48,25 @@ public enum PowerupType {
     public static PowerupType get(EnumSet<PowerupColor> resources) {
         if (resources.size() == 1) return get(resources.iterator().next());
 
-        return VALUE_SET.stream()
-                .filter(pwr -> pwr.required.containsAll(resources))
-                .filter(pwr -> resources.containsAll(pwr.required))
-                .findAny()
-                .orElse(NONE);
+        for (PowerupType pwr : VALUES) {
+            if (pwr.required.containsAll(resources)) {
+                if (resources.containsAll(pwr.required)) {
+                    return pwr;
+                }
+            }
+        }
+        return NONE;
     }
 
     public static PowerupType get(PowerupColor source) {
         switch (source) {
-            case TIME:
+            case GREEN:
                 return SPEED;
-            case SPACE:
+            case YELLOW:
                 return SMOKE;
-            case ENERGY:
+            case RED:
                 return ROCKET;
-            case INFO:
+            case BLUE:
                 return SHIELD;
             default:
                 throw new UnsupportedOperationException("unknown enum constant" + source);
@@ -68,8 +74,8 @@ public enum PowerupType {
     }
 
     public static PowerupType get(int id) {
-        if (id >= VALUE_ARRAY.length) throw new IllegalArgumentException("Invalid power-up identifier " + id);
-        else return VALUE_ARRAY[id];
+        if (id >= VALUES.length) throw new IllegalArgumentException("Invalid power-up identifier " + id);
+        else return VALUES[id];
     }
 
     public static void launchClusterRocket(AbstractJet jet, MovingEntity target, SpawnReceiver deposit) {
@@ -95,9 +101,13 @@ public enum PowerupType {
 
     public static void launchSeekers(AbstractJet jet, SpawnReceiver deposit, MovingEntity target) {
         deposit.addSpawns(AbstractProjectile.createCloud(
-                jet, ServerSettings.NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
+                jet.getPosition(), jet.getVelocity(), ServerSettings.NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
                 (state) -> new Seeker.Factory(state, Toolbox.random.nextFloat(), jet, target)
         ));
+    }
+
+    public static void launchGrapplingHook(AbstractJet source, MovingEntity target, SpawnReceiver deposit) {
+        target.impact(5);
     }
 
     public PowerupType with(PowerupColor type) {
@@ -106,5 +116,10 @@ public enum PowerupType {
         EnumSet<PowerupColor> types = required.clone();
         types.add(type);
         return get(types);
+    }
+
+    @Override
+    public String toString() {
+        return super.toString().replaceAll("_", " ");
     }
 }

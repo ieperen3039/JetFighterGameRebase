@@ -5,10 +5,10 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 /** building blocks of powerups */
 public enum PowerupColor {
     NONE(Color4f.INVISIBLE),
-    TIME(Color4f.GREEN),
-    SPACE(Color4f.YELLOW),
-    ENERGY(Color4f.RED),
-    INFO(Color4f.BLUE);
+    GREEN(Color4f.GREEN),
+    YELLOW(Color4f.YELLOW),
+    RED(Color4f.RED),
+    BLUE(Color4f.BLUE);
 
     private static final PowerupColor[] PRIMITIVES = values();
     public final Color4f color;

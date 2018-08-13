@@ -33,14 +33,11 @@ public class HunterAI extends RocketAI {
     @Override
     public void update() {
         PowerupType currPop = jet.getCurrentPowerup();
-        if (target != actualTarget && currPop != PowerupType.NONE) {
-            if (currPop == PowerupType.SPEED || currPop == PowerupType.SMOKE) {
-                this.target = getClosestPowerup();
-            } else {
-                this.target = actualTarget;
-            }
 
-        } else if (target == actualTarget && currPop == PowerupType.NONE) {
+        if (!target.equals(actualTarget) && !isNotAssault(currPop)) {
+            this.target = actualTarget;
+
+        } else if (target.equals(actualTarget) && isNotAssault(currPop)) {
             this.target = getClosestPowerup();
         }
 
@@ -61,13 +58,15 @@ public class HunterAI extends RocketAI {
             if (entity instanceof PowerupEntity) {
                 PowerupEntity pop = (PowerupEntity) entity;
 
-                if (!pop.isCollected()) {
-                    float dist = entity.getPosition().sub(jetPos).lengthSquared();
+                if (pop.isCollected()) continue;
+                PowerupType newPop = jet.getCurrentPowerup().with(pop.getPowerupType());
+                if (newPop == PowerupType.NONE) continue;
 
-                    if (dist < min) {
-                        min = dist;
-                        thing = entity;
-                    }
+                float dist = entity.getPosition().sub(jetPos).lengthSquared();
+
+                if (dist < min) {
+                    min = dist;
+                    thing = entity;
                 }
             }
         }
@@ -76,6 +75,12 @@ public class HunterAI extends RocketAI {
 
     @Override
     public boolean primaryFire() {
+        PowerupType currPop = jet.getCurrentPowerup();
+        if (isNotAssault(currPop)) return false;
         return xVec.dot(vecToTarget) > (1 - SHOOT_ACCURACY);
+    }
+
+    private boolean isNotAssault(PowerupType currPop) {
+        return currPop == PowerupType.NONE || currPop == PowerupType.SPEED || currPop == PowerupType.SMOKE || currPop == PowerupType.SHIELD;
     }
 }

@@ -30,7 +30,7 @@ public class BasicShape implements Shape {
         this(new ShapeParameters(fileName), loadMesh);
     }
 
-    private BasicShape(ShapeParameters model, boolean loadMesh) {
+    public BasicShape(ShapeParameters model, boolean loadMesh) {
         this(model.vertices, model.normals, model.faces, loadMesh, GL11.GL_TRIANGLES);
 
         if (ServerSettings.DEBUG)

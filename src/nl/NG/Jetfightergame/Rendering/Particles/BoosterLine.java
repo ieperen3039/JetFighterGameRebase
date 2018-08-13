@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Particles;
 
+import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -10,6 +11,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  * @author Geert van Ieperen. Created on 11-8-2018.
  */
 public class BoosterLine {
+    private final PosVector aRelative;
+    private final PosVector bRelative;
+
     private TrackedVector<PosVector> aSide;
     private TrackedVector<PosVector> bSide;
     private TrackedVector<DirVector> direction;
@@ -25,6 +29,8 @@ public class BoosterLine {
             PosVector A, PosVector B, DirVector direction,
             float particlesPerSecond, float maxTimeToLive, Color4f color1, Color4f color2, float particleSize
     ) {
+        aRelative = A;
+        bRelative = B;
         this.aSide = new TrackedVector<>(A);
         this.bSide = new TrackedVector<>(B);
         this.direction = new TrackedVector<>(direction);
@@ -37,9 +43,14 @@ public class BoosterLine {
         this.timeRemaining = cooldown * Toolbox.random.nextFloat();
     }
 
-    public ParticleCloud update(PosVector aNew, PosVector bNew, DirVector dirNew, float deltaTime) {
-        aSide.update(aNew);
-        bSide.update(bNew);
+    /**
+     * @param dirNew    the new direction in which the particles move
+     * @param deltaTime
+     * @return the particles resulting from the update
+     */
+    public ParticleCloud update(MatrixStack ms, DirVector dirNew, float deltaTime) {
+        aSide.update(ms.getPosition(aRelative));
+        bSide.update(ms.getPosition(bRelative));
         direction.update(dirNew);
 
         timeRemaining -= deltaTime;
@@ -59,5 +70,10 @@ public class BoosterLine {
         } while (timeRemaining < 0);
 
         return cloud;
+    }
+
+    public void setColor(Color4f color1, Color4f color2) {
+        this.color1 = color1;
+        this.color2 = color2;
     }
 }

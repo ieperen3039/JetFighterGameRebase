@@ -1,14 +1,20 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
+import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
+import nl.NG.Jetfightergame.Assets.Entities.AbstractShield;
+import nl.NG.Jetfightergame.Assets.Entities.OneHitShield;
+import nl.NG.Jetfightergame.Assets.Entities.Projectiles.DeathIcosahedron;
+import nl.NG.Jetfightergame.Assets.Entities.ReflectorShield;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
+import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -16,8 +22,9 @@ import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType.*;
@@ -43,17 +50,18 @@ public abstract class AbstractJet extends MovingEntity {
     protected Controller controller;
     protected Material surfaceMaterial;
     protected final EntityMapping entityMapping;
+    protected List<BoosterLine> nuzzle;
     private DirVector forward;
-    private float baseThrust;
+    protected float baseThrust;
 
     /** time left in slow */
     protected float slowTimeLeft = 0;
     /** fraction of speed lost by slow. higher slow factor is more slow */
     protected float slowFactor = 0;
     /** time left in boost */
-    private float boostDuration = 0;
+    private float boostTimeLeft = 0;
     /** fraction of speed gained by boost. higher boost factor is more speed */
-    private float boostFactor = 0;
+    protected float boostFactor = 0;
 
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
@@ -65,8 +73,6 @@ public abstract class AbstractJet extends MovingEntity {
      * @param id                      unique identifier for this entity
      * @param initialPosition         position of spawning (of the origin) in world coordinates
      * @param initialRotation         the initial rotation of spawning
-     * @param scale                   scale factor applied to this object. the scale is in global space and executed in
-     *                                {@link #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param material                the default material properties of the whole object.
      * @param mass                    the mass of the object in kilograms.
      * @param liftFactor              arbitrary factor of the lift-effect of the wings in gravitational situations. This
@@ -87,13 +93,13 @@ public abstract class AbstractJet extends MovingEntity {
      * @param entityMapping           a mapping that allows binding id's to entityMapping
      */
     public AbstractJet(
-            int id, PosVector initialPosition, Quaternionf initialRotation, float scale,
+            int id, PosVector initialPosition, Quaternionf initialRotation,
             Material material, float mass, float liftFactor, float airResistanceCoeff,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
             SpawnReceiver entityDeposit, EntityMapping entityMapping
     ) {
-        super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, scale, gameTimer, entityDeposit);
+        super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, gameTimer, entityDeposit);
 
         this.airResistCoeff = airResistanceCoeff;
         this.throttlePower = throttlePower;
@@ -115,8 +121,13 @@ public abstract class AbstractJet extends MovingEntity {
         forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
         velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
         baseThrust = ClientSettings.BASE_SPEED * ClientSettings.BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
+        nuzzle = new ArrayList<>();
 
-        Supplier<String> slowTimer = () -> slowTimeLeft > 0 ? String.format("%3d%% slow for %.1f seconds", ((int) (slowFactor * 100)), slowTimeLeft) : "";
+        Supplier<String> slowTimer = () -> {
+            float factor = (1 - slowFactor) * boostFactor;
+            if (factor == 0) return "";
+            return String.format("Speed " + (factor > 1 ? "increased" : "reduced") + " to %d%% for %.1f seconds", ((int) (100 * factor)), Math.min(slowTimeLeft, boostTimeLeft));
+        };
         Logger.printOnline(slowTimer);
     }
 
@@ -130,8 +141,8 @@ public abstract class AbstractJet extends MovingEntity {
             slowFactor = 0;
         }
 
-        boostDuration -= deltaTime;
-        if (boostDuration <= 0) {
+        boostTimeLeft -= deltaTime;
+        if (boostTimeLeft <= 0) {
             setBoost(0, 0);
         }
 
@@ -142,28 +153,19 @@ public abstract class AbstractJet extends MovingEntity {
         }
     }
 
+    @Override
+    public Collision checkCollisionWith(Touchable other, float deltaTime) {
+        if (other instanceof AbstractShield) return null;
+        return super.checkCollisionWith(other, deltaTime);
+    }
+
     private void setBoost(float duration, float factor) {
-        boostDuration = duration;
+        boostTimeLeft = duration;
         boostFactor = factor;
     }
 
     public MovingEntity getTarget() {
-        float min = -1;
-        MovingEntity tgt = null;
-        PosVector pos = getPosition();
-
-        for (MovingEntity entity : entityMapping) {
-            if (entity == this || entity instanceof AbstractProjectile || entity instanceof PowerupEntity) continue;
-
-            Vector3f relPos = entity.getPosition().sub(pos).normalize();
-            float dot = getForward().dot(relPos);
-
-            if (dot > min) {
-                min = dot;
-                tgt = entity;
-            }
-        }
-        return tgt;
+        return getTarget(getForward(), getPosition(), entityMapping);
     }
 
     /**
@@ -254,6 +256,19 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     /**
+     * @param nOfBoosters total number of boosters
+     * @param left        first relative position of booster
+     * @param right       second relative position of booster
+     */
+    protected void addBooster(int nOfBoosters, PosVector left, PosVector right) {
+        float pps = ClientSettings.THRUST_PARTICLES_PER_SECOND / nOfBoosters;
+        nuzzle.add(new BoosterLine(
+                left, right, DirVector.zeroVector(), pps, ClientSettings.THRUST_PARTICLE_LINGER_TIME,
+                ClientSettings.THRUST_COLOR_1, ClientSettings.THRUST_COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE
+        ));
+    }
+
+    /**
      * @return current position of the pilot's eyes in world-space
      */
     public abstract PosVector getPilotEyePosition();
@@ -268,7 +283,19 @@ public abstract class AbstractJet extends MovingEntity {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(surfaceMaterial);
+        gl.setMaterial(Material.ROUGH);
+
+        DirVector back = getThrustDirection();
+        float deltaTime = gameTimer.getRenderTime().difference();
+
+        MatrixStack sm = new ShadowMatrix();
+        for (BoosterLine boosterLine : nuzzle) {
+            toLocalSpace(sm, () -> {
+                entityDeposit.addParticles(
+                        boosterLine.update(sm, back, deltaTime)
+                );
+            });
+        }
     }
 
     public void set(EntityState spawn) {
@@ -303,21 +330,49 @@ public abstract class AbstractJet extends MovingEntity {
 
     private void usePowerup() {
         switch (currentPowerup) {
+            case NONE:
+                // honk
+                break;
             case SPEED:
                 setBoost(PowerupType.SPEED_BOOST_DURATION, PowerupType.SPEED_BOOST_FACTOR);
                 break;
-            case CLUSTER_ROCKET:
-                launchClusterRocket(this, getTarget(), entityDeposit);
+            case SHIELD:
+                entityDeposit.addSpawn(new OneHitShield.Factory(this));
                 break;
             case ROCKET:
+                launchClusterRocket(this, getTarget(), entityDeposit);
+                break;
+            case SEEKERS:
                 launchSeekers(this, entityDeposit, getTarget());
                 break;
             case SMOKE:
                 launchSmokeCloud(this, entityDeposit);
                 break;
+            case DEATHICOSAHEDRON:
+                entityDeposit.addSpawn(new DeathIcosahedron.Factory(this));
+                break;
+            case REFLECTOR_SHIELD:
+                entityDeposit.addSpawn(new ReflectorShield.Factory(this));
+                break;
+            case GRAPPLING_HOOK:
+                PowerupType.launchGrapplingHook(this, getTarget(), entityDeposit);
+                break;
+            default:
+                throw new UnsupportedOperationException("enum not registered properly: " + currentPowerup);
         }
 
         currentPowerup = PowerupType.NONE;
         entityDeposit.playerPowerupState(this, PowerupType.NONE);
+    }
+
+    private DirVector getThrustDirection() {
+        float throttle = controller.throttle();
+        float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
+        thrust += 0.2f;
+        thrust *= boostFactor + 1;
+
+        DirVector back = getForward().scale(ClientSettings.THRUST_PARTICLE_FACTOR * thrust);
+        back.add(getVelocity());
+        return back;
     }
 }

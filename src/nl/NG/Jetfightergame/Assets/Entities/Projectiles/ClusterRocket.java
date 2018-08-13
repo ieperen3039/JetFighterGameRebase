@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
 import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
@@ -18,7 +18,6 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -35,17 +34,18 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
  */
 public class ClusterRocket extends AbstractProjectile {
 
-    public static final int NOF_PELLETS_LAUNCHED = 25;
+    public static final int NOF_PELLETS_LAUNCHED = 50;
     public static final float EXPLOSION_POWER = 10f;
-    public static final int EXPLOSION_DENSITY = 2000;
-    public static final float THRUST_POWER = 400f;
+    public static final int EXPLOSION_DENSITY = 200;
+    public static final float THRUST_POWER = 100f;
     public static final float TIME_TO_LIVE = 30f;
-    public static final float SHOOT_ACCURACY = 0.3f;
-    public static final float TURN_ACC = 0.4f;
-    public static final float ROLL_ACC = 0.1f;
-    public static final float AIR_RESIST = 0.01f;
-    public static final float MASS = 10f;
-    public static final float THRUST_PARTICLE_PER_SECOND = 10;
+    public static final float SHOOT_ACCURACY = 0.4f;
+    public static final float TURN_ACC = 0.3f;
+    public static final float ROLL_ACC = 0.2f;
+    public static final float AIR_RESIST = 0.05f;
+    public static final float MASS = 5f;
+    public static final float THRUST_PARTICLE_PER_SECOND = 15;
+    protected Material surfaceMaterial;
     private boolean hasExploded = false;
     private BoosterLine nuzzle;
 
@@ -65,7 +65,7 @@ public class ClusterRocket extends AbstractProjectile {
             SpawnReceiver entityDeposit, GameTimer gameTimer, MovingEntity sourceEntity, MovingEntity tgt
     ) {
         super(
-                id, initialPosition, initialRotation, initialVelocity, MASS, Material.GOLD,
+                id, initialPosition, initialRotation, initialVelocity, MASS,
                 AIR_RESIST, TIME_TO_LIVE, TURN_ACC, ROLL_ACC, THRUST_POWER,
                 0.2f, entityDeposit, gameTimer, sourceEntity
         );
@@ -73,19 +73,19 @@ public class ClusterRocket extends AbstractProjectile {
         if (tgt != null) {
             this.target = tgt;
 
-            RocketAI con = new RocketAI(this, tgt, 500f, 20f) {
+            RocketAI con = new RocketAI(this, tgt, 500f, 30f) {
                 @Override
                 public boolean primaryFire() {
-                    return super.primaryFire() && velocity.dot(vecToTarget) > (1 - SHOOT_ACCURACY);
+                    float dot = getVelocity().normalize().dot(vecToTarget);
+                    return super.primaryFire() && dot > (1 - SHOOT_ACCURACY);
                 }
             };
             con.update();
             setController(con);
         }
 
-        PosVector pos = getPosition();
         nuzzle = new BoosterLine(
-                pos, pos, DirVector.zeroVector(),
+                PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
                 THRUST_PARTICLE_PER_SECOND, ClientSettings.THRUST_PARTICLE_LINGER_TIME, Color4f.ORANGE, Color4f.RED, ClientSettings.THRUST_PARTICLE_SIZE
         );
     }
@@ -102,16 +102,16 @@ public class ClusterRocket extends AbstractProjectile {
     }
 
     @Override
-    public void draw(GL2 gl) {
-        super.draw(gl);
+    public void preDraw(GL2 gl) {
+        gl.setMaterial(Material.ROUGH);
 
-        float deltaTime = gameTimer.getRenderTime().difference();
-        PosVector pos = getPosition();
         DirVector back = new DirVector();
-        forward.negate(back).reducedTo(controller.throttle(), back).add(forward);
+        forward.scale(controller.throttle() * -THRUST_POWER, back).add(forward);
+        float deltaTime = gameTimer.getRenderTime().difference();
 
-        ParticleCloud cloud = nuzzle.update(pos, pos, back, deltaTime);
-        entityDeposit.addParticles(cloud);
+        toLocalSpace(gl, () -> entityDeposit.addParticles(
+                nuzzle.update(gl, DirVector.zeroVector(), deltaTime)
+        ));
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ClusterRocket extends AbstractProjectile {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
         return Particles.explosion(
                 interpolatedPosition(), DirVector.zeroVector(),
-                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, EXPLOSION_DENSITY, Particles.FIRE_LINGER_TIME, 0.1f
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, EXPLOSION_DENSITY, Particles.FIRE_LINGER_TIME, 0.5f
         );
     }
 
@@ -128,7 +128,7 @@ public class ClusterRocket extends AbstractProjectile {
         if (!hasExploded && controller.primaryFire()) {
             timeToLive = 0;
             entityDeposit.addSpawns(AbstractProjectile.createCloud(
-                    this, NOF_PELLETS_LAUNCHED, EXPLOSION_POWER,
+                    getPosition(), getVelocity().scale(2f), NOF_PELLETS_LAUNCHED, EXPLOSION_POWER,
                     SimpleBullet.Factory::new
             ));
             hasExploded = true;
@@ -140,13 +140,6 @@ public class ClusterRocket extends AbstractProjectile {
     @Override
     public boolean isOverdue() {
         return hasExploded || super.isOverdue();
-    }
-
-    @Override
-    protected PairList<PosVector, PosVector> calculateHitpointMovement() {
-        PairList<PosVector, PosVector> pairs = new PairList<>(1);
-        pairs.add(position, extraPosition);
-        return pairs;
     }
 
     @Override

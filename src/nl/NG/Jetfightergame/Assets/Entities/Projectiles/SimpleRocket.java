@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
@@ -39,22 +39,22 @@ public class SimpleRocket extends AbstractProjectile {
     private static final int THRUST = 100;
     private static final Color4f THRUST_COLOR = Color4f.ORANGE;
     private static final float THRUST_PARTICLE_DENSITY = 5f;
+    protected Material surfaceMaterial;
     private BoosterLine nuzzle;
 
     private SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
                          GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
     ) {
         super(
-                id, initialPosition, initialRotation, initialVelocity, MASS, Material.SILVER,
+                id, initialPosition, initialRotation, initialVelocity, MASS,
                 AIR_RESIST_COEFF, 10, 0, 0f, THRUST,
                 0.2f, entityDeposit, gameTimer, src
         );
 
         DirVector back = new DirVector();
         forward.negate(back).reducedTo(ClientSettings.THRUST_PARTICLE_SPEED, back).add(forward);
-        PosVector pos = PosVector.zeroVector();
         nuzzle = new BoosterLine(
-                pos, pos, back,
+                PosVector.zeroVector(), PosVector.zeroVector(), back,
                 THRUST_PARTICLE_DENSITY, ClientSettings.THRUST_PARTICLE_LINGER_TIME, THRUST_COLOR, THRUST_COLOR, ClientSettings.THRUST_PARTICLE_SIZE
         );
     }
@@ -70,17 +70,16 @@ public class SimpleRocket extends AbstractProjectile {
         ms.popMatrix();
     }
 
-    @Override
-    public void draw(GL2 gl) {
-        super.draw(gl);
+    public void preDraw(GL2 gl) {
+        gl.setMaterial(Material.ROUGH);
 
-        float deltaTime = gameTimer.getRenderTime().difference();
-        PosVector pos = getPosition();
         DirVector back = new DirVector();
+        float deltaTime = gameTimer.getRenderTime().difference();
         forward.negate(back).reducedTo(ClientSettings.THRUST_PARTICLE_SPEED, back).add(forward);
 
-        ParticleCloud cloud = nuzzle.update(pos, pos, back, deltaTime);
-        entityDeposit.addParticles(cloud);
+        toLocalSpace(gl, () -> entityDeposit.addParticles(
+                nuzzle.update(gl, DirVector.zeroVector(), deltaTime)
+        ));
     }
 
     @Override
@@ -100,8 +99,7 @@ public class SimpleRocket extends AbstractProjectile {
 
     @Override
     protected PairList<PosVector, PosVector> calculateHitpointMovement() {
-        PairList<PosVector, PosVector> pairs = new PairList<>(1);
-        pairs.add(position, extraPosition);
+        PairList<PosVector, PosVector> pairs = super.calculateHitpointMovement();
         return pairs;
     }
 

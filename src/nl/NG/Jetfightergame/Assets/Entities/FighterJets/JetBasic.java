@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Assets.Entities.FighterJets;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -41,16 +41,18 @@ public class JetBasic extends AbstractJet {
             SpawnReceiver entityDeposit, EntityMapping entities
     ) {
         super(
-                id, initialPosition, initialRotation, 0.5f,
+                id, initialPosition, initialRotation,
                 MATERIAL, MASS, LIFT_FACTOR, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.7f, renderTimer, 0.3f, 0.5f, entityDeposit, entities
+                0.7f, renderTimer, 0.5f, 0.7f, entityDeposit, entities
         );
 
         // SCALE IS 0.5
         Pair<PosVector, Float> minimalCircle = CustomJetShapes.BASIC.getMinimalCircle();
         shapeMiddle = minimalCircle.left;
         shapeRange = minimalCircle.right;
+
+        addBooster(1, PosVector.zeroVector(), PosVector.zeroVector());
     }
 
     @Override

@@ -1,7 +1,8 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -16,6 +17,7 @@ import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +42,7 @@ public abstract class MovingEntity implements Touchable {
     protected Quaternionf rotation;
     /** rotation speeds in rad/s */
     protected float yawSpeed, pitchSpeed, rollSpeed;
+    protected final float mass;
 
     /** extrapolated worldspace position */
     protected PosVector extraPosition;
@@ -48,7 +51,7 @@ public abstract class MovingEntity implements Touchable {
     /** expected firstVel */
     protected DirVector extraVelocity;
 
-    private VectorInterpolator positionInterpolator;
+    protected VectorInterpolator positionInterpolator;
     private QuaternionInterpolator rotationInterpolator;
     /** cached positions of the hitpoints */
     private PairList<PosVector, PosVector> hitPoints = null;
@@ -59,10 +62,6 @@ public abstract class MovingEntity implements Touchable {
      */
     protected GameTimer gameTimer;
 
-    /** worldspace / localspace */
-    protected final float scale;
-    protected final float mass;
-
     /**
      * any object that may be moved and may hit other objects, is a game object. All vectors are newly instantiated.
      * @param id              an unique type for this entity
@@ -70,13 +69,11 @@ public abstract class MovingEntity implements Touchable {
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param mass            the mass of the object in kilograms.
-     * @param scale           scale factor applied to this object. The scale is in global space and executed in {@link
-     *                        #toLocalSpace(MatrixStack, Runnable, boolean)}
      * @param gameTimer       A timer that defines rendering, for use in {@link MovingEntity#interpolatedPosition()}
      */
     public MovingEntity(
             int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-            float mass, float scale, GameTimer gameTimer, SpawnReceiver entityDeposit
+            float mass, GameTimer gameTimer, SpawnReceiver entityDeposit
     ) {
         this.thisID = id;
         this.position = new PosVector(initialPosition);
@@ -86,7 +83,6 @@ public abstract class MovingEntity implements Touchable {
         this.velocity = new DirVector(initialVelocity);
         this.extraVelocity = new DirVector(initialVelocity);
 
-        this.scale = scale;
         this.mass = mass;
         this.gameTimer = gameTimer;
         this.entityDeposit = entityDeposit;
@@ -178,9 +174,10 @@ public abstract class MovingEntity implements Touchable {
     /**
      * apply net force on this object and possibly read input. Should not change the current state except for {@link
      * #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}.
-     * @implNote The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity} are invalid.
      * @param netForce  accumulated external forces on this object
      * @param deltaTime time-difference, cannot be 0
+     * @implNote The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}
+     *         are invalid.
      */
     public abstract void applyPhysics(DirVector netForce, float deltaTime);
 
@@ -206,10 +203,11 @@ public abstract class MovingEntity implements Touchable {
      * state of this or of other
      * @param other     an object that may hit this object
      * @param deltaTime
-     * @return true if there was a collision. This also means that the other has a collision as well
+     * @return the resulting collision, or null if there was none. If a collision is returned, then {@link
+     *         #acceptCollision(Collision)} is called on the other as well
      */
     public Collision checkCollisionWith(Touchable other, float deltaTime) {
-        // projectiles cannot be hit
+        // projectiles and shields cannot be hit
         if (other instanceof AbstractProjectile) return null;
 
         Collision best = null;
@@ -232,10 +230,10 @@ public abstract class MovingEntity implements Touchable {
     /**
      * returns the collisions caused by {@code point} in the given reference frame. the returned collision is caused by
      * the first plane of #other, as it is hit by #point
-     * @param lastPosition   the position of this point at the last game-loop
-     * @param next the expected position of this point at the current game loop
-     * @param other     another object
-     * @param deltaTime time-difference of this loop
+     * @param lastPosition the position of this point at the last game-loop
+     * @param next         the expected position of this point at the current game loop
+     * @param other        another object
+     * @param deltaTime    time-difference of this loop
      * @return the first collision caused by this point on the other object
      */
     private Collision getPointCollision(PosVector lastPosition, PosVector next, Touchable other, float deltaTime) {
@@ -324,7 +322,6 @@ public abstract class MovingEntity implements Touchable {
         {
             ms.translate(currPos);
             ms.rotate(currRot);
-            ms.scale(scale);
             action.run();
         }
         ms.popMatrix();
@@ -477,7 +474,7 @@ public abstract class MovingEntity implements Touchable {
 //        Matrix3f invInertTensor = rotInert.mul(rotTranspose).invert();
 
         DirVector contactNormal = collision.normal();
-        PosVector hitPosition = collision.hitPosition();
+//        PosVector hitPosition = collision.hitPosition();
 
         if (extraVelocity.dot(contactNormal) < 0) {
             extraVelocity.reflect(contactNormal);
@@ -532,5 +529,30 @@ public abstract class MovingEntity implements Touchable {
     @Override
     public int hashCode() {
         return idNumber() ^ Float.hashCode(spawnTime) ^ Float.hashCode(mass); // for spreading in hashtables
+    }
+
+    /**
+     * the target that is most in front of the user, whatever feels right
+     * @param forward  a vector pointing in the direction of a target
+     * @param position the position of this
+     * @param entities the entities of the game
+     * @return one entity from entities which is roughly in front
+     */
+    public MovingEntity getTarget(DirVector forward, PosVector position, EntityMapping entities) {
+        float min = -1;
+        MovingEntity tgt = null;
+
+        for (MovingEntity entity : entities) {
+            if (entity == this || entity instanceof AbstractProjectile || entity instanceof PowerupEntity) continue;
+
+            Vector3f relPos = entity.getPosition().sub(position).normalize();
+            float dot = forward.dot(relPos);
+
+            if (dot > min) {
+                min = dot;
+                tgt = entity;
+            }
+        }
+        return tgt;
     }
 }

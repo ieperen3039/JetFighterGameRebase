@@ -21,7 +21,8 @@ public class RocketAI implements Controller {
 
     protected MovingEntity target;
     private final float pSpeed;
-    private PosVector targetPos = new PosVector();
+    private PosVector projectilePos;
+    private PosVector targetPos;
 
     protected DirVector vecToTarget;
     protected DirVector xVec;
@@ -43,6 +44,8 @@ public class RocketAI implements Controller {
         this.pSpeed = projectileSpeed;
         this.explodeDistSq = explodeDistance * explodeDistance;
         doExtrapolate = true;
+        projectilePos = projectile.getPosition();
+        targetPos = new PosVector();
     }
 
     /**
@@ -58,23 +61,25 @@ public class RocketAI implements Controller {
         this.pSpeed = 0;
         this.explodeDistSq = explodeDistance * explodeDistance;
         doExtrapolate = false;
+        projectilePos = projectile.getPosition();
+        targetPos = new PosVector();
     }
 
     @Override
     public void update() {
         if (TemporalEntity.isOverdue(target)) return;
 
-        PosVector pPos = projectile.getPosition();
-        PosVector tPos = target.getPosition();
+        projectilePos = projectile.getPosition();
+        PosVector tPos = target.getExpectedMiddle();
 
-        if (doExtrapolate && pPos.to(tPos, new DirVector()).lengthSquared() > (0.5f * pSpeed * pSpeed)) {
-            targetPos = extrapolateTarget(target.getVelocity(), tPos, pPos, pSpeed);
+        if (doExtrapolate && projectilePos.distanceSquared(tPos) > (0.01f * pSpeed * pSpeed)) {
+            targetPos = extrapolateTarget(target.getVelocity(), tPos, projectilePos, pSpeed);
 
         } else {
             targetPos = tPos;
         }
 
-        vecToTarget = pPos.to(targetPos, new DirVector());
+        vecToTarget = projectilePos.to(targetPos, new DirVector());
         vecToTarget.normalize();
         xVec = projectile.relativeStateDirection(DirVector.xVector());
         yVec = projectile.relativeStateDirection(DirVector.yVector());
@@ -117,6 +122,10 @@ public class RocketAI implements Controller {
 
     @Override
     public float throttle() {
+        if (projectilePos.distanceSquared(targetPos) < (0.01f * pSpeed * pSpeed)) {
+            return 1;
+        }
+
         float dot = xVec.dot(vecToTarget);
         dot -= THROTTLE_DOT_IGNORE;
         return bound(dot * THROTTLE_MULTIPLIER, 0, 1);
@@ -148,7 +157,7 @@ public class RocketAI implements Controller {
 
     @Override
     public boolean primaryFire() {
-        return projectile.getPosition().sub(targetPos).lengthSquared() < explodeDistSq;
+        return projectilePos.distanceSquared(targetPos) < explodeDistSq;
     }
 
     @Override

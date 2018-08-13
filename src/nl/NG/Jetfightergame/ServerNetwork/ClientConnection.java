@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
@@ -89,7 +89,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                     ParticleCloud explosion = ((TemporalEntity) entity).explode();
                     game.addParticles(explosion);
                 }
-
                 break;
 
             case PLAYER_SPAWN:

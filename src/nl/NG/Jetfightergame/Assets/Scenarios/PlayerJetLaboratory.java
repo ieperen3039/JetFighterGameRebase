@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
@@ -35,7 +35,7 @@ public class PlayerJetLaboratory extends GameState {
         ArrayList<Touchable> entities = new ArrayList<>();
 
         entities.add(new StaticEntity(
-                GeneralShapes.LAB_CUBE, Material.CYBERGLASSMETAL, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
+                GeneralShapes.LAB_CUBE, Material.GLASS, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
         ));
 
         return entities;
@@ -61,8 +61,8 @@ public class PlayerJetLaboratory extends GameState {
             }
         }
 
-        entities.add(new PowerupEntity.Factory(new PosVector(30, 0, 0), PowerupColor.SPACE));
-        entities.add(new PowerupEntity.Factory(new PosVector(60, 0, 20), PowerupColor.ENERGY));
+        entities.add(new PowerupEntity.Factory(new PosVector(0, 0, 0), PowerupColor.BLUE));
+        entities.add(new PowerupEntity.Factory(new PosVector(40, 0, 0), PowerupColor.YELLOW));
 
         return entities;
     }

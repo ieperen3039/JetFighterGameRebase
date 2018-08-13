@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.AbstractEntities.Powerups;
 
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Spectral;
@@ -30,7 +30,7 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 9-7-2018.
  */
 public class PowerupEntity extends MovingEntity implements Spectral {
-    private static final float DESPAWN_TIME = 0.5f;
+    private static final float DESPAWN_TIME = 0.2f;
     private static final float RESPAWN_TIME = 20f;
     private static final float SCALING = 2f;
     private static final Quaternionf BASE_ROTATION = new Quaternionf()
@@ -51,7 +51,7 @@ public class PowerupEntity extends MovingEntity implements Spectral {
      * @param game the place to deposit particles
      */
     private PowerupEntity(int id, PowerupColor type, PosVector position, GameTimer timer, SpawnReceiver game) {
-        super(id, position, DirVector.zeroVector(), new Quaternionf(), 0, 1, timer, game);
+        super(id, position, DirVector.zeroVector(), new Quaternionf(), 0, timer, game);
         this.type = type;
         this.position = position;
         shape = GeneralShapes.CUBE;
@@ -61,7 +61,7 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     public void create(MatrixStack ms, Consumer<Shape> action) {
         if (isCollected) return;
         ms.scale(ServerSettings.POWERUP_COLLECTION_RANGE/2);
-        action.accept(GeneralShapes.CUBE);
+        action.accept(GeneralShapes.ICOSAHEDRON);
     }
 
     @Override

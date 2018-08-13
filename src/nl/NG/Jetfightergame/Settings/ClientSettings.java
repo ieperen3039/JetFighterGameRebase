@@ -19,10 +19,6 @@ public final class ClientSettings {
     public static final float SOUND_MASTER_GAIN = 0;
     public static final float MAX_VOLUME = 6f;
     public static final float MIN_VOLUME = -20f;
-    public static final float THRUST_PARTICLE_SIZE = 0.5f;
-    public static final float THRUST_PARTICLE_SPEED = 10f;
-    public static final float THRUST_PARTICLE_LINGER_TIME = 2f;
-    public static final float THRUST_PARTICLES_PER_SECOND = 10f;
     public static boolean SAVE_PLAYBACK = false;
 
     /** controller settings; these modifiers are also used to inverse direction */
@@ -49,9 +45,18 @@ public final class ClientSettings {
     public static final float FIRE_PARTICLE_SIZE = 0.8f;
     public static final Color4f EXPLOSION_COLOR_1 = Color4f.RED;
     public static final Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
-    public static final int PARTICLE_SPLITS = 0;
-    public static final int PARTICLECLOUD_SPLIT_SIZE = 5000;
+    public static final int PARTICLE_SPLITS = 2;
+    public static final int PARTICLECLOUD_SPLIT_SIZE = 2000;
     public static final float PARTICLECLOUD_MIN_TIME = 0.5f;
+
+    /** thrust particle settings */
+    public static final float THRUST_PARTICLE_SIZE = 0.8f;
+    public static final float THRUST_PARTICLE_SPEED = 20f;
+    public static final float THRUST_PARTICLE_LINGER_TIME = 0.4f;
+    public static final float THRUST_PARTICLES_PER_SECOND = 200f;
+    public static final float THRUST_PARTICLE_FACTOR = -0.15f;
+    public static final Color4f THRUST_COLOR_1 = Color4f.ORANGE;
+    public static final Color4f THRUST_COLOR_2 = Color4f.RED;
 
     /** miscellaneous */
     public static boolean SPECTATOR_MODE = false;

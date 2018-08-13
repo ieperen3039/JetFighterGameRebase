@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Assets.Shapes;
 import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.ShapeCreation.ShapeParameters;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -24,7 +25,7 @@ public final class CustomJetShapes {
         }
         isLoaded = true;
 
-        BASIC = new BasicShape("ConceptBlueprint.obj", doLoadMesh);
+        BASIC = new BasicShape(new ShapeParameters("ConceptBlueprint.obj", PosVector.zeroVector(), 0.5f), doLoadMesh);
         SPITZ = makeSpitzPlane(doLoadMesh);
     }
 

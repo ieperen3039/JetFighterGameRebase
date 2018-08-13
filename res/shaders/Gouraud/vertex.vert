@@ -74,5 +74,5 @@ void main()
 
     cameraDistance = length(mPosition.xyz - cameraPosition);
 
-    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
+    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, material.diffuse.w);
 }

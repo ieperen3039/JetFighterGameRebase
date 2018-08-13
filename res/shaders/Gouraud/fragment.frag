@@ -12,5 +12,5 @@ void main()
     float fogObscurity = cameraDistance / fogRange;
     fogObscurity = max(0.0, min(1.0, fogObscurity * fogObscurity));
 
-    outputColor = ((1 - fogObscurity) * fragColor) + vec4(fogObscurity * ambientLight, 1.0);
+    outputColor = ((1 - fogObscurity) * fragColor) + vec4(fogObscurity * ambientLight, fogObscurity);
 }

@@ -56,11 +56,11 @@ public enum Material {
             Color4f.BLACK,
             2
     ),
-    
-    CYBERGLASSMETAL(
-            Color4f.BLACK,
+
+    GLASS(
+            new Color4f(1, 1, 1, 0f),
+            new Color4f(1, 1, 1, 0f),
             Color4f.WHITE,
-            new Color4f(0.5f, 0.5f, 1.0f),
             20
     ),
 

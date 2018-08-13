@@ -1,15 +1,14 @@
 package nl.NG.Jetfightergame.AbstractEntities;
 
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -32,7 +31,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     protected static final float IMPACT_POWER = 5f;
     private static final int SPARK_DENSITY = 10;
-    private Material surfaceMaterial;
+    public static final float DRIFT_REDUCTION = 0.1f;
     protected DirVector forward;
     private final float airResistCoeff;
 
@@ -42,7 +41,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     protected Controller controller;
     private float thrustPower;
 
-    private final MovingEntity sourceJet;
+    protected final MovingEntity sourceJet;
     protected MovingEntity target = null;
     private float rotationPreserveFactor;
 
@@ -55,7 +54,6 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
      * @param initialRotation   the initial rotation of spawning
      * @param initialVelocity   the initial velocity, that is the vector of movement per second in world-space
      * @param mass              the mass of the object in kilograms.
-     * @param surfaceMaterial   the default material properties of the whole object.
      * @param airResistCoeff    Air resistance coefficient Cw as in Fwl = 0.5 * A * Cw.
      * @param timeToLive        time before this entity returns true when calling {@link #isOverdue()}
      * @param turnAcc           acceleration over yaw or pitch axis when applying full power in rad/ss
@@ -69,13 +67,12 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
      */
     public AbstractProjectile(
             int id, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity,
-            float mass, Material surfaceMaterial, float airResistCoeff, float timeToLive, float turnAcc, float rollAcc, float thrustPower,
+            float mass, float airResistCoeff, float timeToLive, float turnAcc, float rollAcc, float thrustPower,
             float rotationReduction, SpawnReceiver particleDeposit, GameTimer gameTimer, MovingEntity sourceEntity
     ) {
-        super(id, initialPosition, initialVelocity, initialRotation, mass, 1, gameTimer, particleDeposit);
+        super(id, initialPosition, initialVelocity, initialRotation, mass, gameTimer, particleDeposit);
         this.airResistCoeff = airResistCoeff;
         this.timeToLive = timeToLive;
-        this.surfaceMaterial = surfaceMaterial;
         this.turnAcc = turnAcc;
         this.rollAcc = rollAcc;
         this.thrustPower = thrustPower;
@@ -87,14 +84,14 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         relativeStateDirection(DirVector.xVector()).normalize(forward);
     }
 
-    public static List<EntityFactory> createCloud(MovingEntity source, int nOfProjectiles, float launchSpeed, Function<EntityState, EntityFactory> factory) {
+    public static List<EntityFactory> createCloud(PosVector position, DirVector velocity, int nOfProjectiles, float launchSpeed, Function<EntityState, EntityFactory> factory) {
         List<EntityFactory> projectiles = new ArrayList<>(nOfProjectiles);
 
         for (int i = 0; i < nOfProjectiles; i++) {
             DirVector randDirection = DirVector.random().scale(launchSpeed);
-            randDirection.add(source.getVelocity());
+            randDirection.add(velocity);
 
-            EntityState interpolator = new EntityState(source.getPosition(), randDirection, randDirection);
+            EntityState interpolator = new EntityState(position, randDirection, randDirection);
             projectiles.add(factory.apply(interpolator));
         }
 
@@ -117,7 +114,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         // transform velocity to local, reduce drifting, then transform back to global space
-        float red = 0.1f * deltaTime;
+        float red = DRIFT_REDUCTION * deltaTime;
         reduceDriftLinear(extraVelocity, red, red);
 
         float rotationPreserveFraction = instantPreserveFraction(rotationPreserveFactor, deltaTime);
@@ -176,7 +173,6 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     @Override
     protected void updateShape(float deltaTime) {
         timeToLive -= deltaTime;
-
     }
 
     @Override
@@ -187,11 +183,6 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     @Override
     public PosVector getExpectedMiddle() {
         return extraPosition;
-    }
-
-    @Override
-    public void preDraw(GL2 gl) {
-        gl.setMaterial(surfaceMaterial);
     }
 
     @Override
@@ -206,7 +197,19 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         return null;
     }
 
+
+    /**
+     * the effect of colliding with another entity.
+     * @param other
+     */
     protected abstract void collideWithOther(Touchable other);
+
+    @Override
+    protected PairList<PosVector, PosVector> calculateHitpointMovement() {
+        PairList<PosVector, PosVector> pairs = new PairList<>(1);
+        pairs.add(position, extraPosition);
+        return pairs;
+    }
 
     /** a controller that returns throttle = 1, and 0 for all else */
     public static class JustForward extends Controller.EmptyController {

@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
@@ -52,11 +52,11 @@ public class IslandMap extends GameState {
     @Override
     protected Collection<EntityFactory> getInitialEntities() {
         List<EntityFactory> entities = new ArrayList<>();
-        entities.add(new PowerupEntity.Factory(new PosVector(40, 40, 0), PowerupColor.TIME));
-        entities.add(new PowerupEntity.Factory(new PosVector(-100, 100, 100), PowerupColor.ENERGY));
-        entities.add(new PowerupEntity.Factory(new PosVector(-100, -50, 50), PowerupColor.SPACE));
-        entities.add(new PowerupEntity.Factory(new PosVector(0, 100, 20), PowerupColor.ENERGY));
-        entities.add(new PowerupEntity.Factory(new PosVector(0, -50, 150), PowerupColor.INFO));
+        entities.add(new PowerupEntity.Factory(new PosVector(40, 40, 0), PowerupColor.GREEN));
+        entities.add(new PowerupEntity.Factory(new PosVector(-100, 100, 100), PowerupColor.RED));
+        entities.add(new PowerupEntity.Factory(new PosVector(-100, -50, 50), PowerupColor.YELLOW));
+        entities.add(new PowerupEntity.Factory(new PosVector(0, 100, 20), PowerupColor.RED));
+        entities.add(new PowerupEntity.Factory(new PosVector(0, -50, 150), PowerupColor.BLUE));
         return entities;
 
     }

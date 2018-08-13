@@ -18,15 +18,15 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A utility-class for particles
- * @author Geert van Ieperen
- * created on 12-1-2018.
+ * @author Geert van Ieperen created on 12-1-2018.
  */
 public final class Particles {
-    public static final float FIRE_LINGER_TIME = 10;
-    private static final int METAL_LINGER_TIME = 10;
+    public static final float FIRE_LINGER_TIME = 10f;
+    private static final float METAL_LINGER_TIME = 2f;
 
     /**
      * creates an explosion of particles from the given position, using a blend of the two colors
@@ -46,17 +46,20 @@ public final class Particles {
 
     /**
      * creates an explosion of particles from the given position, using a blend of the two colors
-     * @param position  source position where all particles come from
-     * @param direction movement of the average position of the cloud
-     * @param color1    first color extreme
-     * @param color2    second color extreme. Each particle has a color between color1 and color2
-     * @param power     the speed of the fastest particle relative to the middle of the cloud
-     * @param density   the number of particles generated
-     * @param lingerTime the maximal lifetime of the particles. Actual duration is exponentially distributed.
+     * @param position     source position where all particles come from
+     * @param direction    movement of the average position of the cloud
+     * @param color1       first color extreme
+     * @param color2       second color extreme. Each particle has a color between color1 and color2
+     * @param power        the speed of the fastest particle relative to the middle of the cloud
+     * @param density      the number of particles generated
+     * @param lingerTime   the maximal lifetime of the particles. Actual duration is exponentially distributed.
      * @param particleSize roughly the actual size of the particle
      * @return a new explosion, not written to the GPU yet.
      */
-    public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density, float lingerTime, float particleSize) {
+    public static ParticleCloud explosion(
+            PosVector position, DirVector direction, Color4f color1, Color4f color2,
+            float power, int density, float lingerTime, float particleSize
+    ) {
         ParticleCloud result = new ParticleCloud();
 
         for (int i = 0; i < (density); i++) {
@@ -72,15 +75,16 @@ public final class Particles {
     /**
      * splits the target entity into particles.
      * @param target an entity. It is not modified in the process
-     * @param force the force of how much the particles spread
+     * @param force  the force of how much the particles spread
+     * @param color
      * @return a cloud of particles, not loaded.
      */
-    public static ParticleCloud splitIntoParticles(MovingEntity target, float force){
+    public static ParticleCloud splitIntoParticles(MovingEntity target, float force, Color4f color) {
         ParticleCloud result = new ParticleCloud();
         ShadowMatrix sm = new ShadowMatrix();
 
         Consumer<Shape> particleMapper = (shape) -> shape.getPlaneStream()
-                .map(p -> Particles.splitIntoParticles(p, sm, target.getPosition(), force, Color4f.GREY, target.getVelocity()))
+                .map(p -> Particles.splitIntoParticles(p, sm, target.getPosition(), force, color, target.getVelocity()))
                 .forEach(result::addAll);
 
         target.toLocalSpace(sm, () -> target.create(sm, particleMapper));
@@ -89,43 +93,43 @@ public final class Particles {
 
     /**
      * generate particles for the given plane
-     * @param plane the plane to generate particles of
-     * @param ms a translation to map to world-space
+     * @param plane          the plane to generate particles of
+     * @param ms             a translation to map to world-space
      * @param entityPosition world-space position of the actual entity
-     * @param launchSpeed speed in m/s of the resulting particles
-     * @param planeColor color of this piece
+     * @param launchSpeed    speed in m/s of the resulting particles
+     * @param planeColor     color of this piece
      * @param startVelocity
      * @return a collection of particles that covers the plane exactly once
      */
-    public static ParticleCloud splitIntoParticles(Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor, Vector3fc startVelocity) {
-
+    public static ParticleCloud splitIntoParticles(
+            Plane plane, MatrixStack ms, PosVector entityPosition, float launchSpeed, Color4f planeColor, Vector3fc startVelocity
+    ) {
         PosVector planeMiddle = ms.getPosition(plane.getMiddle());
         DirVector launchDir = entityPosition.to(planeMiddle, new DirVector());
         launchDir.add(startVelocity);
 
         final float jitter = 0.4f;
-        return splitIntoParticles(plane, ClientSettings.PARTICLE_SPLITS, launchDir, jitter, METAL_LINGER_TIME, launchSpeed, planeColor, ms);
+        return splitIntoParticles(plane, ms, ClientSettings.PARTICLE_SPLITS, METAL_LINGER_TIME, launchDir, jitter, launchSpeed, planeColor);
     }
 
     /**
      * creates particles to fill the target plane with particles
-     * @param targetPlane the plane to be broken
-     * @param splits the number of times this Plane is split into four. If this Plane is not a triangle,
-     *               the resulting number of splits will be ((sidepoints - 3) * 2) as many
-     * @param launchDir the direction these new particles should move to
-     * @param jitter a factor that shows randomness in direction (divergence from launchDir).
-     *               A jitter of 1 results in angles up to 45 degrees / (1/4pi) rads
+     * @param targetPlane     the plane to be broken
+     * @param ms              translation matrix to world-space
+     * @param splits          the number of times this Plane is split into four. If this Plane is not a triangle, the
+     *                        resulting number of splits will be ((sidepoints - 3) * 2) as many
      * @param deprecationTime maximum time that the resulting particles may live
-     * @param particleSpeed average speed in m/s of the resulting particles
-     * @param planeColor color of this plane
-     * @param ms translation matrix to world-space
+     * @param launchDir       the direction these new particles should move to
+     * @param jitter          a factor that shows randomness in direction (divergence from launchDir). A jitter of 1
+     *                        results in angles up to 45 degrees or (1/4pi) rads
+     * @param particleSpeed   average speed in m/s of the resulting particles
+     * @param planeColor      color of this plane
      * @return a set of particles that completely fills the plane, without overlap and in random directions
      */
     public static ParticleCloud splitIntoParticles(
-            Plane targetPlane, int splits, DirVector launchDir, float jitter,
-            int deprecationTime, float particleSpeed, Color4f planeColor, MatrixStack ms
+            Plane targetPlane, MatrixStack ms, int splits, float deprecationTime, DirVector launchDir, float jitter,
+            float particleSpeed, Color4f planeColor
     ) {
-
         Collection<PosVector[]> triangles = asTriangles(targetPlane, ms);
 
         Collection<PosVector[]> splittedTriangles = triangulate(triangles, splits);
@@ -135,17 +139,17 @@ public final class Particles {
 
     private static ParticleCloud getParticles(
             Collection<PosVector[]> splittedTriangles, DirVector launchDir, float jitter,
-            int deprecationTime, float speed, Color4f particleColor
+            float deprecationTime, float speed, Color4f particleColor
     ) {
         ParticleCloud particles = new ParticleCloud();
-        for (PosVector[] p : splittedTriangles){
+        for (PosVector[] p : splittedTriangles) {
             DirVector movement = new DirVector();
             DirVector random = DirVector.random();
 
             float randFloat = Toolbox.random.nextFloat();
 
-            launchDir.add(random.scale(jitter, random), movement)
-                    .scale(speed * (1 - randFloat), movement);
+            movement = random.scale(jitter * speed * (1 - randFloat), movement);
+            movement.add(launchDir);
 
             particles.addParticle(
                     p[0], p[1], p[2], movement, random, particleColor, randFloat, randFloat * randFloat * deprecationTime
@@ -160,12 +164,9 @@ public final class Particles {
      * @return triangles in the same definition as the input triangles
      */
     private static Collection<PosVector[]> triangulate(Collection<PosVector[]> triangles, int splits) {
-        if (splits == 0) return triangles;
-
         for (int i = 0; i < splits; i++) {
             triangles = triangles.stream()
-                    .map(p -> splitTriangle(p[0], p[1], p[2]))
-                    .flatMap(Collection::stream)
+                    .flatMap(p -> splitTriangle(p[0], p[1], p[2]))
                     .collect(Collectors.toList());
         }
         return triangles;
@@ -206,18 +207,29 @@ public final class Particles {
      * creates four particles splitting the triangle between the given coordinates like the triforce (Zelda)
      * @return Collection of four Particles
      */
-    private static Collection<PosVector[]> splitTriangle(PosVector A, PosVector B, PosVector C){
-        Collection<PosVector[]> particles = new ArrayList<>();
+    private static Stream<PosVector[]> splitTriangle(PosVector A, PosVector B, PosVector C) {
+        Stream.Builder<PosVector[]> particles = Stream.builder();
 
         final PosVector AtoB = A.middleTo(B);
         final PosVector AtoC = A.middleTo(C);
         final PosVector BtoC = B.middleTo(C);
 
-        particles.add(new PosVector[]{A, AtoB, AtoC});
-        particles.add(new PosVector[]{B, BtoC, AtoB});
-        particles.add(new PosVector[]{C, BtoC, AtoC});
-        particles.add(new PosVector[]{AtoB, AtoC, BtoC});
+        particles.add(new PosVector[]{
+                new PosVector(A), new PosVector(AtoB), new PosVector(AtoC)
+        });
 
-        return particles;
+        particles.add(new PosVector[]{
+                new PosVector(B), new PosVector(BtoC), new PosVector(AtoB)
+        });
+
+        particles.add(new PosVector[]{
+                new PosVector(C), new PosVector(BtoC), new PosVector(AtoC)
+        });
+
+        particles.add(new PosVector[]{
+                new PosVector(AtoB), new PosVector(AtoC), new PosVector(BtoC)
+        });
+
+        return particles.build();
     }
 }

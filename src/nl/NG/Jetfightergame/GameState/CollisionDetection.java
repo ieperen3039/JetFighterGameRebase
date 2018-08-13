@@ -157,7 +157,7 @@ public class CollisionDetection implements EntityManagement {
      * @param target    an entity that has collided with a solid entity
      */
     private static void terrainCollision(MovingEntity target, PathDescription path, float deltaTime, Collision collision) {
-        if (target instanceof AbstractJet) {
+        if (false && target instanceof AbstractJet) { // TODO pathDescription
             PosVector jetPosition = target.getPosition();
             PosVector bounceDirection = path.getMiddleOfPath(collision);
             DirVector targetToMid = jetPosition.to(bounceDirection, new DirVector());

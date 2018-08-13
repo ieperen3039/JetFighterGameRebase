@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factories.EntityFactory;
+import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
 import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;

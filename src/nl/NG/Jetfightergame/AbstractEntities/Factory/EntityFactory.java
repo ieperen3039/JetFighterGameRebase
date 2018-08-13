@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.AbstractEntities.Factories;
+package nl.NG.Jetfightergame.AbstractEntities.Factory;
 
 import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
 import nl.NG.Jetfightergame.AbstractEntities.EntityState;

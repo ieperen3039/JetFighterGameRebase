@@ -68,10 +68,10 @@ void main()
         }
     }
 
-    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, 0.0);
+    fragColor = material.ambient * vec4(ambientLight, 1.0) + vec4(diffuseSpecularComponent, material.diffuse.w);
 
     float fogObscurity = cameraDistance / fogRange;
     fogObscurity = max(0.0, min(1.0, fogObscurity * fogObscurity));
 
-    fragColor = ((1 - fogObscurity) * fragColor) + vec4(fogObscurity * ambientLight, 1.0);
+    fragColor = ((1 - fogObscurity) * fragColor) + vec4(fogObscurity * ambientLight, fogObscurity);
 }

@@ -108,7 +108,7 @@ public interface Shape extends Renderable {
             }
         }
 
-        // if this point is none of the two previous points, determine the circumscribed circle
+        // if the furthest point is none of the two previous points, determine the circumscribed circle
         // https://en.wikipedia.org/wiki/Circumscribed_circle
         if ((tripleMax > (duoMax / 4)) && !(outer.equals(aMax) || outer.equals(bMax))) {
             PosVector temp2 = new PosVector();
