@@ -51,10 +51,10 @@ public final class ClientSettings {
 
     /** thrust particle settings */
     public static final float THRUST_PARTICLE_SIZE = 0.8f;
-    public static final float THRUST_PARTICLE_SPEED = 20f;
-    public static final float THRUST_PARTICLE_LINGER_TIME = 0.6f;
-    public static final float THRUST_PARTICLES_PER_SECOND = 200f;
-    public static final float THRUST_PARTICLE_FACTOR = -0.15f;
+    public static final float THRUST_PARTICLE_LINGER_TIME = 0.5f;
+    public static final float THRUST_PARTICLES_PER_SECOND = 150f;
+    public static final float JET_THRUST_SPEED = 80f;
+    public static final float ROCKET_THRUST_SPEED = 50f;
     public static final Color4f THRUST_COLOR_1 = Color4f.ORANGE;
     public static final Color4f THRUST_COLOR_2 = Color4f.RED;
 

@@ -214,6 +214,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 EntityFactory blueprint = new JetSpitsy.Factory(gameWorld.getNewSpawnPosition(), 0);
 
             AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
+                Logger.printOnline(npc::getPlaneDataString);
+
             Controller controller = new HunterAI(npc, target, gameWorld, JetBasic.THROTTLE_POWER / JetBasic.AIR_RESISTANCE_COEFFICIENT);
             npc.setController(controller);
             gameWorld.addEntity(npc);

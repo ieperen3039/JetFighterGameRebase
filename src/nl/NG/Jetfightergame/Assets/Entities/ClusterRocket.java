@@ -109,7 +109,7 @@ public class ClusterRocket extends AbstractProjectile {
         float deltaTime = gameTimer.getRenderTime().difference();
 
         toLocalSpace(gl, () -> entityDeposit.addParticles(
-                nuzzle.update(gl, DirVector.zeroVector(), deltaTime)
+                nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_PER_SECOND, deltaTime)
         ));
     }
 

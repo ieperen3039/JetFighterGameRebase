@@ -19,7 +19,6 @@ public class BoosterLine {
     private TrackedVector<PosVector> aSide;
     private TrackedVector<PosVector> bSide;
     private TrackedVector<DirVector> direction;
-    private float cooldown;
     private float timeToLive;
     private Color4f color1;
     private Color4f color2;
@@ -38,23 +37,23 @@ public class BoosterLine {
         this.aSide = new TrackedVector<>(A);
         this.bSide = new TrackedVector<>(B);
         this.direction = new TrackedVector<>(direction);
-        this.cooldown = 1f / particlesPerSecond;
         this.timeToLive = maxTimeToLive;
         this.baseColor1 = color1;
         this.baseColor2 = color2;
         this.color1 = color1;
         this.color2 = color2;
         this.particleSize = particleSize;
-
-        this.timeRemaining = cooldown * Toolbox.random.nextFloat();
+        this.timeRemaining = (1 / particlesPerSecond) * Toolbox.random.nextFloat();
     }
 
     /**
      * @param dirNew    the new direction in which the particles move
-     * @param deltaTime
+     * @param jitter the variation of the direction for this time period
+     * @param particlesPerSecond the particles per second after the next particle has spawned
+     * @param deltaTime the time difference since last calling this method
      * @return the particles resulting from the update
      */
-    public ParticleCloud update(MatrixStack ms, DirVector dirNew, float deltaTime) {
+    public ParticleCloud update(MatrixStack ms, DirVector dirNew, float jitter, float particlesPerSecond, float deltaTime) {
         aSide.update(ms.getPosition(aRelative));
         bSide.update(ms.getPosition(bRelative));
         direction.update(dirNew);
@@ -69,6 +68,7 @@ public class BoosterLine {
 
         timeRemaining -= deltaTime;
         if (timeRemaining >= 0) return null;
+        float cooldown = 1f / particlesPerSecond;
 
         ParticleCloud cloud = new ParticleCloud();
         do {
@@ -79,7 +79,7 @@ public class BoosterLine {
             DirVector dir = direction.current().interpolateTo(direction.previous(), timeFraction);
 
             Color4f color = color1.interpolateTo(color2, Toolbox.random.nextFloat());
-            cloud.addParticle(pos, dir, 0, timeToLive, color, particleSize);
+            cloud.addParticle(pos, dir, jitter, timeToLive, color, particleSize);
             timeRemaining += cooldown;
         } while (timeRemaining < 0);
 

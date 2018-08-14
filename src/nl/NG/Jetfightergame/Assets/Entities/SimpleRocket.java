@@ -50,10 +50,10 @@ public class SimpleRocket extends AbstractProjectile {
         );
 
         DirVector back = new DirVector();
-        forward.negate(back).reducedTo(ClientSettings.THRUST_PARTICLE_SPEED, back).add(forward);
+        forward.negate(back).reducedTo(ClientSettings.ROCKET_THRUST_SPEED, back).add(forward);
         nuzzle = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), back,
-                THRUST_PARTICLE_DENSITY, ClientSettings.THRUST_PARTICLE_LINGER_TIME, THRUST_COLOR, THRUST_COLOR, ClientSettings.THRUST_PARTICLE_SIZE
+                THRUST_PARTICLE_DENSITY, THRUST_PARTICLE_LINGER_TIME, THRUST_COLOR, THRUST_COLOR, THRUST_PARTICLE_SIZE
         );
     }
 
@@ -73,10 +73,10 @@ public class SimpleRocket extends AbstractProjectile {
 
         DirVector back = new DirVector();
         float deltaTime = gameTimer.getRenderTime().difference();
-        forward.negate(back).reducedTo(ClientSettings.THRUST_PARTICLE_SPEED, back).add(forward);
+        forward.negate(back).reducedTo(ClientSettings.ROCKET_THRUST_SPEED, back).add(forward);
 
         toLocalSpace(gl, () -> entityDeposit.addParticles(
-                nuzzle.update(gl, DirVector.zeroVector(), deltaTime)
+                nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_DENSITY, deltaTime)
         ));
     }
 

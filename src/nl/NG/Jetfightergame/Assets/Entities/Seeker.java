@@ -78,7 +78,7 @@ public class Seeker extends AbstractProjectile {
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm,
-                () -> entityDeposit.addParticles(trail.update(sm, DirVector.zeroVector(), deltaTime)),
+                () -> entityDeposit.addParticles(trail.update(sm, DirVector.zeroVector(), 0, TRAIL_PARTICLES_PER_SEC, deltaTime)),
                 currPos, currRot
         );
     }

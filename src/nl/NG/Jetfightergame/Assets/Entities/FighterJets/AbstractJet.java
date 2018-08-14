@@ -16,10 +16,8 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -30,9 +28,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType.*;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
 
 /**
@@ -55,7 +53,6 @@ public abstract class AbstractJet extends MovingEntity {
     protected final EntityMapping entityMapping;
     private List<BoosterLine> nuzzle;
     private DirVector forward;
-    protected float baseThrust;
 
     private Collection<Pair<Float, Float>> speedModifiers;
 
@@ -113,19 +110,8 @@ public abstract class AbstractJet extends MovingEntity {
         relativeStateDirection(forward).normalize(forward);
         forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
         velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
-        baseThrust = ClientSettings.BASE_SPEED * ClientSettings.BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
         nuzzle = new ArrayList<>();
         speedModifiers = new HashSet<>();
-
-        Supplier<String> slowTimer = () -> {
-            float factor = 1f;
-            for (Pair<Float, Float> modifier : speedModifiers) {
-                factor *= modifier.left;
-            }
-            if (factor == 1f) return "";
-            return String.format("Speed " + (factor > 1 ? "increased" : "reduced") + " to %d%%", ((int) (100 * factor)));
-        };
-        Logger.printOnline(slowTimer);
     }
 
     @Override
@@ -167,7 +153,7 @@ public abstract class AbstractJet extends MovingEntity {
 
         // thrust forces
         float throttle = controller.throttle();
-        float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
+        float thrust = (throttle > 0) ? ((throttle * throttlePower) + (float) 0) : ((throttle + 1) * (float) 0);
         thrust = thrust > throttlePower ? throttlePower : thrust;
 
         // apply speed modifiers
@@ -258,10 +244,10 @@ public abstract class AbstractJet extends MovingEntity {
      * @param right       second relative position of booster
      */
     protected void addBooster(int nOfBoosters, PosVector left, PosVector right) {
-        float pps = ClientSettings.THRUST_PARTICLES_PER_SECOND / nOfBoosters;
+        float pps = THRUST_PARTICLES_PER_SECOND / nOfBoosters;
         nuzzle.add(new BoosterLine(
-                left, right, DirVector.zeroVector(), pps, ClientSettings.THRUST_PARTICLE_LINGER_TIME,
-                ClientSettings.THRUST_COLOR_1, ClientSettings.THRUST_COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE
+                left, right, DirVector.zeroVector(), pps, THRUST_PARTICLE_LINGER_TIME,
+                THRUST_COLOR_1, THRUST_COLOR_2, THRUST_PARTICLE_SIZE
         ));
     }
 
@@ -282,15 +268,24 @@ public abstract class AbstractJet extends MovingEntity {
     public void preDraw(GL2 gl) {
         gl.setMaterial(Material.ROUGH);
 
-        DirVector back = getThrustDirection();
+        DirVector trail = getForward();
+        trail.mul(-JET_THRUST_SPEED).add(getVelocity());
+
+        float thrust = 0.5f * (controller.throttle() + 1.0f);
+        // apply trust modifiers
+        for (Pair<Float, Float> modifier : speedModifiers) {
+            thrust *= modifier.right;
+        }
+        float pps = Math.max((THRUST_PARTICLES_PER_SECOND * thrust * thrust) / nuzzle.size(), 3);
+
         float deltaTime = gameTimer.getRenderTime().difference();
         PosVector currPos = interpolatedPosition();
         Quaternionf currRot = interpolatedRotation();
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm, () -> nuzzle.forEach(boosterLine ->
-                entityDeposit.addParticles(boosterLine.update(sm, back, deltaTime))
-        ), currPos, currRot);
+                entityDeposit.addParticles(boosterLine.update(sm, trail, 0.1f, pps, deltaTime))), currPos, currRot
+        );
 
     }
 
@@ -372,21 +367,21 @@ public abstract class AbstractJet extends MovingEntity {
         nuzzle.forEach(n -> n.setColor(color1, color2, duration));
     }
 
-    private DirVector getThrustDirection() {
-        float throttle = controller.throttle() + 0.1f;
-        float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
-
-        // apply trust modifiers
-        for (Pair<Float, Float> modifier : speedModifiers) {
-            thrust *= modifier.right;
-        }
-
-        DirVector back = getForward().scale(-0.15f * thrust);
-        back.add(getVelocity());
-        return back;
-    }
-
     private MovingEntity getTarget(EntityState s) {
         return getTarget(s.velocity(0), s.position(0), entityMapping);
+    }
+
+    public String getPlaneDataString() {
+        float factor = 1f;
+        for (Pair<Float, Float> modifier : speedModifiers) {
+            factor *= modifier.left;
+        }
+
+        String boost = (factor == 1f) ? "" : String.format(
+                "Speed " + (factor > 1 ? "increased" : "reduced") + " to %d%%",
+                ((int) (100 * factor))
+        );
+
+        return String.format("[ %s ] %s", this, boost);
     }
 }

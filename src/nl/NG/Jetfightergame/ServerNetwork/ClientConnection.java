@@ -66,6 +66,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         game.switchTo(type);
         this.jet = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
         game.addEntity(jet);
+        Logger.printOnline(jet::getPlaneDataString);
     }
 
     @Override

@@ -69,7 +69,7 @@ public class ParticleCloud {
         final DirVector random = DirVector.randomOrb();
 
         final float rotationSpeed = 2 + (2 / randFloat);
-        random.mul(jitter * randFloat).add(direction);
+        random.mul(randFloat * jitter * direction.length()).add(direction);
 
         addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * maxTTL, particleSize);
     }

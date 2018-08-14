@@ -50,7 +50,7 @@ public class PowerupDisplay implements Consumer<ScreenOverlay.Painter> {
         );
 
         hud.text(
-                xMin + WIDTH / 2, yMin + MARGIN, TEXT_SIZE,
+                xMin + WIDTH / 2, yMin + HEIGHT / 2, TEXT_SIZE,
                 FONT, NanoVG.NVG_ALIGN_CENTER, Color4f.BLACK,
                 (power == PowerupType.NONE) ? "" : power.toString()
         );
