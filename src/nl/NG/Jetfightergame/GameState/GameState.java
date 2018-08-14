@@ -248,7 +248,7 @@ public abstract class GameState implements Environment {
 
         for (GravitySource source : gravitySources) {
             PosVector srcPos = source.getPosition();
-            float pull = source.getMagnitude() / srcPos.distanceSquared(entPos);
+            float pull = source.getMagnitudeSq() / srcPos.distanceSquared(entPos);
             DirVector newGravity = entPos.to(srcPos, temp).reducedTo(pull, temp);
             force.add(newGravity);
         }
@@ -275,8 +275,8 @@ public abstract class GameState implements Environment {
             return position.get();
         }
 
-        public float getMagnitude() {
-            return magnitude;
+        public float getMagnitudeSq() {
+            return magnitude * magnitude;
         }
     }
 }

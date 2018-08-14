@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
@@ -40,7 +41,7 @@ public class SimpleRocket extends AbstractProjectile {
     private BoosterLine nuzzle;
 
     private SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-                         GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
+                         GameTimer gameTimer, SpawnReceiver entityDeposit, AbstractJet src
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, MASS,
@@ -118,7 +119,7 @@ public class SimpleRocket extends AbstractProjectile {
         }
 
         @Override
-        public MovingEntity construct(SpawnReceiver game, MovingEntity src, MovingEntity tgt) {
+        public MovingEntity construct(SpawnReceiver game, AbstractJet src, MovingEntity tgt) {
             return new SimpleRocket(id, position, velocity, rotation, game.getTimer(), game, src);
         }
     }

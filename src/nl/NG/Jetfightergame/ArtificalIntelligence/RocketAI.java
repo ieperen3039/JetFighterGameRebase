@@ -12,8 +12,8 @@ import org.joml.Vector3f;
  */
 public class RocketAI implements Controller {
     private static final float ROLL_MULTIPLIER = 0.1f;
-    private static final float PITCH_MODIFIER = 3f;
-    private static final float YAW_MULTIPLIER = 3f;
+    private static final float PITCH_MODIFIER = 2f;
+    private static final float YAW_MULTIPLIER = 2f;
     private static final float THROTTLE_DOT_IGNORE = 0.4f;
     private static final float THROTTLE_MULTIPLIER = 1 / (1 - THROTTLE_DOT_IGNORE);
 

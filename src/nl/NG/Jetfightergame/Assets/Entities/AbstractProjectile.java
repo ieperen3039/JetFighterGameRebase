@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.*;
@@ -42,7 +43,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     protected Controller controller;
     private float thrustPower;
 
-    protected final MovingEntity sourceJet;
+    protected final AbstractJet sourceJet;
     protected MovingEntity target = null;
     private float rotationPreserveFactor;
 
@@ -69,7 +70,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     public AbstractProjectile(
             int id, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity,
             float mass, float airResistCoeff, float timeToLive, float turnAcc, float rollAcc, float thrustPower,
-            float rotationReduction, SpawnReceiver particleDeposit, GameTimer gameTimer, MovingEntity sourceEntity
+            float rotationReduction, SpawnReceiver particleDeposit, GameTimer gameTimer, AbstractJet sourceEntity
     ) {
         super(id, initialPosition, initialVelocity, initialRotation, mass, gameTimer, particleDeposit);
         this.airResistCoeff = airResistCoeff;
@@ -109,19 +110,16 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         DirVector temp = new DirVector();
         controller.update();
 
-        // thrust forces
-        float throttle = controller.throttle();
-        float thrust = (throttle > 0) ? throttle * thrustPower : 0;
-        netForce.add(forward.reducedTo(thrust, temp), netForce);
-
-        // transform velocity to local, reduce drifting, then transform back to global space
-        float red = DRIFT_REDUCTION * deltaTime;
-        reduceDriftLinear(extraVelocity, red, red);
-
+        // rotation reduction
         float rotationPreserveFraction = instantPreserveFraction(rotationPreserveFactor, deltaTime);
         yawSpeed *= rotationPreserveFraction;
         pitchSpeed *= rotationPreserveFraction;
         rollSpeed *= rotationPreserveFraction;
+
+        // thrust forces
+        float throttle = controller.throttle();
+        float thrust = (throttle > 0) ? throttle * thrustPower : 0;
+        netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         // rotational forces
         float instYawAcc = turnAcc * deltaTime;
@@ -130,6 +128,11 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         yawSpeed += controller.yaw() * instYawAcc;
         pitchSpeed += controller.pitch() * instPitchAcc;
         rollSpeed += controller.roll() * instRollAcc;
+
+        // drift reduction
+        // transform velocity to local, reduce drifting, then transform back to global space
+        float red = DRIFT_REDUCTION * deltaTime;
+        reduceDriftLinear(extraVelocity, red, red);
 
         // air-resistance
         DirVector airResistance = new DirVector();
@@ -257,11 +260,11 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
-            MovingEntity src = entities.getEntity(sourceID);
+            AbstractJet src = (AbstractJet) entities.getEntity(sourceID);
             MovingEntity tgt = entities.getEntity(targetID);
             return construct(game, src, tgt);
         }
 
-        public abstract MovingEntity construct(SpawnReceiver game, MovingEntity src, MovingEntity tgt);
+        public abstract MovingEntity construct(SpawnReceiver game, AbstractJet src, MovingEntity tgt);
     }
 }

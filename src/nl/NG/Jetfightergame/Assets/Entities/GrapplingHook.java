@@ -25,28 +25,28 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 13-8-2018.
  */
 public class GrapplingHook extends AbstractProjectile {
-    private static final float YOUR_PULL_FORCE = 4000f;
-    private static final float HIS_PULL_FORCE = 1000f;
+    private static final float YOUR_PULL_FORCE = 2000f;
+    private static final float HIS_PULL_FORCE = 500f;
 
     private static final float PULL_DURATION = 3f;
-    private static final float FIRE_SPEED = 100f;
+    private static final float FIRE_SPEED = 200f;
     public static final float EIGHTSTH = (float) (Math.PI / 4);
-    public static final float MAX_FLY_DURATION = 5f;
+    public static final float MAX_FLY_DURATION = 2f;
 
     private static final float LOCK_LENGTH = 5f;
     public static final float LOCK_WIDTH = 0.3f;
     public static final Color4f COLOR = Color4f.GREY;
-    private static final float TARGET_PULL_FORCE_FACTOR = 1_000f;
+    private static final float TARGET_PULL_FORCE_FACTOR = 3_000f;
 
     private AbstractJet hookedOther = null;
 
     public GrapplingHook(
             int id, PosVector initialPosition, DirVector initialVelocity,
-            GameTimer gameTimer, MovingEntity sourceEntity, SpawnReceiver particleDeposit,
+            GameTimer gameTimer, AbstractJet sourceEntity, SpawnReceiver particleDeposit,
             MovingEntity target) {
         super(
                 id, initialPosition, Toolbox.xTo(initialVelocity), initialVelocity,
-                1, 0, MAX_FLY_DURATION, 0, 0, 0, 0,
+                0.01f, 0, MAX_FLY_DURATION, 20f, 0, 0, 0.95f,
                 particleDeposit, gameTimer, sourceEntity
         );
         this.target = target;
@@ -78,20 +78,20 @@ public class GrapplingHook extends AbstractProjectile {
             hookedOther = (AbstractJet) other;
             timeToLive = PULL_DURATION;
 
-            sourceJet.addNetForce(PULL_DURATION, () -> {
-                DirVector newForce = sourceJet.getVecTo(hookedOther);
-                newForce.reducedTo(YOUR_PULL_FORCE, newForce);
-                return newForce;
-            });
-
-            hookedOther.addNetForce(PULL_DURATION, () -> {
-                DirVector newForce = hookedOther.getVecTo(sourceJet);
-                newForce.reducedTo(HIS_PULL_FORCE, newForce);
-                return newForce;
-            });
+            addForce(sourceJet, hookedOther, YOUR_PULL_FORCE);
+            addForce(hookedOther, sourceJet, HIS_PULL_FORCE);
         } else {
             timeToLive = 0;
         }
+    }
+
+    private void addForce(AbstractJet pulled, AbstractJet other, float magnitude) {
+        pulled.addNetForce(PULL_DURATION, () -> {
+            DirVector newForce = pulled.getVecTo(other);
+            if (isOverdue()) return DirVector.zeroVector();
+            newForce.reducedTo(magnitude, newForce);
+            return newForce;
+        });
     }
 
     @Override
@@ -107,7 +107,13 @@ public class GrapplingHook extends AbstractProjectile {
             gl.scale(LOCK_WIDTH, LOCK_WIDTH, LOCK_LENGTH / 2);
             gl.translate(0, 0, 1);
 
-            float nOfLocks = vecFromTarget.length() / LOCK_LENGTH - 1;
+            float vecLength = vecFromTarget.length();
+            if (vecLength > 1000) {
+                timeToLive = 0;
+                return;
+            }
+
+            float nOfLocks = vecLength / LOCK_LENGTH - 1;
             for (int i = 0; i < nOfLocks; i++) {
                 gl.draw(GeneralShapes.CUBE);
                 gl.translate(0, 0, 2);
@@ -122,6 +128,9 @@ public class GrapplingHook extends AbstractProjectile {
         super.applyPhysics(netForce, deltaTime);
         if (hookedOther != null) {
             extraPosition = hookedOther.getExpectedMiddle();
+
+            DirVector vecToOther = sourceJet.getVecTo(hookedOther);
+            if (sourceJet.getForward().dot(vecToOther) < 0) timeToLive = 0;
         }
     }
 
@@ -173,7 +182,7 @@ public class GrapplingHook extends AbstractProjectile {
         }
 
         @Override
-        public MovingEntity construct(SpawnReceiver game, MovingEntity src, MovingEntity tgt) {
+        public MovingEntity construct(SpawnReceiver game, AbstractJet src, MovingEntity tgt) {
             return new GrapplingHook(id, position, getVelocity((AbstractJet) src, tgt), game.getTimer(), src, game, tgt);
         }
     }

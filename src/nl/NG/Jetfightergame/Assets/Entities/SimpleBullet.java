@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
@@ -29,7 +30,7 @@ public class SimpleBullet extends AbstractProjectile {
     public static final int TIME_TO_LIVE = 5;
 
     private SimpleBullet(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
-                         GameTimer gameTimer, SpawnReceiver entityDeposit, MovingEntity src
+                         GameTimer gameTimer, SpawnReceiver entityDeposit, AbstractJet src
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, MASS,

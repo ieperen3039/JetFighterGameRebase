@@ -107,8 +107,7 @@ public abstract class MovingEntity implements Touchable {
      * @param deltaTime time difference of this gameloop
      */
     public static void entityCollision(MovingEntity left, MovingEntity right, float deltaTime) {
-        DirVector leftToRight = new DirVector();
-        leftToRight = left.extraPosition.to(right.extraPosition, leftToRight);
+        DirVector leftToRight = left.getVecTo(right).normalize(new DirVector());
         DirVector rightToLeft = leftToRight.negate(new DirVector());
 
         left.collideWith(right, deltaTime, rightToLeft);
@@ -122,7 +121,6 @@ public abstract class MovingEntity implements Touchable {
     /** @see #entityCollision(MovingEntity, MovingEntity, float) */
     private void collideWith(MovingEntity other, float deltaTime, DirVector otherToThis) {
         float dotProduct = extraVelocity.sub(other.extraVelocity, new DirVector()).dot(otherToThis);
-//        dotProduct = Math.abs(dotProduct);
         float scalarLeft = (2 * other.mass / (mass + other.mass)) * (dotProduct / otherToThis.lengthSquared());
         extraVelocity.sub(otherToThis.mul(scalarLeft));
         recalculateMovement(deltaTime);

@@ -340,7 +340,7 @@ public abstract class AbstractJet extends MovingEntity {
                 launchClusterRocket(this, getTarget(), entityDeposit);
                 break;
             case SEEKERS:
-                launchSeekers(this, entityDeposit, getTarget());
+                launchSeekers(this, entityDeposit, this::getTarget);
                 break;
             case BLACK_HOLE:
                 entityDeposit.addSpawn(new BlackHole.Factory(this));
@@ -384,5 +384,9 @@ public abstract class AbstractJet extends MovingEntity {
         DirVector back = getForward().scale(ClientSettings.THRUST_PARTICLE_FACTOR * thrust);
         back.add(getVelocity());
         return back;
+    }
+
+    private MovingEntity getTarget(EntityState s) {
+        return getTarget(s.velocity(0), s.position(0), entityMapping);
     }
 }

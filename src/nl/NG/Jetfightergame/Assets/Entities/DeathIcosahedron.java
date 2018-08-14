@@ -41,7 +41,7 @@ public class DeathIcosahedron extends AbstractProjectile {
 
     private DeathIcosahedron(
             int id, PosVector position, Quaternionf rotation, DirVector velocity,
-            SpawnReceiver particleDeposit, GameTimer gameTimer, MovingEntity sourceEntity, EntityMapping entities
+            SpawnReceiver particleDeposit, GameTimer gameTimer, AbstractJet sourceEntity, EntityMapping entities
     ) {
         super(
                 id, position, rotation, velocity, 1f,
@@ -146,7 +146,7 @@ public class DeathIcosahedron extends AbstractProjectile {
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
-            MovingEntity entity = entities.getEntity(sourceID);
+            AbstractJet entity = (AbstractJet) entities.getEntity(sourceID);
             return new DeathIcosahedron(id, position, rotation, velocity, game, game.getTimer(), entity, entities);
         }
 

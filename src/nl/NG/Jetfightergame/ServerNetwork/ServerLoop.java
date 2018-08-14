@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -206,9 +207,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         worldShouldSwitch = false;
 
-        if (ServerSettings.FUN) new Thread(() -> {
+        // add FUN
+        for (int i = 0; i < ServerSettings.NOF_FUN; i++)
+            new Thread(() -> {
             MovingEntity target = connections.get(0).jet();
-            EntityFactory blueprint = new JetBasic.Factory(new PosVector(100, 0, 30), DirVector.xVector(), DirVector.zeroVector());
+                EntityFactory blueprint = new JetSpitsy.Factory(gameWorld.getNewSpawnPosition(), 0);
 
             AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
             Controller controller = new HunterAI(npc, target, gameWorld, JetBasic.THROTTLE_POWER / JetBasic.AIR_RESISTANCE_COEFFICIENT);

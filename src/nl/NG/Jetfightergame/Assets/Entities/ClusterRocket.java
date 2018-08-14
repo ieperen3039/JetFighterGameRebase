@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
@@ -60,7 +61,7 @@ public class ClusterRocket extends AbstractProjectile {
      */
     private ClusterRocket(
             int id, PosVector initialPosition, Quaternionf initialRotation, DirVector initialVelocity,
-            SpawnReceiver entityDeposit, GameTimer gameTimer, MovingEntity sourceEntity, MovingEntity tgt
+            SpawnReceiver entityDeposit, GameTimer gameTimer, AbstractJet sourceEntity, MovingEntity tgt
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, MASS,
@@ -168,7 +169,7 @@ public class ClusterRocket extends AbstractProjectile {
         }
 
         @Override
-        public MovingEntity construct(SpawnReceiver game, MovingEntity src, MovingEntity tgt) {
+        public MovingEntity construct(SpawnReceiver game, AbstractJet src, MovingEntity tgt) {
             return new ClusterRocket(id, position, rotation, velocity, game, game.getTimer(), src, tgt);
         }
     }

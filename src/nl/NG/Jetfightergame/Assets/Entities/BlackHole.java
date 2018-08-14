@@ -12,7 +12,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -36,13 +35,13 @@ public class BlackHole extends AbstractProjectile {
     private static final float PARTICLE_SIZE = 1f;
     private static final float TIME_TO_LIVE = 10f;
     private static final float YOUR_PULL_FORCE = 400f;
-    private static final float OTHER_PULL_FORCE = 100_000f;
+    private static final float OTHER_PULL_FORCE = 800f;
 
     private float sparkTimeRemain = 0;
 
     private BlackHole(
             int id, PosVector position, Quaternionf rotation, DirVector velocity,
-            SpawnReceiver particleDeposit, GameTimer gameTimer, MovingEntity sourceEntity
+            SpawnReceiver particleDeposit, GameTimer gameTimer, AbstractJet sourceEntity
     ) {
         super(
                 id, position, rotation, velocity, 1f,
@@ -126,14 +125,13 @@ public class BlackHole extends AbstractProjectile {
         public static DirVector getVelocity(AbstractJet jet) {
             DirVector vel = jet.getVelocity();
             DirVector launch = jet.getForward().scale(FIRE_SPEED);
-            Logger.DEBUG.print(vel, launch, vel.add(launch, new DirVector()).length(), jet.getVelocity().length());
             vel.add(launch);
             return vel;
         }
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
-            MovingEntity entity = entities.getEntity(sourceID);
+            AbstractJet entity = (AbstractJet) entities.getEntity(sourceID);
             return new BlackHole(id, position, rotation, velocity, game, game.getTimer(), entity);
         }
 

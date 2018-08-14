@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Assets.Entities.FighterJets;
 import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
@@ -99,6 +100,15 @@ public class JetSpitsy extends AbstractJet {
 
         public Factory(JetSpitsy jet) {
             super(EntityClass.JET_SPITZ, jet);
+        }
+
+        public Factory(EntityState spawnPosition, int timeFraction) {
+            super(
+                    EntityClass.JET_SPITZ,
+                    spawnPosition.position(timeFraction),
+                    spawnPosition.rotation(timeFraction),
+                    spawnPosition.velocity(timeFraction)
+            );
         }
 
         @Override

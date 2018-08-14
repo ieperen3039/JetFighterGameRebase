@@ -28,11 +28,10 @@ public final class ServerSettings {
     public static final float BASE_BUMPOFF_ENERGY = (JetBasic.MASS * BASE_SPEED * BASE_SPEED * 0.01f); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
-    public static final boolean FUN = true;
+    public static final int NOF_FUN = 5;
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final int PLAYERS_PER_RACE = 8;
-    public static final float POWERUP_COLLECTION_RANGE = 8f;
-    public static final int NOF_SEEKERS_LAUNCHED = 10;
+    public static final float POWERUP_COLLECTION_RANGE = 14f;
     public static boolean RENDER_ENABLED = false;
 
     public static final int CUBE_SIZE_LARGE = 25;

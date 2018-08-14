@@ -8,12 +8,13 @@ import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.InvisibleEntity;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.function.Function;
 
 import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor.*;
 
@@ -39,7 +40,8 @@ public enum PowerupType {
 
     private static final PowerupType[] VALUES = values();
 
-    public static final float SEEKER_LAUNCH_SPEED = 4f;
+    public static final float SEEKER_LAUNCH_SPEED = 2f;
+    public static final int NOF_SEEKERS_LAUNCHED = 20;
 
     public static final float SPEED_BOOST_DURATION = 3f;
     public static final float SPEED_BOOST_FACTOR = 3f;
@@ -88,9 +90,11 @@ public enum PowerupType {
                 return ROCKET;
             case BLUE:
                 return SHIELD;
-            default:
-                throw new UnsupportedOperationException("unknown enum constant" + source);
+            case NONE:
+                return NONE;
         }
+
+        throw new IllegalStateException();
     }
 
     public static PowerupType get(int id) {
@@ -119,10 +123,10 @@ public enum PowerupType {
         }
     }
 
-    public static void launchSeekers(AbstractJet jet, SpawnReceiver deposit, MovingEntity target) {
+    public static void launchSeekers(AbstractJet jet, SpawnReceiver deposit, Function<EntityState, MovingEntity> target) {
         deposit.addSpawns(AbstractProjectile.createCloud(
-                jet.getPosition(), jet.getVelocity(), ServerSettings.NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
-                (state) -> new Seeker.Factory(state, Toolbox.random.nextFloat(), jet, target)
+                jet.getPosition(), jet.getVelocity(), NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
+                (state) -> new Seeker.Factory(state, Toolbox.random.nextFloat(), jet, target.apply(state))
         ));
     }
 
@@ -143,5 +147,9 @@ public enum PowerupType {
     @Override
     public String toString() {
         return super.toString().replaceAll("_", " ");
+    }
+
+    public Collection<PowerupColor> getRequiredResources() {
+        return required.clone();
     }
 }

@@ -52,7 +52,7 @@ public class IslandMap extends GameState {
     @Override
     protected Collection<EntityFactory> getInitialEntities() {
         List<EntityFactory> entities = new ArrayList<>();
-        entities.add(new PowerupEntity.Factory(new PosVector(40, 40, 0), PowerupColor.GREEN));
+        entities.add(new PowerupEntity.Factory(new PosVector(-40, 20, 0), PowerupColor.GREEN));
         entities.add(new PowerupEntity.Factory(new PosVector(-100, 100, 100), PowerupColor.RED));
         entities.add(new PowerupEntity.Factory(new PosVector(-100, -50, 50), PowerupColor.YELLOW));
         entities.add(new PowerupEntity.Factory(new PosVector(0, 100, 20), PowerupColor.RED));
@@ -63,11 +63,10 @@ public class IslandMap extends GameState {
 
     @Override
     public EntityState getNewSpawnPosition() {
-        DirVector direction = new DirVector(1, 1, 0);
-        direction.normalize();
+        DirVector direction = DirVector.xVector();
         PosVector pos = new PosVector(nextSpawnPosition);
 
-        nextSpawnPosition.add(new PosVector(20, 0, 0));
+        nextSpawnPosition.add(new PosVector(0, 20, 0));
         return new EntityState(pos, direction, DirVector.zeroVector());
     }
 
