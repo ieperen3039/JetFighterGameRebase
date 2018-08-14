@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Camera.Camera;
-import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
@@ -31,19 +30,16 @@ import static org.lwjgl.opengl.GL11.*;
  * @author Geert van Ieperen
  */
 public class JetFighterRenderer extends AbstractGameLoop {
-
-    private final Consumer<ScreenOverlay.Painter> gravityHud;
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
-    private final Controller controller;
     private ShaderManager shaderManager;
     private Environment gameState;
     private ScreenOverlay overlay;
     private ParticleShader particleShader;
 
     private final String sessionName;
-    private int frameNumber = 0;
+    private long frameNumber = 0;
 
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
                               Camera camera, ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> gravityHud
@@ -54,7 +50,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.window = window;
         this.activeCamera = camera;
         this.engine = engine;
-        controller = controllerManager;
 
         Logger.printOnline(() -> {
             Float currentTime = engine.getTimer().getRenderTime().current();
@@ -74,8 +69,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         );
 
         overlay.addMenuItem(menu);
-
-        this.gravityHud = gravityHud;
         overlay.addHudItem(gravityHud);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yymmdd_hhmmss");
@@ -162,6 +155,5 @@ public class JetFighterRenderer extends AbstractGameLoop {
     @Override
     public void cleanup() {
         shaderManager.cleanup();
-        overlay.removeHudItem(gravityHud);
     }
 }

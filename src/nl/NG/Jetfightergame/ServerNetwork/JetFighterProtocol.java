@@ -17,6 +17,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.CountDownTimer;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -285,11 +286,13 @@ public class JetFighterProtocol {
         progress.setState(playerName, checkPointNr, roundNr);
     }
 
-    public void worldSwitchSend(EnvironmentClass world) throws IOException {
+    public void worldSwitchSend(EnvironmentClass world, float countDown) throws IOException {
+        output.writeFloat(countDown);
         output.write(world.ordinal());
     }
 
-    public EnvironmentClass worldSwitchRead() throws IOException {
+    public EnvironmentClass worldSwitchRead(CountDownTimer counter, float currentTime) throws IOException {
+        counter.setTime(currentTime + input.readFloat());
         return EnvironmentClass.get(input.read());
     }
 

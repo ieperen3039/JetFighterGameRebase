@@ -186,7 +186,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     private void setWorld(EnvironmentClass world) {
         Logger.INFO.print("Switching world to " + world);
-        connections.forEach(conn -> conn.sendWorldSwitch(world));
+        connections.forEach(conn -> conn.sendWorldSwitch(world, 5f));
         // startup new world
         Player[] asArray = connections.toArray(new Player[0]);
         RaceProgress raceProgress = new RaceProgress(asArray.length, this, asArray);

@@ -39,6 +39,7 @@ public class ServerConnection implements BlockingListener, Player {
 
     private Lock sendLock = new ReentrantLock();
     private volatile boolean isClosed;
+    private float controlDisabledUntil = 0;
 
     /**
      * construct a server-side connection to a player
@@ -67,7 +68,7 @@ public class ServerConnection implements BlockingListener, Player {
 
         this.protocol = new JetFighterProtocol(clientIn, clientOut);
         protocol.syncTimerSource(server.getTimer());
-        protocol.worldSwitchSend(worldType);
+        protocol.worldSwitchSend(worldType, 0f);
         clientOut.flush();
         Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, spawnAccept, entities);
         clientName = p.left;
@@ -90,7 +91,13 @@ public class ServerConnection implements BlockingListener, Player {
         }
 
         if (type.isOf(MessageType.controls)) {
-            protocol.controlRead(controls, type);
+
+            boolean controlIsDisabled = controlDisabledUntil > server.getTimer().time();
+            if (!controlIsDisabled) {
+                protocol.controlRead(controls, type);
+            } else {
+                clientIn.skip(type.nOfBits());
+            }
 
         } else switch (type) {
             case PING:
@@ -114,7 +121,7 @@ public class ServerConnection implements BlockingListener, Player {
                 break;
 
             default:
-                long bits = clientIn.skip(type.nOfArgs());
+                long bits = clientIn.skip(type.nOfBits());
                 Logger.ERROR.print("Message caused an error: " + type, "skipping " + bits + " bits");
         }
 
@@ -170,10 +177,11 @@ public class ServerConnection implements BlockingListener, Player {
         );
     }
 
-    public void sendWorldSwitch(EnvironmentClass world) {
+    public void sendWorldSwitch(EnvironmentClass world, float countDown) {
         sendMessage(MessageType.WORLD_SWITCH, () ->
-                protocol.worldSwitchSend(world)
+                protocol.worldSwitchSend(world, countDown)
         );
+        controlDisabledUntil = server.getTimer().time() + countDown;
     }
 
     public void sendPowerupUpdate(PowerupEntity powerup, float collectionTime, boolean isCollected) {

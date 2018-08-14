@@ -31,7 +31,9 @@ public class JetFighterServerTest {
     private Exception tryConnect(Socket client) {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
-            ClientConnection cc = new ClientConnection("TheLegend27", client.getOutputStream(), client.getInputStream());
+            ClientConnection cc = new ClientConnection("TheLegend27",
+                    client.getOutputStream(), client.getInputStream()
+            );
             Logger.DEBUG.print("received a " + cc);
         } catch (IOException e) {
             return e;

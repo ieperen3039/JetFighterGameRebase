@@ -151,6 +151,7 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
         build();
         if (oldInst != null) oldInst.cleanUp();
         currentType = type;
+        System.gc();
     }
 
     public EnvironmentClass getCurrentType() {

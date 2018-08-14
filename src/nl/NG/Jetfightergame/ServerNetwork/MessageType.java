@@ -51,7 +51,7 @@ public enum MessageType {
     }
 
     /** @return the number of values must be send after this message, or Integer.MAX_VALUE if this is undetermined */
-    public int nOfArgs() {
+    public int nOfBits() {
         if (isOf(controls) || (this == ENTITY_REMOVE)) return 1;
         if (isOf(variableLength)) return Integer.MAX_VALUE;
         else return 0;

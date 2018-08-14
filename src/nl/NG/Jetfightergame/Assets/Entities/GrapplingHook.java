@@ -50,13 +50,6 @@ public class GrapplingHook extends AbstractProjectile {
                 particleDeposit, gameTimer, sourceEntity
         );
         this.target = target;
-
-        addNetForce(timeToLive, () -> {
-            if (this.target == null) return new DirVector();
-            DirVector vecToTarget = getVecTo(this.target);
-            vecToTarget.div(vecToTarget.lengthSquared() / TARGET_PULL_FORCE_FACTOR);
-            return vecToTarget;
-        });
     }
 
     @Override

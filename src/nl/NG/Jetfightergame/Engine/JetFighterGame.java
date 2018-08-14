@@ -112,8 +112,9 @@ public class JetFighterGame extends GLFWGameEngine {
             AbstractJet playerJet = player.jet();
             Logger.DEBUG.print("Received " + playerJet + " from the server");
 
-            Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera);
-            hud = hud.andThen(new PowerupDisplay(player));
+            Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera)
+                    .andThen(new PowerupDisplay(player))
+                    .andThen(connection.countDownGui());
 
             renderLoop = new JetFighterRenderer(
                     this, gameState, window, camera, player.getInputControl(), hud

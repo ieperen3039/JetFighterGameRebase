@@ -14,6 +14,7 @@ import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
 import nl.NG.Jetfightergame.GameState.*;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.ScreenOverlay.HUD.CountDownTimer;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -49,6 +50,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final AbstractJet jet;
     private RaceProgress gameProgress;
     private String name;
+    private final CountDownTimer counter;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
@@ -62,11 +64,14 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.time = protocol.syncTimerTarget();
-        EnvironmentClass type = protocol.worldSwitchRead();
+        this.counter = new CountDownTimer(0, time);
+        EnvironmentClass type = protocol.worldSwitchRead(counter, time.time());
         game.switchTo(type);
+
         this.jet = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
         game.addEntity(jet);
         Logger.printOnline(jet::getPlaneDataString);
+
     }
 
     @Override
@@ -121,7 +126,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             case WORLD_SWITCH:
                 gameProgress = new RaceProgress(gameProgress);
                 game.setContext(this, gameProgress);
-                EnvironmentClass world = protocol.worldSwitchRead();
+                EnvironmentClass world = protocol.worldSwitchRead(counter, time.time());
                 game.switchTo(world);
                 game.addEntity(jet);
                 break;
@@ -239,6 +244,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public GameTimer getTimer() {
         return time;
+    }
+
+    public CountDownTimer countDownGui() {
+        return counter;
     }
 
     @Override
