@@ -17,8 +17,7 @@ import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.*;
  */
 public class PowerupDisplay implements Consumer<ScreenOverlay.Painter> {
     private static final int MARGIN = 50;
-    private static final int WIDTH = 200;
-    public static final int HALFWIDTH = WIDTH / 2;
+    private static final int WIDTH = 240;
     private static final int HEIGHT = 50;
     private final Player player;
 
@@ -51,9 +50,9 @@ public class PowerupDisplay implements Consumer<ScreenOverlay.Painter> {
         );
 
         hud.text(
-                xMin + MARGIN / 2, yMin + MARGIN / 2, TEXT_SIZE,
-                FONT, NanoVG.NVG_ALIGN_LEFT, HUD_COLOR,
-                (power == PowerupType.NONE) ? "-" : power.toString()
+                xMin + WIDTH / 2, yMin + MARGIN, TEXT_SIZE,
+                FONT, NanoVG.NVG_ALIGN_CENTER, Color4f.BLACK,
+                (power == PowerupType.NONE) ? "" : power.toString()
         );
     }
 }

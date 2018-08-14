@@ -12,7 +12,7 @@ public final class HUDStyleSettings {
     public static final int ICON_SMALL = 20;
     public static final int ICON_TEXT_DISPLACE = 2;
 
-    public static final int TEXT_SIZE = 14;
+    public static final int TEXT_SIZE = 20;
 
     public static final Color4f HUD_COLOR = new Color4f(0.2f, 1f, 0.2f, 0.9f);
     public static final int HUD_STROKE_WIDTH = 3;

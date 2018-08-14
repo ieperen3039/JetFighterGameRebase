@@ -381,7 +381,7 @@ public abstract class AbstractJet extends MovingEntity {
             thrust *= modifier.right;
         }
 
-        DirVector back = getForward().scale(ClientSettings.THRUST_PARTICLE_FACTOR * thrust);
+        DirVector back = getForward().scale(-0.15f * thrust);
         back.add(getVelocity());
         return back;
     }
