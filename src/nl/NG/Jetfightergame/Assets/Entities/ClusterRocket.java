@@ -1,14 +1,13 @@
-package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
+package nl.NG.Jetfightergame.Assets.Entities;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -37,15 +36,14 @@ public class ClusterRocket extends AbstractProjectile {
     public static final int NOF_PELLETS_LAUNCHED = 50;
     public static final float EXPLOSION_POWER = 10f;
     public static final int EXPLOSION_DENSITY = 200;
-    public static final float THRUST_POWER = 100f;
+    public static final float THRUST_POWER = 200f;
     public static final float TIME_TO_LIVE = 30f;
     public static final float SHOOT_ACCURACY = 0.4f;
     public static final float TURN_ACC = 0.3f;
     public static final float ROLL_ACC = 0.2f;
-    public static final float AIR_RESIST = 0.05f;
+    public static final float AIR_RESIST = 0.03f;
     public static final float MASS = 5f;
     public static final float THRUST_PARTICLE_PER_SECOND = 15;
-    protected Material surfaceMaterial;
     private boolean hasExploded = false;
     private BoosterLine nuzzle;
 

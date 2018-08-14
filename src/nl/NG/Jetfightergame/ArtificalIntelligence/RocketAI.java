@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.Controllers.Controller;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector3f;

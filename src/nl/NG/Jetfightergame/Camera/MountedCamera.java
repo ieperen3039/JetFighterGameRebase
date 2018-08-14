@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Tools.Tracked.SmoothTrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;

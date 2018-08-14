@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Engine.PathDescription;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.Collection;

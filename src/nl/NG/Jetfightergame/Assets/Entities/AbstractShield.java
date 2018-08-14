@@ -1,10 +1,11 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
-import nl.NG.Jetfightergame.AbstractEntities.*;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.*;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;

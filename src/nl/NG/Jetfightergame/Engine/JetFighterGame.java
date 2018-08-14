@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;

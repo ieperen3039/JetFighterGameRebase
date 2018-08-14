@@ -1,14 +1,15 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.Assets.Entities.FighterJets;
 
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
-import nl.NG.Jetfightergame.Assets.Entities.AbstractShield;
-import nl.NG.Jetfightergame.Assets.Entities.OneHitShield;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.DeathIcosahedron;
-import nl.NG.Jetfightergame.Assets.Entities.ReflectorShield;
+import nl.NG.Jetfightergame.Assets.Entities.*;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -27,15 +28,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType.*;
+import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
 
 /**
  * @author Geert van Ieperen created on 30-10-2017.
  */
 public abstract class AbstractJet extends MovingEntity {
-
-    protected final float liftFactor;
     protected final float airResistCoeff;
 
     protected final float throttlePower;
@@ -59,7 +58,7 @@ public abstract class AbstractJet extends MovingEntity {
     /** fraction of speed lost by slow. higher slow factor is more slow */
     protected float slowFactor = 0;
     /** time left in boost */
-    private float boostTimeLeft = 0;
+    protected float boostTimeLeft = 0;
     /** fraction of speed gained by boost. higher boost factor is more speed */
     protected float boostFactor = 0;
 
@@ -75,8 +74,6 @@ public abstract class AbstractJet extends MovingEntity {
      * @param initialRotation         the initial rotation of spawning
      * @param material                the default material properties of the whole object.
      * @param mass                    the mass of the object in kilograms.
-     * @param liftFactor              arbitrary factor of the lift-effect of the wings in gravitational situations. This
-     *                                is applied only on the vector of external influences, thus not in zero-gravity.
      * @param airResistanceCoeff      Air resistance coefficient Cw as in Fwl = 0.5 * A * Cw.
      * @param throttlePower           force of the engines at full power in Newton
      * @param brakePower              air resistance is multiplied with this value when braking
@@ -94,7 +91,7 @@ public abstract class AbstractJet extends MovingEntity {
      */
     public AbstractJet(
             int id, PosVector initialPosition, Quaternionf initialRotation,
-            Material material, float mass, float liftFactor, float airResistanceCoeff,
+            Material material, float mass, float airResistanceCoeff,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
             SpawnReceiver entityDeposit, EntityMapping entityMapping
@@ -107,7 +104,6 @@ public abstract class AbstractJet extends MovingEntity {
         this.yawAcc = yawAcc;
         this.pitchAcc = pitchAcc;
         this.rollAcc = rollAcc;
-        this.liftFactor = liftFactor;
         this.rotationPreserveFactor = 1 - rotationReductionFactor;
         this.yPreservation = 1 - yReduction;
         this.zPreservation = 1 - zReduction;
@@ -355,7 +351,7 @@ public abstract class AbstractJet extends MovingEntity {
                 entityDeposit.addSpawn(new ReflectorShield.Factory(this));
                 break;
             case GRAPPLING_HOOK:
-                PowerupType.launchGrapplingHook(this, getTarget(), entityDeposit);
+                entityDeposit.addSpawn(new GrapplingHook.Factory(this, getTarget()));
                 break;
             default:
                 throw new UnsupportedOperationException("enum not registered properly: " + currentPowerup);
@@ -366,13 +362,13 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     private DirVector getThrustDirection() {
-        float throttle = controller.throttle();
+        float throttle = controller.throttle() + 0.1f;
         float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
-        thrust += 0.2f;
         thrust *= boostFactor + 1;
 
         DirVector back = getForward().scale(ClientSettings.THRUST_PARTICLE_FACTOR * thrust);
         back.add(getVelocity());
         return back;
     }
+
 }

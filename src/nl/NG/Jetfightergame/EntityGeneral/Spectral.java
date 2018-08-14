@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.EntityGeneral;
 
 /**
  * entities implementing this interface do not have a solid collision. Entities hitting this are not directly affected,

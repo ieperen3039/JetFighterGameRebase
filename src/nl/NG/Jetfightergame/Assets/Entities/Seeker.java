@@ -1,13 +1,12 @@
-package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
+package nl.NG.Jetfightergame.Assets.Entities;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.ArtificalIntelligence.RocketAI;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;

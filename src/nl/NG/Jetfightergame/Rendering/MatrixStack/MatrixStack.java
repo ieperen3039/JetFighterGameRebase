@@ -12,7 +12,7 @@ import org.joml.Vector3fc;
  *         created on 19-11-2017.
  */
 public interface MatrixStack {
-    /** TODO overwrite in GLShader impl.
+    /**
      * rotates the axis frame such that the z-axis points from source to target vector,
      * and translates the system to source
      * if (target == source) the axis will not turn
@@ -21,15 +21,12 @@ public interface MatrixStack {
      */
     default void pointFromTo(PosVector source, PosVector target) {
         if (target.equals(source)) return;
-
-        DirVector parallelVector = source.to(target, new DirVector())
-                .normalize(new DirVector());
-
-        DirVector M = DirVector.zVector().cross(parallelVector, new DirVector());
-        float angle = (float) Math.acos(DirVector.zVector().dot(parallelVector));// in Radians
-
         translate(source);
-        rotate(M, angle);
+
+        DirVector sourceToTarget = new DirVector();
+        source.to(target, sourceToTarget).normalize();
+
+        rotate(new Quaternionf().rotateTo(DirVector.zVector(), sourceToTarget));
     }
 
     /**

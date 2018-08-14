@@ -1,15 +1,15 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
-import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
-import nl.NG.Jetfightergame.AbstractEntities.StaticEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.EntityGeneral.StaticEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -61,8 +61,8 @@ public class PlayerJetLaboratory extends GameState {
             }
         }
 
-        entities.add(new PowerupEntity.Factory(new PosVector(0, 0, 0), PowerupColor.BLUE));
-        entities.add(new PowerupEntity.Factory(new PosVector(40, 0, 0), PowerupColor.YELLOW));
+        entities.add(new PowerupEntity.Factory(new PosVector(10, 0, 0), PowerupColor.RED));
+        entities.add(new PowerupEntity.Factory(new PosVector(20, 0, 0), PowerupColor.GREEN));
 
         return entities;
     }

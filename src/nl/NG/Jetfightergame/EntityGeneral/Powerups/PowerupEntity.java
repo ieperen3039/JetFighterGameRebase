@@ -1,14 +1,14 @@
-package nl.NG.Jetfightergame.AbstractEntities.Powerups;
+package nl.NG.Jetfightergame.EntityGeneral.Powerups;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Spectral;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Spectral;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;

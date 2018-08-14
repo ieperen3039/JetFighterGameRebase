@@ -1,8 +1,12 @@
-package nl.NG.Jetfightergame.AbstractEntities.Powerups;
+package nl.NG.Jetfightergame.EntityGeneral.Powerups;
 
-import nl.NG.Jetfightergame.AbstractEntities.*;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.ClusterRocket;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.Seeker;
+import nl.NG.Jetfightergame.Assets.Entities.AbstractProjectile;
+import nl.NG.Jetfightergame.Assets.Entities.ClusterRocket;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Entities.Seeker;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.InvisibleEntity;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -11,18 +15,27 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
 import java.util.EnumSet;
 
-import static nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupColor.*;
+import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor.*;
 
 /**
  * @author Geert van Ieperen. Created on 11-7-2018.
  */
 public enum PowerupType {
     NONE(PowerupColor.NONE),
-    SPEED(GREEN), SHIELD(BLUE), ROCKET(RED), SMOKE(YELLOW),
-    SEEKERS(RED, YELLOW),
-    REFLECTOR_SHIELD(BLUE, YELLOW),
+
+    ROCKET(RED),
     DEATHICOSAHEDRON(RED, BLUE),
-    GRAPPLING_HOOK(RED, GREEN);
+    GRAPPLING_HOOK(RED, GREEN),
+    SEEKERS(RED, YELLOW),
+
+    SHIELD(BLUE),
+    //    THING1(BLUE, GREEN),
+    REFLECTOR_SHIELD(BLUE, YELLOW),
+
+    SPEED(GREEN),
+//    THING2(GREEN, YELLOW),
+
+    SMOKE(YELLOW);
 
     public static final float SEEKER_LAUNCH_SPEED = 4f;
     public static final float SMOKE_LAUNCH_SPEED = 20f;
@@ -107,7 +120,7 @@ public enum PowerupType {
     }
 
     public static void launchGrapplingHook(AbstractJet source, MovingEntity target, SpawnReceiver deposit) {
-        target.impact(5);
+
     }
 
     public PowerupType with(PowerupColor type) {

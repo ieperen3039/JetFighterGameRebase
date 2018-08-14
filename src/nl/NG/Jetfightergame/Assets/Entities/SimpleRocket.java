@@ -1,12 +1,11 @@
-package nl.NG.Jetfightergame.Assets.Entities.Projectiles;
+package nl.NG.Jetfightergame.Assets.Entities;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractProjectile;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityClass;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Touchable;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -16,7 +15,6 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -39,7 +37,6 @@ public class SimpleRocket extends AbstractProjectile {
     private static final int THRUST = 100;
     private static final Color4f THRUST_COLOR = Color4f.ORANGE;
     private static final float THRUST_PARTICLE_DENSITY = 5f;
-    protected Material surfaceMaterial;
     private BoosterLine nuzzle;
 
     private SimpleRocket(int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
@@ -95,12 +92,6 @@ public class SimpleRocket extends AbstractProjectile {
     protected void updateShape(float deltaTime) {
         timeToLive -= deltaTime;
         // sparkles
-    }
-
-    @Override
-    protected PairList<PosVector, PosVector> calculateHitpointMovement() {
-        PairList<PosVector, PosVector> pairs = super.calculateHitpointMovement();
-        return pairs;
     }
 
     @Override

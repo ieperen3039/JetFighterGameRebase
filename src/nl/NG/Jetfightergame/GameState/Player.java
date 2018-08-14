@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 
 /**
  * @author Geert van Ieperen. Created on 2-7-2018.

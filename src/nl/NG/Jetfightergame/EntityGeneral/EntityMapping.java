@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.EntityGeneral;
 
 /**
  * @author Geert van Ieperen. Created on 3-7-2018.

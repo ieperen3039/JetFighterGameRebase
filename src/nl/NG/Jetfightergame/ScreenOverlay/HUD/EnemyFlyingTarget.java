@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;

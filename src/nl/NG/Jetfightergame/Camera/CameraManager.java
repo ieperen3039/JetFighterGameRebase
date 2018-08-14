@@ -1,8 +1,8 @@
 package nl.NG.Jetfightergame.Camera;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;

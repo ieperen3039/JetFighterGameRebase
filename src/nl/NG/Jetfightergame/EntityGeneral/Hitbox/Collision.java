@@ -1,6 +1,6 @@
-package nl.NG.Jetfightergame.AbstractEntities.Hitbox;
+package nl.NG.Jetfightergame.EntityGeneral.Hitbox;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;

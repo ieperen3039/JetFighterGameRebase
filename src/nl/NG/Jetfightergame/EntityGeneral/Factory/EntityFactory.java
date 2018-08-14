@@ -1,8 +1,8 @@
-package nl.NG.Jetfightergame.AbstractEntities.Factory;
+package nl.NG.Jetfightergame.EntityGeneral.Factory;
 
-import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
 import nl.NG.Jetfightergame.Rendering.Particles.DataIO;

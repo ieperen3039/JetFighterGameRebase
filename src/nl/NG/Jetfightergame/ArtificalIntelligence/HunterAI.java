@@ -1,10 +1,10 @@
 package nl.NG.Jetfightergame.ArtificalIntelligence;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**

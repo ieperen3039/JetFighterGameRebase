@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ShapeCreation;
 
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
+import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Plane;
 import nl.NG.Jetfightergame.Primitives.Quad;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;

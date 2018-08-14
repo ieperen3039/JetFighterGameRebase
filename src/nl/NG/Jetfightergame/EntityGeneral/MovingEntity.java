@@ -1,9 +1,10 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.EntityGeneral;
 
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.Hitbox.Collision;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.Assets.Entities.AbstractProjectile;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
@@ -22,6 +23,7 @@ import org.joml.Vector3f;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.lang.StrictMath.sqrt;
 
@@ -50,6 +52,8 @@ public abstract class MovingEntity implements Touchable {
     protected Quaternionf extraRotation;
     /** expected firstVel */
     protected DirVector extraVelocity;
+
+    protected PairList<Float, Supplier<DirVector>> tempForces;
 
     protected VectorInterpolator positionInterpolator;
     private QuaternionInterpolator rotationInterpolator;
@@ -91,6 +95,7 @@ public abstract class MovingEntity implements Touchable {
         pitchSpeed = 0f;
         rollSpeed = 0f;
 
+        tempForces = new PairList<>();
         spawnTime = gameTimer.time();
         resetCache(spawnTime);
     }
@@ -108,6 +113,10 @@ public abstract class MovingEntity implements Touchable {
 
         left.collideWith(right, deltaTime, rightToLeft);
         right.collideWith(left, deltaTime, leftToRight);
+    }
+
+    public DirVector getVecTo(MovingEntity hookedOther) {
+        return position.to(hookedOther.position, new DirVector());
     }
 
     /** @see #entityCollision(MovingEntity, MovingEntity, float) */
@@ -130,8 +139,16 @@ public abstract class MovingEntity implements Touchable {
         extraRotation.set(rotation);
         extraVelocity.set(velocity);
 
+        DirVector force = new DirVector(netForce);
+
+        float time = gameTimer.time();
+        for (int i = 0; i < tempForces.size(); i++) {
+            if (tempForces.left(i) < time) tempForces.remove(i);
+            else force.add(tempForces.right(i).get());
+        }
+
         // nothing to do when no time is passed
-        if (deltaTime != 0) applyPhysics(netForce, deltaTime);
+        if (deltaTime != 0) applyPhysics(force, deltaTime);
 
         updateShape(deltaTime);
 
@@ -554,5 +571,9 @@ public abstract class MovingEntity implements Touchable {
             }
         }
         return tgt;
+    }
+
+    public void addNetForce(float duration, Supplier<DirVector> localNetForce) {
+        tempForces.add(gameTimer.time() + duration, localNetForce);
     }
 }

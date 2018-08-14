@@ -1,13 +1,10 @@
-package nl.NG.Jetfightergame.AbstractEntities.Factory;
+package nl.NG.Jetfightergame.EntityGeneral.Factory;
 
-import nl.NG.Jetfightergame.AbstractEntities.InvisibleEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
-import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
+import nl.NG.Jetfightergame.Assets.Entities.*;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
-import nl.NG.Jetfightergame.Assets.Entities.OneHitShield;
-import nl.NG.Jetfightergame.Assets.Entities.Projectiles.*;
-import nl.NG.Jetfightergame.Assets.Entities.ReflectorShield;
+import nl.NG.Jetfightergame.EntityGeneral.InvisibleEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 
 import java.util.function.Supplier;
 
@@ -29,7 +26,8 @@ public enum EntityClass {
     DEATHICOSAHEDRON(DeathIcosahedron.Factory::new),
     CLUSTER_ROCKET(ClusterRocket.Factory::new),
     ONEHIT_SHIELD(OneHitShield::newFactory),
-    REFLECTOR_SHIELD(ReflectorShield::newFactory);
+    REFLECTOR_SHIELD(ReflectorShield::newFactory),
+    GRAPPLING_HOOK(GrapplingHook.Factory::new);
 
     private static final EntityClass[] VALUES = values();
     private final Supplier<EntityFactory> constructor;

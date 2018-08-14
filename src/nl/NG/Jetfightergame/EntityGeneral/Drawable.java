@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.AbstractEntities;
+package nl.NG.Jetfightergame.EntityGeneral;
 
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 

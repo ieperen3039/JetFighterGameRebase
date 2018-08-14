@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Particles;
 
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.Primitives.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;

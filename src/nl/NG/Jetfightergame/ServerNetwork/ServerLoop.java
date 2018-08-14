@@ -1,16 +1,16 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
-import nl.NG.Jetfightergame.AbstractEntities.TemporalEntity;
 import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
+import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
 import nl.NG.Jetfightergame.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;

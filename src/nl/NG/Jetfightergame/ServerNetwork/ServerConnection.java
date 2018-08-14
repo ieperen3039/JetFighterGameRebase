@@ -1,12 +1,12 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.AbstractEntities.AbstractJet;
-import nl.NG.Jetfightergame.AbstractEntities.EntityMapping;
-import nl.NG.Jetfightergame.AbstractEntities.EntityState;
-import nl.NG.Jetfightergame.AbstractEntities.Factory.EntityFactory;
-import nl.NG.Jetfightergame.AbstractEntities.MovingEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupEntity;
-import nl.NG.Jetfightergame.AbstractEntities.Powerups.PowerupType;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
