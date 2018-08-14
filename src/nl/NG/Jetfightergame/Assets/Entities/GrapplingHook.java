@@ -14,7 +14,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -158,7 +157,6 @@ public class GrapplingHook extends AbstractProjectile {
         }
 
         private static DirVector getVelocity(AbstractJet jet, MovingEntity tgt) {
-            Logger.DEBUG.print(tgt);
 
             if (tgt == null) {
                 DirVector dest = new DirVector();

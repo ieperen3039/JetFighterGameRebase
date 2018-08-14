@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * mostly a controlling layer between server and an environment
@@ -112,6 +113,16 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         connections.stream()
                 .filter(conn -> conn.jet() == jet).findFirst()
                 .ifPresent(conn -> conn.sendPowerupCollect(newType));
+    }
+
+    @Override
+    public void addGravitySource(Supplier<PosVector> position, float magnitude, float duration) {
+        gameWorld.addGravitySource(position, magnitude, globalTime.time() + duration);
+    }
+
+    @Override
+    public void boosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration) {
+        connections.forEach(c -> c.sendBoosterColorChange(jet, color1, color2, duration));
     }
 
     @Override

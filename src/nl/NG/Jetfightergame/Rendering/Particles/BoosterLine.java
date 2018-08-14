@@ -13,6 +13,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 public class BoosterLine {
     private final PosVector aRelative;
     private final PosVector bRelative;
+    private final Color4f baseColor1;
+    private final Color4f baseColor2;
 
     private TrackedVector<PosVector> aSide;
     private TrackedVector<PosVector> bSide;
@@ -24,6 +26,8 @@ public class BoosterLine {
     private float particleSize;
 
     private float timeRemaining;
+    private float colorChangeRemaining;
+    private boolean colorIsChanged = false;
 
     public BoosterLine(
             PosVector A, PosVector B, DirVector direction,
@@ -36,6 +40,8 @@ public class BoosterLine {
         this.direction = new TrackedVector<>(direction);
         this.cooldown = 1f / particlesPerSecond;
         this.timeToLive = maxTimeToLive;
+        this.baseColor1 = color1;
+        this.baseColor2 = color2;
         this.color1 = color1;
         this.color2 = color2;
         this.particleSize = particleSize;
@@ -53,12 +59,20 @@ public class BoosterLine {
         bSide.update(ms.getPosition(bRelative));
         direction.update(dirNew);
 
+        if (colorIsChanged) {
+            colorChangeRemaining -= deltaTime;
+            if (colorChangeRemaining <= 0) {
+                setColor(baseColor1, baseColor2, 0);
+                colorIsChanged = false;
+            }
+        }
+
         timeRemaining -= deltaTime;
         if (timeRemaining >= 0) return null;
 
         ParticleCloud cloud = new ParticleCloud();
         do {
-            final float timeFraction = timeRemaining / deltaTime;
+            final float timeFraction = deltaTime / timeRemaining;
             PosVector aPos = aSide.previous().interpolateTo(aSide.current(), timeFraction);
             PosVector bPos = bSide.previous().interpolateTo(bSide.current(), timeFraction);
             PosVector pos = aPos.interpolateTo(bPos, Toolbox.random.nextFloat());
@@ -72,8 +86,10 @@ public class BoosterLine {
         return cloud;
     }
 
-    public void setColor(Color4f color1, Color4f color2) {
+    public void setColor(Color4f color1, Color4f color2, float duration) {
         this.color1 = color1;
         this.color2 = color2;
+        colorChangeRemaining = Math.max(colorChangeRemaining, duration);
+        colorIsChanged = true;
     }
 }

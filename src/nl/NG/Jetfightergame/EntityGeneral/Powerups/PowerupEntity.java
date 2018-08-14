@@ -31,7 +31,7 @@ import java.util.function.Consumer;
  */
 public class PowerupEntity extends MovingEntity implements Spectral {
     private static final float DESPAWN_TIME = 0.2f;
-    private static final float RESPAWN_TIME = 20f;
+    private static final float RESPAWN_TIME = 5f;
     private static final float SCALING = 2f;
     private static final Quaternionf BASE_ROTATION = new Quaternionf()
             .rotateTo(new Vector3f(-1, -1, -1), new Vector3f(0, 0, -1));

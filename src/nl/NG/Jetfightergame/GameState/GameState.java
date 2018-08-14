@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
@@ -14,15 +15,18 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import static org.lwjgl.opengl.GL11.GL_CULL_FACE;
 import static org.lwjgl.opengl.GL11.glDisable;
@@ -35,6 +39,7 @@ public abstract class GameState implements Environment {
     protected final Collection<ParticleCloud> particles = new ArrayList<>();
     protected final Collection<Pair<PosVector, Color4f>> lights = new CopyOnWriteArrayList<>();
     private ParticleCloud newParticles = new ParticleCloud();
+    private Collection<GravitySource> gravitySources = new HashSet<>();
 
     private EntityManagement physicsEngine;
     private Lock addParticleLock = new ReentrantLock();
@@ -83,7 +88,8 @@ public abstract class GameState implements Environment {
     @SuppressWarnings("ConstantConditions")
     public void updateGameLoop(float currentTime, float deltaTime) {
         // update positions and apply physics
-        physicsEngine.preUpdateEntities(this, deltaTime);
+        gravitySources.removeIf(s -> s.isOverdue(currentTime));
+        physicsEngine.preUpdateEntities(this::getNetForce, deltaTime);
 
         if (deltaTime == 0f) return;
 
@@ -221,5 +227,56 @@ public abstract class GameState implements Environment {
     @Override
     public void cleanUp() {
         physicsEngine.cleanUp();
+    }
+
+    @Override
+    public void addGravitySource(Supplier<PosVector> position, float magnitude, float endTime) {
+        gravitySources.add(new GravitySource(position, magnitude, endTime));
+    }
+
+    /**
+     * a method that returns the net force on entity e, taking all gravtiy forces into account
+     * @param e the entity
+     * @return the net gravity forces on this entity
+     */
+    private DirVector getNetForce(MovingEntity e) {
+        if (e instanceof AbstractJet) return entityNetforce(e);
+
+        DirVector temp = new DirVector();
+        DirVector force = entityNetforce(e);
+        PosVector entPos = e.getPosition();
+
+        for (GravitySource source : gravitySources) {
+            PosVector srcPos = source.getPosition();
+            float pull = source.getMagnitude() / srcPos.distanceSquared(entPos);
+            DirVector newGravity = entPos.to(srcPos, temp).reducedTo(pull, temp);
+            force.add(newGravity);
+        }
+
+        return force;
+    }
+
+    private class GravitySource {
+        private final Supplier<PosVector> position;
+        private final float magnitude;
+        private final float endTime;
+
+        public GravitySource(Supplier<PosVector> position, float magnitude, float endTime) {
+            this.position = position;
+            this.magnitude = magnitude;
+            this.endTime = endTime;
+        }
+
+        public boolean isOverdue(double currentTime) {
+            return currentTime > endTime;
+        }
+
+        public PosVector getPosition() {
+            return position.get();
+        }
+
+        public float getMagnitude() {
+            return magnitude;
+        }
     }
 }

@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -35,7 +34,7 @@ public class PlayerJetLaboratory extends GameState {
         ArrayList<Touchable> entities = new ArrayList<>();
 
         entities.add(new StaticEntity(
-                GeneralShapes.LAB_CUBE, Material.GLASS, Color4f.BLACK, PosVector.zeroVector(), LAB_SIZE
+                GeneralShapes.LAB_CUBE, Material.ROUGH, Color4f.GREY, PosVector.zeroVector(), LAB_SIZE
         ));
 
         return entities;
@@ -55,16 +54,27 @@ public class PlayerJetLaboratory extends GameState {
                     entities.add(new FallingCube.Factory(
                             new PosVector((x * LAB_SIZE) / 2, (y * LAB_SIZE) / 2, (z * LAB_SIZE) / 2),
                             new Quaternionf(), new DirVector(),
-                            Material.ROUGH, ServerSettings.CUBE_MASS_LARGE, ServerSettings.CUBE_SIZE_LARGE
+                            Material.ROUGH, 50f, LAB_SIZE / 10
                     ));
                 }
             }
         }
 
-        entities.add(new PowerupEntity.Factory(new PosVector(10, 0, 0), PowerupColor.RED));
-        entities.add(new PowerupEntity.Factory(new PosVector(20, 0, 0), PowerupColor.GREEN));
+        entities.add(new PowerupEntity.Factory(getPopPos(1, 1, -1), PowerupColor.RED));
+        entities.add(new PowerupEntity.Factory(getPopPos(1, -1, -1), PowerupColor.BLUE));
+        entities.add(new PowerupEntity.Factory(getPopPos(-1, 1, -1), PowerupColor.GREEN));
+        entities.add(new PowerupEntity.Factory(getPopPos(-1, -1, -1), PowerupColor.YELLOW));
+
+        entities.add(new PowerupEntity.Factory(getPopPos(-1, -1, 1), PowerupColor.RED));
+        entities.add(new PowerupEntity.Factory(getPopPos(-1, 1, 1), PowerupColor.BLUE));
+        entities.add(new PowerupEntity.Factory(getPopPos(1, -1, 1), PowerupColor.GREEN));
+        entities.add(new PowerupEntity.Factory(getPopPos(1, 1, 1), PowerupColor.YELLOW));
 
         return entities;
+    }
+
+    private PosVector getPopPos(float x, float y, float z) {
+        return new PosVector((x * LAB_SIZE) / 4, (y * LAB_SIZE) / 4, (z * LAB_SIZE) / 4);
     }
 
     @Override

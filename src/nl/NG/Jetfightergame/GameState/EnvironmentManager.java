@@ -14,6 +14,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
  * @author Geert van Ieperen created on 8-1-2018.
@@ -86,6 +87,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     @Override
     public Color4f fogColor() {
         return instance.fogColor();
+    }
+
+    @Override
+    public void addGravitySource(Supplier<PosVector> position, float magnitude, float endTime) {
+        instance.addGravitySource(position, magnitude, endTime);
     }
 
     @Override

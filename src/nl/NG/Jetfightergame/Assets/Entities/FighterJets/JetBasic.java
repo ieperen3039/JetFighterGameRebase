@@ -22,7 +22,6 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen created on 11-11-2017.
  */
 public class JetBasic extends AbstractJet {
-    public static final float LIFT_FACTOR = 1f;
     public static final float THROTTLE_POWER = 800f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
     public static final float MASS = 40f;
@@ -30,7 +29,7 @@ public class JetBasic extends AbstractJet {
     public static final float YAW_POWER = 2f;
     public static final float PITCH_POWER = 3f;
     public static final float ROLL_POWER = 3f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.1f;
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.6f;
 
     private final PosVector shapeMiddle;
     private final float shapeRange;

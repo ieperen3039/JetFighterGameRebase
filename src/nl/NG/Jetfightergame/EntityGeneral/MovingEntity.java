@@ -115,8 +115,8 @@ public abstract class MovingEntity implements Touchable {
         right.collideWith(left, deltaTime, leftToRight);
     }
 
-    public DirVector getVecTo(MovingEntity hookedOther) {
-        return position.to(hookedOther.position, new DirVector());
+    public DirVector getVecTo(MovingEntity other) {
+        return position.to(other.position, new DirVector());
     }
 
     /** @see #entityCollision(MovingEntity, MovingEntity, float) */
@@ -334,7 +334,7 @@ public abstract class MovingEntity implements Touchable {
         toLocalSpace(ms, action, currPos, currRot);
     }
 
-    private void toLocalSpace(MatrixStack ms, Runnable action, PosVector currPos, Quaternionf currRot) {
+    protected void toLocalSpace(MatrixStack ms, Runnable action, PosVector currPos, Quaternionf currRot) {
         ms.pushMatrix();
         {
             ms.translate(currPos);

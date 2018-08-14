@@ -17,14 +17,18 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -49,18 +53,11 @@ public abstract class AbstractJet extends MovingEntity {
     protected Controller controller;
     protected Material surfaceMaterial;
     protected final EntityMapping entityMapping;
-    protected List<BoosterLine> nuzzle;
+    private List<BoosterLine> nuzzle;
     private DirVector forward;
     protected float baseThrust;
 
-    /** time left in slow */
-    protected float slowTimeLeft = 0;
-    /** fraction of speed lost by slow. higher slow factor is more slow */
-    protected float slowFactor = 0;
-    /** time left in boost */
-    protected float boostTimeLeft = 0;
-    /** fraction of speed gained by boost. higher boost factor is more speed */
-    protected float boostFactor = 0;
+    private Collection<Pair<Float, Float>> speedModifiers;
 
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
@@ -118,11 +115,15 @@ public abstract class AbstractJet extends MovingEntity {
         velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
         baseThrust = ClientSettings.BASE_SPEED * ClientSettings.BASE_SPEED * airResistCoeff; // * c_w because we try to overcome air resist
         nuzzle = new ArrayList<>();
+        speedModifiers = new HashSet<>();
 
         Supplier<String> slowTimer = () -> {
-            float factor = (1 - slowFactor) * boostFactor;
-            if (factor == 0) return "";
-            return String.format("Speed " + (factor > 1 ? "increased" : "reduced") + " to %d%% for %.1f seconds", ((int) (100 * factor)), Math.min(slowTimeLeft, boostTimeLeft));
+            float factor = 1f;
+            for (Pair<Float, Float> modifier : speedModifiers) {
+                factor *= modifier.left;
+            }
+            if (factor == 1f) return "";
+            return String.format("Speed " + (factor > 1 ? "increased" : "reduced") + " to %d%%", ((int) (100 * factor)));
         };
         Logger.printOnline(slowTimer);
     }
@@ -131,16 +132,8 @@ public abstract class AbstractJet extends MovingEntity {
     public void applyPhysics(DirVector netForce, float deltaTime) {
         controller.update();
 
-        slowTimeLeft -= deltaTime;
-        if (slowTimeLeft <= 0) {
-            slowTimeLeft = 0;
-            slowFactor = 0;
-        }
-
-        boostTimeLeft -= deltaTime;
-        if (boostTimeLeft <= 0) {
-            setBoost(0, 0);
-        }
+        float time = gameTimer.time();
+        speedModifiers.removeIf(p -> p.right < time);
 
         gyroPhysics(deltaTime, netForce, velocity);
 
@@ -155,9 +148,8 @@ public abstract class AbstractJet extends MovingEntity {
         return super.checkCollisionWith(other, deltaTime);
     }
 
-    private void setBoost(float duration, float factor) {
-        boostTimeLeft = duration;
-        boostFactor = factor;
+    public void addSpeedModifier(float factor, float duration) {
+        speedModifiers.add(new Pair<>(factor, gameTimer.time() + duration));
     }
 
     public MovingEntity getTarget() {
@@ -165,7 +157,7 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     /**
-     * physics model where input absolutely determines the plane rotation.
+     * physics model where input deterministically determines the plane rotation.
      * @param deltaTime timestamp in seconds
      * @param netForce  vector of force in N
      * @param velocity  movement vector with length in (m/s)
@@ -177,7 +169,12 @@ public abstract class AbstractJet extends MovingEntity {
         float throttle = controller.throttle();
         float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
         thrust = thrust > throttlePower ? throttlePower : thrust;
-        thrust *= boostFactor + 1;
+
+        // apply speed modifiers
+        for (Pair<Float, Float> modifier : speedModifiers) {
+            thrust *= modifier.left;
+        }
+
         netForce.add(forward.reducedTo(thrust, temp), netForce);
 
         float yPres = Toolbox.instantPreserveFraction(yPreservation, deltaTime);
@@ -207,8 +204,13 @@ public abstract class AbstractJet extends MovingEntity {
         float speedSq = velocity.lengthSquared();
         float brake = (throttle < 0) ? ((1 - throttle * brakePower) + 1) : 1;
         float resistance = airResistCoeff * brake;
+
+        // apply speed modifiers
+        for (Pair<Float, Float> modifier : speedModifiers) {
+            resistance /= modifier.left;
+        }
+
         velocity.reducedTo(speedSq * resistance * -1, airResistance);
-        airResistance.div(1 - slowFactor);
         netForce.add(airResistance);
 
         // F = m * a ; a = dv/dt
@@ -230,8 +232,7 @@ public abstract class AbstractJet extends MovingEntity {
 
     @Override
     public void impact(float power) {
-        slowTimeLeft += power / (slowTimeLeft + 1);
-        slowFactor = 0.5f; // TODO make it constant?
+        addSpeedModifier(0.6f, power);
     }
 
     /**
@@ -283,15 +284,14 @@ public abstract class AbstractJet extends MovingEntity {
 
         DirVector back = getThrustDirection();
         float deltaTime = gameTimer.getRenderTime().difference();
+        PosVector currPos = interpolatedPosition();
+        Quaternionf currRot = interpolatedRotation();
 
         MatrixStack sm = new ShadowMatrix();
-        for (BoosterLine boosterLine : nuzzle) {
-            toLocalSpace(sm, () -> {
-                entityDeposit.addParticles(
-                        boosterLine.update(sm, back, deltaTime)
-                );
-            });
-        }
+        toLocalSpace(sm, () -> nuzzle.forEach(boosterLine ->
+                entityDeposit.addParticles(boosterLine.update(sm, back, deltaTime))
+        ), currPos, currRot);
+
     }
 
     public void set(EntityState spawn) {
@@ -330,7 +330,8 @@ public abstract class AbstractJet extends MovingEntity {
                 // honk
                 break;
             case SPEED:
-                setBoost(PowerupType.SPEED_BOOST_DURATION, PowerupType.SPEED_BOOST_FACTOR);
+                addSpeedModifier(PowerupType.SPEED_BOOST_FACTOR, PowerupType.SPEED_BOOST_DURATION);
+                entityDeposit.boosterColorChange(this, Color4f.YELLOW, Color4f.WHITE, SPEED_BOOST_DURATION);
                 break;
             case SHIELD:
                 entityDeposit.addSpawn(new OneHitShield.Factory(this));
@@ -341,11 +342,17 @@ public abstract class AbstractJet extends MovingEntity {
             case SEEKERS:
                 launchSeekers(this, entityDeposit, getTarget());
                 break;
+            case BLACK_HOLE:
+                entityDeposit.addSpawn(new BlackHole.Factory(this));
+                break;
             case SMOKE:
                 launchSmokeCloud(this, entityDeposit);
                 break;
             case DEATHICOSAHEDRON:
                 entityDeposit.addSpawn(new DeathIcosahedron.Factory(this));
+                break;
+            case STAR_BOOST:
+                doStarBoost(this, this.entityDeposit);
                 break;
             case REFLECTOR_SHIELD:
                 entityDeposit.addSpawn(new ReflectorShield.Factory(this));
@@ -354,21 +361,28 @@ public abstract class AbstractJet extends MovingEntity {
                 entityDeposit.addSpawn(new GrapplingHook.Factory(this, getTarget()));
                 break;
             default:
-                throw new UnsupportedOperationException("enum not registered properly: " + currentPowerup);
+                throw new UnsupportedOperationException("powerup not properly registered: " + currentPowerup);
         }
 
         currentPowerup = PowerupType.NONE;
         entityDeposit.playerPowerupState(this, PowerupType.NONE);
     }
 
+    public void setBoosterColor(Color4f color1, Color4f color2, float duration) {
+        nuzzle.forEach(n -> n.setColor(color1, color2, duration));
+    }
+
     private DirVector getThrustDirection() {
         float throttle = controller.throttle() + 0.1f;
         float thrust = (throttle > 0) ? ((throttle * throttlePower) + baseThrust) : ((throttle + 1) * baseThrust);
-        thrust *= boostFactor + 1;
+
+        // apply trust modifiers
+        for (Pair<Float, Float> modifier : speedModifiers) {
+            thrust *= modifier.right;
+        }
 
         DirVector back = getForward().scale(ClientSettings.THRUST_PARTICLE_FACTOR * thrust);
         back.add(getVelocity());
         return back;
     }
-
 }

@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.function.Supplier;
 
 /**
  * @author Geert van Ieperen. Created on 4-7-2018.
@@ -81,6 +82,8 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
      * @return the background-color
      */
     Color4f fogColor();
+
+    void addGravitySource(Supplier<PosVector> position, float magnitude, float endTime);
 
     /**
      * public void... :D

@@ -12,7 +12,7 @@ public enum Material {
      */
     ROUGH(
             new Color4f(0.9f, 0.9f, 0.9f, 1),
-            new Color4f(0.1f, 0.1f, 0.1f, 0.1f),
+            new Color4f(0f, 0f, 0f, 0.1f),
             new Color4f(0.3f, 0.3f, 0.3f, 1),
             1f
     ),

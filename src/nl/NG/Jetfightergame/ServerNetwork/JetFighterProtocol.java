@@ -318,4 +318,19 @@ public class JetFighterProtocol {
     public PowerupType powerupCollectRead() throws IOException {
         return PowerupType.get(input.read());
     }
+
+    public void sendBoosterColor(AbstractJet jet, Color4f color1, Color4f color2, float duration) throws IOException {
+        output.writeInt(jet.idNumber());
+        DataIO.writeColor(output, color1);
+        DataIO.writeColor(output, color2);
+        output.writeFloat(duration);
+    }
+
+    public void readBoosterColor(EntityMapping entities) throws IOException {
+        AbstractJet jet = (AbstractJet) entities.getEntity(input.readInt());
+        Color4f color1 = DataIO.readColor(input);
+        Color4f color2 = DataIO.readColor(input);
+        float duration = input.readFloat();
+        jet.setBoosterColor(color1, color2, duration);
+    }
 }

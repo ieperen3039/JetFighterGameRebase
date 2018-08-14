@@ -235,6 +235,10 @@ public class ServerConnection implements BlockingListener, Player {
         return clientName;
     }
 
+    public void sendBoosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration) {
+        sendMessage(MessageType.BOOSTER_COLOR_CHANGE, () -> protocol.sendBoosterColor(jet, color1, color2, duration));
+    }
+
 
     /** executes the action, which may throw an IOException */
     private interface IOAction {

@@ -24,6 +24,7 @@ public enum EntityClass {
     SIMPLE_ROCKET(SimpleRocket.Factory::new),
     SEEKER(Seeker.Factory::new),
     DEATHICOSAHEDRON(DeathIcosahedron.Factory::new),
+    BLACK_HOLE(BlackHole.Factory::new),
     CLUSTER_ROCKET(ClusterRocket.Factory::new),
     ONEHIT_SHIELD(OneHitShield::newFactory),
     REFLECTOR_SHIELD(ReflectorShield::newFactory),

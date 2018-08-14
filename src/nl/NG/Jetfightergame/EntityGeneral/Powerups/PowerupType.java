@@ -29,22 +29,29 @@ public enum PowerupType {
     SEEKERS(RED, YELLOW),
 
     SHIELD(BLUE),
-    //    THING1(BLUE, GREEN),
+    STAR_BOOST(BLUE, GREEN),
     REFLECTOR_SHIELD(BLUE, YELLOW),
 
     SPEED(GREEN),
-//    THING2(GREEN, YELLOW),
+    BLACK_HOLE(GREEN, YELLOW),
 
     SMOKE(YELLOW);
 
+    private static final PowerupType[] VALUES = values();
+
     public static final float SEEKER_LAUNCH_SPEED = 4f;
+
+    public static final float SPEED_BOOST_DURATION = 3f;
+    public static final float SPEED_BOOST_FACTOR = 3f;
+
+    public static final float STAR_BOOST_DURATION = 15f;
+    public static final float STAR_BOOST_FACTOR = 1.2f;
+    public static final float STAR_BOOST_PUSH = 100_000f;
+
+    public static final float SMOKE_LINGER_TIME = 30f;
     public static final float SMOKE_LAUNCH_SPEED = 20f;
     public static final float SMOKE_SPREAD = 10f;
     public static final int SMOKE_DENSITY = 1_000;
-    public static final float SPEED_BOOST_DURATION = 5f;
-    public static final float SPEED_BOOST_FACTOR = 2f;
-    public static final float SMOKE_LINGER_TIME = 30f;
-    private static final PowerupType[] VALUES = values();
     private static final int SMOKE_DISTRACTION_ELEMENTS = 3;
 
     private final EnumSet<PowerupColor> required;
@@ -119,8 +126,10 @@ public enum PowerupType {
         ));
     }
 
-    public static void launchGrapplingHook(AbstractJet source, MovingEntity target, SpawnReceiver deposit) {
-
+    public static void doStarBoost(AbstractJet jet, SpawnReceiver entityDeposit) {
+        jet.addSpeedModifier(PowerupType.STAR_BOOST_FACTOR, PowerupType.STAR_BOOST_DURATION);
+        entityDeposit.boosterColorChange(jet, Color4f.BLUE, Color4f.WHITE, STAR_BOOST_DURATION);
+        entityDeposit.addGravitySource(jet::getExpectedMiddle, -STAR_BOOST_PUSH, STAR_BOOST_DURATION);
     }
 
     public PowerupType with(PowerupColor type) {

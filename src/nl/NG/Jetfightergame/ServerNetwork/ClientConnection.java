@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
@@ -110,6 +111,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
             case EXPLOSION_SPAWN:
                 protocol.explosionRead(game);
+                break;
+
+            case BOOSTER_COLOR_CHANGE:
+                protocol.readBoosterColor(game);
                 break;
 
             case WORLD_SWITCH:
@@ -253,6 +258,15 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public void addParticles(ParticleCloud particles) {
         game.addParticles(particles);
+    }
+
+    @Override
+    public void addGravitySource(Supplier<PosVector> position, float magnitude, float duration) {
+    }
+
+    @Override
+    public void boosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration) {
+        jet.setBoosterColor(color1, color2, duration);
     }
 
     @Override
