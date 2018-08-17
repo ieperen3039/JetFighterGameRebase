@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.ScreenOverlay.HudMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Timer;
@@ -64,7 +65,7 @@ public class JetFighterClient {
             renderLoop();
 
             if (action.get() == START_GAME) {
-                new JetFighterGame().root();
+                new JetFighterGame(ClientSettings.LOCAL_SERVER).root();
                 window = newWindow();
             }
         }

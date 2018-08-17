@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.Engine.GLFWGameEngine.GameMode.MENU_MODE;
+import static nl.NG.Jetfightergame.Engine.JetFighterGame.GameMode.MENU_MODE;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -149,6 +149,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
     @Override
     protected void exceptionHandler(Exception ex) {
+        super.exceptionHandler(ex);
         engine.exitGame();
     }
 

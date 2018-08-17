@@ -49,7 +49,7 @@ public final class GeneralShapes {
         INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
         LAB_CUBE = makeInverseCube(3, doLoadMesh);
         CUBE = makeCube(doLoadMesh);
-        ISLAND1 = BasicShape.loadSplit("maps/Map1_Default_WIP.obj", doLoadMesh, CONTAINER_SIZE, 50f);
+        ISLAND1 = BasicShape.loadSplit("maps/Map1_overhead_inception_WIP.obj", doLoadMesh, CONTAINER_SIZE, 50f);
 //        ISLAND1 = Collections.singletonList(new BasicShape("maps/Map1WIP_Triangle.obj", loadMesh));
         CHECKPOINTRING = new CheckpointRing(10, 0.04f, doLoadMesh);
 

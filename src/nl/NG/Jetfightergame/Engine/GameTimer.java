@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
 
 /**
- * a class that harbors a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
+ * a class that harbours a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
  * with a modifiable in-game time.
  */
 public class GameTimer {
@@ -88,5 +88,8 @@ public class GameTimer {
     public void set(float time){
         updateTimer();
         currentInGameTime = time;
+
+        updateGameTime();
+        updateRenderTime();
     }
 }

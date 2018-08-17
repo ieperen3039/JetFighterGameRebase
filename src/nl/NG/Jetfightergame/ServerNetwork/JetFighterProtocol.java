@@ -34,7 +34,8 @@ import java.util.function.BiConsumer;
  * @author Geert van Ieperen created on 9-5-2018.
  */
 public class JetFighterProtocol {
-    private static final int versionNumber = 2;
+    private static final int versionNumber = 4;
+    private static final byte TIMER_SYNC_PINGS = 10;
 
     private final DataInputStream input;
     private final DataOutputStream output;
@@ -112,7 +113,7 @@ public class JetFighterProtocol {
     }
 
     /** sends a control message into the DataOutputStream */
-    public synchronized void controlSend(byte value) throws IOException {
+    public void controlSend(byte value) throws IOException {
         output.write(value);
     }
 
@@ -124,16 +125,18 @@ public class JetFighterProtocol {
      * @param controls   the controls used for the resulting jet
      * @param deposit    the deposit for new entities
      * @param entities
-     * @return the jet received from the server. Not necessarily the one requested.
+     * @return on left, the jet received from the server, not necessarily the one requested.
+     * on right, true if this player is allowed to send control messages to the server
      */
-    public AbstractJet playerSpawnRequest(String playerName, EntityClass type, Controller controls, SpawnReceiver deposit, EntityMapping entities) throws IOException {
+    public Pair<AbstractJet, Boolean> playerSpawnRequest(String playerName, EntityClass type, Controller controls, SpawnReceiver deposit, EntityMapping entities) throws IOException {
         output.writeUTF(playerName);
         output.writeInt(type.ordinal());
         output.flush();
 
         AbstractJet jet = (AbstractJet) newEntityRead(deposit, entities);
+        boolean isAdmin = input.readBoolean();
         jet.setController(controls);
-        return jet;
+        return new Pair<>(jet, isAdmin);
     }
 
     /**
@@ -142,7 +145,7 @@ public class JetFighterProtocol {
      */
     public Pair<String, AbstractJet> playerSpawnAccept(
             EntityState spawnState, SpawnReceiver server, Controller controls,
-            BiConsumer<EntityFactory, Integer> others, EntityMapping entities
+            BiConsumer<EntityFactory, Integer> others, EntityMapping entities, boolean isAdmin
     ) throws IOException {
 
         String name = input.readUTF();
@@ -155,6 +158,7 @@ public class JetFighterProtocol {
         jet.setController(controls);
 
         newEntitySend(factory);
+        output.writeBoolean(isAdmin);
         output.flush();
 
         others.accept(factory, jet.idNumber());
@@ -190,22 +194,32 @@ public class JetFighterProtocol {
      * @param serverTime current time according to the source
      */
     public void syncTimerSource(GameTimer serverTime) throws IOException {
-        float deltaNanos = ping();
+        float avgRTT = 0;
+        output.writeInt(TIMER_SYNC_PINGS);
+        for (int i = 0; i < TIMER_SYNC_PINGS; i++) {
+            avgRTT += ping();
+        }
+        avgRTT /= TIMER_SYNC_PINGS;
 
-        output.writeFloat(serverTime.time() + deltaNanos);
+        output.writeFloat(serverTime.time() + avgRTT / 2);
         output.flush();
+        String ping = avgRTT < 0.005 ? String.format("%.03f ms", avgRTT * 500) : (int) (avgRTT * 500) + " ms";
+        Logger.INFO.print("Ping: " + ping);
     }
 
     /**
      * updates the timer to sourceTime + ping
+     * @param gameTimer
      */
-    public GameTimer syncTimerTarget() throws IOException {
+    public void syncTimerTarget(GameTimer gameTimer) throws IOException {
         // wait for signal to arrive, to let the source measure the delay
-        // repeat and take average for more accurate results
-        pong();
+        int timerSyncPings = input.readInt();
+        for (int i = 0; i < timerSyncPings; i++) {
+            pong();
+        }
 
         float serverTime = input.readFloat();
-        return new GameTimer(serverTime);
+        gameTimer.set(serverTime);
     }
 
     /** sends an explosion or other effect to the client
@@ -240,7 +254,7 @@ public class JetFighterProtocol {
     }
 
     /** @return the RTT in seconds */
-    public float ping() throws IOException {
+    public double ping() throws IOException {
         output.flush();
         output.write(MessageType.PING.ordinal());
         output.flush();
@@ -251,7 +265,7 @@ public class JetFighterProtocol {
             Logger.ERROR.print("Unexpected reply on " + MessageType.PONG + ": " + MessageType.asString(reply));
 
         int deltaNanos = (int) (System.nanoTime() - start);
-        return deltaNanos * 1E-9f;
+        return deltaNanos * 1E-9d;
     }
 
     /**
@@ -259,7 +273,9 @@ public class JetFighterProtocol {
      */
     public void pong() throws IOException {
         int ping = input.read();
-        if (ping != MessageType.PING.ordinal()) throw new IOException("unexpected reply: " + ping);
+        if (ping != MessageType.PING.ordinal()) {
+            throw new IOException("unexpected reply: " + MessageType.asString(ping));
+        }
         output.write(MessageType.PONG.ordinal());
         output.flush();
     }
@@ -335,5 +351,13 @@ public class JetFighterProtocol {
         Color4f color2 = DataIO.readColor(input);
         float duration = input.readFloat();
         jet.setBoosterColor(color1, color2, duration);
+    }
+
+    public String readText() throws IOException {
+        return input.readUTF();
+    }
+
+    public void sendText(String message) throws IOException {
+        output.writeUTF(message);
     }
 }

@@ -2,8 +2,6 @@ package nl.NG.Jetfightergame.Settings;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.BASE_SPEED;
-
 /**
  * a class that harbours the variables that may or may not be changed by the player
  * @see MenuStyleSettings
@@ -25,7 +23,7 @@ public final class ServerSettings {
 
     /** collision detection */
     public static final int MAX_COLLISION_ITERATIONS = 100 / TARGET_TPS;
-    public static final float BASE_BUMPOFF_ENERGY = (JetBasic.MASS * BASE_SPEED * BASE_SPEED * 0.01f); // e = 0.5*m*v*v in joule
+    public static final float BASE_BUMPOFF_ENERGY = (JetBasic.MASS * 0.01f); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
     public static final int NOF_FUN = 5;

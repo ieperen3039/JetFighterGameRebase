@@ -8,8 +8,9 @@ import java.util.EnumSet;
  * @author Geert van Ieperen, created on 5-5-2018.
  */
 public enum MessageType {
-    INVALID_MESSAGE_ID_0, INVALID_MESSAGE_ID_1, // for ease of debugging, these messages may not be used
-    CONFIRM_CONNECTION, CONNECTION_CLOSE, // CONNECTION_CLOSE also matches id = -1
+    INVALID_MESSAGE_ID_0, // for ease of debugging, this messages may not be used
+    CONFIRM_CONNECTION, CLOSE_REQUEST, CONNECTION_CLOSE, // CONNECTION_CLOSE also matches id = -1
+    TEXT_MESSAGE, SYNC_TIMER,
     PING, PONG,
     PAUSE_GAME, UNPAUSE_GAME, START_GAME, SHUTDOWN_GAME, WORLD_SWITCH,
     THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE,

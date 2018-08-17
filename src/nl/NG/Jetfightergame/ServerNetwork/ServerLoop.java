@@ -54,6 +54,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         this.connections = new ArrayList<>();
 
         gameWorld.build();
+        Logger.printOnline(() -> Float.toString(globalTime.time()));
     }
 
     /**
@@ -72,6 +73,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 asAdmin
         );
 
+        if (connections.contains(player)) {
+            Logger.ERROR.print("Player " + player + " already exists on the server");
+            player.closeConnection("That name already exists on the server");
+        }
+
         // send all entities until this point (excluding the player jet himself)
         for (MovingEntity entity : gameWorld.getEntities()) {
             player.sendEntitySpawn(entity.getFactory());
@@ -84,7 +90,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         connections.add(player);
         connections.forEach(ServerConnection::flush);
-        new Thread(player::listen).start();
+        player.listenInThread(false);
     }
 
     @Override
@@ -154,6 +160,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     @Override
     public void unPause() {
         globalTime.unPause();
+        connections.forEach(conn -> conn.send(MessageType.UNPAUSE_GAME));
         super.unPause();
     }
 
@@ -165,6 +172,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     @Override
     public void pause() {
         globalTime.pause();
+        connections.forEach(conn -> conn.send(MessageType.PAUSE_GAME));
         super.pause();
     }
 
@@ -175,7 +183,10 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     public void stopLoop() {
-        connections.forEach(ServerConnection::sendShutDown);
+        connections.stream()
+                .filter(conn -> !conn.isClosed())
+                .forEach(conn -> conn.send(MessageType.SHUTDOWN_GAME));
+
         super.stopLoop();
     }
 
@@ -186,7 +197,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     private void setWorld(EnvironmentClass world) {
         Logger.INFO.print("Switching world to " + world);
-        connections.forEach(conn -> conn.sendWorldSwitch(world, 5f));
+        connections.forEach(conn -> conn.sendWorldSwitch(world, 3f));
         // startup new world
         Player[] asArray = connections.toArray(new Player[0]);
         RaceProgress raceProgress = new RaceProgress(asArray.length, this, asArray);
@@ -214,7 +225,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 EntityFactory blueprint = new JetSpitsy.Factory(gameWorld.getNewSpawnPosition(), 0);
 
             AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
-                Logger.printOnline(npc::getPlaneDataString);
 
             Controller controller = new HunterAI(npc, target, gameWorld, JetBasic.THROTTLE_POWER / JetBasic.AIR_RESISTANCE_COEFFICIENT);
             npc.setController(controller);

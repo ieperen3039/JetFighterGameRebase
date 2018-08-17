@@ -28,6 +28,7 @@ import java.util.Collection;
 public class PlayerJetLaboratory extends GameState {
 
     private static final int LAB_SIZE = 200;
+    private int spawnXPos = 0;
 
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
@@ -89,6 +90,6 @@ public class PlayerJetLaboratory extends GameState {
 
     @Override
     public EntityState getNewSpawnPosition() {
-        return new EntityState();
+        return new EntityState(new PosVector(spawnXPos += 10, 0, 0), DirVector.xVector(), DirVector.zeroVector());
     }
 }

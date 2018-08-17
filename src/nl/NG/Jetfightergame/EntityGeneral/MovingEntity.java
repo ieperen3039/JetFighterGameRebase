@@ -149,8 +149,6 @@ public abstract class MovingEntity implements Touchable {
         if (deltaTime != 0) applyPhysics(force, deltaTime);
 
         updateShape(deltaTime);
-
-        hitPoints = calculateHitpointMovement();
     }
 
     /**
@@ -226,6 +224,7 @@ public abstract class MovingEntity implements Touchable {
         if (other instanceof AbstractProjectile) return null;
 
         Collision best = null;
+        PairList<PosVector, PosVector> hitPoints = getHitpoints();
         for (int i = 0; i < hitPoints.size(); i++) {
             Collision newCollision = getPointCollision(hitPoints.left(i), hitPoints.right(i), other, deltaTime);
             if (newCollision != null && (best == null || newCollision.compareTo(best) < 0)) {
@@ -240,6 +239,11 @@ public abstract class MovingEntity implements Touchable {
         if (other instanceof Spectral) return null;
 
         return best;
+    }
+
+    private PairList<PosVector, PosVector> getHitpoints() {
+        if (hitPoints == null) hitPoints = calculateHitpointMovement();
+        return hitPoints;
     }
 
     /**

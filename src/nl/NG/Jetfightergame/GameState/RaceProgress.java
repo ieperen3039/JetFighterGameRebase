@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.EntityGeneral.Spectral;
 import nl.NG.Jetfightergame.EntityGeneral.StaticEntity;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -52,7 +53,7 @@ public class RaceProgress {
      * If the capacity is less than the given players, then the remaining players are dropped.
      * @param capacity       an expectation of how many players are probably going to participate
      * @param changeListener this class is notified whenever a player crosses a checkpoint
-     * @param players        an optional array of initial players.
+     * @param players        an optional array of initial players. if this array is longer than capacity, the remaining players are dropped
      */
     public RaceProgress(int capacity, RaceChangeListener changeListener, Player... players) {
         this.capacity = capacity;
@@ -92,7 +93,8 @@ public class RaceProgress {
 
     public Checkpoint addCheckpoint(PosVector position, DirVector direction, float radius, Color4f color) {
         return new Checkpoint(
-                nOfCheckpoints++, position, direction, radius, color, Color4f.YELLOW);
+                nOfCheckpoints++, position, direction, radius, color, ClientSettings.CHECKPOINT_ACTIVE_COLOR
+        );
     }
 
     /** returns the index of the player with the given name, or -1 if no such player is registered */
@@ -136,14 +138,30 @@ public class RaceProgress {
         progressRound[pInd] = i;
     }
 
-    public Pair<Integer, Integer> getState(Player player) {
-        int pInd = Arrays.asList(players).indexOf(player);
+    public Pair<Integer, Integer> getState(int pInd) {
         if (pInd == -1) return null;
-        return new Pair<>(progressRound[pInd], progressCheckpoint[pInd]);
+        return new Pair<>(Math.max(progressRound[pInd], 0), Math.max(progressCheckpoint[pInd], 0));
     }
 
     public List<Player> players() {
         return Collections.unmodifiableList(Arrays.asList(players));
+    }
+
+    public Integer[] raceOrder() {
+        Integer[] order = new Integer[players.length];
+        Arrays.setAll(order, i -> i);
+        Toolbox.insertionSort(order, pInd ->
+                Float.valueOf(progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd])
+        );
+        return order;
+    }
+
+    public int getPlayerInd(Player p) {
+        return Arrays.asList(players).indexOf(p);
+    }
+
+    public int getNumCheckpoints() {
+        return nOfCheckpoints;
     }
 
     /**

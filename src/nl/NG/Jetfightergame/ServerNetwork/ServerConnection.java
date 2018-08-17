@@ -22,6 +22,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 
+import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
+
 /**
  * can be viewed as a client's personal connection inside the server
  * @author Geert van Ieperen created on 5-5-2018.
@@ -39,19 +41,18 @@ public class ServerConnection implements BlockingListener, Player {
 
     private Lock sendLock = new ReentrantLock();
     private volatile boolean isClosed;
-    private float controlDisabledUntil = 0;
 
     /**
      * construct a server-side connection to a player
      * @param inputStream  the incoming communication from the player
      * @param outputStream the outgoing communication to the player
      * @param server       the object that accepts server-commands
-     * @param spawnAccept  a function that takes the spawn and id of an AbstarctJet, and communicates this to the other
-     *                     players. The entity is guaranteed to be of type AbstractJet
+     * @param spawnAccept  a function that takes the spawn and id of an {@link AbstractJet}, and communicates this to the other
+     *                     players.
      * @param playerSpawn  the place and state of the player at the moment of spawning. this should be an unoccupied
      *                     place in space
      * @param worldType    the current selected world
-     * @param entities
+     * @param entities     an access point for all entities in the world
      * @param isAdmin      if true, allows the player to send commands of host level.
      * @throws IOException if any communication error occurs, as defined by the given Input- and OutputStreams
      */
@@ -64,13 +65,13 @@ public class ServerConnection implements BlockingListener, Player {
         this.clientIn = inputStream;
         this.hasAdminCapabilities = isAdmin;
         this.server = server;
-        this.controls = new RemoteControlReceiver();
 
         this.protocol = new JetFighterProtocol(clientIn, clientOut);
         protocol.syncTimerSource(server.getTimer());
+        this.controls = new RemoteControlReceiver(server.getTimer());
         protocol.worldSwitchSend(worldType, 0f);
         clientOut.flush();
-        Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, spawnAccept, entities);
+        Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, spawnAccept, entities, isAdmin);
         clientName = p.left;
         playerJet = p.right;
     }
@@ -79,52 +80,53 @@ public class ServerConnection implements BlockingListener, Player {
     public boolean handleMessage() throws IOException {
         MessageType type = MessageType.get(clientIn.read());
 
-        if (type == MessageType.CONNECTION_CLOSE) {
+        if (type == CONNECTION_CLOSE) {
             isClosed = true;
-            clientOut.close();
-            Logger.DEBUG.print("Connection to " + clientName + " has been closed");
+            Logger.WARN.print("Connection to " + clientName + " has been lost");
             return false;
 
-        } else if (type.isOf(MessageType.adminOnly) && !hasAdminCapabilities) {
-            Logger.ERROR.print(this + " sent a " + type + " command, while it has no access to it");
-            return true;
-        }
+        } else if (type.isOf(adminOnly) && !hasAdminCapabilities) {
+            Logger.WARN.print(this + " sent a " + type + " command, while it has no access to it");
 
-        if (type.isOf(MessageType.controls)) {
+        } else if (type.isOf(MessageType.controls)) {
+            protocol.controlRead(controls, type);
 
-            boolean controlIsDisabled = controlDisabledUntil > server.getTimer().time();
-            if (!controlIsDisabled) {
-                protocol.controlRead(controls, type);
-            } else {
-                clientIn.skip(type.nOfBits());
+        } else {
+            Logger.DEBUG.printf("[%s @ %.1f] %s", clientName, server.getTimer().time(), type);
+            switch (type) {
+                case CLOSE_REQUEST:
+                    isClosed = true;
+                    return false;
+
+                case PING:
+                    sendMessage(PONG, clientOut::flush);
+                    break;
+
+                case UNPAUSE_GAME:
+                    server.unPause();
+                    break;
+
+                case SYNC_TIMER:
+                    sendMessage(SYNC_TIMER, () -> protocol.syncTimerSource(server.getTimer()));
+                    break;
+
+                case PAUSE_GAME:
+                    server.pause();
+                    break;
+
+                case START_GAME:
+                    server.startRace();
+                    break;
+
+                case SHUTDOWN_GAME:
+                    server.shutDown();
+                    break;
+
+                default:
+                    long bits = clientIn.skip(type.nOfBits());
+                    Logger.ERROR.print("Message caused an error: " + type, "skipping " + bits + " bits");
             }
-
-        } else switch (type) {
-            case PING:
-                sendMessage(MessageType.PONG, clientOut::flush);
-                break;
-
-            case UNPAUSE_GAME:
-                server.unPause();
-                break;
-
-            case PAUSE_GAME:
-                server.pause();
-                break;
-
-            case START_GAME:
-                server.startRace();
-                break;
-
-            case SHUTDOWN_GAME:
-                server.shutDown();
-                break;
-
-            default:
-                long bits = clientIn.skip(type.nOfBits());
-                Logger.ERROR.print("Message caused an error: " + type, "skipping " + bits + " bits");
         }
-
         return true;
     }
 
@@ -138,7 +140,7 @@ public class ServerConnection implements BlockingListener, Player {
      * @param currentTime the time of when this entity is on the said position
      */
     public void sendEntityUpdate(MovingEntity entity, float currentTime) {
-        sendMessage(MessageType.ENTITY_UPDATE, () ->
+        sendMessage(ENTITY_UPDATE, () ->
                 protocol.entityUpdateSend(entity, currentTime)
         );
     }
@@ -148,50 +150,50 @@ public class ServerConnection implements BlockingListener, Player {
      * @param entity the entity to be sent
      */
     public void sendEntitySpawn(EntityFactory entity) {
-        sendMessage(MessageType.ENTITY_SPAWN, () ->
+        sendMessage(ENTITY_SPAWN, () ->
                 protocol.newEntitySend(entity)
         );
     }
 
     public void sendExplosionSpawn(PosVector position, DirVector direction, float spread, int density, Color4f color1, Color4f color2, float lingerTime, float particleSize) {
-        sendMessage(MessageType.EXPLOSION_SPAWN, () ->
+        sendMessage(EXPLOSION_SPAWN, () ->
                 protocol.explosionSend(position, direction, spread, density, color1, color2, lingerTime, particleSize)
         );
     }
 
     public void sendEntityRemove(MovingEntity entity) {
-        sendMessage(MessageType.ENTITY_REMOVE, () ->
+        sendMessage(ENTITY_REMOVE, () ->
                 protocol.entityRemoveSend(entity)
         );
     }
 
     public void sendProgress(String playerName, int checkPointNr, int roundNr) {
-        sendMessage(MessageType.RACE_PROGRESS, () ->
+        sendMessage(RACE_PROGRESS, () ->
                 protocol.raceProgressSend(playerName, checkPointNr, roundNr)
         );
     }
 
     public void sendPlayerSpawn(Player player) {
-        sendMessage(MessageType.PLAYER_SPAWN, () ->
+        sendMessage(PLAYER_SPAWN, () ->
                 protocol.playerSpawnSend(player.playerName(), player.jet())
         );
     }
 
     public void sendWorldSwitch(EnvironmentClass world, float countDown) {
-        sendMessage(MessageType.WORLD_SWITCH, () ->
+        sendMessage(WORLD_SWITCH, () ->
                 protocol.worldSwitchSend(world, countDown)
         );
-        controlDisabledUntil = server.getTimer().time() + countDown;
+        controls.disableControl(server.getTimer().time() + countDown);
     }
 
     public void sendPowerupUpdate(PowerupEntity powerup, float collectionTime, boolean isCollected) {
-        sendMessage(MessageType.POWERUP_STATE, () ->
+        sendMessage(POWERUP_STATE, () ->
                 protocol.powerupUpdateSend(powerup, collectionTime, isCollected)
         );
     }
 
     public void sendPowerupCollect(PowerupType powerupType) {
-        sendMessage(MessageType.POWERUP_COLLECT, () ->
+        sendMessage(POWERUP_COLLECT, () ->
                 protocol.powerupCollectSend(powerupType)
         );
     }
@@ -224,8 +226,11 @@ public class ServerConnection implements BlockingListener, Player {
         }
     }
 
-    public void sendShutDown() {
-        if (!isClosed) sendMessage(MessageType.SHUTDOWN_GAME, clientOut::flush);
+    public void closeConnection(String message) {
+        sendMessage(TEXT_MESSAGE, () -> {
+            protocol.sendText(message);
+            clientOut.write(CONNECTION_CLOSE.ordinal());
+        });
     }
 
     @Override
@@ -244,9 +249,21 @@ public class ServerConnection implements BlockingListener, Player {
     }
 
     public void sendBoosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration) {
-        sendMessage(MessageType.BOOSTER_COLOR_CHANGE, () -> protocol.sendBoosterColor(jet, color1, color2, duration));
+        sendMessage(BOOSTER_COLOR_CHANGE, () -> protocol.sendBoosterColor(jet, color1, color2, duration));
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Player) {
+            Player other = (Player) obj;
+            return this.playerName().equals(other.playerName());
+        }
+        return false;
+    }
+
+    public void send(MessageType messageType) {
+        sendMessage(messageType, clientOut::flush);
+    }
 
     /** executes the action, which may throw an IOException */
     private interface IOAction {

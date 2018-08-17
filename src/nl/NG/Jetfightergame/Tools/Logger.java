@@ -16,17 +16,11 @@ import java.util.function.Supplier;
 public enum Logger {
     DEBUG, INFO, WARN, ERROR;
 
-    private static final String EMTPY = String.format("%100s ", "");
     private static Consumer<String> out = System.out::println;
     private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
     /** prevents spamming the chat */
     static Set<String> callerBlacklist = new HashSet<>();
     private String codeName = String.format("[%-5s]", this);
-
-    /** the actual writing function */
-    private static synchronized void write(Consumer<String> out, String prefix, Object[] s) {
-        out.accept(prefix + ": " + concatenate(s));
-    }
 
     private static String concatenate(Object[] x) {
         if (x.length == 0) return "";
@@ -86,9 +80,11 @@ public enum Logger {
     public static String getCallingMethod(int level) {
         StackTraceElement caller;
         Exception exception = new Exception();
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        level++;
         do {
-            caller = exception.getStackTrace()[++level]; // level + 1
-        } while (caller.isNativeMethod());
+            caller = stackTrace[level++]; // level + 1
+        } while (caller.isNativeMethod() && level < stackTrace.length);
 
         return String.format("%-100s ", caller);
     }
@@ -120,7 +116,7 @@ public enum Logger {
      * the given call depth
      * @param depth 0 = this method, 1 = the calling method (yourself)
      */
-    public void printFrom(int depth, Object... s) {
+    public synchronized void printFrom(int depth, Object... s) {
         String prefix = codeName;
         if (ServerSettings.DEBUG) prefix = getCallingMethod(depth) + prefix;
 
@@ -128,13 +124,13 @@ public enum Logger {
             case DEBUG:
                 if (!ServerSettings.DEBUG) break;
             case INFO:
-                write(out, prefix, s);
+                out.accept(prefix + ": " + concatenate(s));
                 break;
             case WARN:
-                write(System.err::println, prefix, s);
+                System.err.println(prefix + ": " + concatenate(s));
                 break;
             case ERROR:
-                write(System.err::println, prefix, s);
+                System.err.println(prefix + ": " + concatenate(s));
                 break;
         }
     }

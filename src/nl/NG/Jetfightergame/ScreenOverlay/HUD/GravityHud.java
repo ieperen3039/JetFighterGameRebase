@@ -55,13 +55,13 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
 
             final float currentVelocity = target.interpolatedVelocity().length();
 
-            float[] velocityTicks = ticks(currentVelocity, 25, 100);
+            float[] velocityTicks = ticks(currentVelocity, 10, 50);
             for (float tick : velocityTicks) {
                 int yPos = (int) (((-1 * tick * (ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosVelocityBar, yPos, xPosVelocityBar + TICKSIZE, yPos);
             }
 
-            float[] markTicks = ticks(currentVelocity, 100, 100);
+            float[] markTicks = ticks(currentVelocity, 100, 50);
             for (float tick : markTicks) {
                 int yPos = (int) (((-1 * tick * (ALTVEL_BAR_SIZE / 2)) + 0.5f) * height);
                 hud.line(HUD_STROKE_WIDTH, HUD_COLOR, xPosVelocityBar + TICKSIZE, yPos, xPosVelocityBar + 2 * TICKSIZE, yPos);
@@ -81,7 +81,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
                     xPosAltitudeBar, (int) (height * barMargin),
                     xPosAltitudeBar, (int) (height * inverseBarMargin)
             );
-            final float currentAltitude = target.interpolatedPosition().z() * 10f; // TODO determine altitude
+            final float currentAltitude = target.interpolatedPosition().z(); // TODO determine altitude
 
             float[] heightTicks = ticks(currentAltitude, 25, 100);
             for (float tick : heightTicks) {

@@ -12,31 +12,20 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import static nl.NG.Jetfightergame.ServerNetwork.JetFighterServer.Phase.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
 
 /**
  * @author Geert van Ieperen created on 26-4-2018.
  */
-public class JetFighterServer {
+public class JetFighterServer implements BlockingListener {
 
     private final int portNumber;
     private ServerSocket socket;
 
-    private Phase currentPhase;
     private ServerLoop game;
 
     public AbstractGameLoop getRunnable() {
         return game;
-    }
-
-    public enum Phase {
-        BOOTING, // server is creating a map
-        WAITING_FOR_HOST, // before the host has connected
-        PREPARATION, // players can join
-        STARTING, // world is being set up
-        RUNNING, // game is running
-        FINISHED // game is finished, server is done
     }
 
     /**
@@ -45,13 +34,9 @@ public class JetFighterServer {
      * @throws IOException if a serversocket could not be created
      */
     public JetFighterServer(EnvironmentClass world) throws IOException {
-        currentPhase = BOOTING;
-
         this.socket = new ServerSocket(SERVER_PORT);
         this.game = new ServerLoop(EnvironmentClass.LOBBY, world);
         portNumber = socket.getLocalPort();
-
-        currentPhase = WAITING_FOR_HOST;
     }
 
     /**
@@ -65,6 +50,7 @@ public class JetFighterServer {
         JetFighterServer server = new JetFighterServer(type);
         new Thread(server::listenForHost).start();
         client.connect(new InetSocketAddress(server.portNumber), 1000);
+        server.listenInThread(true);
 
         return server.game;
     }
@@ -87,14 +73,9 @@ public class JetFighterServer {
      * blocks until one connection is made. The host of this server is set to the next connection.
      */
     public void listenForHost() {
-        if ((currentPhase != WAITING_FOR_HOST) && (currentPhase != PREPARATION)) {
-            throw new IllegalStateException("listenForHost() was called in phase " + currentPhase + " phase");
-        }
-
         try {
             Logger.DEBUG.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
             acceptConnection(true);
-            currentPhase = PREPARATION;
 
         } catch (IOException ex) {
             Logger.ERROR.print(ex);
@@ -103,19 +84,10 @@ public class JetFighterServer {
 
     /**
      * listens to the predefined port, adding all incoming requests to clients. blocks while listening.
-     * @throws IOException if an I/O error occurs when waiting for a connection
      */
-    public void listen() throws IOException {
-        if (currentPhase != PREPARATION)
-            throw new IllegalStateException("listen() was called in " + currentPhase + " phase");
-        Logger.DEBUG.print("Listening to port " + portNumber + " on address " + socket.getInetAddress());
-
-        while (currentPhase == PREPARATION) {
-            acceptConnection(false);
-        }
-
-        Logger.DEBUG.print("Stopped listening for new players");
-        currentPhase = STARTING;
+    public boolean handleMessage() throws IOException {
+        acceptConnection(false);
+        return true;
     }
 
     public void acceptConnection(boolean asAdmin) throws IOException {
@@ -127,20 +99,16 @@ public class JetFighterServer {
         game.connectToPlayer(in, out, asAdmin);
     }
 
-    /** @return what the server is doing ATM */
-    public Phase getPhase() {
-        return currentPhase;
-    }
-
-    /** starts a test-server */
+    /** starts a server */
     public static void main(String[] args) throws IOException {
         GeneralShapes.init(false);
         CustomJetShapes.init(false);
         JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
         server.listenForHost();
 
-//        server.listen();
-        server.currentPhase = STARTING;
+        server.listenInThread(true);
+        Logger.DEBUG.print("Listening to port " + server.portNumber + " on address " + server.socket.getInetAddress());
+
         server.game.run();
     }
 }

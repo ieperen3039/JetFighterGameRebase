@@ -12,7 +12,6 @@ public final class ClientSettings {
     /** engine settings */
     // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
     public static final float RENDER_DELAY = 1f / ServerSettings.TARGET_TPS;
-    public static final int COLLISION_DETECTION_LEVEL = 0;
     public static final boolean LOCAL_SERVER = true;
 
     /** sound */
@@ -24,7 +23,7 @@ public final class ClientSettings {
     /** controller settings; these modifiers are also used to inverse direction */
     public static float PITCH_MODIFIER = -0.05f;
     public static float ROLL_MODIFIER = 0.05f;
-    public static final int CONNECTION_SEND_FREQUENCY = 60;
+    public static final int CONNECTION_SEND_FREQUENCY = ServerSettings.TARGET_TPS;
 
     /** visual settings */
     public static float FOV = (float) Math.toRadians(60);
@@ -39,6 +38,7 @@ public final class ClientSettings {
     public static final boolean SHOW_LIGHT_POSITIONS = true;
     public static final boolean ITERATIVE_ROTATION_INTERPOLATION = true;
     public static float HIGHLIGHT_LINE_WIDTH = 1f;
+    public static final Color4f CHECKPOINT_ACTIVE_COLOR = Color4f.YELLOW;
 
     /** particle settings */
     public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles in total
@@ -60,6 +60,5 @@ public final class ClientSettings {
 
     /** miscellaneous */
     public static boolean SPECTATOR_MODE = false;
-    public static final float BASE_SPEED = 0;
     public static final Material PORTAL_MATERIAL = Material.PLASTIC;
 }

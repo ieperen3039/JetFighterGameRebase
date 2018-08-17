@@ -16,6 +16,7 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.CountDownTimer;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -42,14 +43,15 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final InputStream serverIn;
     private final EnvironmentManager game;
     private final JetFighterProtocol protocol;
+    private final boolean isAdmin;
 
     private Lock sendLock = new ReentrantLock();
-    private GameTimer time;
 
-    private final SubControl input;
     private final AbstractJet jet;
-    private RaceProgress gameProgress;
     private String name;
+    private GameTimer gameTimer;
+    private final SubControl input;
+    private RaceProgress gameProgress;
     private final CountDownTimer counter;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
@@ -63,15 +65,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.game = new EnvironmentManager(null, this, gameProgress, false, COLLISION_DETECTION_LEVEL);
 
         this.protocol = new JetFighterProtocol(serverIn, serverOut);
-        this.time = protocol.syncTimerTarget();
-        this.counter = new CountDownTimer(0, time);
-        EnvironmentClass type = protocol.worldSwitchRead(counter, time.time());
+        this.gameTimer = new GameTimer();
+        protocol.syncTimerTarget(gameTimer);
+        this.counter = new CountDownTimer(0, gameTimer);
+        EnvironmentClass type = protocol.worldSwitchRead(counter, gameTimer.time());
         game.switchTo(type);
 
-        this.jet = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
+        Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
+        this.isAdmin = pair.right;
+        this.jet = pair.left;
         game.addEntity(jet);
-        Logger.printOnline(jet::getPlaneDataString);
-
     }
 
     @Override
@@ -79,6 +82,31 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         MessageType type = MessageType.get(serverIn.read());
 
         switch (type) {
+            case CONNECTION_CLOSE:
+                return false;
+
+            case PING:
+                sendCommand(PONG);
+                break;
+
+            case TEXT_MESSAGE:
+                Logger.INFO.print(protocol.readText());
+                break;
+
+            case SYNC_TIMER:
+                protocol.syncTimerTarget(gameTimer);
+                sendLock.unlock();
+                break;
+
+            case PAUSE_GAME:
+                gameTimer.pause();
+                break;
+
+            case UNPAUSE_GAME:
+                gameTimer.unPause();
+                startTimerSync();
+                break;
+
             case ENTITY_SPAWN:
                 MovingEntity newEntity = protocol.newEntityRead(this, game);
                 game.addEntity(newEntity);
@@ -126,16 +154,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             case WORLD_SWITCH:
                 gameProgress = new RaceProgress(gameProgress);
                 game.setContext(this, gameProgress);
-                EnvironmentClass world = protocol.worldSwitchRead(counter, time.time());
+                EnvironmentClass world = protocol.worldSwitchRead(counter, gameTimer.time());
                 game.switchTo(world);
                 game.addEntity(jet);
                 break;
 
             case SHUTDOWN_GAME:
                 stopLoop();
-                return false;
-
-            case CONNECTION_CLOSE:
                 return false;
 
             default:
@@ -145,10 +170,18 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         return true;
     }
 
+    private void startTimerSync() throws IOException {
+        sendLock.lock();
+        serverOut.write(SYNC_TIMER.ordinal());
+        serverOut.flush();
+    }
+
     /**
      * sends a single command to the server and flushes
      */
     public void sendCommand(MessageType type) {
+        if (type.isOf(adminOnly) && !isAdmin) return;
+
         sendLock.lock();
         try {
             serverOut.write(type.ordinal());
@@ -164,7 +197,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public void addSpawn(EntityFactory entityFactory) {
-        Logger.ERROR.print("Client added an entity to its own world entity (" + entityFactory + ")");
+        Logger.ERROR.print("Client added an entity to its own world (" + entityFactory + ")");
         game.addEntity(entityFactory.construct(this, game));
     }
 
@@ -196,13 +229,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         try {
             if (!input.isActiveController()) {
                 // axis controls
-                send(THROTTLE, input.throttle());
-                send(PITCH, input.pitch());
-                send(YAW, input.yaw());
-                send(ROLL, input.roll());
+                sendControlUnsafe(THROTTLE, input.throttle());
+                sendControlUnsafe(PITCH, input.pitch());
+                sendControlUnsafe(YAW, input.yaw());
+                sendControlUnsafe(ROLL, input.roll());
                 // binary controls
-                send(PRIMARY_FIRE, input.primaryFire());
-                send(SECONDARY_FIRE, input.secondaryFire());
+                sendControlUnsafe(PRIMARY_FIRE, input.primaryFire());
+                sendControlUnsafe(SECONDARY_FIRE, input.secondaryFire());
             }
 
             serverOut.flush();
@@ -211,13 +244,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         }
     }
 
-    private void send(MessageType type, boolean isEnabled) throws IOException {
+    private void sendControlUnsafe(MessageType type, boolean isEnabled) throws IOException {
         byte asByte = RemoteControlReceiver.toByte(isEnabled);
         serverOut.write(type.ordinal());
         protocol.controlSend(asByte);
     }
 
-    private void send(MessageType type, float value) throws IOException {
+    private void sendControlUnsafe(MessageType type, float value) throws IOException {
         byte asByte = RemoteControlReceiver.toByte(value);
         serverOut.write(type.ordinal());
         protocol.controlSend(asByte);
@@ -243,7 +276,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public GameTimer getTimer() {
-        return time;
+        return gameTimer;
     }
 
     public CountDownTimer countDownGui() {
@@ -307,6 +340,22 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         return game;
     }
 
+    @Override
+    public void pause() {
+        if (isAdmin) {
+            sendCommand(PAUSE_GAME);
+        }
+        super.pause();
+    }
+
+    @Override
+    public void unPause() {
+        if (isAdmin) {
+            sendCommand(UNPAUSE_GAME);
+        }
+        super.unPause();
+    }
+
     class SubControl extends ControllerManager {
         private final ControllerImpl secondary;
         ControllerImpl active;
@@ -351,5 +400,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         public AbstractJet jet() {
             return jet;
         }
+    }
+
+    /** executes the action, which may throw an IOException */
+    private interface IOAction {
+        void run() throws IOException;
     }
 }

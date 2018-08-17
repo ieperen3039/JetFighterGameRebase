@@ -11,7 +11,7 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static nl.NG.Jetfightergame.Engine.GLFWGameEngine.GameMode.MENU_MODE;
+import static nl.NG.Jetfightergame.Engine.JetFighterGame.GameMode.MENU_MODE;
 import static nl.NG.Jetfightergame.Settings.KeyBindings.*;
 
 /**

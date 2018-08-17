@@ -7,6 +7,12 @@ import java.io.IOException;
  */
 public interface BlockingListener {
 
+    default void listenInThread(boolean setDaemon) {
+        Thread t = new Thread(this::listen, "Listener-" + getClass().getSimpleName());
+        t.setDaemon(setDaemon);
+        t.start();
+    }
+
     /**
      * repeatedly runs {@link #handleMessage()} until it returns false
      * @return an {@link IOException} if a connection error occurs, otherwise null.

@@ -35,10 +35,9 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
         final PosVector thisEye = instance.getEye();
         final DirVector thisUp = instance.getUpVector();
 
-        final PosVector eye = thisEye.isScalable() ? thisEye : new PosVector(5, 0, 0);
         final DirVector up = thisUp.isScalable() ? thisUp : DirVector.zVector();
 
-        switchTo(camera, eye, target, up);
+        switchTo(camera, thisEye, target, up);
     }
 
     /**
@@ -60,13 +59,13 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
                 instance = new PointCenteredCamera(eye, target.getPosition());
                 break;
             case FollowingCamera:
-                instance = new FollowingCamera(eye, target, up);
+                instance = new FollowingCamera(eye, target, up, vectorToFocus());
                 break;
             case MountedCamera:
                 if (target instanceof AbstractJet)
                     instance = new MountedCamera((AbstractJet) target);
                 else
-                    instance = new FollowingCamera(eye, target, up);
+                    instance = new FollowingCamera(eye, target, up, target.getVelocity());
                 break;
             default:
                 throw new UnsupportedOperationException("unknown enum: " + camera);

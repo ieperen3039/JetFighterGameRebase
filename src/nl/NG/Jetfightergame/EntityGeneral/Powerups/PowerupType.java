@@ -47,7 +47,7 @@ public enum PowerupType {
     public static final float SPEED_BOOST_FACTOR = 3f;
 
     public static final float STAR_BOOST_DURATION = 15f;
-    public static final float STAR_BOOST_FACTOR = 1.2f;
+    public static final float STAR_BOOST_FACTOR = 1.3f;
     public static final float STAR_BOOST_PUSH = 100_000f;
 
     public static final float SMOKE_LINGER_TIME = 30f;
@@ -131,7 +131,7 @@ public enum PowerupType {
     }
 
     public static void doStarBoost(AbstractJet jet, SpawnReceiver entityDeposit) {
-        jet.addSpeedModifier(PowerupType.STAR_BOOST_FACTOR, PowerupType.STAR_BOOST_DURATION);
+        jet.addSpeedModifier(PowerupType.STAR_BOOST_FACTOR, STAR_BOOST_DURATION);
         entityDeposit.boosterColorChange(jet, Color4f.BLUE, Color4f.WHITE, STAR_BOOST_DURATION);
         entityDeposit.addGravitySource(jet::getExpectedMiddle, -STAR_BOOST_PUSH, STAR_BOOST_DURATION);
     }

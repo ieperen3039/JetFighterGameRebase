@@ -275,4 +275,11 @@ public final class Toolbox {
     public static float instantPreserveFraction(float rotationPreserveFactor, float deltaTime) {
         return (float) (StrictMath.pow(rotationPreserveFactor, deltaTime));
     }
+
+    public static void waitFor(int millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException ignored) {
+        }
+    }
 }

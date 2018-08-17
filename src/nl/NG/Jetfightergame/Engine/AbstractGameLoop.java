@@ -17,8 +17,6 @@ import java.util.function.Supplier;
  * also usable for rendering
  */
 public abstract class AbstractGameLoop extends Thread {
-    private final String loopName;
-
     private float targetDeltaMillis;
     private CountDownLatch pauseBlock = new CountDownLatch(0);
     private boolean shouldStop;
@@ -37,9 +35,9 @@ public abstract class AbstractGameLoop extends Thread {
      * @param notifyDelay if true, an error message will be printed whenever the update method has encountered delay.
      */
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
+        super(name);
         this.targetDeltaMillis = 1000f/targetTps;
         this.notifyDelay = notifyDelay;
-        this.loopName = name;
 
         avgTPS = new AveragingQueue(targetTps/2);
         avgPoss = new AveragingQueue(targetTps/10);
@@ -71,7 +69,7 @@ public abstract class AbstractGameLoop extends Thread {
      * start the loop, running until {@link #stopLoop()} is called.
      */
     public void run() {
-        if (ServerSettings.DEBUG) Logger.DEBUG.print(loopName + " enabled");
+        if (ServerSettings.DEBUG) Logger.DEBUG.print(this + " enabled");
         float deltaTime = 0;
 
         Logger.printOnline(tickCounter);
@@ -94,7 +92,7 @@ public abstract class AbstractGameLoop extends Thread {
                 // number of milliseconds remaining in this loop
                 float remainingTime = targetDeltaMillis - loopTimer.getTimeSinceLastUpdate();
                 if (ServerSettings.DEBUG && notifyDelay && (remainingTime < 0))
-                    Logger.ERROR.printf("%s can't keep up! Running %d milliseconds behind%n", loopName, (int) -remainingTime);
+                    Logger.WARN.printf("%s can't keep up! Running %d milliseconds behind%n", this, (int) -remainingTime);
 
                 // sleep at least one millisecond
                 long correctedTime = (long) Math.max(remainingTime, 1f);
@@ -114,10 +112,11 @@ public abstract class AbstractGameLoop extends Thread {
                 pauseBlock.await();
                 isPaused = false;
             }
+
         } catch (Exception ex) {
-            Logger.ERROR.print(loopName + " has Crashed! Blame Menno.");
-            ex.printStackTrace();
+            Logger.ERROR.print(this + " has Crashed! Blame Menno.");
             exceptionHandler(ex);
+
         } finally {
             Logger.removeOnlineUpdate(tickCounter);
             Logger.removeOnlineUpdate(possessionCounter);
@@ -125,28 +124,30 @@ public abstract class AbstractGameLoop extends Thread {
         }
 
         // terminate engine
-        Logger.DEBUG.print(loopName + " is stopped");
+        Logger.DEBUG.print(this + " is stopped");
     }
 
     /**
      * is executed after printing the stacktrace
      * @param ex the exception that caused the crash
      */
-    protected void exceptionHandler(Exception ex){}
+    protected void exceptionHandler(Exception ex) {
+        ex.printStackTrace();
+    }
 
     @Override
     public String toString() {
-        return String.format("%s @%.01f TPS", loopName, avgTPS.average());
+        return getName();
     }
 
     public void unPause(){
         pauseBlock.countDown();
-        Logger.DEBUG.printFrom(2, "unpaused " + loopName);
+        Logger.DEBUG.print("unpaused " + this);
     }
 
     public void pause(){
         pauseBlock = new CountDownLatch(1);
-        Logger.DEBUG.printFrom(2, "paused " + loopName);
+        Logger.DEBUG.print("paused " + this);
     }
 
     /**

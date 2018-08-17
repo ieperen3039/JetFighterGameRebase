@@ -11,13 +11,13 @@ import static java.lang.StrictMath.pow;
  */
 public class ExponentialSmoothVector<V extends Vector> extends SmoothTrackedVector<V> {
 
-    private final float preservedFraction;
+    private final double preservedFraction;
 
     /**
      * a vector that reduces its distance to its target with a preset fraction
      * @param preservedFraction the fraction that must be preserved per second
      */
-    public ExponentialSmoothVector(V initial, float preservedFraction) {
+    public ExponentialSmoothVector(V initial, double preservedFraction) {
         super(initial);
         this.preservedFraction = preservedFraction;
     }
