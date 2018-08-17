@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Tools;
 
-import nl.NG.Jetfightergame.Settings.ServerSettings;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -16,10 +14,12 @@ import java.util.function.Supplier;
 public enum Logger {
     DEBUG, INFO, WARN, ERROR;
 
-    private static Consumer<String> out = System.out::println;
-    private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
     /** prevents spamming the chat */
     static Set<String> callerBlacklist = new HashSet<>();
+    private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
+
+    private Consumer<String> out = System.out::println;
+    private boolean enabled = true;
     private String codeName = String.format("[%-5s]", this);
 
     private static String concatenate(Object[] x) {
@@ -36,10 +36,10 @@ public enum Logger {
     }
 
     /**
-     * sets the debug output of the print methods to the specified file
+     * sets the debug output of the given print method to the specified output
      * @param newOutput
      */
-    public static void setOutput(Consumer<String> newOutput) {
+    public void setOutput(Consumer<String> newOutput) {
         if (newOutput == null) {
             Logger.ERROR.print("New output is null");
             return;
@@ -97,6 +97,13 @@ public enum Logger {
         onlinePrints.remove(source);
     }
 
+    public static void setOutputLevel(Logger minimum) {
+        Logger[] levels = values();
+        for (int i = 0; i < levels.length; i++) {
+            levels[i].enabled = (i >= minimum.ordinal());
+        }
+    }
+
     /**
      * prints the toString method of the given objects to System.out, preceded with calling method. Every unique
      * callside will only be allowed to print once. For recursive calls, every level will be regarded as a new level,
@@ -117,18 +124,17 @@ public enum Logger {
      * @param depth 0 = this method, 1 = the calling method (yourself)
      */
     public synchronized void printFrom(int depth, Object... s) {
+        if (!enabled) return;
+
         String prefix = codeName;
-        if (ServerSettings.DEBUG) prefix = getCallingMethod(depth) + prefix;
+        if (DEBUG.enabled) prefix = getCallingMethod(depth) + prefix;
 
         switch (this) {
             case DEBUG:
-                if (!ServerSettings.DEBUG) break;
             case INFO:
                 out.accept(prefix + ": " + concatenate(s));
                 break;
             case WARN:
-                System.err.println(prefix + ": " + concatenate(s));
-                break;
             case ERROR:
                 System.err.println(prefix + ": " + concatenate(s));
                 break;

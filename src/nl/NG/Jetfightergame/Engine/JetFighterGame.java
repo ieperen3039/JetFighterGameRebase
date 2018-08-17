@@ -66,7 +66,7 @@ public class JetFighterGame {
      * @param makeLocalServer if true, a new server will be created and connected to on this machine.
      */
     public JetFighterGame(boolean makeLocalServer) throws Exception {
-        Logger.INFO.print("Starting the game...");
+        Logger.INFO.print("Starting the game...1");
         this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
 
         GeneralShapes.init(true);
@@ -80,6 +80,7 @@ public class JetFighterGame {
 
         Splash splash = new Splash();
         splash.run();
+        String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
 
         try {
             OutputStream sendChannel;
@@ -88,14 +89,14 @@ public class JetFighterGame {
             if (makeLocalServer) {
                 Logger.INFO.print("Creating new local server");
 
+                JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
+
                 if (USE_SOCKET_FOR_OFFLINE) {
-                    JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
                     new Thread(server::listenForHost).start();
 
                     Socket client = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
                     sendChannel = client.getOutputStream();
                     receiveChannel = client.getInputStream();
-                    server.listenInThread(true);
 
                 } else {
                     StreamPipe serverToClient = new StreamPipe(1024);
@@ -103,18 +104,16 @@ public class JetFighterGame {
 
                     InputStream serverReceive = serverToClient.getInputStream();
                     OutputStream serverSend = clientToServer.getOutputStream();
-
-                    JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
                     new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
-                    server.listenInThread(true);
-
-                    AbstractGameLoop serverLoop = server.getRunnable();
-                    serverLoop.setDaemon(true);
-                    serverLoop.start();
 
                     sendChannel = serverToClient.getOutputStream();
                     receiveChannel = clientToServer.getInputStream();
                 }
+
+                server.listenInThread(true);
+                AbstractGameLoop serverLoop = server.getRunnable();
+                serverLoop.setDaemon(true);
+                serverLoop.start();
 
             } else {
                 Logger.INFO.print("Searching local server");
@@ -123,7 +122,6 @@ public class JetFighterGame {
                 receiveChannel = socket.getInputStream();
             }
 
-            String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
             connection = new ClientConnection(playerName, sendChannel, receiveChannel);
             otherLoops.add(connection);
             actionHandler = new ActionButtonHandler(this, connection);
@@ -224,7 +222,7 @@ public class JetFighterGame {
     /** tells the gameloops to stop */
     public void exitGame() {
         // wait for possible printing
-        Toolbox.waitFor(1);
+        Toolbox.waitFor(10);
 
         System.out.println();
         Logger.INFO.print("Stopping game...");
@@ -258,9 +256,17 @@ public class JetFighterGame {
     }
 
 
+    /**
+     * @param argArray The arguments of the program. -debug - enable debug mode -local - start a new server locally
+     * @throws Exception if anything goes terribly wrong
+     */
     public static void main(String... argArray) throws Exception {
         List<String> args = Arrays.asList(argArray);
+
         boolean makeLocalServer = args.contains("-local");
+        ServerSettings.DEBUG = args.contains("-debug");
+
+        Logger.setOutputLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
         new JetFighterGame(makeLocalServer).root();
     }
 

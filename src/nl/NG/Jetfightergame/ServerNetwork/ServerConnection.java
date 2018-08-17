@@ -92,6 +92,7 @@ public class ServerConnection implements BlockingListener, Player {
             protocol.controlRead(controls, type);
 
         } else {
+            // type is allowed and not a control message
             Logger.DEBUG.printf("[%s @ %.2f] %s", clientName, server.getTimer().time(), type);
             switch (type) {
                 case CLOSE_REQUEST:

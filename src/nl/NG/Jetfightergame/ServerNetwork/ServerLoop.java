@@ -40,6 +40,7 @@ import java.util.function.Supplier;
 public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChangeListener {
 
     private final List<ServerConnection> connections;
+    private final RaceProgress raceProgress;
 
     private EnvironmentManager gameWorld;
     private GameTimer globalTime;
@@ -48,7 +49,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true, true);
+        raceProgress = new RaceProgress();
+        this.gameWorld = new EnvironmentManager(lobby, this, raceProgress, true, true);
         this.raceWorld = raceWorld;
         this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
         this.connections = new ArrayList<>();
@@ -85,12 +87,29 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         AbstractJet entity = player.jet();
         gameWorld.addEntity(entity);
-        connections.forEach(conn -> conn.sendPlayerSpawn(player));
+        raceProgress.addPlayer(player);
         gameWorld.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
 
+        for (ServerConnection conn : connections) {
+            conn.sendPlayerSpawn(player);
+            player.sendPlayerSpawn(conn);
+            conn.flush();
+        }
         connections.add(player);
-        connections.forEach(ServerConnection::flush);
-        player.listenInThread(false);
+        player.flush();
+
+        Runnable listenAndStop = () -> {
+            try {
+                player.listen();
+            } finally {
+                Logger.WARN.print("Removing " + player + " from the game (disconnect)");
+                connections.remove(player);
+                removeEntity(player.jet());
+            }
+        };
+        Thread t = new Thread(listenAndStop, "Listener-" + player.getClass().getSimpleName());
+        t.setDaemon(true);
+        t.start();
 
         Logger.printOnline(() -> player.jet().interpolatedPosition().toString());
     }
@@ -149,14 +168,18 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
             if (ety instanceof PowerupEntity) continue;
 
             if (TemporalEntity.isOverdue(ety)) {
-                connections.forEach(conn -> conn.sendEntityRemove(ety));
-                gameWorld.removeEntity(ety);
+                removeEntity(ety);
 
             } else {
                 connections.forEach(conn -> conn.sendEntityUpdate(ety, time.current()));
             }
         }
         connections.forEach(ServerConnection::flush);
+    }
+
+    private void removeEntity(MovingEntity ety) {
+        connections.forEach(conn -> conn.sendEntityRemove(ety));
+        gameWorld.removeEntity(ety);
     }
 
     @Override

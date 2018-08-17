@@ -185,7 +185,7 @@ public class JetFighterProtocol {
      * @param entity the entity used by player b
      */
     public void playerSpawnSend(String name, MovingEntity entity) throws IOException {
-        output.write(entity.idNumber());
+        output.writeInt(entity.idNumber());
         output.writeUTF(name);
     }
 
@@ -288,8 +288,8 @@ public class JetFighterProtocol {
         return game.getEntity(input.readInt());
     }
 
-    public void raceProgressSend(String playerID, int checkPointNr, int roundNr) throws IOException {
-        output.writeUTF(playerID);
+    public void raceProgressSend(String playerName, int checkPointNr, int roundNr) throws IOException {
+        output.writeUTF(playerName);
         output.writeInt(checkPointNr);
         output.writeInt(roundNr);
     }

@@ -44,17 +44,18 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
         RaceProgress race = raceSupplier.get();
         if (race.getNumCheckpoints() == 0) return;
         Integer[] raceOrder = race.raceOrder();
+        int nOfPlayers = raceOrder.length;
 
         // add missing boxes
-        if (raceOrder.length > boxes.size()) {
-            for (int i = boxes.size(); i < raceOrder.length; i++) {
+        if (nOfPlayers > boxes.size()) {
+            for (int i = boxes.size(); i < nOfPlayers; i++) {
                 boxes.add(new Box(MARGIN, MARGIN, i));
             }
         }
 
-        for (int i = 0; i < raceOrder.length; i++) {
+        for (int i = 0; i < nOfPlayers; i++) {
             Box b = boxes.get(raceOrder[i]);
-            b.setIndex(i);
+            b.setIndex(nOfPlayers - i);
             b.updatePosition();
             b.draw(hud, race);
         }

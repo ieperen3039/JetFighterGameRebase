@@ -8,7 +8,6 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -18,10 +17,7 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
  * @author Geert van Ieperen created on 26-4-2018.
  */
 public class JetFighterServer implements BlockingListener {
-
-    private final int portNumber;
     private ServerSocket socket;
-
     private ServerLoop game;
 
     public AbstractGameLoop getRunnable() {
@@ -36,23 +32,6 @@ public class JetFighterServer implements BlockingListener {
     public JetFighterServer(EnvironmentClass world) throws IOException {
         this.socket = new ServerSocket(SERVER_PORT);
         this.game = new ServerLoop(EnvironmentClass.LOBBY, world);
-        portNumber = socket.getLocalPort();
-    }
-
-    /**
-     * creates a thread on the local machine, connecting the given socket as host.
-     * @param type the type of world to start this server on
-     * @param client       the connection between front-end and back-end
-     * @throws IOException if the initialisation runs into problems
-     */
-    public static AbstractGameLoop createOfflineServer(EnvironmentClass type, Socket client) throws IOException {
-
-        JetFighterServer server = new JetFighterServer(type);
-        new Thread(server::listenForHost).start();
-        client.connect(new InetSocketAddress(server.portNumber), 1000);
-        server.listenInThread(true);
-
-        return server.game;
     }
 
     /**
@@ -74,7 +53,7 @@ public class JetFighterServer implements BlockingListener {
      */
     public void listenForHost() {
         try {
-            Logger.DEBUG.print("Waiting for host on port " + portNumber + " on address " + socket.getInetAddress());
+            Logger.DEBUG.print("Waiting for host on port " + socket.getLocalPort() + " on address " + socket.getInetAddress());
             acceptConnection(true);
 
         } catch (IOException ex) {
@@ -107,7 +86,7 @@ public class JetFighterServer implements BlockingListener {
         server.listenForHost();
 
         server.listenInThread(true);
-        Logger.DEBUG.print("Listening to port " + server.portNumber + " on address " + server.socket.getInetAddress());
+        Logger.DEBUG.print("Listening to port " + server.socket.getLocalPort() + " on address " + server.socket.getInetAddress());
 
         server.game.run();
     }

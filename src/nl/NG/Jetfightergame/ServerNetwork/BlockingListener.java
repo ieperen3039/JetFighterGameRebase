@@ -18,21 +18,16 @@ public interface BlockingListener {
     }
 
     /**
-     * repeatedly runs {@link #handleMessage()} until it returns false
-     * @return an {@link IOException} if a connection error occurs, otherwise null.
-     * The stacktrace is printed before returning
+     * repeatedly runs {@link #handleMessage()} until it returns false.
      */
-    default IOException listen() {
+    default void listen() {
         try {
             // loop until handleMessage returns false (the connection should be closed)
             while (handleMessage());
 
         } catch (IOException ex) {
             ex.printStackTrace();
-            return ex;
         }
-
-        return null;
     }
 
     /**
