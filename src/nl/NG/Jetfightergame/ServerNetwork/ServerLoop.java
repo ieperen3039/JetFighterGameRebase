@@ -48,7 +48,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true, 1);
+        this.gameWorld = new EnvironmentManager(lobby, this, new RaceProgress(), true, true);
         this.raceWorld = raceWorld;
         this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
         this.connections = new ArrayList<>();
@@ -91,6 +91,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         connections.add(player);
         connections.forEach(ServerConnection::flush);
         player.listenInThread(false);
+
+        Logger.printOnline(() -> player.jet().interpolatedPosition().toString());
     }
 
     @Override
@@ -158,13 +160,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
-    public void unPause() {
-        globalTime.unPause();
-        connections.forEach(conn -> conn.send(MessageType.UNPAUSE_GAME));
-        super.unPause();
-    }
-
-    @Override
     public void startRace() {
         worldShouldSwitch = true;
     }
@@ -174,6 +169,13 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         globalTime.pause();
         connections.forEach(conn -> conn.send(MessageType.PAUSE_GAME));
         super.pause();
+    }
+
+    @Override
+    public void unPause() {
+        globalTime.unPause();
+        connections.forEach(conn -> conn.send(MessageType.UNPAUSE_GAME));
+        super.unPause();
     }
 
     @Override

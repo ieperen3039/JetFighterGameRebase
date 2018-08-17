@@ -25,12 +25,12 @@ import java.util.function.Supplier;
  */
 public class EnvironmentManager implements Environment, Manager<EnvironmentClass> {
     private final boolean loadDynamic;
-    private final int colDetLevel;
 
     private GameState instance;
     private SpawnReceiver deposit;
     private RaceProgress raceProgress;
     private EnvironmentClass currentType;
+    private boolean doCollDet;
 
     /**
      * creates a switchable world, without building the scene yet.
@@ -38,20 +38,20 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
      * @param deposit the place where all new entities are sent to
      * @param raceProgress an object that tracks rounds and checkpoints for players, required for building checkpoints
      * @param loadDynamic true if the caller is hosting a server, false if the dynamic entities shall be received by an outside source.
-     * @param collisionDetectionLevel
+     * @param doCollDet
      */
     public EnvironmentManager(
-            EnvironmentClass initial, SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic, int collisionDetectionLevel
+            EnvironmentClass initial, SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic, boolean doCollDet
     ) {
         instance = (initial != null) ? initial.create() : null;
         currentType = initial;
         this.loadDynamic = loadDynamic;
         setContext(deposit, raceProgress);
-        colDetLevel = collisionDetectionLevel;
+        this.doCollDet = doCollDet;
     }
 
     public void build() {
-        instance.buildScene(deposit, raceProgress, colDetLevel, loadDynamic);
+        instance.buildScene(deposit, raceProgress, loadDynamic, doCollDet);
     }
 
     public void setContext(SpawnReceiver deposit, RaceProgress raceProgress) {

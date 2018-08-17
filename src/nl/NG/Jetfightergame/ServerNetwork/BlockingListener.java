@@ -7,6 +7,10 @@ import java.io.IOException;
  */
 public interface BlockingListener {
 
+    /**
+     * execute {@link #listen()} in a separate thread
+     * @param setDaemon if true, this thread will automatically terminate if no other non-daemon threads are running
+     */
     default void listenInThread(boolean setDaemon) {
         Thread t = new Thread(this::listen, "Listener-" + getClass().getSimpleName());
         t.setDaemon(setDaemon);

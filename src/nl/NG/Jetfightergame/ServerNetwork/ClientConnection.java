@@ -33,7 +33,6 @@ import java.util.function.Supplier;
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.FIRE_PARTICLE_SIZE;
-import static nl.NG.Jetfightergame.Settings.ServerSettings.COLLISION_DETECTION_LEVEL;
 
 /**
  * @author Geert van Ieperen created on 6-5-2018.
@@ -62,7 +61,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.input = new SubControl(EmptyController);
         this.gameProgress = new RaceProgress();
         gameProgress.addPlayer(this);
-        this.game = new EnvironmentManager(null, this, gameProgress, false, COLLISION_DETECTION_LEVEL);
+        this.game = new EnvironmentManager(null, this, gameProgress, false, false);
 
         this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.gameTimer = new GameTimer();

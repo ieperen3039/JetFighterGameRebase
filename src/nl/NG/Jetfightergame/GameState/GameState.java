@@ -49,22 +49,18 @@ public abstract class GameState implements Environment {
      * @param deposit           new entities are deposited here
      * @param raceProgress      the management of the checkpoints and race-situation. The checkpoints of this world are
      *                          added upon returning
-     * @param collisionDetLevel 0 = no collision
      * @param loadDynamic       if false, all dynamic entities are not loaded. This is required if these are managed by
      *                          a server
+     * @param doCollDet if true, collision detection is enabled
      */
-    public void buildScene(SpawnReceiver deposit, RaceProgress raceProgress, int collisionDetLevel, boolean loadDynamic) {
+    public void buildScene(SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic, boolean doCollDet) {
         final Collection<Touchable> staticEntities = createWorld(raceProgress, deposit.getTimer());
 
-        switch (collisionDetLevel) {
-            case 0:
-                physicsEngine = new EntityList(staticEntities);
-                break;
-            case 1:
-                physicsEngine = new CollisionDetection(staticEntities);
-                break;
-            default:
-                throw new UnsupportedOperationException("unsupported collision detection level:" + collisionDetLevel);
+        if (doCollDet) {
+            physicsEngine = new CollisionDetection(staticEntities);
+        } else {
+            physicsEngine = new EntityList(staticEntities);
+
         }
 
         if (loadDynamic) {
@@ -206,7 +202,7 @@ public abstract class GameState implements Environment {
             }
 
         } else {
-            Logger.ERROR.print("Tried adding particles that are either already loaded, or without particles");
+            Logger.ERROR.print("Tried adding a cloud that was either already loaded, or without particles");
         }
     }
 

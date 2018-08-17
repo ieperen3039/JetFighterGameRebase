@@ -92,7 +92,7 @@ public class ServerConnection implements BlockingListener, Player {
             protocol.controlRead(controls, type);
 
         } else {
-            Logger.DEBUG.printf("[%s @ %.1f] %s", clientName, server.getTimer().time(), type);
+            Logger.DEBUG.printf("[%s @ %.2f] %s", clientName, server.getTimer().time(), type);
             switch (type) {
                 case CLOSE_REQUEST:
                     isClosed = true;
@@ -102,16 +102,16 @@ public class ServerConnection implements BlockingListener, Player {
                     sendMessage(PONG, clientOut::flush);
                     break;
 
+                case PAUSE_GAME:
+                    server.pause();
+                    break;
+
                 case UNPAUSE_GAME:
                     server.unPause();
                     break;
 
                 case SYNC_TIMER:
                     sendMessage(SYNC_TIMER, () -> protocol.syncTimerSource(server.getTimer()));
-                    break;
-
-                case PAUSE_GAME:
-                    server.pause();
                     break;
 
                 case START_GAME:

@@ -209,6 +209,7 @@ public abstract class MovingEntity implements Touchable {
             if ((rotation.x() == Float.NaN) || (rotation.y() == Float.NaN) || (rotation.z() == Float.NaN))
                 throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
         }
+        hitPoints = null;
     }
 
     /**

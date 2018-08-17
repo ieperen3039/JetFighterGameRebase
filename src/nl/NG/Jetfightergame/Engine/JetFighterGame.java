@@ -66,6 +66,7 @@ public class JetFighterGame {
      * @param makeLocalServer if true, a new server will be created and connected to on this machine.
      */
     public JetFighterGame(boolean makeLocalServer) throws Exception {
+        Logger.INFO.print("Starting the game...");
         this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
 
         GeneralShapes.init(true);
@@ -147,7 +148,6 @@ public class JetFighterGame {
 
             // set currentGameMode and engine.isPaused
             setMenuMode();
-            Logger.printOnline(() -> playerJet.getPosition().toString());
 
         } finally {
             // remove splash frame

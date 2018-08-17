@@ -16,7 +16,6 @@ public final class ServerSettings {
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
     public static final short TARGET_TPS = 19;
-    public static final short COLLISION_DETECTION_LEVEL = 0;
 
     /** connection settings */
     public static final int SERVER_PORT = 3039;
