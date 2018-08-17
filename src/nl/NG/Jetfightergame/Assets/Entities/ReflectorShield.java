@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -19,13 +20,12 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
  * a shield that persists for a fixed duration
  */
 public class ReflectorShield extends AbstractShield {
-    public static final float TIME_TO_LIVE = 4f;
     private static final float BURST_FORCE = 10f;
-    public static final Color4f COLOR = new Color4f(0, 0.5f, 1, 0.1f);
+    public static final Color4f COLOR = new Color4f(0, 1f, 0.5f, 0.1f);
     private EntityMapping entities;
 
     private ReflectorShield(int id, AbstractJet jet, GameTimer time, SpawnReceiver deposit, EntityMapping entities) {
-        super(id, jet, time, TIME_TO_LIVE, deposit);
+        super(id, jet, time, PowerupType.REFLECTOR_DURATION, deposit);
         this.entities = entities;
     }
 

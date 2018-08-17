@@ -25,15 +25,15 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
  */
 public final class Resources {
 
-    public static String loadText(String fileName) throws IOException {
+    public static String loadText(Path path) throws IOException {
         String result;
         try (
-                InputStream in = new FileInputStream(fileName);
+                InputStream in = new FileInputStream(path.toFile());
                 Scanner scanner = new Scanner(in, "UTF-8")
         ) {
             result = scanner.useDelimiter("\\A").next();
         } catch (FileNotFoundException e) {
-            throw new IOException("Resource not found: " + fileName);
+            throw new IOException("Resource not found: " + path);
         }
         return result;
     }

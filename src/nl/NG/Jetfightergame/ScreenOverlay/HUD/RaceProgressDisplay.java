@@ -22,11 +22,11 @@ import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.TEXT_SIZE;
  */
 public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
     private static final int WIDTH = 400;
-    private static final int HEIGHT = 100;
+    private static final int HEIGHT = 80;
     private static final int MARGIN = 50;
 
     private static final float BOX_SPEED = 20f;
-    private static final Color4f BOX_FILL_COLOR = Color4f.INVISIBLE;
+    private static final Color4f BOX_FILL_COLOR = new Color4f(1, 1, 1, 0.5f);
 
     private List<Box> boxes;
 
@@ -55,7 +55,7 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
 
         for (int i = 0; i < nOfPlayers; i++) {
             Box b = boxes.get(raceOrder[i]);
-            b.setIndex(nOfPlayers - i);
+            b.setIndex(nOfPlayers - 1 - i);
             b.updatePosition();
             b.draw(hud, race);
         }

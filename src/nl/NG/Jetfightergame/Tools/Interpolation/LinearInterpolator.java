@@ -19,7 +19,7 @@ public abstract class LinearInterpolator<T> extends BlockingTimedArrayQueue<T> {
         super(capacity);
         activeTime = initialTime;
         activeElement = initialElement;
-        add(initialElement, initialTime + 1);
+        add(initialElement, initialTime - 1);
     }
 
     /**

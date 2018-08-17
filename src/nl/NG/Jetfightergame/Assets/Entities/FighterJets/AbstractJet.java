@@ -324,7 +324,7 @@ public abstract class AbstractJet extends MovingEntity {
             case NONE:
                 // honk
                 break;
-            case SPEED:
+            case SPEED_BOOST:
                 addSpeedModifier(PowerupType.SPEED_BOOST_FACTOR, PowerupType.SPEED_BOOST_DURATION);
                 entityDeposit.boosterColorChange(this, Color4f.YELLOW, Color4f.WHITE, SPEED_BOOST_DURATION);
                 break;

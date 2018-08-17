@@ -81,6 +81,6 @@ public class HunterAI extends RocketAI {
     }
 
     private boolean isNotAssault(PowerupType currPop) {
-        return currPop == PowerupType.NONE || currPop == PowerupType.SPEED || currPop == PowerupType.SMOKE || currPop == PowerupType.SHIELD;
+        return currPop == PowerupType.NONE || currPop == PowerupType.SPEED_BOOST || currPop == PowerupType.SMOKE || currPop == PowerupType.SHIELD;
     }
 }

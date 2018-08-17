@@ -60,7 +60,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
         particleShader = new ParticleShader();
 
         overlay = new ScreenOverlay(() -> engine.getCurrentGameMode() == MENU_MODE);
-        overlay.addHudItem((hud) -> Logger.setOnlineOutput(hud::printRoll));
+        overlay.addHudItem((hud) -> {
+            if (ClientSettings.DEBUG_SCREEN) {
+                Logger.setOnlineOutput(hud::printRoll);
+            }
+        });
 
         JetFighterMenu menu = new JetFighterMenu(
                 window::getWidth, window::getHeight,

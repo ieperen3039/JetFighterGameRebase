@@ -33,11 +33,12 @@ public enum PowerupType {
     STAR_BOOST(BLUE, GREEN),
     REFLECTOR_SHIELD(BLUE, YELLOW),
 
-    SPEED(GREEN),
+    SPEED_BOOST(GREEN),
     BLACK_HOLE(GREEN, YELLOW),
 
     SMOKE(YELLOW);
 
+    public static final float REFLECTOR_DURATION = 5f;
     private static final PowerupType[] VALUES = values();
 
     public static final float SEEKER_LAUNCH_SPEED = 2f;
@@ -45,6 +46,8 @@ public enum PowerupType {
 
     public static final float SPEED_BOOST_DURATION = 3f;
     public static final float SPEED_BOOST_FACTOR = 3f;
+
+    public static final float OHSHIELD_DURATION = 2f;
 
     public static final float STAR_BOOST_DURATION = 15f;
     public static final float STAR_BOOST_FACTOR = 1.3f;
@@ -54,7 +57,12 @@ public enum PowerupType {
     public static final float SMOKE_LAUNCH_SPEED = 20f;
     public static final float SMOKE_SPREAD = 10f;
     public static final int SMOKE_DENSITY = 1_000;
-    private static final int SMOKE_DISTRACTION_ELEMENTS = 3;
+    public static final int SMOKE_DISTRACTION_ELEMENTS = 3;
+
+    public static final float GRAPPLE_YOUR_PULL_FORCE = 1500f;
+    public static final float GRAPPLE_HIS_PULL_FORCE = 400f;
+    public static final float GRAPPLE_PULL_DURATION = 3f;
+    public static final float GRAPPLE_FIRE_SPEED = 300f;
 
     private final EnumSet<PowerupColor> required;
 
@@ -83,7 +91,7 @@ public enum PowerupType {
     public static PowerupType get(PowerupColor source) {
         switch (source) {
             case GREEN:
-                return SPEED;
+                return SPEED_BOOST;
             case YELLOW:
                 return SMOKE;
             case RED:

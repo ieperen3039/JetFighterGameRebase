@@ -48,7 +48,7 @@ public class BasicShape implements Shape {
         this.triangles = faces.stream()
                 .map(f -> BasicShape.toPlanes(f, this.vertices, normals))
                 .collect(Collectors.toList());
-        this.mesh = loadMesh ? new Mesh(this.vertices, normals, faces, drawMethod) : null;
+        this.mesh = (loadMesh && !faces.isEmpty()) ? new Mesh(this.vertices, normals, faces, drawMethod) : null;
     }
 
     private BasicShape(List<Plane> triangles, Mesh mesh) {

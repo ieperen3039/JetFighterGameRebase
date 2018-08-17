@@ -34,7 +34,8 @@ public class DeathIcosahedron extends AbstractProjectile {
     private static final float SPARK_COOLDOWN = 0.01f;
     private static final float FIRE_SPEED = 10f;
     private static final float SEEKER_COOLDOWN = 1f;
-    public static final float SEEKER_LAUNCH_SPEED = 50f;
+    private static final float SEEKER_LAUNCH_SPEED = 20f;
+    private static final Color4f COLOR = new Color4f(0.8f, 0.3f, 0);
     private final EntityMapping entities;
     private float sparkTimeRemain;
     private float seekerTimeRemain;
@@ -51,11 +52,12 @@ public class DeathIcosahedron extends AbstractProjectile {
         this.entities = entities;
         sparkTimeRemain = 0;
         seekerTimeRemain = SEEKER_COOLDOWN;
+        particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 2 * FIRE_SPEED / velocity.length(), 100, 2f, 3f);
     }
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(10);
+        other.impact(2);
     }
 
     @Override
@@ -65,7 +67,7 @@ public class DeathIcosahedron extends AbstractProjectile {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(Material.GLOWING, new Color4f(0.8f, 0.3f, 0));
+        gl.setMaterial(Material.GLOWING, COLOR);
 
         sparkTimeRemain -= gameTimer.getRenderTime().difference();
         if (sparkTimeRemain >= 0) return;
@@ -74,7 +76,7 @@ public class DeathIcosahedron extends AbstractProjectile {
         do {
             PosVector pos = positionInterpolator.getInterpolated(renderTime() - sparkTimeRemain).toPosVector();
             DirVector move = positionInterpolator.getDerivative();
-            move.add(DirVector.randomOrb().reducedTo(10f, new DirVector()));
+            move.add(DirVector.randomOrb().reducedTo(FIRE_SPEED, new DirVector()));
 
             cloud.addParticle(pos, move, 0, 1, Color4f.RED, 2f);
 
@@ -139,7 +141,7 @@ public class DeathIcosahedron extends AbstractProjectile {
         }
 
         public static DirVector getVelocity(AbstractJet jet) {
-            DirVector vel = jet.getVelocity();
+            DirVector vel = jet.interpolatedVelocity();
             vel.add(jet.getForward().scale(FIRE_SPEED));
             return vel;
         }

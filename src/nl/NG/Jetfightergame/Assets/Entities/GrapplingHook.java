@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
@@ -25,22 +26,17 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 13-8-2018.
  */
 public class GrapplingHook extends AbstractProjectile {
-    private static final float YOUR_PULL_FORCE = 2000f;
-    private static final float HIS_PULL_FORCE = 500f;
 
-    private static final float PULL_DURATION = 3f;
-    private static final float FIRE_SPEED = 200f;
-    public static final float EIGHTSTH = (float) (Math.PI / 4);
-    public static final float MAX_FLY_DURATION = 2f;
+    private static final float EIGHTSTH = (float) (Math.PI / 4);
+    private static final float MAX_FLY_DURATION = 2f;
 
     private static final float LOCK_LENGTH = 5f;
-    public static final float LOCK_WIDTH = 0.3f;
-    public static final Color4f COLOR = Color4f.GREY;
-    private static final float TARGET_PULL_FORCE_FACTOR = 3_000f;
+    private static final float LOCK_WIDTH = 0.3f;
+    private static final Color4f COLOR = Color4f.GREY;
 
     private AbstractJet hookedOther = null;
 
-    public GrapplingHook(
+    private GrapplingHook(
             int id, PosVector initialPosition, DirVector initialVelocity,
             GameTimer gameTimer, AbstractJet sourceEntity, SpawnReceiver particleDeposit,
             MovingEntity target) {
@@ -69,17 +65,17 @@ public class GrapplingHook extends AbstractProjectile {
 
         if (other instanceof AbstractJet) {
             hookedOther = (AbstractJet) other;
-            timeToLive = PULL_DURATION;
+            timeToLive = PowerupType.GRAPPLE_PULL_DURATION;
 
-            addForce(sourceJet, hookedOther, YOUR_PULL_FORCE);
-            addForce(hookedOther, sourceJet, HIS_PULL_FORCE);
+            addForce(sourceJet, hookedOther, PowerupType.GRAPPLE_YOUR_PULL_FORCE);
+            addForce(hookedOther, sourceJet, PowerupType.GRAPPLE_HIS_PULL_FORCE);
         } else {
             timeToLive = 0;
         }
     }
 
     private void addForce(AbstractJet pulled, AbstractJet other, float magnitude) {
-        pulled.addNetForce(PULL_DURATION, () -> {
+        pulled.addNetForce(PowerupType.GRAPPLE_PULL_DURATION, () -> {
             DirVector newForce = pulled.getVecTo(other);
             if (isOverdue()) return DirVector.zeroVector();
             newForce.reducedTo(magnitude, newForce);
@@ -103,6 +99,7 @@ public class GrapplingHook extends AbstractProjectile {
             float vecLength = vecFromTarget.length();
             if (vecLength > 1000) {
                 timeToLive = 0;
+                gl.popMatrix();
                 return;
             }
 
@@ -162,15 +159,15 @@ public class GrapplingHook extends AbstractProjectile {
 
             if (tgt == null) {
                 DirVector dest = new DirVector();
-                jet.getVelocity().add(jet.getForward().reducedTo(FIRE_SPEED, dest), dest);
+                jet.getVelocity().add(jet.getForward().reducedTo(PowerupType.GRAPPLE_FIRE_SPEED, dest), dest);
                 return dest;
             }
 
             PosVector thisPos = jet.getPosition();
 
-            PosVector tgtPos = RocketAI.extrapolateTarget(tgt.getVelocity(), tgt.getPosition(), thisPos, FIRE_SPEED);
+            PosVector tgtPos = RocketAI.extrapolateTarget(tgt.getVelocity(), tgt.getPosition(), thisPos, PowerupType.GRAPPLE_FIRE_SPEED);
             DirVector vecToTarget = thisPos.to(tgtPos, new DirVector());
-            vecToTarget.reducedTo(FIRE_SPEED, vecToTarget);
+            vecToTarget.reducedTo(PowerupType.GRAPPLE_FIRE_SPEED, vecToTarget);
             return vecToTarget;
         }
 

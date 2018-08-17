@@ -36,7 +36,7 @@ public class Mesh implements Renderable {
     /**
      * VERY IMPORTANT that you have first called GLFW windowhints (or similar) for openGL 3 or higher.
      */
-    public Mesh(List<PosVector> posList, List<DirVector> normList, List<Face> facesList, final int drawMethod) {
+    public Mesh(List<PosVector> posList, List<DirVector> normList, List<Face> facesList, int drawMethod) {
         final int nOfEdges = nOfEdges(drawMethod);
         this.drawMethod = drawMethod;
 
@@ -57,10 +57,8 @@ public class Mesh implements Renderable {
     private static int nOfEdges(int drawMethod) {
         switch (drawMethod) {
             case GL_TRIANGLES:
-            case GL_TRIANGLE_STRIP:
                 return 3;
             case GL_QUADS:
-            case GL_QUAD_STRIP:
                 return 4;
         }
         Logger.ERROR.print("Could not determine number of edges of draw method " + glGetString(drawMethod));

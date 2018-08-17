@@ -66,7 +66,7 @@ public class JetFighterGame {
      * @param makeLocalServer if true, a new server will be created and connected to on this machine.
      */
     public JetFighterGame(boolean makeLocalServer) throws Exception {
-        Logger.INFO.print("Starting the game...1");
+        Logger.INFO.print("Starting the game from " + Directory.currentDirectory());
         this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
 
         GeneralShapes.init(true);

@@ -45,12 +45,12 @@ public abstract class AbstractShader implements ShaderProgram {
         }
 
         if (vertexPath != null) {
-            final String shaderCode = Resources.loadText(shaders.pathOf(vertexPath));
+            final String shaderCode = Resources.loadText(shaders.getPath(vertexPath));
             vertexShaderId = createShader(programId, GL_VERTEX_SHADER, shaderCode);
         }
 
         if (fragmentPath != null) {
-            final String shaderCode = Resources.loadText(shaders.pathOf(fragmentPath));
+            final String shaderCode = Resources.loadText(shaders.getPath(fragmentPath));
             fragmentShaderId = createShader(programId, GL_FRAGMENT_SHADER, shaderCode);
         }
 

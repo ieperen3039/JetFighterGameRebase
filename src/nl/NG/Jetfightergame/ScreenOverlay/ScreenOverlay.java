@@ -66,8 +66,8 @@ public final class ScreenOverlay {
         public final String source;
 
         Font(Directory dir, String file) {
-            this.name = toString().toLowerCase();
-            this.source = dir.pathOf(file);
+            this.name = toString().toLowerCase().replace("_", "");
+            this.source = dir.getPath(file).toString();
         }
     }
 

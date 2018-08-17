@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerKeyListener;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.ServerNetwork.MessageType;
-import nl.NG.Jetfightergame.Settings.KeyBindings;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.text.SimpleDateFormat;
@@ -29,7 +29,7 @@ public class ActionButtonHandler implements TrackerKeyListener {
 
     @Override
     public void keyPressed(int key) {
-        if (key == KeyBindings.START_GAME) {
+        if (key == START_GAME) {
             connection.sendCommand(MessageType.START_GAME);
 
         } else if (key == EXIT_GAME) {
@@ -48,7 +48,8 @@ public class ActionButtonHandler implements TrackerKeyListener {
             if (success) {
                 Logger.DEBUG.print("Saved screenshot as \"" + name + "\"");
             }
-
+        } else if (key == TOGGLE_DEBUG_SCREEN) {
+            ClientSettings.DEBUG_SCREEN = !ClientSettings.DEBUG_SCREEN;
         }
     }
 

@@ -14,17 +14,6 @@ public final class ClientSettings {
     public static final float RENDER_DELAY = 1f / ServerSettings.TARGET_TPS;
     public static final boolean LOCAL_SERVER = true;
 
-    /** sound */
-    public static final float SOUND_MASTER_GAIN = 0;
-    public static final float MAX_VOLUME = 6f;
-    public static final float MIN_VOLUME = -20f;
-    public static boolean SAVE_PLAYBACK = false;
-
-    /** controller settings; these modifiers are also used to inverse direction */
-    public static float PITCH_MODIFIER = -0.05f;
-    public static float ROLL_MODIFIER = 0.05f;
-    public static final int CONNECTION_SEND_FREQUENCY = ServerSettings.TARGET_TPS;
-
     /** visual settings */
     public static float FOV = (float) Math.toRadians(60);
     // absolute size of frustum
@@ -39,6 +28,18 @@ public final class ClientSettings {
     public static final boolean ITERATIVE_ROTATION_INTERPOLATION = true;
     public static float HIGHLIGHT_LINE_WIDTH = 1f;
     public static final Color4f CHECKPOINT_ACTIVE_COLOR = Color4f.YELLOW;
+
+    /** controller settings; these modifiers are also used to inverse direction */
+    public static float PITCH_MODIFIER = -0.05f;
+    public static float ROLL_MODIFIER = 0.05f;
+    public static final int CONNECTION_SEND_FREQUENCY = ServerSettings.TARGET_TPS;
+
+    /** sound */
+    public static final float SOUND_MASTER_GAIN = 0;
+    public static final float MAX_VOLUME = 6f;
+    public static final float MIN_VOLUME = -20f;
+    public static boolean DEBUG_SCREEN = false;
+    public static boolean SAVE_PLAYBACK = false;
 
     /** particle settings */
     public static final int EXPLOSION_PARTICLE_DENSITY = 1000; // particles in total

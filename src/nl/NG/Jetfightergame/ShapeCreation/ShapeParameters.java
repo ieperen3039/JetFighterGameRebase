@@ -78,7 +78,7 @@ public class ShapeParameters {
         }
     }
 
-    public static String asName(String fileName) {
+    private static String asName(String fileName) {
         return fileName.replace(".obj", "");
     }
 
@@ -86,7 +86,8 @@ public class ShapeParameters {
         try {
             return Files.readAllLines(dir.getPath(fileName));
         } catch (IOException e) {
-            System.err.println("Could not read mesh '" + fileName + "'. Continuing game without model.");
+            Logger.ERROR.print("Could not read mesh '" + fileName + "'. Continuing game without model.");
+            Logger.ERROR.print("Current dir: " + Directory.currentDirectory());
             if (ServerSettings.DEBUG) e.printStackTrace();
             return new ArrayList<>();
         }

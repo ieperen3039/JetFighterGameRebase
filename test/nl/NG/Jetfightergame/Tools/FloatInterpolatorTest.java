@@ -61,7 +61,7 @@ public class FloatInterpolatorTest {
     public void testTimedQueue() {
         TimedQueue<Float> queue = instance;
         float[] challenges =      {-1, 0,  1,  2,  3,  4};
-        float[] expectedAnswers = {0f, 0f, 2f, 4f, 4f, 6f};
+        float[] expectedAnswers = {0f, 1f, 2f, 4f, 4f, 6f};
 
         for (int i = 0; i < challenges.length; i++) {
             queue.updateTime(challenges[i]);

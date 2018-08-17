@@ -144,7 +144,7 @@ public final class Toolbox {
             System.out.println();
             Logger.DEBUG.printFrom(2, "Ending JVM");
             Thread.sleep(10);
-            new Exception().printStackTrace();
+            Thread.dumpStack();
             System.exit(1);
         } finally {
             throw new Error();
@@ -239,12 +239,7 @@ public final class Toolbox {
 
     /** transforms a double to an int, by drawing a random variable for the remainder */
     public static int randomToInt(float value) {
-        int base = (int) value;
-
-        value -= base;
-        if (random.nextFloat() < value) base++;
-
-        return base;
+        return (int) (value + random.nextFloat());
     }
 
     /**
