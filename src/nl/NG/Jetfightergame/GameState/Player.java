@@ -16,5 +16,4 @@ public interface Player {
      * @return the one and only entity belonging to this player
      */
     AbstractJet jet();
-
 }

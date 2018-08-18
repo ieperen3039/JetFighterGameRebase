@@ -14,10 +14,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.PowerupDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.RaceProgressDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
-import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
-import nl.NG.Jetfightergame.ServerNetwork.ClientControl;
-import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
-import nl.NG.Jetfightergame.ServerNetwork.JetFighterServer;
+import nl.NG.Jetfightergame.ServerNetwork.*;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
@@ -66,7 +63,15 @@ public class JetFighterGame {
      * @param makeLocalServer if true, a new server will be created and connected to on this machine.
      */
     public JetFighterGame(boolean makeLocalServer) throws Exception {
-        Logger.INFO.print("Starting the game from " + Directory.currentDirectory());
+        Logger.INFO.print("Starting the game...");
+        Logger.DEBUG.print("General debug information: " +
+                "\n\tSystem OS:          " + System.getProperty("os.name") +
+                "\n\tJava VM:            " + System.getProperty("java.runtime.version") +
+                "\n\tWorking directory:  " + Directory.currentDirectory() +
+                "\n\tProtocol version:   " + JetFighterProtocol.versionNumber +
+                ""
+        );
+
         this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
 
         GeneralShapes.init(true);
@@ -135,7 +140,7 @@ public class JetFighterGame {
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera)
                     .andThen(new PowerupDisplay(player))
                     .andThen(connection.countDownGui())
-                    .andThen(new RaceProgressDisplay(connection::getRaceProgress, connection.getTimer()));
+                    .andThen(new RaceProgressDisplay(connection));
 
             renderLoop = new JetFighterRenderer(
                     this, gameState, window, camera, player.getInputControl(), hud

@@ -168,15 +168,15 @@ public class ServerConnection implements BlockingListener, Player {
         );
     }
 
-    public void sendProgress(String playerName, int checkPointNr, int roundNr) {
+    public void sendProgress(int pInd, int checkPointNr, int roundNr) {
         sendMessage(RACE_PROGRESS, () ->
-                protocol.raceProgressSend(playerName, checkPointNr, roundNr)
+                protocol.raceProgressSend(pInd, checkPointNr, roundNr)
         );
     }
 
-    public void sendPlayerSpawn(Player player) {
+    public void sendPlayerSpawn(Player player, int pInd) {
         sendMessage(PLAYER_SPAWN, () ->
-                protocol.playerSpawnSend(player.playerName(), player.jet())
+                protocol.playerSpawnSend(player, pInd)
         );
     }
 
@@ -231,6 +231,7 @@ public class ServerConnection implements BlockingListener, Player {
         sendMessage(TEXT_MESSAGE, () -> {
             protocol.sendText(message);
             clientOut.write(CONNECTION_CLOSE.ordinal());
+            clientOut.flush();
         });
     }
 

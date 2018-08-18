@@ -80,7 +80,7 @@ public abstract class AbstractGameLoop extends Thread {
             Timer loopTimer = new Timer();
             isPaused = false;
 
-            while (!shouldStop) {
+            while (!shouldStop || Thread.interrupted()) {
                 // start measuring how long a gameloop takes
                 loopTimer.updateLoopTime();
 

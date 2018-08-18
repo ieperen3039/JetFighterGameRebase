@@ -25,25 +25,28 @@ import java.util.List;
  * @author Geert van Ieperen. Created on 5-7-2018.
  */
 public class IslandMap extends GameState {
-    private static final int FOG_DIST = 500;
+    private static final int FOG_DIST = 1000;
+    public static final int CHPOINTS = 10;
     private PosVector nextSpawnPosition = PosVector.zeroVector();
 
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         List<Touchable> entities = new ArrayList<>();
 
-        PosVector position = new PosVector();
-        DirVector direction = new DirVector(1, 1, 0.2f);
-        for (int i = 1; i < 15; i++) {
-            position.add(direction.reducedTo(72, new DirVector()));
-            direction.rotateZ((float) Math.PI / 4);
-            entities.add(raceProgress.addCheckpoint(
-                    new PosVector(position), new DirVector(direction), 20, Color4f.BLUE
-            ));
-        }
-
         for (Shape s : GeneralShapes.ISLAND1) {
             entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
+        }
+
+        PosVector position = new PosVector(20, 0, 0);
+        DirVector direction = new DirVector(0, -50, 0f);
+        position.add(direction);
+        for (int i = 1; i < CHPOINTS; i++) {
+            entities.add(raceProgress.addCheckpoint(
+                    position.add(direction, new PosVector()),
+                    DirVector.zVector().cross(direction, new DirVector()),
+                    20, Color4f.BLUE
+            ));
+            direction.rotateZ((float) Math.PI / (CHPOINTS / 4f));
         }
 
         return entities;

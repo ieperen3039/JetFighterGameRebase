@@ -19,7 +19,7 @@ import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_RIGHT;
 public class GravityHud implements Consumer<ScreenOverlay.Painter> {
 
     private static final float FPV_SENSITIVITY = 600f;
-    private static final float BS_SENSITIVITY = 2000f;
+    private static final float BS_SENSITIVITY = 2500f;
     private final AbstractJet target;
     private final Camera camera;
 

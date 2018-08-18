@@ -11,7 +11,10 @@ import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
-import nl.NG.Jetfightergame.GameState.*;
+import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.EnvironmentManager;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
+import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.CountDownTimer;
@@ -50,7 +53,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private String name;
     private GameTimer gameTimer;
     private final SubControl input;
-    private RaceProgress gameProgress;
+    private RaceProgress raceProgress;
     private final CountDownTimer counter;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
@@ -59,16 +62,14 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.serverIn = receiveChannel;
         this.name = name;
         this.input = new SubControl(EmptyController);
-        this.gameProgress = new RaceProgress();
-        gameProgress.addPlayer(this);
-        this.game = new EnvironmentManager(null, this, gameProgress, false, false);
+        this.raceProgress = new RaceProgress();
+        this.game = new EnvironmentManager(null, this, raceProgress, false, false);
 
         this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.gameTimer = new GameTimer();
         protocol.syncTimerTarget(gameTimer);
         this.counter = new CountDownTimer(0, gameTimer);
-        EnvironmentClass type = protocol.worldSwitchRead(counter, gameTimer.time());
-        game.switchTo(type);
+        protocol.worldSwitchRead(game, counter, gameTimer.time());
 
         Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
         this.isAdmin = pair.right;
@@ -78,7 +79,14 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     public boolean handleMessage() throws IOException {
-        MessageType type = MessageType.get(serverIn.read());
+        MessageType type;
+
+        try {
+            type = MessageType.get(serverIn.read());
+        } catch (IOException s) {
+            Logger.ERROR.print(s.getMessage());
+            type = MessageType.CONNECTION_CLOSE;
+        }
 
         switch (type) {
             case CONNECTION_CLOSE:
@@ -126,12 +134,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case PLAYER_SPAWN:
-                Player newPlayer = protocol.playerSpawnRead(game);
-                gameProgress.addPlayer(newPlayer);
+                protocol.playerSpawnRead(game).register(raceProgress, this);
                 break;
 
             case RACE_PROGRESS:
-                protocol.raceProgressRead(gameProgress);
+                protocol.raceProgressRead(raceProgress);
                 break;
 
             case POWERUP_STATE:
@@ -151,10 +158,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case WORLD_SWITCH:
-                gameProgress = new RaceProgress(gameProgress);
-                game.setContext(this, gameProgress);
-                EnvironmentClass world = protocol.worldSwitchRead(counter, gameTimer.time());
-                game.switchTo(world);
+                protocol.worldSwitchRead(game, counter, gameTimer.time());
                 game.addEntity(jet);
                 break;
 
@@ -257,11 +261,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     protected void cleanup() {
-        try {
-            serverOut.close();
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     @Override
@@ -327,7 +326,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     public RaceProgress getRaceProgress() {
-        return gameProgress;
+        return raceProgress;
     }
 
     @Override
@@ -377,27 +376,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
         public void enable() {
             switchTo(active);
-        }
-    }
-
-    /** a representation of players other than this player (to be used client-side) */
-    public static class OtherPlayer implements Player {
-        private AbstractJet jet;
-        private String name;
-
-        OtherPlayer(AbstractJet jet, String name) {
-            this.jet = jet;
-            this.name = name;
-        }
-
-        @Override
-        public String playerName() {
-            return name;
-        }
-
-        @Override
-        public AbstractJet jet() {
-            return jet;
         }
     }
 

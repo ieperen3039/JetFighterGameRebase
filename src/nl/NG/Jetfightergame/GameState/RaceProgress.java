@@ -38,12 +38,14 @@ public class RaceProgress {
     private int nOfPlayers = 0;
     /** number of spots available before re-allocation of arrays is required */
     private int capacity;
+    private int thisPlayer = -1;
+    private Integer[] raceOrder;
 
     /**
      * creates a RaceProgress instance without listener and without players
      */
     public RaceProgress() {
-        this(0, (p, c, r) -> {
+        this(8, (p, c, r) -> {
         });
     }
 
@@ -64,6 +66,14 @@ public class RaceProgress {
         this.changeListener = changeListener;
         this.players = Arrays.copyOf(players, capacity);
         this.nOfPlayers = Math.min(players.length, capacity);
+        raceOrder = new Integer[nOfPlayers];
+        setToIndex(raceOrder);
+    }
+
+    private void setToIndex(Integer[] raceOrder) {
+        for (int i = 0; i < raceOrder.length; i++) {
+            raceOrder[i] = i;
+        }
     }
 
     public RaceProgress(RaceProgress source) {
@@ -71,6 +81,9 @@ public class RaceProgress {
         nOfPlayers = source.nOfPlayers;
         capacity = source.nOfPlayers;
         changeListener = source.changeListener;
+        thisPlayer = source.thisPlayer;
+        raceOrder = new Integer[nOfPlayers];
+        setToIndex(raceOrder);
 
         progressCheckpoint = new int[capacity];
         progressRound = new int[capacity];
@@ -80,15 +93,49 @@ public class RaceProgress {
         nOfCheckpoints = 0;
     }
 
-    public void addPlayer(Player newPlayer) {
+    public void setThisPlayer(int thisPlayer) {
+        this.thisPlayer = thisPlayer;
+    }
+
+    /**
+     * @param newPlayer a new player to be added to the raceProgress
+     * @return the index belonging to this player
+     */
+    public int addPlayer(Player newPlayer) {
+        if (Arrays.asList(players).contains(newPlayer)) {
+            throw new IllegalStateException("Player was already part of the race");
+        }
+
         nOfPlayers++;
-        if (nOfPlayers > capacity) {
-            capacity = (int) (capacity * CAPACITY_GROW) + 1;
+        makeRoomFor(nOfPlayers);
+
+        int pInd = nOfPlayers - 1;
+        players[pInd] = newPlayer;
+        raceOrder = Arrays.copyOf(raceOrder, nOfPlayers);
+        raceOrder[pInd] = pInd;
+        return pInd;
+    }
+
+    private void makeRoomFor(int index) {
+        if (index > capacity) {
+            capacity = (int) (index * CAPACITY_GROW) + 1;
             progressRound = Arrays.copyOf(progressRound, capacity);
             progressCheckpoint = Arrays.copyOf(progressCheckpoint, capacity);
             players = Arrays.copyOf(players, capacity);
         }
-        players[nOfPlayers - 1] = newPlayer;
+    }
+
+    public void setPlayer(Player newPlayer, int pIndex) {
+        makeRoomFor(pIndex);
+
+        if (players[pIndex] == null) {
+            nOfPlayers++;
+            raceOrder = Arrays.copyOf(raceOrder, nOfPlayers);
+            int newInd = nOfPlayers - 1;
+            raceOrder[newInd] = newInd;
+        }
+
+        players[pIndex] = newPlayer;
     }
 
     public Checkpoint addCheckpoint(PosVector position, DirVector direction, float radius, Color4f color) {
@@ -129,11 +176,10 @@ public class RaceProgress {
         if (nextCh == 0) {
             progressRound[pInd]++;
         }
-        changeListener.playerCheckpointUpdate(players[pInd], nextCh, progressRound[pInd]);
+        changeListener.playerCheckpointUpdate(pInd, nextCh, progressRound[pInd]);
     }
 
-    public void setState(String playerName, int chProg, int i) {
-        int pInd = identify(playerName);
+    public void setState(int pInd, int chProg, int i) {
         progressCheckpoint[pInd] = chProg;
         progressRound[pInd] = i;
     }
@@ -147,15 +193,20 @@ public class RaceProgress {
         return Collections.unmodifiableList(Arrays.asList(players));
     }
 
-    public Integer[] raceOrder() {
-        Integer[] order = new Integer[players.length];
-        Arrays.setAll(order, i -> i);
-        Toolbox.insertionSort(order, pInd ->
-                Float.valueOf(progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd])
+    /**
+     * @return an array with on position i the player on position i in the race.
+     */
+    public List<Integer> raceOrder() {
+        Toolbox.insertionSort(raceOrder, pInd ->
+                -(float) (progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd])
         );
-        return order;
+        return Collections.unmodifiableList(Arrays.asList(raceOrder));
     }
 
+    /**
+     * @param p any player
+     * @return the index of the player, or -1 if the player is not in this list
+     */
     public int getPlayerInd(Player p) {
         return Arrays.asList(players).indexOf(p);
     }
@@ -200,7 +251,10 @@ public class RaceProgress {
 
         @Override
         public void preDraw(GL2 gl) {
-            Color4f color = (nextCheckpointOf(0) == checkpointNumber) ? activeColor : this.color;
+            Color4f color = this.color;
+            if (thisPlayer != -1 && nextCheckpointOf(thisPlayer) == checkpointNumber) {
+                color = activeColor;
+            }
 
             gl.setMaterial(material, color);
         }
@@ -217,6 +271,6 @@ public class RaceProgress {
     }
 
     public interface RaceChangeListener {
-        void playerCheckpointUpdate(Player player, int checkpointProgress, int roundsProgress);
+        void playerCheckpointUpdate(int pInd, int checkpointProgress, int roundsProgress);
     }
 }
