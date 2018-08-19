@@ -25,10 +25,10 @@ public class TrackedVector<V extends Vector> extends TrackedObject<V> implements
      * updates the value by adding the parameter to the current value
      *
      * @param addition the value that is added to the current. actual results may vary
-     * @param result the new value of this vector will be stored in result. This is mainly for intermediate calculations
+     * @param dest the new value of this vector will be stored in dest. This is mainly for intermediate calculations
      */
-    public void addUpdate(DirVector addition, V result) {
-        current().add(addition, result);
-        update(result);
+    public void addUpdate(DirVector addition, V dest) {
+        current().add(addition, dest);
+        update(dest);
     }
 }

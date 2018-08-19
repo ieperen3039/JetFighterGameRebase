@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Controllers;
 
+import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Tools.Manager;
@@ -35,6 +37,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
         XBoxController,
         MouseAbsoluteActive,
         EmptyController,
+        HunterAI,
     }
 
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
@@ -44,36 +47,48 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
     }
 
     public void switchTo(ControllerImpl type){
-        instance.cleanUp();
-
-        if (hud != null) hud.removeHudItem(instance.hudElement());
+        Controller newInst;
 
         switch (type){
             case MouseAbsolute:
-                instance = new PassivePCControllerAbsolute();
+                newInst = new PassivePCControllerAbsolute();
                 break;
 
             case MouseRelative:
-                instance = new PassivePCControllerRelative();
+                newInst = new PassivePCControllerRelative();
                 break;
 
             case XBoxController:
-                instance = new XBoxController();
+                newInst = new XBoxController();
                 break;
 
             case MouseAbsoluteActive:
-                instance = new ActivePCControllerAbsolute(controlReceiver);
+                newInst = new ActivePCControllerAbsolute(controlReceiver);
                 break;
 
             case EmptyController:
-                instance = new EmptyController();
+                newInst = new EmptyController();
+                break;
+
+            case HunterAI:
+                AbstractJet jet = controlReceiver.jet();
+                newInst = new HunterAI(jet, jet.getTarget(), controlReceiver.getWorld(), 100);
                 break;
 
             default:
                 throw new UnsupportedOperationException("unknown enum: " + type);
         }
+        newInst.update();
 
-        if (hud != null) hud.addHudItem(instance.hudElement());
+        // thread-safe swap
+        Controller oldInst = instance;
+        instance = newInst;
+
+        oldInst.cleanUp();
+        if (hud != null) {
+            hud.removeHudItem(oldInst.hudElement());
+            hud.addHudItem(instance.hudElement());
+        }
     }
 
     public void setDisplay(ScreenOverlay target) {

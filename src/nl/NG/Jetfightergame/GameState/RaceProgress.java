@@ -33,7 +33,7 @@ public class RaceProgress {
     /** all players in the race */
     private Player[] players;
     /** number of registered checkpoints */
-    private int nOfCheckpoints = 0;
+    private int nOfCheckpoints;
     /** number of actual valid players in the player array */
     private int nOfPlayers = 0;
     /** number of spots available before re-allocation of arrays is required */
@@ -59,29 +59,17 @@ public class RaceProgress {
      */
     public RaceProgress(int capacity, RaceChangeListener changeListener, Player... players) {
         this.capacity = capacity;
-        this.progressRound = new int[capacity];
-        this.progressCheckpoint = new int[capacity];
-        Arrays.fill(progressRound, -1);
-        Arrays.fill(progressCheckpoint, -1);
         this.changeListener = changeListener;
         this.players = Arrays.copyOf(players, capacity);
         this.nOfPlayers = Math.min(players.length, capacity);
-        raceOrder = new Integer[nOfPlayers];
-        setToIndex(raceOrder);
+        reset();
     }
 
-    private void setToIndex(Integer[] raceOrder) {
-        for (int i = 0; i < raceOrder.length; i++) {
-            raceOrder[i] = i;
-        }
-    }
-
-    public RaceProgress(RaceProgress source) {
-        players = source.players.clone();
-        nOfPlayers = source.nOfPlayers;
-        capacity = source.nOfPlayers;
-        changeListener = source.changeListener;
-        thisPlayer = source.thisPlayer;
+    /**
+     * removes all checkpoints from memory, and resets the ordering of the players. This does not remove any players in
+     * the game
+     */
+    public void reset() {
         raceOrder = new Integer[nOfPlayers];
         setToIndex(raceOrder);
 
@@ -93,24 +81,34 @@ public class RaceProgress {
         nOfCheckpoints = 0;
     }
 
+    private void setToIndex(Integer[] raceOrder) {
+        for (int i = 0; i < raceOrder.length; i++) {
+            raceOrder[i] = i;
+        }
+    }
+
     public void setThisPlayer(int thisPlayer) {
         this.thisPlayer = thisPlayer;
     }
 
+    public boolean thisPlayerHasFinished() {
+        if (thisPlayer == -1) return false;
+        else return progressCheckpoint[thisPlayer] == nOfCheckpoints;
+    }
+
     /**
      * @param newPlayer a new player to be added to the raceProgress
-     * @return the index belonging to this player
+     * @return the index belonging to this player or its current index if already present
      */
     public int addPlayer(Player newPlayer) {
-        if (Arrays.asList(players).contains(newPlayer)) {
-            throw new IllegalStateException("Player was already part of the race");
-        }
+        int currInd = Arrays.asList(players).indexOf(newPlayer);
+        if (currInd != -1) return currInd; // already exists
 
         nOfPlayers++;
         makeRoomFor(nOfPlayers);
 
         int pInd = nOfPlayers - 1;
-        players[pInd] = newPlayer;
+        this.players[pInd] = newPlayer;
         raceOrder = Arrays.copyOf(raceOrder, nOfPlayers);
         raceOrder[pInd] = pInd;
         return pInd;
@@ -164,9 +162,12 @@ public class RaceProgress {
         return -1;
     }
 
-    /** get the next checkpoint of the player with the given identity */
+    /** get the next checkpoint of the player with the given identity, or -1 if there are no checkpoints */
     private int nextCheckpointOf(int pInd) {
-        return (progressCheckpoint[pInd] + 1) % nOfCheckpoints;
+        if (nOfCheckpoints == 0) return -1;
+        int currCh = progressCheckpoint[pInd];
+        if (currCh == nOfCheckpoints) return -1;
+        return (currCh + 1) % nOfCheckpoints;
     }
 
     /** set the checkpoint of the given player one up */
@@ -179,9 +180,15 @@ public class RaceProgress {
         changeListener.playerCheckpointUpdate(pInd, nextCh, progressRound[pInd]);
     }
 
-    public void setState(int pInd, int chProg, int i) {
+    /**
+     * set the given player to the given state
+     * @param pInd    the index of the player as of {@link #getPlayerInd(Player)}
+     * @param chProg  the number of the last passed checkpoint
+     * @param roundNr the current round number
+     */
+    public void setState(int pInd, int chProg, int roundNr) {
         progressCheckpoint[pInd] = chProg;
-        progressRound[pInd] = i;
+        progressRound[pInd] = roundNr;
     }
 
     public Pair<Integer, Integer> getState(int pInd) {
@@ -189,8 +196,12 @@ public class RaceProgress {
         return new Pair<>(Math.max(progressRound[pInd], 0), Math.max(progressCheckpoint[pInd], 0));
     }
 
-    public List<Player> players() {
-        return Collections.unmodifiableList(Arrays.asList(players));
+    public Player[] players() {
+        return Arrays.copyOf(players, nOfPlayers);
+    }
+
+    public Player player(int pInd) {
+        return players[pInd];
     }
 
     /**
@@ -213,6 +224,10 @@ public class RaceProgress {
 
     public int getNumCheckpoints() {
         return nOfCheckpoints;
+    }
+
+    public int getNumPlayers() {
+        return nOfPlayers;
     }
 
     /**

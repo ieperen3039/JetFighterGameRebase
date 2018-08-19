@@ -175,6 +175,7 @@ public class ServerConnection implements BlockingListener, Player {
     }
 
     public void sendPlayerSpawn(Player player, int pInd) {
+        if (pInd < 0) throw new IllegalArgumentException("pInd:" + pInd);
         sendMessage(PLAYER_SPAWN, () ->
                 protocol.playerSpawnSend(player, pInd)
         );

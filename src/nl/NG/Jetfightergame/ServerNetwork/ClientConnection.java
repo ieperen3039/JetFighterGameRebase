@@ -33,7 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.HunterAI;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.FIRE_PARTICLE_SIZE;
 
@@ -55,13 +55,14 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final SubControl input;
     private RaceProgress raceProgress;
     private final CountDownTimer counter;
+    private boolean knowHasFinished = false;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
         this.name = name;
-        this.input = new SubControl(EmptyController);
+        this.input = new SubControl(HunterAI);
         this.raceProgress = new RaceProgress();
         this.game = new EnvironmentManager(null, this, raceProgress, false, false);
 
@@ -139,6 +140,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
             case RACE_PROGRESS:
                 protocol.raceProgressRead(raceProgress);
+
+                if (raceProgress.thisPlayerHasFinished() && !knowHasFinished) {
+                    input.disable();
+                }
+
                 break;
 
             case POWERUP_STATE:
@@ -231,6 +237,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         sendLock.lock();
         try {
             if (!input.isActiveController()) {
+                input.update();
                 // axis controls
                 sendControlUnsafe(THROTTLE, input.throttle());
                 sendControlUnsafe(PITCH, input.pitch());

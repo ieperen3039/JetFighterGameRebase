@@ -227,13 +227,12 @@ public class CollisionDetection implements EntityManagement {
 
                 if (intervalOverlap >= 3) {
                     allEntityPairs.add(entityArray[j].entity, (MovingEntity) entity);
+
+                    if (DEBUG && Objects.equals(entity, entityArray[j].entity)) {
+                        Logger.WARN.print("duplicates found in intersecting pairs");
+                    }
                 }
             }
-        }
-
-        if (DEBUG) {
-            boolean anyMatch = allEntityPairs.stream().anyMatch(p -> p.left.equals(p.right));
-            if (anyMatch) Logger.DEBUG.print("duplicates found in intersecting pairs");
         }
 
         avgCollision.add(allEntityPairs.size());
@@ -361,6 +360,9 @@ public class CollisionDetection implements EntityManagement {
 
     @Override
     public void addEntity(MovingEntity entity) {
+        if (ServerSettings.DEBUG && (dynamicEntities.contains(entity) || newEntities.contains(entity))) {
+            throw new IllegalArgumentException(entity.toString());
+        }
         newEntities.add(entity);
     }
 

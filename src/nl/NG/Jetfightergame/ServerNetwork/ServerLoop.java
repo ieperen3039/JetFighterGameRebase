@@ -51,7 +51,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
-        raceProgress = new RaceProgress();
+        this.raceProgress = new RaceProgress(8, this);
         this.gameWorld = new EnvironmentManager(lobby, this, raceProgress, true, true);
         this.raceWorld = raceWorld;
         this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
@@ -156,7 +156,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     protected void update(float deltaTime) {
-        if (worldShouldSwitch) setWorld(raceWorld, 3);
+        if (worldShouldSwitch) setWorld(raceWorld, 1);
 
         for (ServerConnection conn : connections) {
             if (conn.isClosed()) {
@@ -167,7 +167,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 if (connections.isEmpty()) stopLoop();
             }
         }
-
 
         globalTime.updateGameTime();
         TrackedFloat time = globalTime.getGameTime();
@@ -235,33 +234,26 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     private void setWorld(EnvironmentClass world, int maxRounds) {
         Logger.INFO.print("Switching world to " + world);
-        allowPlayerJoin = false;
-        connections.forEach(conn -> conn.sendWorldSwitch(world, 3f));
 
-        // startup new world
-        Player[] asArray = connections.toArray(new Player[0]);
-        RaceProgress raceProgress = new RaceProgress(asArray.length, this, asArray);
-        gameWorld.setContext(this, raceProgress);
-        gameWorld.switchTo(world);
+        allowPlayerJoin = false;
+        connections.forEach(conn -> conn.sendWorldSwitch(world, ServerSettings.COUNT_DOWN));
         this.maxRounds = maxRounds;
+        // startup new world
+        gameWorld.switchTo(world);
 
         // sync new world with players
         for (ServerConnection player : connections) {
+            int pInd = raceProgress.addPlayer(player);
             AbstractJet jet = player.jet();
             jet.set(gameWorld.getNewSpawnPosition());
-            player.sendEntityUpdate(jet, globalTime.time());
             jet.setPowerup(PowerupType.NONE);
             player.sendPowerupCollect(PowerupType.NONE);
 
             gameWorld.addEntity(jet);
-            EntityFactory jetFactory = jet.getFactory();
             for (ServerConnection conn : connections) {
-                if (conn != player) {
-                    conn.sendEntitySpawn(jetFactory);
-                    conn.sendPlayerSpawn(player, raceProgress.getPlayerInd(player));
-                }
+                player.sendEntityUpdate(jet, globalTime.time());
+                conn.sendPlayerSpawn(player, pInd);
             }
-            player.sendPlayerSpawn(player, raceProgress.getPlayerInd(player));
         }
 
         worldShouldSwitch = false;
@@ -289,6 +281,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                     return npc;
                 }
             };
+
             int pInd = raceProgress.addPlayer(asPlayer);
 
             for (ServerConnection conn : connections) {

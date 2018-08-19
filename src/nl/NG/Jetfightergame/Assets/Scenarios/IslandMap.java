@@ -13,6 +13,7 @@ import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -20,6 +21,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static java.lang.Math.PI;
 
 /**
  * @author Geert van Ieperen. Created on 5-7-2018.
@@ -37,16 +40,14 @@ public class IslandMap extends GameState {
             entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
         }
 
-        PosVector position = new PosVector(20, 0, 0);
-        DirVector direction = new DirVector(0, -50, 0f);
-        position.add(direction);
+        TrackedVector<PosVector> position = new TrackedVector<>(new PosVector(10, 0, 0));
+        DirVector addition = new DirVector(20, 0, 0);
         for (int i = 1; i < CHPOINTS; i++) {
-            entities.add(raceProgress.addCheckpoint(
-                    position.add(direction, new PosVector()),
-                    DirVector.zVector().cross(direction, new DirVector()),
-                    20, Color4f.BLUE
-            ));
-            direction.rotateZ((float) Math.PI / (CHPOINTS / 4f));
+            position.addUpdate(addition, new PosVector());
+            PosVector pos = position.current();
+            DirVector dir = position.difference();
+            entities.add(raceProgress.addCheckpoint(pos, dir, 20, Color4f.BLUE));
+            addition.rotateZ((float) ((3 * PI) / CHPOINTS));
         }
 
         return entities;

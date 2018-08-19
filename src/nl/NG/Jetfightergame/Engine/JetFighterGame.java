@@ -220,7 +220,7 @@ public class JetFighterGame {
             window.cleanup();
         }
 
-        Logger.DEBUG.print("Game has stopped! Bye ~");
+        Logger.INFO.print("Game has stopped! Bye ~");
         // Finish execution
     }
 

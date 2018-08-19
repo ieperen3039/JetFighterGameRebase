@@ -221,7 +221,7 @@ public class JetFighterProtocol {
         output.flush();
         float ping = avgRTT * 500;
         String pingString = avgRTT < 5 ? String.format("%.03f ms", ping) : (int) (ping) + " ms";
-        Logger.INFO.print("Ping: " + pingString);
+        Logger.DEBUG.print("Ping: " + pingString);
     }
 
     /**
