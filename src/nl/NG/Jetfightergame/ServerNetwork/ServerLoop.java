@@ -1,8 +1,7 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
+import nl.NG.Jetfightergame.ArtificalIntelligence.RaceAI;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -47,7 +46,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     private EnvironmentClass raceWorld;
     private boolean worldShouldSwitch = false;
     private volatile boolean allowPlayerJoin = true;
-    private int maxRounds = 0;
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
@@ -58,7 +56,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         this.connections = new ArrayList<>();
 
         gameWorld.build();
-        Logger.printOnline(() -> Float.toString(globalTime.time()));
     }
 
     /**
@@ -108,8 +105,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         player.flush();
 
         player.listenInThread(true);
-
-        Logger.printOnline(() -> player.jet().interpolatedPosition().toString());
     }
 
     @Override
@@ -236,8 +231,10 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         Logger.INFO.print("Switching world to " + world);
 
         allowPlayerJoin = false;
-        connections.forEach(conn -> conn.sendWorldSwitch(world, ServerSettings.COUNT_DOWN));
-        this.maxRounds = maxRounds;
+        float countDown = ServerSettings.COUNT_DOWN;
+
+        connections.forEach(conn -> conn.sendWorldSwitch(world, countDown, maxRounds));
+        raceProgress.setMaxRounds(maxRounds);
         // startup new world
         gameWorld.switchTo(world);
 
@@ -247,6 +244,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
             AbstractJet jet = player.jet();
             jet.set(gameWorld.getNewSpawnPosition());
             jet.setPowerup(PowerupType.NONE);
+            jet.addSpeedModifier(0, countDown);
             player.sendPowerupCollect(PowerupType.NONE);
 
             gameWorld.addEntity(jet);
@@ -260,15 +258,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         // add FUN
         for (int i = 0; i < ServerSettings.NOF_FUN; i++) {
-            MovingEntity target = connections.get(0).jet();
+//            MovingEntity target = connections.get(0).jet();
             EntityFactory blueprint = new JetSpitsy.Factory(gameWorld.getNewSpawnPosition(), 0);
 
             AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
             String name = "AI-" + i;
-
-            Controller controller = new HunterAI(npc, target, gameWorld, JetBasic.THROTTLE_POWER / JetBasic.AIR_RESISTANCE_COEFFICIENT);
-            npc.setController(controller);
-            gameWorld.addEntity(npc);
 
             Player asPlayer = new Player() {
                 @Override
@@ -282,6 +276,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 }
             };
 
+            Controller controller = new RaceAI(asPlayer, raceProgress, gameWorld);
+            npc.addSpeedModifier(0, countDown);
+            npc.setController(controller);
+            gameWorld.addEntity(npc);
+
             int pInd = raceProgress.addPlayer(asPlayer);
 
             for (ServerConnection conn : connections) {
@@ -292,10 +291,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     public void playerCheckpointUpdate(int pInd, int checkpointProgress, int roundProgress) {
-        if (roundProgress >= maxRounds) {
-            connections.forEach(conn -> conn.sendProgress(pInd, raceProgress.getNumCheckpoints(), maxRounds - 1));
-        } else {
-            connections.forEach(conn -> conn.sendProgress(pInd, checkpointProgress, roundProgress));
-        }
+        connections.forEach(conn -> conn.sendProgress(pInd, checkpointProgress, roundProgress));
     }
 }

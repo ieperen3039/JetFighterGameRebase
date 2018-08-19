@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Rendering;
 
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -13,13 +14,16 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Engine.JetFighterGame.GameMode.MENU_MODE;
@@ -89,6 +93,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
         activeCamera.updatePosition(deltaRenderTime);
         frameNumber++;
 
+        if (ServerSettings.PRINT_STATE_INTERVAL > 0 && (frameNumber % (int) (ClientSettings.TARGET_FPS * ServerSettings.PRINT_STATE_INTERVAL)) == 0) {
+            printStateOfJets(gameState);
+        }
+
         // shader preparation and background
         Color4f ambientLight = gameState.fogColor();
         float fogRange = Math.min(ClientSettings.Z_FAR, (1f / ambientLight.alpha)); // also considers div/0
@@ -149,6 +157,30 @@ public class JetFighterRenderer extends AbstractGameLoop {
         }
 
         Toolbox.checkGLError();
+    }
+
+    public static void printStateOfJets(Environment gameState) {
+//        String pre = "entities.add(makeCheckpoint(raceProgress, ";
+////        String post = "));";
+////        gameState.getEntities().stream()
+////                .filter(e -> e instanceof AbstractJet)
+////                .forEach(s -> {
+////                    PosVector pos = s.interpolatedPosition();
+////                    DirVector dir = ((AbstractJet) s).interpolatedForward();
+////                    System.out.printf(Locale.US,
+////                                    "%s%.0f, %.0f, %.0f, %.2ff, %.2ff, %.2ff%s\n", pre, pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, post);
+////                        }
+////                );
+        String pre = "entities.add(powerup(";
+        String post = ", ));";
+        gameState.getEntities().stream()
+                .filter(e -> e instanceof AbstractJet)
+                .forEach(s -> {
+                            PosVector pos = s.interpolatedPosition();
+                            System.out.printf(Locale.US,
+                                    "%s%.0f, %.0f, %.0f%s\n", pre, pos.x, pos.y, pos.z, post);
+                        }
+                );
     }
 
     @Override

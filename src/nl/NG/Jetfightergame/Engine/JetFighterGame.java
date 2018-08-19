@@ -129,7 +129,6 @@ public class JetFighterGame {
 
             connection = new ClientConnection(playerName, sendChannel, receiveChannel);
             otherLoops.add(connection);
-            actionHandler = new ActionButtonHandler(this, connection);
 
             ClientControl player = connection;
             Environment gameState = connection.getWorld();
@@ -137,6 +136,7 @@ public class JetFighterGame {
             Logger.DEBUG.print("Received " + playerJet + " from the server");
 
             camera = new CameraManager();
+            camera.switchTo(PointCenteredCamera, new PosVector(-5, 4, 2), playerJet, gameState, DirVector.zVector());
             Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera)
                     .andThen(new PowerupDisplay(player))
                     .andThen(connection.countDownGui())
@@ -146,7 +146,7 @@ public class JetFighterGame {
                     this, gameState, window, camera, player.getInputControl(), hud
             );
 
-            camera.switchTo(PointCenteredCamera, new PosVector(-5, 4, 2), playerJet, DirVector.zVector());
+            actionHandler = new ActionButtonHandler(this, connection);
             connection.listenInThread(true);
 
             // set currentGameMode and engine.isPaused

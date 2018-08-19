@@ -113,29 +113,28 @@ public class CollisionDetection implements EntityManagement {
         int remainingLoops = MAX_COLLISION_ITERATIONS;
         int nOfCollisions;
 
+        /* as a single collision may result in a previously not-intersecting pair to collide,
+         * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
+         * On the other hand, we may assume collisions of that magnitude appear seldom
+         */
+        PairList<Touchable, MovingEntity> pairs = getIntersectingPairs();
+
         do {
             nOfCollisions = 0;
-            /* as a single collision may result in a previously not-intersecting pair to collide,
-             * we shouldn't re-use the getIntersectingPairs method nor reduce by non-collisions.
-             * On the other hand, we may assume collisions of that magnitude appear seldom
-             */
-            PairList<Touchable, MovingEntity> pairs = getIntersectingPairs();
 
             Collision[] buffer = new Collision[pairs.size()];
             IntStream.range(0, pairs.size()).parallel()
                     .forEach(n -> buffer[n] = checkCollisionPair(pairs.left(n), pairs.right(n), deltaTime));
 
             for (int i = 0; i < buffer.length; i++) {
-                if (buffer[i] == null) {
-                    continue;
-                }
+                if (buffer[i] == null) continue;
 
                 nOfCollisions++;
 
                 Touchable other = pairs.left(i);
                 if (other instanceof MovingEntity) { // if two entities collide
                     MovingEntity left = (MovingEntity) other;
-                    MovingEntity.entityCollision(left, pairs.right(i), deltaTime);
+                    MovingEntity.entityCollision(left, pairs.right(i), deltaTime, buffer[i]);
 
                 } else { // if entity collides with terrain
                     terrainCollision(pairs.right(i), path, deltaTime, buffer[i]);
@@ -143,10 +142,6 @@ public class CollisionDetection implements EntityManagement {
             }
 
         } while ((nOfCollisions > 0) && (--remainingLoops > 0) && !Thread.interrupted());
-
-        if (nOfCollisions > 0) {
-            Logger.WARN.print(nOfCollisions + " collisions not resolved");
-        }
     }
 
     /**
@@ -157,15 +152,15 @@ public class CollisionDetection implements EntityManagement {
      * @param target    an entity that has collided with a solid entity
      */
     private static void terrainCollision(MovingEntity target, PathDescription path, float deltaTime, Collision collision) {
-        if (false && target instanceof AbstractJet) { // TODO pathDescription
+        if (target instanceof AbstractJet) {
             PosVector jetPosition = target.getPosition();
-            PosVector bounceDirection = path.getMiddleOfPath(collision);
-            DirVector targetToMid = jetPosition.to(bounceDirection, new DirVector());
+            PosVector middleOfPath = path.getMiddleOfPath(collision);
+            DirVector targetToMid = jetPosition.to(middleOfPath, new DirVector());
 
             targetToMid.normalize();
             DirVector midToTarget = targetToMid.negate(new DirVector());
 
-            float targetEnergy = target.getKineticEnergy(midToTarget) + ServerSettings.BASE_BUMPOFF_ENERGY;
+            float targetEnergy = 2 * target.getKineticEnergy(midToTarget) + ServerSettings.BUMPOFF_ENERGY;
 
             target.applyJerk(targetToMid, targetEnergy, deltaTime);
 
@@ -343,7 +338,6 @@ public class CollisionDetection implements EntityManagement {
 
             // while the lowerbound of target is less than the upperbound of our subject
             while (lower.apply(target) <= upper.apply(subject)) {
-
                 adjacencyMatrix[subject.id][target.id]++;
                 adjacencyMatrix[target.id][subject.id]++;
 
@@ -369,6 +363,37 @@ public class CollisionDetection implements EntityManagement {
     @Override
     public void removeEntity(MovingEntity entity) {
         removeEntities.add(entity);
+    }
+
+    @Override
+    public PosVector rayTrace(PosVector from, PosVector to) {
+        float xMin = Math.min(from.x, to.x);
+        float yMin = Math.min(from.y, to.y);
+        float zMin = Math.min(from.z, to.z);
+        float xMax = Math.max(from.x, to.x);
+        float yMax = Math.max(from.y, to.y);
+        float zMax = Math.max(from.z, to.z);
+        Collision minColl = null;
+
+        int xFrom = Toolbox.binarySearch(xLowerSorted, CollisionEntity::xLower, xMax);
+
+        for (int i = xFrom; i < xLowerSorted.length; i++) {
+            CollisionEntity entity = xLowerSorted[i];
+            if (entity.xUpper() < xMin) continue;
+            if (entity.yUpper() < yMin || entity.yLower() > yMax) continue;
+            if (entity.zUpper() < zMin || entity.zLower() > zMax) continue;
+            Logger.DEBUG.print(entity.x, entity.y, entity.z);
+
+            Collision coll = MovingEntity.getPointCollision(null, entity.entity, from, to, 0);
+            if (coll == null) continue;
+            Logger.WARN.print(coll.hitPosition());
+
+            if (minColl == null || coll.compareTo(minColl) > 0) {
+                minColl = coll;
+            }
+        }
+
+        return minColl == null ? to : minColl.hitPosition();
     }
 
     private void mergeNewEntities(Collection<MovingEntity> newEntities) {

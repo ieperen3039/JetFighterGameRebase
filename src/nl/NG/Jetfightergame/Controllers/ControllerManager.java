@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Controllers;
 
-import nl.NG.Jetfightergame.ArtificalIntelligence.HunterAI;
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.ArtificalIntelligence.RaceAI;
+import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Tools.Manager;
@@ -22,9 +22,11 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
     private final ClientConnection controlReceiver;
     private ScreenOverlay hud;
     private Controller instance;
+    private RaceProgress raceProgress;
 
-    public ControllerManager(ScreenOverlay hud, ClientConnection controlReceiver) {
+    public ControllerManager(ScreenOverlay hud, ClientConnection controlReceiver, RaceProgress raceProgress) {
         this.controlReceiver = controlReceiver;
+        this.raceProgress = raceProgress;
         instance = new EmptyController();
         this.hud = hud;
     }
@@ -37,7 +39,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
         XBoxController,
         MouseAbsoluteActive,
         EmptyController,
-        HunterAI,
+        AIController,
     }
 
     @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
@@ -70,9 +72,8 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
                 newInst = new EmptyController();
                 break;
 
-            case HunterAI:
-                AbstractJet jet = controlReceiver.jet();
-                newInst = new HunterAI(jet, jet.getTarget(), controlReceiver.getWorld(), 100);
+            case AIController:
+                newInst = new RaceAI(controlReceiver, raceProgress, controlReceiver.getWorld());
                 break;
 
             default:

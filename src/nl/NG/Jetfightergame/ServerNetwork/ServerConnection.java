@@ -68,8 +68,8 @@ public class ServerConnection implements BlockingListener, Player {
 
         this.protocol = new JetFighterProtocol(clientIn, clientOut);
         protocol.syncTimerSource(server.getTimer());
-        this.controls = new RemoteControlReceiver(server.getTimer());
-        protocol.worldSwitchSend(worldType, 0f);
+        this.controls = new RemoteControlReceiver();
+        protocol.worldSwitchSend(worldType, 0f, 0);
         clientOut.flush();
         Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, spawnAccept, entities, isAdmin);
         clientName = p.left;
@@ -181,11 +181,10 @@ public class ServerConnection implements BlockingListener, Player {
         );
     }
 
-    public void sendWorldSwitch(EnvironmentClass world, float countDown) {
+    public void sendWorldSwitch(EnvironmentClass world, float countDown, int maxRounds) {
         sendMessage(WORLD_SWITCH, () ->
-                protocol.worldSwitchSend(world, countDown)
+                protocol.worldSwitchSend(world, countDown, maxRounds)
         );
-        controls.disableControl(server.getTimer().time() + countDown);
     }
 
     public void sendPowerupUpdate(PowerupEntity powerup, float collectionTime, boolean isCollected) {

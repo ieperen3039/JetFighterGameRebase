@@ -319,14 +319,16 @@ public class JetFighterProtocol {
         progress.setState(pInd, checkPointNr, roundNr);
     }
 
-    public void worldSwitchSend(EnvironmentClass world, float countDown) throws IOException {
+    public void worldSwitchSend(EnvironmentClass world, float countDown, int maxRounds) throws IOException {
         output.writeFloat(countDown);
         output.write(world.ordinal());
+        output.writeInt(maxRounds);
     }
 
-    public void worldSwitchRead(EnvironmentManager game, CountDownTimer counter, float currentTime) throws IOException {
+    public void worldSwitchRead(EnvironmentManager game, CountDownTimer counter, float currentTime, RaceProgress raceProgress) throws IOException {
         counter.setTime(currentTime + input.readFloat());
         EnvironmentClass world = EnvironmentClass.get(input.read());
+        raceProgress.setMaxRounds(input.readInt());
         game.switchTo(world);
     }
 

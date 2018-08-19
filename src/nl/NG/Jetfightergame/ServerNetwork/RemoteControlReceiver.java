@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
 import nl.NG.Jetfightergame.Controllers.Controller;
-import nl.NG.Jetfightergame.Engine.GameTimer;
 
 /**
  * Listens to the input stream, executing the controls as soon as they are received
@@ -10,19 +9,10 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
  */
 public class RemoteControlReceiver implements Controller {
 
-    private final GameTimer timer;
     private float throttle, pitch, yaw, roll;
     private boolean primary, secondary;
 
-    private float controlDisabledUntil = 0;
-    private boolean disabled = false;
-
-    RemoteControlReceiver(GameTimer timer) {
-        this.timer = timer;
-    }
-
     public void receive(MessageType type, int value) {
-
         // single assignment, so technically thread-safe
         switch (type) {
             case THROTTLE:
@@ -72,52 +62,40 @@ public class RemoteControlReceiver implements Controller {
 
     @Override
     public void update() {
-        disabled = (controlDisabledUntil > timer.time());
     }
 
     @Override
     public float throttle() {
-        if (disabled) return 0;
         return throttle;
     }
 
     @Override
     public float pitch() {
-        if (disabled) return 0;
         return pitch;
     }
 
     @Override
     public float yaw() {
-        if (disabled) return 0;
         return yaw;
     }
 
     @Override
     public float roll() {
-        if (disabled) return 0;
         return roll;
     }
 
     @Override
     public boolean primaryFire() {
-        if (disabled) return false;
         return primary;
     }
 
     @Override
     public boolean secondaryFire() {
-        if (disabled) return false;
         return secondary;
     }
 
     @Override
     public boolean isActiveController() {
         return false;
-    }
-
-    public void disableControl(float disableUntil) {
-        disabled = true;
-        this.controlDisabledUntil = disableUntil;
     }
 }

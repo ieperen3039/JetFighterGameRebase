@@ -10,11 +10,13 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +28,7 @@ public class RaceProgress {
     private static final float CAPACITY_GROW = 1.2f;
     /** for each player, what its last passed checkpoint is */
     private int[] progressCheckpoint;
+    private List<Checkpoint> allPoints;
 
     private final RaceChangeListener changeListener;
     /** for each player its current round number */
@@ -38,8 +41,12 @@ public class RaceProgress {
     private int nOfPlayers = 0;
     /** number of spots available before re-allocation of arrays is required */
     private int capacity;
+
     private int thisPlayer = -1;
     private Integer[] raceOrder;
+    private int maxRounds = 0;
+
+    private List<Integer> winners;
 
     /**
      * creates a RaceProgress instance without listener and without players
@@ -62,7 +69,9 @@ public class RaceProgress {
         this.changeListener = changeListener;
         this.players = Arrays.copyOf(players, capacity);
         this.nOfPlayers = Math.min(players.length, capacity);
+        this.allPoints = new ArrayList<>();
         reset();
+
     }
 
     /**
@@ -77,8 +86,10 @@ public class RaceProgress {
         progressRound = new int[capacity];
         Arrays.fill(progressRound, -1);
         Arrays.fill(progressCheckpoint, -1);
+        winners = new ArrayList<>(getNumPlayers());
 
         nOfCheckpoints = 0;
+        allPoints.clear();
     }
 
     private void setToIndex(Integer[] raceOrder) {
@@ -91,9 +102,8 @@ public class RaceProgress {
         this.thisPlayer = thisPlayer;
     }
 
-    public boolean thisPlayerHasFinished() {
-        if (thisPlayer == -1) return false;
-        else return progressCheckpoint[thisPlayer] == nOfCheckpoints;
+    public void setMaxRounds(int maxRounds) {
+        this.maxRounds = maxRounds;
     }
 
     /**
@@ -115,7 +125,9 @@ public class RaceProgress {
     }
 
     private void makeRoomFor(int index) {
-        if (index > capacity) {
+        if (index < 0) throw new IllegalArgumentException("negative index: " + index);
+
+        if (index >= capacity) {
             capacity = (int) (index * CAPACITY_GROW) + 1;
             progressRound = Arrays.copyOf(progressRound, capacity);
             progressCheckpoint = Arrays.copyOf(progressCheckpoint, capacity);
@@ -133,13 +145,25 @@ public class RaceProgress {
             raceOrder[newInd] = newInd;
         }
 
+        Logger.printOnline(() -> getState(pIndex).toString());
+
         players[pIndex] = newPlayer;
     }
 
     public Checkpoint addCheckpoint(PosVector position, DirVector direction, float radius, Color4f color) {
-        return new Checkpoint(
+        Checkpoint cp = new Checkpoint(
                 nOfCheckpoints++, position, direction, radius, color, ClientSettings.CHECKPOINT_ACTIVE_COLOR
         );
+        allPoints.add(cp);
+        return cp;
+    }
+
+    public Checkpoint addRoadpoint(PosVector position, DirVector direction, float radius) {
+        RoadPoint rp = new RoadPoint(
+                nOfCheckpoints++, position, direction, radius
+        );
+        allPoints.add(rp);
+        return rp;
     }
 
     /** returns the index of the player with the given name, or -1 if no such player is registered */
@@ -163,11 +187,20 @@ public class RaceProgress {
     }
 
     /** get the next checkpoint of the player with the given identity, or -1 if there are no checkpoints */
-    private int nextCheckpointOf(int pInd) {
+    private int nextPointOf(int pInd) {
         if (nOfCheckpoints == 0) return -1;
+        if (pInd > players.length) throw new IllegalArgumentException("That player is not part of the race");
         int currCh = progressCheckpoint[pInd];
-        if (currCh == nOfCheckpoints) return -1;
+        if (currCh == nOfCheckpoints) return nOfCheckpoints;
+
         return (currCh + 1) % nOfCheckpoints;
+    }
+
+    public Checkpoint nextPointEntityOf(int pInd, int lookAhead) {
+        int index = nextPointOf(pInd);
+        if (index < 0) return null;
+        index = (index + lookAhead) % nOfCheckpoints;
+        return allPoints.get(index);
     }
 
     /** set the checkpoint of the given player one up */
@@ -177,7 +210,13 @@ public class RaceProgress {
         if (nextCh == 0) {
             progressRound[pInd]++;
         }
-        changeListener.playerCheckpointUpdate(pInd, nextCh, progressRound[pInd]);
+
+        int round = progressRound[pInd];
+        if (nextCh == 0 && round == maxRounds) {
+            winners.add(pInd);
+        }
+
+        changeListener.playerCheckpointUpdate(pInd, nextCh, round);
     }
 
     /**
@@ -189,6 +228,10 @@ public class RaceProgress {
     public void setState(int pInd, int chProg, int roundNr) {
         progressCheckpoint[pInd] = chProg;
         progressRound[pInd] = roundNr;
+
+        if (chProg == 0 && roundNr == maxRounds) {
+            winners.add(pInd);
+        }
     }
 
     public Pair<Integer, Integer> getState(int pInd) {
@@ -208,10 +251,14 @@ public class RaceProgress {
      * @return an array with on position i the player on position i in the race.
      */
     public List<Integer> raceOrder() {
-        Toolbox.insertionSort(raceOrder, pInd ->
-                -(float) (progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd])
-        );
+        Toolbox.insertionSort(raceOrder, this::playerOrdering);
         return Collections.unmodifiableList(Arrays.asList(raceOrder));
+    }
+
+    private Float playerOrdering(Integer pInd) {
+        int pos = winners.indexOf(pInd);
+        if (pos > 0) return (float) pos;
+        return -(float) (progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd]);
     }
 
     /**
@@ -230,18 +277,26 @@ public class RaceProgress {
         return nOfPlayers;
     }
 
+    public boolean thisPlayerHasFinished() {
+        return winners.contains(thisPlayer);
+    }
+
+    public boolean hasFinished(int pInd) {
+        return winners.contains(pInd);
+    }
+
     /**
      * @author Geert van Ieperen created on 28-6-2018.
      */
     public class Checkpoint extends StaticEntity implements Spectral {
-        private final int checkpointNumber;
         private final PosVector position;
         private final float radius;
         private Color4f activeColor;
+        final int checkpointNumber;
 
-        private Checkpoint(int checkpointNumber, PosVector position, DirVector direction, float radius, Color4f color, Color4f activeColor) {
+        private Checkpoint(int pointNumber, PosVector position, DirVector direction, float radius, Color4f color, Color4f activeColor) {
             super(GeneralShapes.CHECKPOINTRING, Material.SILVER, color, position, radius, Toolbox.xTo(direction));
-            this.checkpointNumber = checkpointNumber;
+            this.checkpointNumber = pointNumber;
             this.position = position;
             this.radius = radius;
             this.activeColor = activeColor;
@@ -256,18 +311,33 @@ public class RaceProgress {
                     return;
                 }
 
-                int nextCh = nextCheckpointOf(pInd);
+                int nextCh = nextCheckpoint(pInd);
                 // check for passing the right checkpoint
                 if (nextCh == checkpointNumber) {
-                    update(pInd, nextCh);
+                    update(pInd, checkpointNumber);
                 }
             }
+        }
+
+        protected int nextCheckpoint(int pInd) {
+            int i = nextPointOf(pInd);
+            if (i < 0) return -1;
+            for (; i < allPoints.size(); i++) {
+                Checkpoint ch = allPoints.get(i);
+                if (ch.visible()) return i;
+            }
+
+            return 0;
+        }
+
+        protected boolean visible() {
+            return true;
         }
 
         @Override
         public void preDraw(GL2 gl) {
             Color4f color = this.color;
-            if (thisPlayer != -1 && nextCheckpointOf(thisPlayer) == checkpointNumber) {
+            if (thisPlayer != -1 && nextCheckpoint(thisPlayer) == checkpointNumber) {
                 color = activeColor;
             }
 
@@ -282,6 +352,30 @@ public class RaceProgress {
         @Override
         public PosVector getExpectedMiddle() {
             return position;
+        }
+    }
+
+    private class RoadPoint extends Checkpoint {
+        public RoadPoint(int pointNumber, PosVector position, DirVector direction, float radius) {
+            super(pointNumber, position, direction, radius, Color4f.INVISIBLE, Color4f.WHITE);
+        }
+
+        @Override
+        protected int nextCheckpoint(int pInd) {
+            return nextPointOf(pInd);
+        }
+
+        @Override
+        public void preDraw(GL2 gl) {
+        }
+
+        @Override
+        public void draw(GL2 gl) {
+        }
+
+        @Override
+        protected boolean visible() {
+            return false;
         }
     }
 

@@ -41,7 +41,7 @@ public class ActionButtonHandler implements TrackerKeyListener {
             client.getWindow().toggleFullScreen();
 
         } else if (key == PRINT_SCREEN) {
-            SimpleDateFormat ft = new SimpleDateFormat("yy-mm-dd_hh_mm_ss");
+            SimpleDateFormat ft = new SimpleDateFormat("mm_dd-hh_mm_ss");
             final String name = "Screenshot_" + ft.format(new Date());
 
             boolean success = client.getWindow().printScreen(name);

@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
@@ -24,14 +25,14 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 11-8-2018.
  */
 public class JetSpitsy extends AbstractJet {
-    public static final float THROTTLE_POWER = 800f;
+    public static final float THROTTLE_POWER = 1000f;
     public static final float BRAKE_POWER = 3f; // air resist is multiplied with this
     public static final float MASS = 40f;
     public static final Material MATERIAL = Material.SILVER;
     public static final float YAW_POWER = 1.5f;
     public static final float PITCH_POWER = 2.5f;
     public static final float ROLL_POWER = 3.5f;
-    public static final float AIR_RESISTANCE_COEFFICIENT = 0.5f;
+    public static final float AIR_RESISTANCE_COEFFICIENT = 0.5f / ServerSettings.GENERAL_SPEED_FACTOR;
     public static final float ROTATION_REDUCTION_FACTOR = 0.7f;
     public static final float Y_REDUCTION = 0.3f;
     public static final float Z_REDUCTION = 0.7f;

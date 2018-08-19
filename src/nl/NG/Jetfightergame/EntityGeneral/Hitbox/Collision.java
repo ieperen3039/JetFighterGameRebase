@@ -6,8 +6,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
- * @author Geert van Ieperen
- *         created on 7-11-2017.
+ * @author Geert van Ieperen created on 7-11-2017.
  */
 public class Collision implements Comparable<Collision> {
     private final DirVector shapeLocalNormal;
@@ -18,14 +17,14 @@ public class Collision implements Comparable<Collision> {
     private DirVector normal;
     private MovingEntity source;
 
-    public Collision(){
+    public Collision() {
         this(1, DirVector.zeroVector(), PosVector.zeroVector());
     }
 
     /**
      * @param timeScalar corrected scalar of the direction vector
-     * @param normal the normal of the hit plane
-     * @param hitPos local-space position of collision
+     * @param normal     the normal of the hit plane
+     * @param hitPos     local-space position of collision
      */
     public Collision(float timeScalar, DirVector normal, PosVector hitPos) {
         this.timeScalar = timeScalar;
@@ -35,7 +34,8 @@ public class Collision implements Comparable<Collision> {
 
     /**
      * creates a copy of the collision
-     * @throws NullPointerException if {@link #convertToGlobal(MatrixStack, MovingEntity)} has not been called on the source collision
+     * @throws NullPointerException if {@link #convertToGlobal(MatrixStack, MovingEntity)} has not been called on the
+     *                              source collision
      */
     public Collision(Collision cause, MovingEntity source) {
         this.hitPos = cause.hitPos;
@@ -48,7 +48,7 @@ public class Collision implements Comparable<Collision> {
 
     /**
      * convert the values of the collision to global values, by providing the used matrix conversion.
-     * @param ms the matrix state as how this collision was created.
+     * @param ms     the matrix state as how this collision was created.
      * @param source the entity causing the collision
      */
     public void convertToGlobal(MatrixStack ms, MovingEntity source) {
@@ -58,9 +58,14 @@ public class Collision implements Comparable<Collision> {
         normal.normalize();
     }
 
+    /**
+     * @param c another collision
+     * @return a positive integer if this is later then c, a negative integer if this is earlier than c, or 0 if they
+     *         are at the same moment
+     */
     @Override
     public int compareTo(Collision c) {
-        return (c == null) ? 0 : Double.compare(c.timeScalar, timeScalar);
+        return (c == null) ? 1 : Float.compare(timeScalar, c.timeScalar);
     }
 
     /**

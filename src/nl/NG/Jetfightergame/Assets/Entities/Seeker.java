@@ -56,7 +56,7 @@ public class Seeker extends AbstractProjectile {
         );
         if (tgt != null) {
             this.target = tgt;
-            setController(new RocketAI(this, tgt, 5f));
+            setController(new RocketAI(this, tgt, 5f, 0.1f));
         }
 
         trail = new BoosterLine(

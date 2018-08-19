@@ -33,7 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
-import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.HunterAI;
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.AIController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.FIRE_PARTICLE_SIZE;
 
@@ -55,27 +55,28 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final SubControl input;
     private RaceProgress raceProgress;
     private final CountDownTimer counter;
-    private boolean knowHasFinished = false;
+    private boolean controlTeardown = false;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
         this.name = name;
-        this.input = new SubControl(HunterAI);
         this.raceProgress = new RaceProgress();
+        this.input = new SubControl(AIController, raceProgress);
         this.game = new EnvironmentManager(null, this, raceProgress, false, false);
 
         this.protocol = new JetFighterProtocol(serverIn, serverOut);
         this.gameTimer = new GameTimer();
         protocol.syncTimerTarget(gameTimer);
         this.counter = new CountDownTimer(0, gameTimer);
-        protocol.worldSwitchRead(game, counter, gameTimer.time());
+        protocol.worldSwitchRead(game, counter, gameTimer.time(), raceProgress);
 
         Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
         this.isAdmin = pair.right;
         this.jet = pair.left;
         game.addEntity(jet);
+        Logger.printOnline(() -> jet.interpolatedPosition() + " | " + jet.interpolatedForward());
     }
 
     @Override
@@ -141,7 +142,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
             case RACE_PROGRESS:
                 protocol.raceProgressRead(raceProgress);
 
-                if (raceProgress.thisPlayerHasFinished() && !knowHasFinished) {
+                if (raceProgress.thisPlayerHasFinished() && !controlTeardown) {
+                    controlTeardown = true;
                     input.disable();
                 }
 
@@ -164,8 +166,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case WORLD_SWITCH:
-                protocol.worldSwitchRead(game, counter, gameTimer.time());
+                protocol.worldSwitchRead(game, counter, gameTimer.time(), raceProgress);
                 game.addEntity(jet);
+                controlTeardown = false;
                 break;
 
             case SHUTDOWN_GAME:
@@ -349,6 +352,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     public void pause() {
         if (isAdmin) {
             sendCommand(PAUSE_GAME);
+        } else {
+            setControl(false);
         }
         super.pause();
     }
@@ -357,6 +362,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     public void unPause() {
         if (isAdmin) {
             sendCommand(UNPAUSE_GAME);
+        } else {
+            setControl(controlTeardown);
         }
         super.unPause();
     }
@@ -365,8 +372,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         private final ControllerImpl secondary;
         ControllerImpl active;
 
-        public SubControl(ControllerImpl secondary) {
-            super(null, ClientConnection.this);
+        public SubControl(ControllerImpl secondary, RaceProgress raceProgress) {
+            super(null, ClientConnection.this, raceProgress);
             switchTo(0);
             this.secondary = secondary;
         }

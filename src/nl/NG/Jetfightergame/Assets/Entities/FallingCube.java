@@ -33,7 +33,7 @@ public class FallingCube extends MovingEntity {
      * test entity cube of size 2*2*2 and mass 10.
      */
     public FallingCube(int id, PosVector position) {
-        this(id, Material.SILVER, 10f, 1f, position, DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null);
+        this(id, Material.SILVER, 100f, 1f, position, DirVector.zeroVector(), new Quaternionf(), new GameTimer(), null);
     }
 
     /**

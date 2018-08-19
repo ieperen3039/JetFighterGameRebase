@@ -230,6 +230,11 @@ public abstract class GameState implements Environment {
         gravitySources.add(new GravitySource(position, magnitude, endTime));
     }
 
+    @Override
+    public PosVector rayTrace(PosVector from, PosVector to) {
+        return physicsEngine == null ? to : physicsEngine.rayTrace(from, to);
+    }
+
     /**
      * a method that returns the net force on entity e, taking all gravtiy forces into account
      * @param e the entity

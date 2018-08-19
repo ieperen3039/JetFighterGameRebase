@@ -170,5 +170,10 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     public String toString() {
         return instance.toString();
     }
+
+    @Override
+    public PosVector rayTrace(PosVector from, PosVector to) {
+        return instance.rayTrace(from, to);
+    }
 }
 

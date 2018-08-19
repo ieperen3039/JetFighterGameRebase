@@ -5,6 +5,7 @@ import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 /**
@@ -14,7 +15,7 @@ public class HunterAI extends RocketAI {
     private static final float SHOOT_ACCURACY = 0.05f;
 
     private final AbstractJet jet;
-    private final MovingEntity actualTarget;
+    private final Touchable actualTarget;
     private final EntityMapping entities;
 
     /**
@@ -23,10 +24,10 @@ public class HunterAI extends RocketAI {
      * @param target          the target entity that this projectile tries to hunt down
      * @param projectileSpeed the assumed (and preferably over-estimated) maximum speed of the given jet
      */
-    public HunterAI(AbstractJet jet, MovingEntity target, EntityMapping entities, float projectileSpeed) {
+    public HunterAI(AbstractJet jet, Touchable target, EntityMapping entities, float projectileSpeed) {
         super(jet, target, projectileSpeed, 10f);
         this.jet = jet;
-        actualTarget = target;
+        this.actualTarget = target;
         this.entities = entities;
     }
 
@@ -34,42 +35,46 @@ public class HunterAI extends RocketAI {
     public void update() {
         PowerupType currPop = jet.getCurrentPowerup();
 
-        if (!target.equals(actualTarget) && !isNotAssault(currPop)) {
+        if (target == null) {
+            target = getClosestPowerup(actualTarget);
+
+        } else if (!target.equals(actualTarget) && !isNotAssault(currPop)) {
             this.target = actualTarget;
 
         } else if (target.equals(actualTarget) && isNotAssault(currPop)) {
-            this.target = getClosestPowerup();
+            this.target = getClosestPowerup(actualTarget);
         }
 
         if (target instanceof PowerupEntity) {
             PowerupEntity pop = (PowerupEntity) target;
-            if (pop.isCollected()) this.target = getClosestPowerup();
+            if (pop.isCollected()) this.target = getClosestPowerup(actualTarget);
         }
 
         super.update();
     }
 
-    private MovingEntity getClosestPowerup() {
+    private Touchable getClosestPowerup(Touchable defaultTarget) {
         float min = Float.MAX_VALUE;
-        MovingEntity thing = actualTarget;
+        Touchable thing = defaultTarget;
         PosVector jetPos = jet.getPosition();
+        PowerupType currPop = jet.getCurrentPowerup();
 
         for (MovingEntity entity : entities) {
             if (entity instanceof PowerupEntity) {
                 PowerupEntity pop = (PowerupEntity) entity;
-
                 if (pop.isCollected()) continue;
-                PowerupType newPop = jet.getCurrentPowerup().with(pop.getPowerupType());
-                if (newPop == PowerupType.NONE) continue;
 
-                float dist = entity.getPosition().sub(jetPos).lengthSquared();
+                PowerupType newPop = currPop.with(pop.getPowerupType());
+                if (newPop == PowerupType.NONE || newPop == currPop) continue;
 
+                float dist = entity.getPosition().distanceSquared(jetPos);
                 if (dist < min) {
                     min = dist;
                     thing = entity;
                 }
             }
         }
+
         return thing;
     }
 

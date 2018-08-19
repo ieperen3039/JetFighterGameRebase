@@ -4,6 +4,7 @@ import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
+import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.Collection;
 
@@ -54,6 +55,13 @@ public interface EntityManagement {
     void cleanUp();
 
     void removeEntity(MovingEntity entity);
+
+    /**
+     * @param from start position
+     * @param to   end position
+     * @return the position that can be reached along the line of from - to without hitting anything
+     */
+    PosVector rayTrace(PosVector from, PosVector to);
 
     /**
      * @author Geert van Ieperen created on 26-4-2018.

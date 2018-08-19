@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.*;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.DEBUG_SCREEN;
 
 /**
  * @author Geert van Ieperen created on 24-12-2017.
@@ -59,6 +60,8 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
 
     @Override
     public void accept(ScreenOverlay.Painter hud) {
+        if (DEBUG_SCREEN) return;
+
         deltaTime = timer.time() - lastUpdateTime;
         lastUpdateTime = timer.time();
         RaceProgress race = raceSupplier.get();
@@ -128,21 +131,25 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
             Pair<Integer, Integer> state = race.getState(pInd);
             int roundProgress = (state.right * 100) / race.getNumCheckpoints();
             Color4f color = player.equals(myself) ? Color4f.YELLOW : HUDStyleSettings.HUD_COLOR;
+            float textMargin = dimensions.y / 2;
+
+            String text = race.hasFinished(pInd) ?
+                    "Finished" :
+                    String.format("round %d %5s", state.left + 1, "(" + roundProgress + "%)");
 
             hud.roundedRectangle(
                     (int) pos.x, (int) pos.y, (int) dimensions.x, (int) dimensions.y,
                     20, BOX_FILL_COLOR, color, HUD_STROKE_WIDTH
             );
-            float textMargin = dimensions.y;
             hud.text(
-                    (int) (pos.x + textMargin / 2), (int) (pos.y + textMargin / 2),
+                    (int) (pos.x + textMargin), (int) (pos.y + textMargin),
                     TEXT_SIZE, ScreenOverlay.Font.LUCIDA_CONSOLE, NanoVG.NVG_ALIGN_MIDDLE, color,
                     player.playerName()
             );
             hud.text(
-                    (int) ((pos.x + dimensions.x) - textMargin / 2), (int) (pos.y + textMargin / 2),
-                    TEXT_SIZE, ScreenOverlay.Font.LUCIDA_CONSOLE, NanoVG.NVG_ALIGN_MIDDLE | NanoVG.NVG_ALIGN_RIGHT, color,
-                    String.format("round %d %5s", state.left + 1, "(" + roundProgress + "%)")
+                    (int) ((pos.x + dimensions.x) - textMargin), (int) (pos.y + textMargin),
+                    TEXT_SIZE, ScreenOverlay.Font.LUCIDA_CONSOLE,
+                    NanoVG.NVG_ALIGN_MIDDLE | NanoVG.NVG_ALIGN_RIGHT, color, text
             );
         }
     }

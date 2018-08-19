@@ -277,4 +277,23 @@ public final class Toolbox {
         } catch (InterruptedException ignored) {
         }
     }
+
+    public static <Type> int binarySearch(Type[] array, Function<Type, Float> map, float value) {
+        int low = 0;
+        int high = array.length - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            Type e = array[mid];
+
+            float cmp = map.apply(e);
+            if (cmp < value)
+                low = mid + 1;
+            else if (cmp > value)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found.
+    }
 }

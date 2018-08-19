@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ArtificalIntelligence;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector3f;
@@ -11,15 +12,15 @@ import org.joml.Vector3f;
  * @author Geert van Ieperen. Created on 21-7-2018.
  */
 public class RocketAI implements Controller {
-    private static final float ROLL_MULTIPLIER = 0.1f;
-    private static final float PITCH_MODIFIER = 2f;
-    private static final float YAW_MULTIPLIER = 2f;
+    private final float rollFactor;
+    private final float pitchFactor;
+    private final float yawFactor;
     private static final float THROTTLE_DOT_IGNORE = 0.4f;
     private static final float THROTTLE_MULTIPLIER = 1 / (1 - THROTTLE_DOT_IGNORE);
 
     public final MovingEntity projectile;
 
-    protected MovingEntity target;
+    protected Touchable target;
     private final float pSpeed;
     private PosVector projectilePos;
     private PosVector targetPos;
@@ -36,9 +37,10 @@ public class RocketAI implements Controller {
      * @param projectile      the projectile that is controlled by this controller
      * @param target          the target entity that this projectile tries to hit
      * @param projectileSpeed the assumed (and preferably over-estimated) maximum speed of the given projectile
-     * @param explodeDistance only if the controlled entity is within a range of explodeDistance, primaryFire() will return true
+     * @param explodeDistance only if the controlled entity is within a range of explodeDistance, primaryFire() will
+     *                        return true
      */
-    public RocketAI(MovingEntity projectile, MovingEntity target, float projectileSpeed, float explodeDistance) {
+    public RocketAI(MovingEntity projectile, Touchable target, float projectileSpeed, float explodeDistance) {
         this.projectile = projectile;
         this.target = target;
         this.pSpeed = projectileSpeed;
@@ -46,23 +48,31 @@ public class RocketAI implements Controller {
         doExtrapolate = true;
         projectilePos = projectile.getPosition();
         targetPos = new PosVector();
+        rollFactor = 0.1f;
+        pitchFactor = 2f;
+        yawFactor = 2f;
     }
 
     /**
      * a controller that sends the given projectile to the given target
-     * @param projectile      the projectile that is controlled by this controller
-     * @param target          the target entity that this projectile tries to hit
-     * @param explodeDistance only if the controlled entity is within a range of explodeDistance, primaryFire() will
-     *                        return true
+     * @param projectile the projectile that is controlled by this controller
+     * @param target     the target entity that this projectile tries to hit
+     * @param fireDist   only if the controlled entity is within a range of fireDist, primaryFire() will return true
+     * @param rollFac    the roll output is multiplied with this factor
+     * @param pitchFac   the pitch output is multiplied with this factor
+     * @param yawFac     the yaw output is multiplied with this factor
      */
-    public RocketAI(MovingEntity projectile, MovingEntity target, float explodeDistance) {
+    public RocketAI(MovingEntity projectile, Touchable target, float fireDist, float rollFac, float pitchFac, float yawFac) {
         this.projectile = projectile;
         this.target = target;
         this.pSpeed = 0;
-        this.explodeDistSq = explodeDistance * explodeDistance;
+        this.explodeDistSq = fireDist * fireDist;
         doExtrapolate = false;
         projectilePos = projectile.getPosition();
         targetPos = new PosVector();
+        rollFactor = rollFac;
+        pitchFactor = pitchFac;
+        yawFactor = yawFac;
     }
 
     @Override
@@ -72,7 +82,8 @@ public class RocketAI implements Controller {
         projectilePos = projectile.getPosition();
         PosVector tPos = target.getExpectedMiddle();
 
-        if (doExtrapolate && projectilePos.distanceSquared(tPos) > (0.01f * pSpeed * pSpeed)) {
+        if (doExtrapolate && target instanceof MovingEntity && !arrivesWithin(tPos, 0.1f)) {
+            MovingEntity target = (MovingEntity) this.target;
             targetPos = extrapolateTarget(target.getVelocity(), tPos, projectilePos, pSpeed);
 
         } else {
@@ -88,6 +99,10 @@ public class RocketAI implements Controller {
         xVec.normalize();
         yVec.normalize();
         zVec.normalize();
+    }
+
+    private boolean arrivesWithin(PosVector tPos, float time) {
+        return projectilePos.distanceSquared(tPos) < (time * pSpeed * pSpeed);
     }
 
     /**
@@ -134,20 +149,20 @@ public class RocketAI implements Controller {
     @Override
     public float pitch() {
         float dot = zVec.dot(vecToTarget);
-        return bound(-dot * PITCH_MODIFIER, -1, 1);
+        return bound(-dot * pitchFactor, -1, 1);
     }
 
     @Override
     public float yaw() {
         float dot = yVec.dot(vecToTarget);
-        return bound(dot * YAW_MULTIPLIER, -1, 1);
+        return bound(dot * yawFactor, -1, 1);
     }
 
     @Override
     public float roll() {
         DirVector cross = vecToTarget.cross(xVec, new DirVector());
         float dot = zVec.dot(cross);
-        return bound(dot * ROLL_MULTIPLIER, -1, 1);
+        return bound(dot * rollFactor, -1, 1);
     }
 
 

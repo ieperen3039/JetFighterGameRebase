@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
+import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothVector;
 import nl.NG.Jetfightergame.Tools.Tracked.SmoothTrackedVector;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -12,7 +13,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public class FollowingCamera implements Camera {
     /** camera settings */
-    private static final DirVector eyeRelative = new DirVector(-20, 0, 3);
+    private static final DirVector eyeRelative = new DirVector(-200, 0, 10);
     private static final double EYE_PRESERVE = 1.0E-5;
     private static final double ORIENT_PRESERVE = 1.0E-4;
 
@@ -23,25 +24,32 @@ public class FollowingCamera implements Camera {
     private final SmoothTrackedVector<DirVector> vecToFocus;
     private final SmoothTrackedVector<DirVector> up;
     private final MovingEntity target;
+    private final Environment gameState;
 
-    public FollowingCamera(MovingEntity target) {
-        this(jetPosition(eyeRelative, target).toPosVector(), target, jetPosition(DirVector.zVector(), target).toDirVector(), target.getVelocity());
+    public FollowingCamera(MovingEntity target, Environment gameState) {
+        this(jetPosition(eyeRelative, target).toPosVector(), target, jetPosition(DirVector.zVector(), target).toDirVector(), target.getVelocity(), gameState);
     }
 
-    public FollowingCamera(PosVector eye, MovingEntity playerJet, DirVector up, DirVector vecToFocus) {
+    public FollowingCamera(PosVector eye, MovingEntity playerJet, DirVector up, DirVector vecToFocus, Environment gameState) {
         this(
                 new ExponentialSmoothVector<>(eye, EYE_PRESERVE),
                 new ExponentialSmoothVector<>(vecToFocus, ORIENT_PRESERVE),
                 new ExponentialSmoothVector<>(up, ORIENT_PRESERVE),
-                playerJet
+                playerJet, gameState
         );
     }
 
-    public FollowingCamera(SmoothTrackedVector<PosVector> eye, SmoothTrackedVector<DirVector> vecToFocus, SmoothTrackedVector<DirVector> up, MovingEntity target) {
+    public FollowingCamera(
+            SmoothTrackedVector<PosVector> eye,
+            SmoothTrackedVector<DirVector> vecToFocus,
+            SmoothTrackedVector<DirVector> up,
+            MovingEntity target, Environment gameState
+    ) {
         this.eye = eye;
         this.vecToFocus = vecToFocus;
         this.up = up;
         this.target = target;
+        this.gameState = gameState;
     }
 
     /**
@@ -66,7 +74,7 @@ public class FollowingCamera implements Camera {
         final DirVector targetFocus;
 
         if (TemporalEntity.isOverdue(target)) {
-            targetFocus = new DirVector(eye.current());
+            targetFocus = new DirVector(eye.current()); // look at (0, 0, 0)
             targetFocus.negate();
         } else {
             targetFocus = target.relativeInterpolatedDirection(DirVector.xVector());
@@ -84,12 +92,13 @@ public class FollowingCamera implements Camera {
 
     @Override
     public PosVector getEye() {
-        return eye.current();
+        PosVector pos = target.interpolatedPosition();
+        return gameState.rayTrace(pos, eye.current());
     }
 
     @Override
     public PosVector getFocus() {
-        return eye.current().add(vecToFocus.current(), new PosVector());
+        return getEye().add(vectorToFocus(), new PosVector());
     }
 
     @Override

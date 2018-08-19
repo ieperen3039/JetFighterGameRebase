@@ -12,7 +12,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
-import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -98,32 +97,6 @@ public abstract class MovingEntity implements Touchable {
         tempForces = new PairList<>();
         spawnTime = gameTimer.time();
         resetCache(spawnTime);
-    }
-
-    /**
-     * move two entities away from each other
-     * @param left      one entity, which has collided with right
-     * @param right     another entity, which has collided with left
-     * @param deltaTime time difference of this gameloop
-     */
-    public static void entityCollision(MovingEntity left, MovingEntity right, float deltaTime) {
-        DirVector leftToRight = left.getVecTo(right).normalize(new DirVector());
-        DirVector rightToLeft = leftToRight.negate(new DirVector());
-
-        left.collideWith(right, deltaTime, rightToLeft);
-        right.collideWith(left, deltaTime, leftToRight);
-    }
-
-    public DirVector getVecTo(MovingEntity other) {
-        return position.to(other.position, new DirVector());
-    }
-
-    /** @see #entityCollision(MovingEntity, MovingEntity, float) */
-    private void collideWith(MovingEntity other, float deltaTime, DirVector otherToThis) {
-        float dotProduct = extraVelocity.sub(other.extraVelocity, new DirVector()).dot(otherToThis);
-        float scalarLeft = (2 * other.mass / (mass + other.mass)) * (dotProduct / otherToThis.lengthSquared());
-        extraVelocity.sub(otherToThis.mul(scalarLeft));
-        recalculateMovement(deltaTime);
     }
 
     /**
@@ -227,7 +200,7 @@ public abstract class MovingEntity implements Touchable {
         Collision best = null;
         PairList<PosVector, PosVector> hitPoints = getHitpoints();
         for (int i = 0; i < hitPoints.size(); i++) {
-            Collision newCollision = getPointCollision(hitPoints.left(i), hitPoints.right(i), other, deltaTime);
+            Collision newCollision = getPointCollision(this, other, hitPoints.left(i), hitPoints.right(i), deltaTime);
             if (newCollision != null && (best == null || newCollision.compareTo(best) < 0)) {
                 best = newCollision;
             }
@@ -250,47 +223,55 @@ public abstract class MovingEntity implements Touchable {
     /**
      * returns the collisions caused by {@code point} in the given reference frame. the returned collision is caused by
      * the first plane of #other, as it is hit by #point
-     * @param lastPosition the position of this point at the last game-loop
-     * @param next         the expected position of this point at the current game loop
-     * @param other        another object
+     * @param source the entity causing the collision
+     * @param target        the entity hit by source
+     * @param startPosition the position of this point at the last game-loop
+     * @param endPosition         the expected position of this point at the current game loop
      * @param deltaTime    time-difference of this loop
      * @return the first collision caused by this point on the other object
      */
-    private Collision getPointCollision(PosVector lastPosition, PosVector next, Touchable other, float deltaTime) {
-        Extreme<Collision> firstHit = new Extreme<>(false);
+    public static Collision getPointCollision(
+            MovingEntity source, Touchable target,
+            PosVector startPosition, PosVector endPosition,
+            float deltaTime
+    ) {
+        Collision[] firstHit = new Collision[1];
 
         // copy, because we may want to change it
-        PosVector previous = new PosVector(lastPosition);
+        PosVector startPosCopy = new PosVector(startPosition);
 
         // collect the collisions
         final ShadowMatrix sm = new ShadowMatrix();
         final Consumer<Shape> addCollisions = shape -> {
             // map point to local space
-            PosVector startPoint = sm.mapToLocal(previous);
-            PosVector endPoint = sm.mapToLocal(next);
+            PosVector startPoint = sm.mapToLocal(startPosCopy);
+            PosVector endPoint = sm.mapToLocal(endPosition);
             DirVector direction = startPoint.to(endPoint, new DirVector());
 
             // search hitpoint, add it when found
             Collision newCrash = shape.getCollision(startPoint, direction, endPoint);
             if (newCrash != null) {
-                newCrash.convertToGlobal(sm, this);
-                firstHit.check(newCrash);
+                newCrash.convertToGlobal(sm, source);
+                Collision min = firstHit[0];
+                if (min == null || newCrash.compareTo(min) < 0) {
+                    firstHit[0] = newCrash;
+                }
             }
         };
 
-        if (other instanceof MovingEntity) {
-            final MovingEntity moving = (MovingEntity) other;
+        if (target instanceof MovingEntity) {
+            final MovingEntity moving = (MovingEntity) target;
 
             // consider the movement of the plane, by assuming relative movement and linear interpolation.
             final DirVector velocity = moving.getVelocity();
-            if (velocity.isScalable()) previous.add(velocity.scale(deltaTime));
+            if (velocity.isScalable()) startPosCopy.add(velocity.scale(deltaTime));
 
             moving.toLocalSpace(sm, () -> moving.create(sm, addCollisions), true);
         } else {
-            other.toLocalSpace(sm, () -> other.create(sm, addCollisions));
+            target.toLocalSpace(sm, () -> target.create(sm, addCollisions));
         }
 
-        return firstHit.get();
+        return firstHit[0];
     }
 
     protected PairList<PosVector, PosVector> calculateHitpointMovement() {
@@ -475,9 +456,41 @@ public abstract class MovingEntity implements Touchable {
         return leftSpeed * leftSpeed * mass;
     }
 
-    protected DirVector velocityAtRenderTime() {
-        positionInterpolator.updateTime(renderTime());
-        return positionInterpolator.getDerivative();
+    /**
+     * move two entities away from each other
+     * @param left      one entity, which has collided with right
+     * @param right     another entity, which has collided with left
+     * @param deltaTime time difference of this gameloop
+     * @param collision the collision of this pair
+     */
+    public static void entityCollision(MovingEntity left, MovingEntity right, float deltaTime, Collision collision) {
+        PosVector leftPos = left.position.interpolateTo(left.extraPosition, collision.timeScalar);
+        PosVector rightPos = right.position.interpolateTo(right.extraPosition, collision.timeScalar);
+        DirVector leftToRight = leftPos.to(rightPos, new DirVector());
+        leftToRight.normalize();
+        DirVector rightToLeft = leftToRight.negate(new DirVector());
+
+        left.collideWith(right, rightToLeft);
+        right.collideWith(left, leftToRight);
+
+        left.recalculateMovement(deltaTime);
+        right.recalculateMovement(deltaTime);
+    }
+
+    public DirVector getVecTo(MovingEntity other) {
+        return position.to(other.position, new DirVector());
+    }
+
+    /** @see #entityCollision(MovingEntity, MovingEntity, float, Collision) */
+    private void collideWith(MovingEntity other, DirVector otherToThis) {
+        DirVector temp = new DirVector();
+        float dotProduct = extraVelocity.sub(other.extraVelocity, temp).dot(otherToThis);
+        float scalarLeft = ((2 * other.mass) / (mass + other.mass));
+        float scalarMiddle = dotProduct / otherToThis.lengthSquared();
+        extraVelocity.sub(otherToThis.mul(scalarLeft * scalarMiddle, temp));
+
+        float adjEnergy = (float) Math.sqrt(ServerSettings.BUMPOFF_ENERGY / mass);
+        extraVelocity.add(otherToThis.mul(adjEnergy, temp));
     }
 
     /**
@@ -535,6 +548,11 @@ public abstract class MovingEntity implements Touchable {
     }
 
     public abstract EntityFactory getFactory();
+
+    protected DirVector velocityAtRenderTime() {
+        positionInterpolator.updateTime(renderTime());
+        return positionInterpolator.getDerivative();
+    }
 
     @Override
     public boolean equals(Object obj) {
