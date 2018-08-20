@@ -26,7 +26,7 @@ import java.util.List;
  * @author Geert van Ieperen. Created on 5-7-2018.
  */
 public class IslandMap extends GameState {
-    private static final int FOG_DIST = 1000;
+    private static final int FOG_DIST = 750;
     private PosVector nextSpawnPosition = new PosVector();
     private DirVector nextSpawnOffset = new DirVector(0, 30, 0);
 
@@ -35,7 +35,7 @@ public class IslandMap extends GameState {
         List<Touchable> entities = new ArrayList<>();
 
         for (Shape s : GeneralShapes.ISLAND1) {
-            entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
+            entities.add(new StaticEntity(s, Material.GLASS, Color4f.BLACK, new PosVector(0, 0, -250)));
         }
 
         nextSpawnPosition = new PosVector(-50, 400, -90);
@@ -117,7 +117,7 @@ public class IslandMap extends GameState {
     }
 
     private RaceProgress.Checkpoint makeRoadPoint(RaceProgress raceProgress, int x, int y, int z, float dx, float dy, float dz) {
-        return raceProgress.addRoadpoint(new PosVector(x, y, z), new DirVector(dx, dy, dz), 200);
+        return raceProgress.addRoadpoint(new PosVector(x, y, z), new DirVector(dx, dy, dz), 500);
     }
 
     @Override
@@ -174,7 +174,7 @@ public class IslandMap extends GameState {
 
     @Override
     public Color4f fogColor() {
-        return new Color4f(0.6f, 0.6f, 0.9f, 1f / FOG_DIST);
+        return new Color4f(0.7f, 0.7f, 0.8f, 1f / FOG_DIST);
     }
 
     @Override

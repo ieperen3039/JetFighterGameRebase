@@ -26,7 +26,6 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 13-8-2018.
  */
 public class GrapplingHook extends AbstractProjectile {
-
     private static final float EIGHTSTH = (float) (Math.PI / 4);
     private static final float MAX_FLY_DURATION = 2f;
 
@@ -114,8 +113,8 @@ public class GrapplingHook extends AbstractProjectile {
     }
 
     @Override
-    public void applyPhysics(DirVector netForce, float deltaTime) {
-        super.applyPhysics(netForce, deltaTime);
+    public void applyPhysics(DirVector netForce) {
+        super.applyPhysics(netForce);
         if (hookedOther != null) {
             extraPosition = hookedOther.getExpectedMiddle();
 
@@ -173,7 +172,7 @@ public class GrapplingHook extends AbstractProjectile {
 
         @Override
         public MovingEntity construct(SpawnReceiver game, AbstractJet src, MovingEntity tgt) {
-            return new GrapplingHook(id, position, getVelocity((AbstractJet) src, tgt), game.getTimer(), src, game, tgt);
+            return new GrapplingHook(id, position, getVelocity(src, tgt), game.getTimer(), src, game, tgt);
         }
     }
 }

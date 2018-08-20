@@ -70,9 +70,13 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
         List<Integer> ordering = race.raceOrder();
         int nOfPlayers = ordering.size();
 
-        if (race.thisPlayerHasFinished() != knowHasFinished) {
+        if (race.thisPlayerHasFinished() && !knowHasFinished) {
             boxes.replaceAll(WarpingBox::new);
             knowHasFinished = true;
+
+        } else if (!race.thisPlayerHasFinished() && knowHasFinished) {
+            boxes.replaceAll(Box::new);
+            knowHasFinished = false;
         }
 
         if (knowHasFinished) {
@@ -104,6 +108,10 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
             dimensions = new Vector2f(BOX_WIDTH, BOX_HEIGHT);
             lastUpdateTime = timer.time();
             this.tgtIndex = tgtIndex;
+        }
+
+        public Box(int tgtIndex, Box box) {
+            this(tgtIndex);
         }
 
         public void setIndex(int tgtIndex) {

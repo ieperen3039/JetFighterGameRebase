@@ -7,6 +7,7 @@ import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -88,7 +89,7 @@ public class Seeker extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(2f, 1);
+        other.impact(PowerupType.SEEKER_SLOW_FACTOR, 1);
     }
 
     @Override

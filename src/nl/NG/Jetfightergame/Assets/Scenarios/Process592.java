@@ -122,7 +122,7 @@ public abstract class Process592 {
      */
     private void updateAndDrawPlayer(GL2 gl) {
         final AbstractJet jet = clientControl.jet();
-        jet.applyPhysics(DirVector.zeroVector(), 0.1f);
+        jet.applyPhysics(DirVector.zeroVector());
         jet.update(0.1f);
         jet.set(PosVector.zeroVector());
         clientControl.jet().draw(gl);

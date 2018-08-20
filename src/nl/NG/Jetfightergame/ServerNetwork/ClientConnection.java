@@ -76,6 +76,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.isAdmin = pair.right;
         this.jet = pair.left;
         game.addEntity(jet);
+
         Logger.printOnline(() -> jet.interpolatedPosition() + " | " + jet.interpolatedForward());
     }
 
@@ -169,6 +170,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 protocol.worldSwitchRead(game, counter, gameTimer.time(), raceProgress);
                 game.addEntity(jet);
                 controlTeardown = false;
+                input.enable();
                 break;
 
             case SHUTDOWN_GAME:
@@ -355,7 +357,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         } else {
             setControl(false);
         }
-        super.pause();
+//        NOT super.pause() to allow AI to take over
     }
 
     @Override
@@ -363,9 +365,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         if (isAdmin) {
             sendCommand(UNPAUSE_GAME);
         } else {
-            setControl(controlTeardown);
+            setControl(!controlTeardown);
         }
-        super.unPause();
+//        NOT super.unPause() to allow AI to take over
     }
 
     class SubControl extends ControllerManager {

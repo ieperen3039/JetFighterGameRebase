@@ -43,17 +43,21 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     private final List<Player> npcPlayers;
     private final RaceProgress raceProgress;
 
-    private EnvironmentManager gameWorld;
     private GameTimer globalTime;
+    private EnvironmentManager gameWorld;
     private EnvironmentClass raceWorld;
+    private final EnvironmentClass lobby;
+
     private boolean worldShouldSwitch = false;
     private volatile boolean allowPlayerJoin = true;
+    private int maxRounds = 1;
 
     public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
         super("Server", ServerSettings.TARGET_TPS, true);
         this.raceProgress = new RaceProgress(8, this);
         this.gameWorld = new EnvironmentManager(lobby, this, raceProgress, true, true);
         this.raceWorld = raceWorld;
+        this.lobby = lobby;
         this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
         this.connections = new ArrayList<>();
 
@@ -87,6 +91,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 }
             };
             Controller controller = new RaceAI(npc, raceProgress, gameWorld);
+            controller.update();
             jet.setController(controller);
             npcs.add(npc);
         }
@@ -187,7 +192,14 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     protected void update(float deltaTime) {
-        if (worldShouldSwitch) setWorld(raceWorld, 1);
+        if (worldShouldSwitch) {
+            if (gameWorld.getCurrentType() == lobby) {
+                setWorld(raceWorld, maxRounds);
+
+            } else {
+                setWorld(lobby, 0);
+            }
+        }
 
         for (ServerConnection conn : connections) {
             if (conn.isClosed()) {
@@ -249,17 +261,17 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
     @Override
     public void stopLoop() {
+        super.stopLoop();
+    }
+
+    @Override
+    protected void cleanup() {
         for (ServerConnection conn : connections) {
             if (!conn.isClosed()) {
                 conn.send(MessageType.SHUTDOWN_GAME);
             }
         }
 
-        super.stopLoop();
-    }
-
-    @Override
-    protected void cleanup() {
         gameWorld.cleanUp();
     }
 
@@ -268,7 +280,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         worldShouldSwitch = false;
         allowPlayerJoin = false;
-        float countDown = ServerSettings.COUNT_DOWN;
+        float countDown = maxRounds > 0 ? ServerSettings.COUNT_DOWN : 0;
 
         connections.forEach(conn -> conn.sendWorldSwitch(world, countDown, maxRounds));
         raceProgress.setMaxRounds(maxRounds);
@@ -283,17 +295,18 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
             jet.setPowerup(PowerupType.NONE);
             jet.addSpeedModifier(0, countDown);
             player.sendPowerupCollect(PowerupType.NONE);
+            player.sendEntityUpdate(jet, globalTime.time() - 1);
+            player.sendEntityUpdate(jet, globalTime.time());
 
             gameWorld.addEntity(jet);
             for (ServerConnection conn : connections) {
-                player.sendEntityUpdate(jet, globalTime.time() - 1);
-                player.sendEntityUpdate(jet, globalTime.time());
+                if (conn != player) conn.sendEntitySpawn(jet.getFactory());
                 conn.sendPlayerSpawn(player, pInd);
             }
         }
 
         // add npc players
-        for (Player npc : npcPlayers) {
+        if (maxRounds > 0) for (Player npc : npcPlayers) {
             int pInd = raceProgress.addPlayer(npc);
             AbstractJet jet = npc.jet();
             jet.set(gameWorld.getNewSpawnPosition());

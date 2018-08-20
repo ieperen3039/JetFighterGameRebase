@@ -74,7 +74,8 @@ public class FallingCube extends MovingEntity {
     }
 
     @Override
-    public void applyPhysics(DirVector netForce, float deltaTime) {
+    public void applyPhysics(DirVector netForce) {
+        float deltaTime = gameTimer.getGameTime().difference();
         velocity.add(netForce.scale(deltaTime / mass, extraVelocity), extraVelocity);
         position.add(extraVelocity.scale(deltaTime, new DirVector()), extraPosition);
         rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);

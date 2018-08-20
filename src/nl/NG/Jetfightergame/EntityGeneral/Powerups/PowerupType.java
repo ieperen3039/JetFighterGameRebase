@@ -38,20 +38,21 @@ public enum PowerupType {
 
     SMOKE(YELLOW);
 
-    public static final float REFLECTOR_DURATION = 5f;
     private static final PowerupType[] VALUES = values();
 
     public static final float SEEKER_LAUNCH_SPEED = 2f;
+    public static final float SEEKER_SLOW_FACTOR = 2f;
     public static final int NOF_SEEKERS_LAUNCHED = 20;
 
     public static final float SPEED_BOOST_DURATION = 3f;
     public static final float SPEED_BOOST_FACTOR = 2f;
 
-    public static final float OHSHIELD_DURATION = 5f;
+    public static final float OHSHIELD_DURATION = 10f;
+    public static final float REFLECTOR_DURATION = 5f;
 
     public static final float STAR_BOOST_DURATION = 15f;
     public static final float STAR_BOOST_FACTOR = 1.4f;
-    public static final float STAR_BOOST_PUSH = 10_000f;
+    public static final float STAR_BOOST_PUSH = 1_000f;
 
     public static final float SMOKE_LINGER_TIME = 30f;
     public static final float SMOKE_LAUNCH_SPEED = 20f;
@@ -61,8 +62,8 @@ public enum PowerupType {
 
     public static final float GRAPPLE_YOUR_PULL_FORCE = 1500f;
     public static final float GRAPPLE_HIS_PULL_FORCE = 400f;
-    public static final float GRAPPLE_PULL_DURATION = 3f;
-    public static final float GRAPPLE_FIRE_SPEED = 300f;
+    public static final float GRAPPLE_PULL_DURATION = 2f;
+    public static final float GRAPPLE_FIRE_SPEED = 400f;
 
     private final EnumSet<PowerupColor> required;
 

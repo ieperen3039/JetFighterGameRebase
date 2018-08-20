@@ -296,4 +296,8 @@ public final class Toolbox {
         }
         return -(low + 1);  // key not found.
     }
+
+    public static boolean isValidQuaternion(Quaternionf rotation) {
+        return !(Float.isNaN(rotation.x) || Float.isNaN(rotation.y) || Float.isNaN(rotation.z) || Float.isNaN(rotation.w));
+    }
 }

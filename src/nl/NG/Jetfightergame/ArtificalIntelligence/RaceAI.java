@@ -16,8 +16,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public class RaceAI extends RocketAI {
     private static final float SHOOT_ACCURACY = 0.05f;
-    private static final float SAFE_DIST = 100f;
+    private static final float SAFE_DIST = 200f;
     private static final float POWERUP_COLLECT_BENDOUT = (float) Math.cos(0.3);
+    private static final int LOOK_AHEAD = 3;
 
     private final RaceProgress race;
     private final Player player;
@@ -31,7 +32,7 @@ public class RaceAI extends RocketAI {
      * @param entities the entities of this game
      */
     public RaceAI(Player player, RaceProgress race, EntityMapping entities) {
-        super(player.jet(), null, 100f, 1f, 2f, 1.5f);
+        super(player.jet(), null, 300f, 1f, 2f, 1.5f);
         this.entities = entities;
         this.jet = player.jet();
         this.player = player;
@@ -70,7 +71,7 @@ public class RaceAI extends RocketAI {
     private Touchable nextPoint() {
         int pInd = race.getPlayerInd(player);
         if (pInd < 0) return null;
-        return race.nextPointEntityOf(pInd, 2);
+        return race.nextPointEntityOf(pInd, LOOK_AHEAD);
     }
 
     @Override
@@ -90,6 +91,7 @@ public class RaceAI extends RocketAI {
             case DEATHICOSAHEDRON:
                 MovingEntity tgt = jet.getTarget();
                 if (tgt == null) return false;
+
                 DirVector toTgt = jet.getVecTo(tgt);
                 return xVec.dot(toTgt.normalize()) > (1 - SHOOT_ACCURACY);
 

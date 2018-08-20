@@ -289,6 +289,10 @@ public class RaceProgress {
         return winners.contains(pInd);
     }
 
+    public boolean allFinished() {
+        return (nOfCheckpoints == 0) || (winners.size() == nOfPlayers);
+    }
+
     /**
      * @author Geert van Ieperen created on 28-6-2018.
      */

@@ -9,7 +9,6 @@ import static org.lwjgl.glfw.GLFW.*;
  * @author Geert van Ieperen created on 10-4-2018.
  */
 public class XBoxController implements Controller {
-
     private int xbox;
     private final byte[] buttons = new byte[14];
     private final float[] axes = new float[6];
@@ -20,6 +19,7 @@ public class XBoxController implements Controller {
 
         if (!glfwJoystickPresent(xbox)) {
             Logger.ERROR.print("No controller connected!");
+            xbox = -1;
             return;
         }
         update();
@@ -27,6 +27,7 @@ public class XBoxController implements Controller {
 
     @Override
     public void update() {
+        if (xbox == -1) return;
         glfwGetJoystickButtons(xbox).get(buttons);
         glfwGetJoystickAxes(xbox).get(axes);
     }

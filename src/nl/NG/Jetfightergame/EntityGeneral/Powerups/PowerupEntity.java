@@ -106,7 +106,7 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     }
 
     @Override
-    public void applyPhysics(DirVector netForce, float deltaTime) {
+    public void applyPhysics(DirVector netForce) {
         // Non.
     }
 

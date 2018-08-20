@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.nio.FloatBuffer;
 import java.util.Locale;
 
+import static java.lang.Float.isInfinite;
+import static java.lang.Float.isNaN;
 import static java.lang.StrictMath.cos;
 import static java.lang.StrictMath.sin;
 
@@ -49,7 +51,7 @@ public abstract class Vector extends Vector3f implements Serializable {
     }
 
     public boolean isScalable(){
-        return !Float.isNaN(x) && !Float.isNaN(y) && !Float.isNaN(z) && !((x == 0) && (y == 0) && (z == 0));
+        return !isNaN(x) && !isNaN(y) && !isNaN(z) && !((x == 0) && (y == 0) && (z == 0));
     }
 
     public float dot(Vector that) {
@@ -110,5 +112,12 @@ public abstract class Vector extends Vector3f implements Serializable {
     }
 
     public abstract Vector scale(float scalar);
+
+    /**
+     * @return true iff none of the coordinates is NaN and none is Infinite
+     */
+    public boolean isRegular() {
+        return !(isNaN(x) || isNaN(y) || isNaN(z) || isInfinite(x) || isInfinite(y) || isInfinite(z));
+    }
 }
 

@@ -55,6 +55,7 @@ public abstract class AbstractJet extends MovingEntity {
     private List<BoosterLine> nuzzle;
     private DirVector forward;
 
+    /** left = factor , right = duration */
     private Collection<Pair<Float, Float>> speedModifiers;
 
     private VectorInterpolator forwardInterpolator;
@@ -116,10 +117,11 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     @Override
-    public void applyPhysics(DirVector netForce, float deltaTime) {
+    public void applyPhysics(DirVector netForce) {
         controller.update();
 
         float time = gameTimer.time();
+        float deltaTime = gameTimer.getGameTime().difference();
         speedModifiers.removeIf(p -> p.right < time);
 
         gyroPhysics(deltaTime, netForce, velocity);
@@ -278,7 +280,7 @@ public abstract class AbstractJet extends MovingEntity {
         float thrust = 0.5f * (controller.throttle() + 1.0f);
         // apply trust modifiers
         for (Pair<Float, Float> modifier : speedModifiers) {
-            thrust *= modifier.right;
+            thrust *= modifier.left;
         }
         float pps = Math.max((THRUST_PARTICLES_PER_SECOND * thrust * thrust) / nuzzle.size(), 3);
 
@@ -328,9 +330,7 @@ public abstract class AbstractJet extends MovingEntity {
                 // honk
                 break;
             case SPEED_BOOST:
-                float factor = PowerupType.SPEED_BOOST_FACTOR;
-
-                addSpeedModifier(factor, PowerupType.SPEED_BOOST_DURATION);
+                addSpeedModifier(PowerupType.SPEED_BOOST_FACTOR, PowerupType.SPEED_BOOST_DURATION);
                 entityDeposit.boosterColorChange(this, Color4f.YELLOW, Color4f.WHITE, SPEED_BOOST_DURATION);
                 break;
             case SHIELD:

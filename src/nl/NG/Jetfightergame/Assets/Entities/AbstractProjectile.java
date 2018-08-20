@@ -105,7 +105,9 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     }
 
     @Override
-    public void applyPhysics(DirVector netForce, float deltaTime) {
+    public void applyPhysics(DirVector netForce) {
+        float deltaTime = gameTimer.getGameTime().difference();
+
         relativeStateDirection(DirVector.xVector()).normalize(forward);
         DirVector temp = new DirVector();
         controller.update();

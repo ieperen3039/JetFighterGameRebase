@@ -14,8 +14,10 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -103,10 +105,9 @@ public abstract class MovingEntity implements Touchable {
     /**
      * calculate expected position and rotation, but does not change the current state of the object. This means that
      * {@code rotation} and {@code position} are not updated
-     * @param deltaTime time since last frame
      * @param netForce  the net external forces on this object
      */
-    public void preUpdate(float deltaTime, DirVector netForce) {
+    public void preUpdate(DirVector netForce) {
         extraPosition.set(position);
         extraRotation.set(rotation);
         extraVelocity.set(velocity);
@@ -114,13 +115,14 @@ public abstract class MovingEntity implements Touchable {
         DirVector force = new DirVector(netForce);
 
         float time = gameTimer.time();
+        float deltaTime = gameTimer.getGameTime().difference();
         for (int i = 0; i < tempForces.size(); i++) {
             if (tempForces.left(i) < time) tempForces.remove(i);
             else force.add(tempForces.right(i).get());
         }
 
         // nothing to do when no time is passed
-        if (deltaTime != 0) applyPhysics(force, deltaTime);
+        if (deltaTime != 0) applyPhysics(force);
 
         updateShape(deltaTime);
     }
@@ -162,11 +164,10 @@ public abstract class MovingEntity implements Touchable {
      * apply net force on this object and possibly read input. Should not change the current state except for {@link
      * #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}.
      * @param netForce  accumulated external forces on this object
-     * @param deltaTime time-difference, cannot be 0
      * @implNote The current values of {@link #extraPosition}, {@link #extraRotation} and {@link #extraVelocity}
      *         are invalid.
      */
-    public abstract void applyPhysics(DirVector netForce, float deltaTime);
+    public abstract void applyPhysics(DirVector netForce);
 
     /**
      * update the state of this object, may not be called by any method from another interface. Other operations on
@@ -174,29 +175,14 @@ public abstract class MovingEntity implements Touchable {
      * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
      */
     public void update(float currentTime) {
-        if (extraVelocity.isScalable()) velocity.set(extraVelocity);
-        if (extraPosition.isScalable()) position.set(extraPosition);
-        rotation.set(extraRotation);
+        if (extraVelocity.isRegular()) velocity.set(extraVelocity);
+        if (extraPosition.isRegular()) position.set(extraPosition);
+        if (Toolbox.isValidQuaternion(extraRotation)) rotation.set(extraRotation);
         hitPoints = null;
-        validateState();
     }
 
-    public void validateState() {
-        if (ServerSettings.DEBUG) {
-            validate("position", position);
-            validate("rotation", rotation);
-            validate("velocity", velocity);
-        }
-    }
-
-    private void validate(String name, Vector3f vector) {
-        if (Float.isNaN(vector.x) || Float.isNaN(vector.y) || Float.isNaN(vector.z)) {
-            throw new IllegalStateException("Invalid " + name + " of " + toString() + ": " + vector.toString());
-        }
-    }
-
-    private void validate(String name, Quaternionf vector) {
-        if (Float.isNaN(vector.x) || Float.isNaN(vector.y) || Float.isNaN(vector.z) || Float.isNaN(vector.w)) {
+    private void validate(String name, Vector vector) {
+        if (!vector.isRegular()) {
             throw new IllegalStateException("Invalid " + name + " of " + toString() + ": " + vector.toString());
         }
     }
@@ -353,7 +339,7 @@ public abstract class MovingEntity implements Touchable {
 
     /**
      * applies a change in firstVel by applying the given momentum to the firstVel. This may only be applied between
-     * calls to {@link #preUpdate(float, DirVector)} and {@link #update(float)}
+     * calls to {@link #preUpdate(DirVector)} and {@link #update(float)}
      * @param direction the normalized direction in which the force is applied
      * @param energy    the energy in Newton to be applied to the gravity center of this entity
      * @param deltaTime time difference of the current gameloop
@@ -500,8 +486,8 @@ public abstract class MovingEntity implements Touchable {
         left.recalculateMovement(deltaTime);
         right.recalculateMovement(deltaTime);
 
-        left.validate("extra-position", left.extraPosition);
-        right.validate("extra-position", right.extraPosition);
+        left.validate("position left", left.extraPosition);
+        right.validate("position right", right.extraPosition);
     }
 
     public DirVector getVecTo(MovingEntity other) {

@@ -28,11 +28,12 @@ public class OneHitShield extends AbstractShield {
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(Material.GLASS, COLOR);
+        velocity = velocityAtRenderTime();
     }
 
     @Override
     public void impact(float factor, float duration) {
-        timeToLive = 0;
+        timeToLive = Math.min(1, timeToLive);
     }
 
     @Override

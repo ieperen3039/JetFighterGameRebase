@@ -25,10 +25,10 @@ public class EntityList implements EntityManagement {
     }
 
     @Override
-    public void preUpdateEntities(NetForceProvider gravity, float deltaTime) {
+    public void preUpdateEntities(NetForceProvider gravity) {
         for (MovingEntity entity : dynamicEntities) {
             DirVector netForce = gravity.entityNetforce(entity);
-            entity.preUpdate(deltaTime, netForce);
+            entity.preUpdate(netForce);
         }
     }
 

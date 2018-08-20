@@ -207,6 +207,7 @@ public class ServerConnection implements BlockingListener, Player {
 
         } catch (IOException e) {
             e.printStackTrace();
+            isClosed = true;
 
         } finally {
             sendLock.unlock();
@@ -221,6 +222,7 @@ public class ServerConnection implements BlockingListener, Player {
 
         } catch (IOException e) {
             e.printStackTrace();
+            isClosed = true;
 
         } finally {
             sendLock.unlock();

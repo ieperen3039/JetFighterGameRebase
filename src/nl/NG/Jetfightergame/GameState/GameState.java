@@ -85,7 +85,7 @@ public abstract class GameState implements Environment {
     public void updateGameLoop(float currentTime, float deltaTime) {
         // update positions and apply physics
         gravitySources.removeIf(s -> s.isOverdue(currentTime));
-        physicsEngine.preUpdateEntities(this::getNetForce, deltaTime);
+        physicsEngine.preUpdateEntities(this::getNetForce);
 
         if (deltaTime == 0f) return;
 

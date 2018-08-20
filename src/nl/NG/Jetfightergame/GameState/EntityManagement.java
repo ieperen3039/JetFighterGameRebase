@@ -16,9 +16,9 @@ public interface EntityManagement {
     /**
      * calls the pre-update on all entities
      * @param gravity provides the netforce on the objects
-     * @param deltaTime the time difference since last update
+     *
      */
-    void preUpdateEntities(NetForceProvider gravity, float deltaTime);
+    void preUpdateEntities(NetForceProvider gravity);
 
     /**
      * checks and resolves all collisions that occurred in the given timeperiod

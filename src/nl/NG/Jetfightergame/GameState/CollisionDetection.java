@@ -76,7 +76,7 @@ public class CollisionDetection implements EntityManagement {
     }
 
     @Override
-    public void preUpdateEntities(NetForceProvider gravity, float deltaTime) {
+    public void preUpdateEntities(NetForceProvider gravity) {
         // add new entities
         if (!newEntities.isEmpty()) {
             mergeNewEntities(newEntities);
@@ -90,7 +90,7 @@ public class CollisionDetection implements EntityManagement {
 
         for (MovingEntity entity : dynamicEntities) {
             DirVector netForce = gravity.entityNetforce(entity);
-            entity.preUpdate(deltaTime, netForce);
+            entity.preUpdate(netForce);
         }
 
         for (CollisionEntity entity : entityArray()) {

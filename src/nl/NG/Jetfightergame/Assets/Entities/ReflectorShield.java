@@ -21,7 +21,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
  */
 public class ReflectorShield extends AbstractShield {
     private static final float BURST_FORCE = 10f;
-    public static final Color4f COLOR = new Color4f(0, 1f, 0.5f, 0.1f);
+    private static final Color4f COLOR = new Color4f(1f, 0, 0, 0.1f);
     private EntityMapping entities;
 
     private ReflectorShield(int id, AbstractJet jet, GameTimer time, SpawnReceiver deposit, EntityMapping entities) {
@@ -33,7 +33,7 @@ public class ReflectorShield extends AbstractShield {
     public void impact(float factor, float duration) {
         DirVector move = getVelocity();
         DirVector randDirection = DirVector.randomOrb();
-        move.add(randDirection.mul(20f));
+        move.add(randDirection.mul(10f));
 
         EntityState state = new EntityState(position, randDirection, move);
         MovingEntity target = jet.getTarget(randDirection, getPosition(), entities);
@@ -43,6 +43,7 @@ public class ReflectorShield extends AbstractShield {
     @Override
     public void preDraw(GL2 gl) {
         gl.setMaterial(Material.GLASS, COLOR);
+        velocity = velocityAtRenderTime();
     }
 
     @Override

@@ -46,8 +46,9 @@ public abstract class AbstractShield extends MovingEntity implements TemporalEnt
     }
 
     @Override
-    public void preUpdate(float deltaTime, DirVector netForce) {
-        super.preUpdate(deltaTime, netForce);
+    public void preUpdate(DirVector netForce) {
+        super.preUpdate(netForce);
+        float deltaTime = gameTimer.getGameTime().difference();
         timeToLive -= deltaTime;
     }
 
@@ -81,7 +82,7 @@ public abstract class AbstractShield extends MovingEntity implements TemporalEnt
     }
 
     @Override
-    public void applyPhysics(DirVector netForce, float deltaTime) {
+    public void applyPhysics(DirVector netForce) {
     }
 
     @Override
