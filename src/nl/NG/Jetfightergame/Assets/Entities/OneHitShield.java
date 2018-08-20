@@ -31,7 +31,7 @@ public class OneHitShield extends AbstractShield {
     }
 
     @Override
-    public void impact(float power) {
+    public void impact(float factor, float duration) {
         timeToLive = 0;
     }
 

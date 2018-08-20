@@ -15,7 +15,7 @@ public class RocketAI implements Controller {
     private final float rollFactor;
     private final float pitchFactor;
     private final float yawFactor;
-    private static final float THROTTLE_DOT_IGNORE = 0.4f;
+    private static final float THROTTLE_DOT_IGNORE = (float) Math.cos(0.5f);
     private static final float THROTTLE_MULTIPLIER = 1 / (1 - THROTTLE_DOT_IGNORE);
 
     public final MovingEntity projectile;
@@ -49,8 +49,8 @@ public class RocketAI implements Controller {
         projectilePos = projectile.getPosition();
         targetPos = new PosVector();
         rollFactor = 0.1f;
-        pitchFactor = 2f;
-        yawFactor = 2f;
+        pitchFactor = 2.5f;
+        yawFactor = 2.5f;
     }
 
     /**
@@ -69,7 +69,6 @@ public class RocketAI implements Controller {
         this.explodeDistSq = fireDist * fireDist;
         doExtrapolate = false;
         projectilePos = projectile.getPosition();
-        targetPos = new PosVector();
         rollFactor = rollFac;
         pitchFactor = pitchFac;
         yawFactor = yawFac;
@@ -137,7 +136,7 @@ public class RocketAI implements Controller {
 
     @Override
     public float throttle() {
-        if (projectilePos.distanceSquared(targetPos) < (0.01f * pSpeed * pSpeed)) {
+        if (arrivesWithin(targetPos, 0.5f)) {
             return 1;
         }
 
@@ -185,7 +184,4 @@ public class RocketAI implements Controller {
         return false;
     }
 
-    public PosVector getTargetPos() {
-        return targetPos;
-    }
 }

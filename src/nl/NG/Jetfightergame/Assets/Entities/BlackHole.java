@@ -28,9 +28,9 @@ import java.util.function.Consumer;
  */
 public class BlackHole extends AbstractProjectile {
     private static final float SPARK_COOLDOWN = 0.02f;
-    private static final float FIRE_SPEED = 20f;
+    private static final float FIRE_SPEED = 35f;
     public static final Color4f PARTICLE_COLOR_1 = Color4f.BLACK;
-    public static final Color4f PARTICLE_COLOR_2 = new Color4f(0, 0, 0.2f);
+    public static final Color4f PARTICLE_COLOR_2 = new Color4f(0, 0, 0.3f);
     private static final float PARTICLE_REACH = 10f;
     private static final float PARTICLE_SIZE = 1f;
     private static final float TIME_TO_LIVE = 10f;
@@ -40,11 +40,11 @@ public class BlackHole extends AbstractProjectile {
     private float sparkTimeRemain = 0;
 
     private BlackHole(
-            int id, PosVector position, Quaternionf rotation, DirVector velocity,
+            int id, PosVector position, DirVector velocity,
             SpawnReceiver particleDeposit, GameTimer gameTimer, AbstractJet sourceEntity
     ) {
         super(
-                id, position, rotation, velocity, 1f,
+                id, position, Toolbox.xTo(velocity), velocity, 1f,
                 0f, TIME_TO_LIVE, 0f, 0f, 0f, 0f,
                 particleDeposit, gameTimer, sourceEntity
         );
@@ -56,7 +56,7 @@ public class BlackHole extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(10);
+        other.impact(1.5f, 10);
     }
 
     @Override
@@ -96,13 +96,10 @@ public class BlackHole extends AbstractProjectile {
     public void create(MatrixStack ms, Consumer<Shape> action) {
     }
 
-    private DirVector getPullForce(MovingEntity source) {
+    private DirVector getPullForce(AbstractJet source) {
         DirVector newForce = source.getVecTo(this);
-        if (source instanceof AbstractJet) { // should be the case
-            AbstractJet sourceJet = (AbstractJet) this.sourceJet;
-            if (newForce.dot(sourceJet.getForward()) > 0)
-                newForce.reducedTo(YOUR_PULL_FORCE, newForce);
-        }
+        if (newForce.dot(sourceJet.getForward()) > 0)
+            newForce.reducedTo(YOUR_PULL_FORCE, newForce);
         return newForce;
     }
 
@@ -132,7 +129,7 @@ public class BlackHole extends AbstractProjectile {
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
             AbstractJet entity = (AbstractJet) entities.getEntity(sourceID);
-            return new BlackHole(id, position, rotation, velocity, game, game.getTimer(), entity);
+            return new BlackHole(id, position, velocity, game, game.getTimer(), entity);
         }
 
         @Override

@@ -66,7 +66,7 @@ public class SimpleBullet extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(5);
+        other.impact(1.1f, 5);
     }
 
     public static class Factory extends EntityFactory {

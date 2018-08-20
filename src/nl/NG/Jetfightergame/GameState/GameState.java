@@ -58,9 +58,9 @@ public abstract class GameState implements Environment {
 
         if (doCollDet) {
             physicsEngine = new CollisionDetection(staticEntities);
+
         } else {
             physicsEngine = new EntityList(staticEntities);
-
         }
 
         if (loadDynamic) {
@@ -207,9 +207,7 @@ public abstract class GameState implements Environment {
     }
 
     public PosVector getMiddleOfPath(Collision collision) {
-        PosVector pos = collision.source().getPosition();
-        pos.add(collision.normal());
-        return pos;
+        return new PosVector();
     }
 
 
@@ -249,8 +247,10 @@ public abstract class GameState implements Environment {
 
         for (GravitySource source : gravitySources) {
             PosVector srcPos = source.getPosition();
-            float pull = source.getMagnitudeSq() / srcPos.distanceSquared(entPos);
-            DirVector newGravity = entPos.to(srcPos, temp).reducedTo(pull, temp);
+            DirVector toSource = entPos.to(srcPos, temp);
+            float dist = toSource.length();
+            float pull = dist == 0 ? 0 : source.getMagnitude() / dist;
+            DirVector newGravity = toSource.reducedTo(pull, temp);
             force.add(newGravity);
         }
 
@@ -276,8 +276,8 @@ public abstract class GameState implements Environment {
             return position.get();
         }
 
-        public float getMagnitudeSq() {
-            return magnitude * magnitude;
+        public float getMagnitude() {
+            return magnitude;
         }
     }
 }

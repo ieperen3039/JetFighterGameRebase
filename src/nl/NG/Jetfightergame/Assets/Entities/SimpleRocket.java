@@ -53,8 +53,8 @@ public class SimpleRocket extends AbstractProjectile {
         forward.negate(back).reducedTo(ClientSettings.ROCKET_THRUST_SPEED, back).add(forward);
         nuzzle = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), back,
-                THRUST_PARTICLE_DENSITY, THRUST_PARTICLE_LINGER_TIME, THRUST_COLOR, THRUST_COLOR, THRUST_PARTICLE_SIZE
-        );
+                THRUST_PARTICLE_DENSITY, THRUST_PARTICLE_LINGER_TIME, THRUST_COLOR, THRUST_COLOR, THRUST_PARTICLE_SIZE,
+                gameTimer);
     }
 
     @Override
@@ -72,11 +72,10 @@ public class SimpleRocket extends AbstractProjectile {
         gl.setMaterial(Material.ROUGH);
 
         DirVector back = new DirVector();
-        float deltaTime = gameTimer.getRenderTime().difference();
         forward.negate(back).reducedTo(ClientSettings.ROCKET_THRUST_SPEED, back).add(forward);
 
         toLocalSpace(gl, () -> entityDeposit.addParticles(
-                nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_DENSITY, deltaTime)
+                nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_DENSITY)
         ));
     }
 
@@ -107,7 +106,7 @@ public class SimpleRocket extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(IMPACT_POWER);
+        other.impact(1.5f, IMPACT_POWER);
     }
 
     public static class Factory extends RocketFactory {

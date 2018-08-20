@@ -37,12 +37,11 @@ public class ClusterRocket extends AbstractProjectile {
     public static final int NOF_PELLETS_LAUNCHED = 50;
     public static final float EXPLOSION_POWER = 10f;
     public static final int EXPLOSION_DENSITY = 200;
-    public static final float THRUST_POWER = 200f;
+    public static final float THRUST_POWER = 250f;
     public static final float TIME_TO_LIVE = 30f;
     public static final float SHOOT_ACCURACY = 0.4f;
-    public static final float TURN_ACC = 0.3f;
-    public static final float ROLL_ACC = 0.2f;
-    public static final float AIR_RESIST = 0.03f;
+    public static final float TURN_ACC = 0.6f;
+    public static final float AIR_RESIST = 0.05f;
     public static final float MASS = 5f;
     public static final float THRUST_PARTICLE_PER_SECOND = 15;
     private boolean hasExploded = false;
@@ -65,8 +64,8 @@ public class ClusterRocket extends AbstractProjectile {
     ) {
         super(
                 id, initialPosition, initialRotation, initialVelocity, MASS,
-                AIR_RESIST, TIME_TO_LIVE, TURN_ACC, ROLL_ACC, THRUST_POWER,
-                0.2f, entityDeposit, gameTimer, sourceEntity
+                AIR_RESIST, TIME_TO_LIVE, TURN_ACC, 0f, THRUST_POWER,
+                0.8f, entityDeposit, gameTimer, sourceEntity
         );
 
         if (tgt != null) {
@@ -85,8 +84,8 @@ public class ClusterRocket extends AbstractProjectile {
 
         nuzzle = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
-                THRUST_PARTICLE_PER_SECOND, ClientSettings.THRUST_PARTICLE_LINGER_TIME, Color4f.ORANGE, Color4f.RED, ClientSettings.THRUST_PARTICLE_SIZE
-        );
+                THRUST_PARTICLE_PER_SECOND, ClientSettings.THRUST_PARTICLE_LINGER_TIME, Color4f.ORANGE, Color4f.RED, ClientSettings.THRUST_PARTICLE_SIZE,
+                gameTimer);
     }
 
     @Override
@@ -106,10 +105,9 @@ public class ClusterRocket extends AbstractProjectile {
 
         DirVector back = new DirVector();
         forward.scale(controller.throttle() * -THRUST_POWER, back).add(forward);
-        float deltaTime = gameTimer.getRenderTime().difference();
 
         toLocalSpace(gl, () -> entityDeposit.addParticles(
-                nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_PER_SECOND, deltaTime)
+                nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_PER_SECOND)
         ));
     }
 
@@ -153,7 +151,7 @@ public class ClusterRocket extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(IMPACT_POWER);
+        other.impact(1.5f, IMPACT_POWER);
     }
 
     public static class Factory extends RocketFactory {

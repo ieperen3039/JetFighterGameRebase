@@ -28,6 +28,7 @@ import java.util.List;
 public class IslandMap extends GameState {
     private static final int FOG_DIST = 1000;
     private PosVector nextSpawnPosition = new PosVector();
+    private DirVector nextSpawnOffset = new DirVector(0, 30, 0);
 
     @Override
     protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
@@ -37,7 +38,7 @@ public class IslandMap extends GameState {
             entities.add(new StaticEntity(s, Material.ROUGH, new Color4f(0.2f, 0.4f, 0.2f), new PosVector(0, 0, -250)));
         }
 
-        nextSpawnPosition = new PosVector(-100, 400, -100);
+        nextSpawnPosition = new PosVector(-50, 400, -90);
         entities.add(makeCheckpoint(raceProgress, -150, 400, -90, -1.00f, 0.00f, 0.00f, 100));
         entities.add(makeRoadPoint(raceProgress, -188, 400, -90, -1.00f, 0.00f, 0.00f));
         entities.add(makeRoadPoint(raceProgress, -236, 400, -90, -1.00f, 0.00f, 0.00f));
@@ -164,7 +165,8 @@ public class IslandMap extends GameState {
     @Override
     public EntityState getNewSpawnPosition() {
         PosVector pos = new PosVector(nextSpawnPosition);
-        nextSpawnPosition.add(new PosVector(0, 0, 10));
+        nextSpawnOffset.rotateAxis(1.396f, -1, 0, 0);
+        pos.add(nextSpawnOffset);
 
         Quaternionf rotation = new Quaternionf().rotateZ((float) Math.PI);
         return new EntityState(pos, rotation, DirVector.zeroVector());

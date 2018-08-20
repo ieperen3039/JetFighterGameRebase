@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Rendering.Particles;
 
+import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.TrackedVector;
@@ -24,13 +25,14 @@ public class BoosterLine {
     private Color4f color2;
     private float particleSize;
 
-    private float timeRemaining;
-    private float colorChangeRemaining;
+    private float nextParticleMoment;
+    private float colorChangeFallback;
+    private final GameTimer gameTimer;
     private boolean colorIsChanged = false;
 
     public BoosterLine(
             PosVector A, PosVector B, DirVector direction,
-            float particlesPerSecond, float maxTimeToLive, Color4f color1, Color4f color2, float particleSize
+            float particlesPerSecond, float maxTimeToLive, Color4f color1, Color4f color2, float particleSize, GameTimer gameTimer
     ) {
         aRelative = A;
         bRelative = B;
@@ -43,36 +45,35 @@ public class BoosterLine {
         this.color1 = color1;
         this.color2 = color2;
         this.particleSize = particleSize;
-        this.timeRemaining = (1 / particlesPerSecond) * Toolbox.random.nextFloat();
+        this.nextParticleMoment = gameTimer.time() + (1 / particlesPerSecond) * Toolbox.random.nextFloat();
+        this.gameTimer = gameTimer;
     }
 
     /**
      * @param dirNew    the new direction in which the particles move
      * @param jitter the variation of the direction for this time period
      * @param particlesPerSecond the particles per second after the next particle has spawned
-     * @param deltaTime the time difference since last calling this method
      * @return the particles resulting from the update
      */
-    public ParticleCloud update(MatrixStack ms, DirVector dirNew, float jitter, float particlesPerSecond, float deltaTime) {
+    public ParticleCloud update(MatrixStack ms, DirVector dirNew, float jitter, float particlesPerSecond) {
         aSide.update(ms.getPosition(aRelative));
         bSide.update(ms.getPosition(bRelative));
         direction.update(dirNew);
 
-        if (colorIsChanged) {
-            colorChangeRemaining -= deltaTime;
-            if (colorChangeRemaining <= 0) {
-                setColor(baseColor1, baseColor2, 0);
-                colorIsChanged = false;
-            }
+        float currentTime = gameTimer.getRenderTime().current();
+
+        if (colorIsChanged && colorChangeFallback < currentTime) {
+            setColor(baseColor1, baseColor2, 0);
+            colorIsChanged = false;
         }
 
-        timeRemaining -= deltaTime;
-        if (timeRemaining >= 0) return null;
+        float deltaTime = gameTimer.getRenderTime().difference();
+        if (nextParticleMoment >= currentTime) return null;
         float cooldown = 1f / particlesPerSecond;
 
         ParticleCloud cloud = new ParticleCloud();
         do {
-            final float timeFraction = deltaTime / timeRemaining;
+            final float timeFraction = deltaTime / (nextParticleMoment - currentTime);
             PosVector aPos = aSide.previous().interpolateTo(aSide.current(), timeFraction);
             PosVector bPos = bSide.previous().interpolateTo(bSide.current(), timeFraction);
             PosVector pos = aPos.interpolateTo(bPos, Toolbox.random.nextFloat());
@@ -80,8 +81,8 @@ public class BoosterLine {
 
             Color4f color = color1.interpolateTo(color2, Toolbox.random.nextFloat());
             cloud.addParticle(pos, dir, jitter, timeToLive, color, particleSize);
-            timeRemaining += cooldown;
-        } while (timeRemaining < 0);
+            nextParticleMoment += cooldown;
+        } while (nextParticleMoment < currentTime);
 
         return cloud;
     }
@@ -89,7 +90,7 @@ public class BoosterLine {
     public void setColor(Color4f color1, Color4f color2, float duration) {
         this.color1 = color1;
         this.color2 = color2;
-        colorChangeRemaining = Math.max(colorChangeRemaining, duration);
+        colorChangeFallback = Math.max(colorChangeFallback, gameTimer.time() + duration);
         colorIsChanged = true;
     }
 }

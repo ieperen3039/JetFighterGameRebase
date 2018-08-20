@@ -27,12 +27,12 @@ public final class ServerSettings {
     public static final float BUMPOFF_ENERGY = (0.5f * JetBasic.MASS * BUMPOFF_SPEED * BUMPOFF_SPEED); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
-    public static final float COUNT_DOWN = 1f;
-    public static final int NOF_FUN = 0;
+    public static final float COUNT_DOWN = 3f;
+    public static final int NOF_FUN = 7;
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final float POWERUP_COLLECTION_RANGE = 14f;
     public static boolean RENDER_ENABLED = false;
-    public static final float GENERAL_SPEED_FACTOR = 2f;
+    public static final float GENERAL_SPEED_FACTOR = 1.3f;
 
     public static final int CUBE_SIZE_LARGE = 25;
     public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.001f;

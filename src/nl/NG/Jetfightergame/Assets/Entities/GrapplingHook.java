@@ -61,7 +61,7 @@ public class GrapplingHook extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(0.1f);
+        other.impact(5f, 0.2f);
 
         if (other instanceof AbstractJet) {
             hookedOther = (AbstractJet) other;

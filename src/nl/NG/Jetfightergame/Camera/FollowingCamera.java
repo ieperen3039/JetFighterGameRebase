@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public class FollowingCamera implements Camera {
     /** camera settings */
-    private static final DirVector eyeRelative = new DirVector(-200, 0, 10);
+    private static final DirVector eyeRelative = new DirVector(-20, 0, 5);
     private static final double EYE_PRESERVE = 1.0E-5;
     private static final double ORIENT_PRESERVE = 1.0E-4;
 
@@ -58,8 +58,11 @@ public class FollowingCamera implements Camera {
      * @return a new vector with the position translated to world-space
      */
     private static PosVector jetPosition(DirVector relativePosition, MovingEntity target) {
+        PosVector targetPos = target.interpolatedPosition();
+        if (!targetPos.isScalable()) return PosVector.zeroVector();
+
         final DirVector relative = target.relativeInterpolatedDirection(relativePosition);
-        return target.interpolatedPosition().add(relative, new PosVector());
+        return targetPos.add(relative, new PosVector());
     }
 
     /**

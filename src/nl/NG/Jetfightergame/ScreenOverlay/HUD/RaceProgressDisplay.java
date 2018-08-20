@@ -31,9 +31,9 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
 
     private static final int FINISH_BOX_WIDTH = 700;
     private static final int FINISH_BOX_HEIGHT = 800;
-    private static final float FINISH_PANEL_SPEED = 700f;
+    private static final float FINISH_PANEL_SPEED = 400f;
     private static final int FINISH_BOX_INDENT = 10;
-    private static final int FINISH_BOX_MARGIN = 50;
+    private static final int FINISH_BOX_MARGIN = 30;
     private static final float MORPH_DELTA = 250f;
     private static final float ALPHA_CHANGE_DURATION = 2f;
 

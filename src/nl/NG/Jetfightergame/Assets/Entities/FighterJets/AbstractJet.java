@@ -31,6 +31,7 @@ import java.util.List;
 
 import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType.*;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.GENERAL_SPEED_FACTOR;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
 
 /**
@@ -92,8 +93,8 @@ public abstract class AbstractJet extends MovingEntity {
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, gameTimer, entityDeposit);
 
-        this.airResistCoeff = airResistanceCoeff;
-        this.throttlePower = throttlePower;
+        this.airResistCoeff = airResistanceCoeff / GENERAL_SPEED_FACTOR;
+        this.throttlePower = throttlePower * GENERAL_SPEED_FACTOR;
         this.brakePower = brakePower;
         this.yawAcc = yawAcc;
         this.pitchAcc = pitchAcc;
@@ -123,6 +124,7 @@ public abstract class AbstractJet extends MovingEntity {
 
         gyroPhysics(deltaTime, netForce, velocity);
 
+        relativeStateDirection(DirVector.xVector()).normalize(forward);
         if (currentPowerup != PowerupType.NONE && controller.primaryFire()) {
             usePowerup();
         }
@@ -213,12 +215,14 @@ public abstract class AbstractJet extends MovingEntity {
         super.addStatePoint(currentTime, newPosition, newRotation);
         relativeStateDirection(DirVector.xVector()).normalize(forward);
         forwardInterpolator.add(new DirVector(forward), currentTime);
-        velocityInterpolator.add(super.velocityAtRenderTime(), currentTime);
+
+        velocity.set(super.velocityAtRenderTime());
+        velocityInterpolator.add(new DirVector(velocity), currentTime);
     }
 
     @Override
-    public void impact(float power) {
-        addSpeedModifier(0.6f, power);
+    public void impact(float factor, float duration) {
+        addSpeedModifier(1f / factor, duration);
     }
 
     /**
@@ -247,7 +251,7 @@ public abstract class AbstractJet extends MovingEntity {
         float pps = THRUST_PARTICLES_PER_SECOND / nOfBoosters;
         nuzzle.add(new BoosterLine(
                 left, right, DirVector.zeroVector(), pps, THRUST_PARTICLE_LINGER_TIME,
-                THRUST_COLOR_1, THRUST_COLOR_2, THRUST_PARTICLE_SIZE
+                THRUST_COLOR_1, THRUST_COLOR_2, THRUST_PARTICLE_SIZE, gameTimer
         ));
     }
 
@@ -278,13 +282,12 @@ public abstract class AbstractJet extends MovingEntity {
         }
         float pps = Math.max((THRUST_PARTICLES_PER_SECOND * thrust * thrust) / nuzzle.size(), 3);
 
-        float deltaTime = gameTimer.getRenderTime().difference();
         PosVector currPos = interpolatedPosition();
         Quaternionf currRot = interpolatedRotation();
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm, () -> nuzzle.forEach(boosterLine ->
-                entityDeposit.addParticles(boosterLine.update(sm, trail, 0.1f, pps, deltaTime))), currPos, currRot
+                entityDeposit.addParticles(boosterLine.update(sm, trail, 0.1f, pps))), currPos, currRot
         );
 
     }
@@ -325,7 +328,9 @@ public abstract class AbstractJet extends MovingEntity {
                 // honk
                 break;
             case SPEED_BOOST:
-                addSpeedModifier(PowerupType.SPEED_BOOST_FACTOR, PowerupType.SPEED_BOOST_DURATION);
+                float factor = PowerupType.SPEED_BOOST_FACTOR;
+
+                addSpeedModifier(factor, PowerupType.SPEED_BOOST_DURATION);
                 entityDeposit.boosterColorChange(this, Color4f.YELLOW, Color4f.WHITE, SPEED_BOOST_DURATION);
                 break;
             case SHIELD:

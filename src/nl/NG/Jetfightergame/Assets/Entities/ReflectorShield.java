@@ -30,7 +30,7 @@ public class ReflectorShield extends AbstractShield {
     }
 
     @Override
-    public void impact(float power) {
+    public void impact(float factor, float duration) {
         DirVector move = getVelocity();
         DirVector randDirection = DirVector.randomOrb();
         move.add(randDirection.mul(20f));

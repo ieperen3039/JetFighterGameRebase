@@ -1,18 +1,15 @@
 package nl.NG.Jetfightergame.GameState;
 
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Spectral;
 import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.AveragingQueue;
 import nl.NG.Jetfightergame.Tools.DataStructures.ConcurrentArrayList;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
-import nl.NG.Jetfightergame.Tools.Extreme;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -20,7 +17,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -133,40 +129,17 @@ public class CollisionDetection implements EntityManagement {
 
                 Touchable other = pairs.left(i);
                 if (other instanceof MovingEntity) { // if two entities collide
+                    MovingEntity right = pairs.right(i);
                     MovingEntity left = (MovingEntity) other;
-                    MovingEntity.entityCollision(left, pairs.right(i), deltaTime, buffer[i]);
+                    MovingEntity.entityCollision(left, right, deltaTime, buffer[i]);
 
                 } else { // if entity collides with terrain
-                    terrainCollision(pairs.right(i), path, deltaTime, buffer[i]);
+                    MovingEntity right = pairs.right(i);
+                    right.terrainCollision(deltaTime, buffer[i]);
                 }
             }
 
         } while ((nOfCollisions > 0) && (--remainingLoops > 0) && !Thread.interrupted());
-    }
-
-    /**
-     * gives a correcting momentum to the target entity, such that it restores its path. It may not happen that the
-     * momentum results in another collision
-     * @param deltaTime
-     * @param collision the collision of this entity to be processed
-     * @param target    an entity that has collided with a solid entity
-     */
-    private static void terrainCollision(MovingEntity target, PathDescription path, float deltaTime, Collision collision) {
-        if (target instanceof AbstractJet) {
-            PosVector jetPosition = target.getPosition();
-            PosVector middleOfPath = path.getMiddleOfPath(collision);
-            DirVector targetToMid = jetPosition.to(middleOfPath, new DirVector());
-
-            targetToMid.normalize();
-            DirVector midToTarget = targetToMid.negate(new DirVector());
-
-            float targetEnergy = 2 * target.getKineticEnergy(midToTarget) + ServerSettings.BUMPOFF_ENERGY;
-
-            target.applyJerk(targetToMid, targetEnergy, deltaTime);
-
-        } else {
-            target.terrainCollision(deltaTime, collision);
-        }
     }
 
     /**
@@ -379,6 +352,7 @@ public class CollisionDetection implements EntityManagement {
 
         for (int i = xFrom; i < xLowerSorted.length; i++) {
             CollisionEntity entity = xLowerSorted[i];
+            if (entity.entity instanceof Spectral) continue;
             if (entity.xUpper() < xMin) continue;
             if (entity.yUpper() < yMin || entity.yLower() > yMax) continue;
             if (entity.zUpper() < zMin || entity.zLower() > zMax) continue;
@@ -447,39 +421,6 @@ public class CollisionDetection implements EntityManagement {
             array[xi++] = array[i];
         }
         return Arrays.copyOf(array, xi);
-    }
-
-    /**
-     * casts a ray into the world and returns where it hits anything.
-     * @param source    a point in world-space
-     * @param direction a direction in world-space
-     * @return the collision caused by this ray
-     */
-    public Collision rayTrace(PosVector source, DirVector direction) {
-        ShadowMatrix sm = new ShadowMatrix();
-        PosVector sink = source.add(direction, new PosVector());
-
-        Extreme<Collision> firstHit = new Extreme<>(false);
-
-        final Consumer<Shape> tracer = shape -> {
-            PosVector alpha = sm.mapToLocal(source);
-            PosVector beta = sm.mapToLocal(sink);
-            final DirVector alphaToBeta = alpha.to(beta, new DirVector());
-
-            // search hitpoint, add it when found
-            Collision newCrash = shape.getCollision(alpha, alphaToBeta, null);
-            if (newCrash != null) {
-                newCrash.convertToGlobal(sm, null);
-                firstHit.check(newCrash);
-            }
-        };
-
-        for (CollisionEntity e : entityArray()) {
-            Touchable entity = e.entity;
-            entity.toLocalSpace(sm, () -> entity.create(sm, tracer));
-        }
-
-        return firstHit.get();
     }
 
     /**

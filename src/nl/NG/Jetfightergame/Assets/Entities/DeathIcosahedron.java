@@ -16,6 +16,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -31,8 +32,8 @@ import java.util.function.Consumer;
  */
 public class DeathIcosahedron extends AbstractProjectile {
     private static final float SCALE = 3f;
-    private static final float SPARK_COOLDOWN = 0.01f;
-    private static final float FIRE_SPEED = 10f;
+    private static final float SPARK_COOLDOWN = 0.005f;
+    private static final float FIRE_SPEED = 20f;
     private static final float SEEKER_COOLDOWN = 1f;
     private static final float SEEKER_LAUNCH_SPEED = 20f;
     private static final Color4f COLOR = new Color4f(0.8f, 0.3f, 0);
@@ -41,11 +42,11 @@ public class DeathIcosahedron extends AbstractProjectile {
     private float seekerTimeRemain;
 
     private DeathIcosahedron(
-            int id, PosVector position, Quaternionf rotation, DirVector velocity,
+            int id, PosVector position, DirVector velocity,
             SpawnReceiver particleDeposit, GameTimer gameTimer, AbstractJet sourceEntity, EntityMapping entities
     ) {
         super(
-                id, position, rotation, velocity, 1f,
+                id, position, Toolbox.xTo(velocity), velocity, 1f,
                 0f, 60f, 0f, 0f, 0f, 0f,
                 particleDeposit, gameTimer, sourceEntity
         );
@@ -57,7 +58,7 @@ public class DeathIcosahedron extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(2);
+        other.impact(1.5f, 10);
     }
 
     @Override
@@ -76,7 +77,7 @@ public class DeathIcosahedron extends AbstractProjectile {
         do {
             PosVector pos = positionInterpolator.getInterpolated(renderTime() - sparkTimeRemain).toPosVector();
             DirVector move = positionInterpolator.getDerivative();
-            move.add(DirVector.randomOrb().reducedTo(FIRE_SPEED, new DirVector()));
+            move.add(DirVector.randomOrb().reducedTo(SCALE * 1.5f, new DirVector()));
 
             cloud.addParticle(pos, move, 0, 1, Color4f.RED, 2f);
 
@@ -141,15 +142,16 @@ public class DeathIcosahedron extends AbstractProjectile {
         }
 
         public static DirVector getVelocity(AbstractJet jet) {
-            DirVector vel = jet.interpolatedVelocity();
-            vel.add(jet.getForward().scale(FIRE_SPEED));
+            DirVector vel = jet.getVelocity();
+            DirVector launch = jet.getForward().scale(FIRE_SPEED);
+            vel.add(launch);
             return vel;
         }
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
             AbstractJet entity = (AbstractJet) entities.getEntity(sourceID);
-            return new DeathIcosahedron(id, position, rotation, velocity, game, game.getTimer(), entity, entities);
+            return new DeathIcosahedron(id, position, velocity, game, game.getTimer(), entity, entities);
         }
 
         @Override

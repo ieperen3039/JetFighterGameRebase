@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
@@ -39,6 +40,7 @@ import java.util.function.Supplier;
 public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChangeListener {
 
     private final List<ServerConnection> connections;
+    private final List<Player> npcPlayers;
     private final RaceProgress raceProgress;
 
     private EnvironmentManager gameWorld;
@@ -55,7 +57,40 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         this.globalTime = new GameTimer(ClientSettings.RENDER_DELAY);
         this.connections = new ArrayList<>();
 
+        npcPlayers = getNPCPlayers(ServerSettings.NOF_FUN);
+
         gameWorld.build();
+    }
+
+    /**
+     * generates players controlled by RaceAI
+     * @param nOfPlayers the number of players generated
+     * @return a list of AI controlled players
+     */
+    private List<Player> getNPCPlayers(int nOfPlayers) {
+        List<Player> npcs = new ArrayList<>();
+        // add FUN
+        for (int i = 0; i < nOfPlayers; i++) {
+            EntityFactory blueprint = new JetSpitsy.Factory(new EntityState(), 0);
+            AbstractJet jet = (AbstractJet) blueprint.construct(this, gameWorld);
+
+            String name = "AI-" + i;
+            Player npc = new Player() {
+                @Override
+                public String playerName() {
+                    return name;
+                }
+
+                @Override
+                public AbstractJet jet() {
+                    return jet;
+                }
+            };
+            Controller controller = new RaceAI(npc, raceProgress, gameWorld);
+            jet.setController(controller);
+            npcs.add(npc);
+        }
+        return npcs;
     }
 
     /**
@@ -91,7 +126,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         AbstractJet playerJet = player.jet();
         gameWorld.addEntity(playerJet);
-        gameWorld.updateGameLoop(globalTime.getGameTime().current(), globalTime.getGameTime().difference());
+        TrackedFloat time = globalTime.getGameTime();
+        gameWorld.updateGameLoop(time.current(), time.difference());
         int pInd = raceProgress.addPlayer(player);
         player.sendPlayerSpawn(player, pInd);
 
@@ -230,6 +266,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     private void setWorld(EnvironmentClass world, int maxRounds) {
         Logger.INFO.print("Switching world to " + world);
 
+        worldShouldSwitch = false;
         allowPlayerJoin = false;
         float countDown = ServerSettings.COUNT_DOWN;
 
@@ -249,43 +286,24 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
             gameWorld.addEntity(jet);
             for (ServerConnection conn : connections) {
+                player.sendEntityUpdate(jet, globalTime.time() - 1);
                 player.sendEntityUpdate(jet, globalTime.time());
                 conn.sendPlayerSpawn(player, pInd);
             }
         }
 
-        worldShouldSwitch = false;
-
-        // add FUN
-        for (int i = 0; i < ServerSettings.NOF_FUN; i++) {
-//            MovingEntity target = connections.get(0).jet();
-            EntityFactory blueprint = new JetSpitsy.Factory(gameWorld.getNewSpawnPosition(), 0);
-
-            AbstractJet npc = (AbstractJet) blueprint.construct(this, gameWorld);
-            String name = "AI-" + i;
-
-            Player asPlayer = new Player() {
-                @Override
-                public String playerName() {
-                    return name;
-                }
-
-                @Override
-                public AbstractJet jet() {
-                    return npc;
-                }
-            };
-
-            Controller controller = new RaceAI(asPlayer, raceProgress, gameWorld);
-            npc.addSpeedModifier(0, countDown);
-            npc.setController(controller);
-            gameWorld.addEntity(npc);
-
-            int pInd = raceProgress.addPlayer(asPlayer);
+        // add npc players
+        for (Player npc : npcPlayers) {
+            int pInd = raceProgress.addPlayer(npc);
+            AbstractJet jet = npc.jet();
+            jet.set(gameWorld.getNewSpawnPosition());
+            jet.setPowerup(PowerupType.NONE);
+            jet.addSpeedModifier(0, countDown);
+            gameWorld.addEntity(jet);
 
             for (ServerConnection conn : connections) {
-                conn.sendEntitySpawn(blueprint);
-                conn.sendPlayerSpawn(asPlayer, pInd);
+                conn.sendEntitySpawn(jet.getFactory());
+                conn.sendPlayerSpawn(npc, pInd);
             }
         }
     }

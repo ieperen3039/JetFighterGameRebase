@@ -90,7 +90,7 @@ public abstract class EntityFactory implements Externalizable {
     public void set(EntityState state, float fraction) {
         position = state.position(fraction);
         rotation = state.rotation(fraction);
-        velocity = state.velocity(0);
+        velocity = state.velocity(fraction);
     }
 
     /**

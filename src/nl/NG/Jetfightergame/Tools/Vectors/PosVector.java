@@ -11,6 +11,11 @@ public class PosVector extends Vector {
         super();
     }
 
+    @Override
+    public boolean isScalable() {
+        return !Float.isNaN(x) && !Float.isNaN(y) && !Float.isNaN(z);
+    }
+
     public static PosVector zeroVector() {
         return new PosVector(0.0f, 0.0f, 0.0f);
     }

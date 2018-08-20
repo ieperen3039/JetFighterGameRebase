@@ -63,7 +63,7 @@ public class StaticEntity implements Touchable {
         Pair<PosVector, Float> hitbox = Shape.getMinimalCircle(shape.getPoints());
 
         this.relativeMiddle = hitbox.left;
-        this.range = hitbox.right * scaling;
+        this.range = hitbox.right * scaling + 0.001f;
     }
 
     @Override

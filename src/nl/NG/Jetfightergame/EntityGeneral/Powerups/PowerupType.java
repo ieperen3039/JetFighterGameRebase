@@ -45,13 +45,13 @@ public enum PowerupType {
     public static final int NOF_SEEKERS_LAUNCHED = 20;
 
     public static final float SPEED_BOOST_DURATION = 3f;
-    public static final float SPEED_BOOST_FACTOR = 3f;
+    public static final float SPEED_BOOST_FACTOR = 2f;
 
-    public static final float OHSHIELD_DURATION = 2f;
+    public static final float OHSHIELD_DURATION = 5f;
 
     public static final float STAR_BOOST_DURATION = 15f;
-    public static final float STAR_BOOST_FACTOR = 1.3f;
-    public static final float STAR_BOOST_PUSH = 100_000f;
+    public static final float STAR_BOOST_FACTOR = 1.4f;
+    public static final float STAR_BOOST_PUSH = 10_000f;
 
     public static final float SMOKE_LINGER_TIME = 30f;
     public static final float SMOKE_LAUNCH_SPEED = 20f;
@@ -133,7 +133,7 @@ public enum PowerupType {
 
     public static void launchSeekers(AbstractJet jet, SpawnReceiver deposit, Function<EntityState, MovingEntity> target) {
         deposit.addSpawns(AbstractProjectile.createCloud(
-                jet.getPosition(), jet.getVelocity(), NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
+                jet.getPosition(), DirVector.zeroVector(), NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
                 (state) -> new Seeker.Factory(state, Toolbox.random.nextFloat(), jet, target.apply(state))
         ));
     }

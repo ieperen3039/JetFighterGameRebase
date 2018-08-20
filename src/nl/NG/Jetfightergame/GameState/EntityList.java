@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.GameState;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Spectral;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -85,6 +86,7 @@ public class EntityList implements EntityManagement {
         Collision minColl = null;
 
         for (Touchable entity : staticEntities) {
+            if (entity instanceof Spectral) continue;
             PosVector eMid = entity.getExpectedMiddle();
             float range = entity.getRange();
             if (eMid.x + range < xMin || eMid.x - range > xMax) continue;

@@ -56,13 +56,13 @@ public class Seeker extends AbstractProjectile {
         );
         if (tgt != null) {
             this.target = tgt;
-            setController(new RocketAI(this, tgt, 5f, 0.1f));
+            setController(new RocketAI(this, tgt, 100f, 0.1f));
         }
 
         trail = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
-                TRAIL_PARTICLES_PER_SEC, ClientSettings.THRUST_PARTICLE_LINGER_TIME, COLOR_1, COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE
-        );
+                TRAIL_PARTICLES_PER_SEC, ClientSettings.THRUST_PARTICLE_LINGER_TIME, COLOR_1, COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE,
+                gameTimer);
     }
 
     @Override
@@ -72,13 +72,12 @@ public class Seeker extends AbstractProjectile {
 
     @Override
     public void draw(GL2 gl) {
-        float deltaTime = gameTimer.getRenderTime().difference();
         PosVector currPos = interpolatedPosition();
         Quaternionf currRot = interpolatedRotation();
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm,
-                () -> entityDeposit.addParticles(trail.update(sm, DirVector.zeroVector(), 0, TRAIL_PARTICLES_PER_SEC, deltaTime)),
+                () -> entityDeposit.addParticles(trail.update(sm, DirVector.zeroVector(), 0, TRAIL_PARTICLES_PER_SEC)),
                 currPos, currRot
         );
     }
@@ -89,7 +88,7 @@ public class Seeker extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(1);
+        other.impact(2f, 1);
     }
 
     @Override

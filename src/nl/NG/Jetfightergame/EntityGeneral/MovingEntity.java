@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static java.lang.Float.isInfinite;
 import static java.lang.StrictMath.sqrt;
 
 /**
@@ -86,7 +87,7 @@ public abstract class MovingEntity implements Touchable {
         this.velocity = new DirVector(initialVelocity);
         this.extraVelocity = new DirVector(initialVelocity);
 
-        this.mass = mass;
+        this.mass = (mass <= 0) ? Float.POSITIVE_INFINITY : mass;
         this.gameTimer = gameTimer;
         this.entityDeposit = entityDeposit;
 
@@ -173,16 +174,31 @@ public abstract class MovingEntity implements Touchable {
      * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
      */
     public void update(float currentTime) {
-        velocity.set(extraVelocity);
-        addStatePoint(currentTime, extraPosition, extraRotation);
-
-        if (ServerSettings.DEBUG) {
-            if ((position.x() == Float.NaN) || (position.y() == Float.NaN) || (position.z() == Float.NaN))
-                throw new IllegalStateException("Invalid position of " + toString() + ": " + position.toString());
-            if ((rotation.x() == Float.NaN) || (rotation.y() == Float.NaN) || (rotation.z() == Float.NaN))
-                throw new IllegalStateException("Invalid rotation of " + toString() + ": " + rotation.toString());
-        }
+        if (extraVelocity.isScalable()) velocity.set(extraVelocity);
+        if (extraPosition.isScalable()) position.set(extraPosition);
+        rotation.set(extraRotation);
         hitPoints = null;
+        validateState();
+    }
+
+    public void validateState() {
+        if (ServerSettings.DEBUG) {
+            validate("position", position);
+            validate("rotation", rotation);
+            validate("velocity", velocity);
+        }
+    }
+
+    private void validate(String name, Vector3f vector) {
+        if (Float.isNaN(vector.x) || Float.isNaN(vector.y) || Float.isNaN(vector.z)) {
+            throw new IllegalStateException("Invalid " + name + " of " + toString() + ": " + vector.toString());
+        }
+    }
+
+    private void validate(String name, Quaternionf vector) {
+        if (Float.isNaN(vector.x) || Float.isNaN(vector.y) || Float.isNaN(vector.z) || Float.isNaN(vector.w)) {
+            throw new IllegalStateException("Invalid " + name + " of " + toString() + ": " + vector.toString());
+        }
     }
 
     /**
@@ -464,17 +480,28 @@ public abstract class MovingEntity implements Touchable {
      * @param collision the collision of this pair
      */
     public static void entityCollision(MovingEntity left, MovingEntity right, float deltaTime, Collision collision) {
-        PosVector leftPos = left.position.interpolateTo(left.extraPosition, collision.timeScalar);
-        PosVector rightPos = right.position.interpolateTo(right.extraPosition, collision.timeScalar);
-        DirVector leftToRight = leftPos.to(rightPos, new DirVector());
-        leftToRight.normalize();
-        DirVector rightToLeft = leftToRight.negate(new DirVector());
 
-        left.collideWith(right, rightToLeft);
-        right.collideWith(left, leftToRight);
+        if (!isInfinite(left.mass) && !isInfinite(right.mass)) {
+            PosVector leftPos = left.position.interpolateTo(left.extraPosition, collision.timeScalar);
+            PosVector rightPos = right.position.interpolateTo(right.extraPosition, collision.timeScalar);
+
+            DirVector leftToRight = leftPos.to(rightPos, new DirVector());
+            if (!leftToRight.isScalable()) return;
+            leftToRight.normalize();
+            DirVector rightToLeft = new DirVector(leftToRight);
+            rightToLeft.negate();
+
+            DirVector leftVel = left.extraVelocity;
+            DirVector rightVel = right.extraVelocity;
+            left.extraVelocity = left.collideWith(right, rightToLeft, leftVel, rightVel);
+            right.extraVelocity = right.collideWith(left, leftToRight, rightVel, leftVel);
+        }
 
         left.recalculateMovement(deltaTime);
         right.recalculateMovement(deltaTime);
+
+        left.validate("extra-position", left.extraPosition);
+        right.validate("extra-position", right.extraPosition);
     }
 
     public DirVector getVecTo(MovingEntity other) {
@@ -482,15 +509,29 @@ public abstract class MovingEntity implements Touchable {
     }
 
     /** @see #entityCollision(MovingEntity, MovingEntity, float, Collision) */
-    private void collideWith(MovingEntity other, DirVector otherToThis) {
+    private DirVector collideWith(MovingEntity other, DirVector otherToThis, DirVector thisVel, DirVector otherVel) {
         DirVector temp = new DirVector();
-        float dotProduct = extraVelocity.sub(other.extraVelocity, temp).dot(otherToThis);
-        float scalarLeft = ((2 * other.mass) / (mass + other.mass));
-        float scalarMiddle = dotProduct / otherToThis.lengthSquared();
-        extraVelocity.sub(otherToThis.mul(scalarLeft * scalarMiddle, temp));
 
-        float adjEnergy = (float) Math.sqrt(ServerSettings.BUMPOFF_ENERGY / mass);
-        extraVelocity.add(otherToThis.mul(adjEnergy, temp));
+        float dotProduct = thisVel.sub(otherVel, temp).dot(otherToThis);
+        float scalarLeft = ((2 * other.mass) / (this.mass + other.mass));
+        float scalarMiddle = dotProduct / otherToThis.lengthSquared();
+        thisVel.sub(otherToThis.mul(scalarLeft * scalarMiddle, temp));
+
+        float adjEnergy = (float) Math.sqrt(ServerSettings.BUMPOFF_ENERGY / this.mass);
+        thisVel.add(otherToThis.mul(adjEnergy, temp));
+
+
+        //TODO remove this debug shit
+        if (Float.isNaN(thisVel.x) || Float.isNaN(thisVel.y) || Float.isNaN(thisVel.z)) {
+            throw new IllegalStateException(toString() + " has NaN velocity " + thisVel + " with other " + other + " has " + otherVel +
+                    "\n dot:" + dotProduct + " | sc le:" + scalarLeft + " | sc ri:" + scalarMiddle + " | added e:" + adjEnergy + " | " + otherToThis);
+        }
+        if (isInfinite(thisVel.x) || isInfinite(thisVel.y) || isInfinite(thisVel.z)) {
+            throw new IllegalStateException(toString() + " has Infinite velocity " + thisVel + " with other " + other + " has " + otherVel +
+                    "\n dot:" + dotProduct + " | sc le:" + scalarLeft + " | sc ri:" + scalarMiddle + " | added e:" + adjEnergy + " | " + otherToThis);
+        }
+
+        return thisVel;
     }
 
     /**

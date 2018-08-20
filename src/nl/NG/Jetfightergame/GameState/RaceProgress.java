@@ -255,10 +255,14 @@ public class RaceProgress {
         return Collections.unmodifiableList(Arrays.asList(raceOrder));
     }
 
+    /**
+     * @param pInd index of a player
+     * @return a float such that player[pInd] is lower than another player if it is further in the race
+     */
     private Float playerOrdering(Integer pInd) {
-        int pos = winners.indexOf(pInd);
-        if (pos > 0) return (float) pos;
-        return -(float) (progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd]);
+        float pos = winners.indexOf(pInd);
+        if (pos < 0) return -Math.max(progressRound[pInd] * nOfCheckpoints + progressCheckpoint[pInd], 0f);
+        else return pos - ((maxRounds + 1) * nOfCheckpoints) - players.length;
     }
 
     /**

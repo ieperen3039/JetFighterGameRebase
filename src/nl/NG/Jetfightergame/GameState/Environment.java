@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
-import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -163,11 +162,6 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         @Override
         public MovingEntity getEntity(int id) {
             return null;
-        }
-
-        @Override
-        public PosVector getMiddleOfPath(Collision collision) {
-            return PosVector.zeroVector();
         }
 
         @Override
