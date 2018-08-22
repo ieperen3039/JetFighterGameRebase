@@ -300,6 +300,7 @@ public class JetFighterGame {
      */
     public static void main(String... argArray) throws Exception {
         List<String> args = Arrays.asList(argArray);
+        System.out.println("args: " + args);
 
         boolean makeLocalServer = args.contains("-local");
         ServerSettings.DEBUG = args.contains("-debug");

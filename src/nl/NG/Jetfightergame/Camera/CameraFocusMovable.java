@@ -20,6 +20,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
@@ -28,6 +29,8 @@ import java.util.function.Consumer;
 public class CameraFocusMovable extends AbstractJet implements Spectral {
     private static final float MOVE_FACTOR = 100f;
     private static final float ROLL_FACTOR = 2f;
+
+    private boolean didPrint = false;
 
     private CameraFocusMovable(PosVector position, Quaternionf rotation, GameTimer timer) {
         super(0, position, rotation, Material.GLOWING,
@@ -43,11 +46,18 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
 
         float forward = controller.throttle() * deltaTime * MOVE_FACTOR;
         float toLeft = controller.yaw() * deltaTime * MOVE_FACTOR;
-        int i = controller.primaryFire() ? 1 : controller.secondaryFire() ? -1 : 0;
-        float toUp = i * deltaTime * MOVE_FACTOR;
 
-        if (controller.primaryFire() && controller.secondaryFire()) {
-            toUp = 0;
+        if (controller.primaryFire() && !didPrint) {
+            PosVector pos = interpolatedPosition();
+            DirVector dir = interpolatedForward();
+            System.out.printf(Locale.US,
+                    "c %.0f %.0f %.0f %.2f %.2f %.2f 100\n",
+                    pos.x, pos.y, pos.z, dir.x, dir.y, dir.z
+            );
+        }
+        didPrint = controller.primaryFire();
+
+        if (controller.secondaryFire()) {
             Vector3f yRel = DirVector.yVector().rotate(rotation);
             DirVector up = DirVector.zVector();
             extraRotation.rotateX(up.dot(yRel) * -up.angle(yRel));
@@ -56,13 +66,13 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
         // transform velocity to local, reduce drifting, then transform back to global space
         Quaternionf turnBack = getRotation().invert(new Quaternionf());
         extraPosition.rotate(turnBack);
-        extraPosition.add(forward, toLeft, toUp);
+        extraPosition.add(forward, toLeft, 0);
         extraPosition.rotate(rotation);
 
 
-        toLeft = controller.roll() * deltaTime * -ROLL_FACTOR;
-        toUp = controller.pitch() * deltaTime * -ROLL_FACTOR;
-        extraRotation.rotate(0, toUp, toLeft);
+        float rotLeft = controller.roll() * deltaTime * -ROLL_FACTOR;
+        float rotUp = controller.pitch() * deltaTime * -ROLL_FACTOR;
+        extraRotation.rotate(0, rotUp, rotLeft);
     }
 
     @Override

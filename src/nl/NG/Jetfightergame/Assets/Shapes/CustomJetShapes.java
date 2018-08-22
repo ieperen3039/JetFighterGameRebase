@@ -8,6 +8,9 @@ import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
  * @author Geert van Ieperen. Created on 11-8-2018.
  */
@@ -25,7 +28,8 @@ public final class CustomJetShapes {
         }
         isLoaded = true;
 
-        BASIC = new BasicShape(new ShapeParameters("ConceptBlueprint.obj", PosVector.zeroVector(), 0.5f), doLoadMesh);
+        Path s = Paths.get("ConceptBlueprint.obj");
+        BASIC = new BasicShape(new ShapeParameters(PosVector.zeroVector(), 0.5f, s, "Basic jet"), doLoadMesh);
         SPITZ = makeSpitzPlane(doLoadMesh);
     }
 

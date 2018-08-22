@@ -4,11 +4,14 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,31 +19,42 @@ import java.util.List;
  * @author Geert van Ieperen created on 6-5-2018.
  */
 public class ShapeParameters {
-
     public List<PosVector> vertices;
     public List<DirVector> normals;
     public List<Mesh.Face> faces;
     public final String name;
 
     /**
-     * @param fileName path to the .obj file
+     * calls {@link #ShapeParameters(PosVector, float, Path, String)} on the file of the given path without offset and
+     * scale of 1
+     * @param fileName path to the .obj file. Extension should NOT be included
      */
-    public ShapeParameters(String fileName) {
-        this(fileName, PosVector.zeroVector(), 1f);
+    public ShapeParameters(String[] fileName) {
+        this(PosVector.zeroVector(), 1f, Paths.get("", fileName), fileName[fileName.length - 1]);
     }
 
     /**
-     * @param fileName path from the directory main to the .obj file
-     * @param offSet   offset of the gravity middle in this mesh as {@code GM * -1}
-     * @param scale    the scale standard applied to this object, to let it correspond to its contract
+     * @param offSet offset of the gravity middle in this mesh as {@code GM * -1}
+     * @param scale  the scale standard applied to this object, to let it correspond to its contract
+     * @param res    path from the directory main to the .obj file. Extension should NOT be included
      */
-    public ShapeParameters(String fileName, PosVector offSet, float scale) {
-        name = asName(fileName);
+    public ShapeParameters(PosVector offSet, float scale, Resource res) {
+        this(offSet, scale, res.getPath(), res.name());
+    }
+
+    /**
+     * @param offSet offset of the gravity middle in this mesh as {@code GM * -1}
+     * @param scale  the scale standard applied to this object, to let it correspond to its contract
+     * @param path
+     * @param name
+     */
+    public ShapeParameters(PosVector offSet, float scale, Path path, String name) {
+        this.name = name;
         vertices = new ArrayList<>();
         normals = new ArrayList<>();
         faces = new ArrayList<>();
 
-        List<String> lines = openMesh(Directory.meshes, fileName);
+        List<String> lines = openMesh(path);
 
         for (String line : lines) {
             String[] tokens = line.split("\\s+");
@@ -74,19 +88,16 @@ public class ShapeParameters {
         }
 
         if (vertices.isEmpty() || faces.isEmpty()) {
-            Logger.ERROR.print("Empty mesh loaded: " + fileName + " (this may result in errors)");
+            Logger.ERROR.print("Empty mesh loaded: " + (path) + " (this may result in errors)");
         }
     }
 
-    private static String asName(String fileName) {
-        return fileName.replace(".obj", "");
-    }
-
-    private static List<String> openMesh(Directory dir, String fileName) {
+    private static List<String> openMesh(Path path) {
         try {
-            return Files.readAllLines(dir.getPath(fileName));
+            // add extension to path
+            return Files.readAllLines(path);
         } catch (IOException e) {
-            Logger.ERROR.print("Could not read mesh '" + fileName + "'. Continuing game without model.");
+            Logger.ERROR.print("Could not read mesh '" + path.toString() + "'. Continuing game without model.");
             Logger.ERROR.print("Current dir: " + Directory.currentDirectory());
             if (ServerSettings.DEBUG) e.printStackTrace();
             return new ArrayList<>();

@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Primitives.Triangle;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Vector3i;
@@ -26,10 +27,12 @@ public class BasicShape implements Shape {
     private List<Plane> triangles = Collections.EMPTY_LIST;
     private Mesh mesh;
 
-    public BasicShape(String fileName, boolean loadMesh) {
+    /** @see ShapeParameters#ShapeParameters(String[]) */
+    public BasicShape(boolean loadMesh, String... fileName) {
         this(new ShapeParameters(fileName), loadMesh);
     }
 
+    /** calls {@link #BasicShape(List, List, List, boolean, int)} with drawMethod GL_TRIANGLES */
     public BasicShape(ShapeParameters model, boolean loadMesh) {
         this(model.vertices, model.normals, model.faces, loadMesh, GL11.GL_TRIANGLES);
 
@@ -63,8 +66,16 @@ public class BasicShape implements Shape {
         }
     }
 
-    public static List<Shape> loadSplit(String fileName, boolean loadMesh, float containerSize, float scale) {
-        ShapeParameters file = new ShapeParameters(fileName, PosVector.zeroVector(), scale);
+    /**
+     * loads a mesh, splitting it into sections of size containersize.
+     * @param loadMesh      if true, the resulting mesh is written to GPU
+     * @param containerSize size of splitted container, which is applied in 3 dimensions
+     * @param scale         possible scaling factor upon loading
+     * @param fileName      path to the .obj file without extension
+     * @return a list of shapes, each being roughly containersize in size
+     */
+    public static List<Shape> loadSplit(boolean loadMesh, float containerSize, float scale, Resource fileName) {
+        ShapeParameters file = new ShapeParameters(PosVector.zeroVector(), scale, fileName);
         HashMap<Vector3i, CustomShape> world = new HashMap<>();
 
         for (Mesh.Face f : file.faces) {
@@ -98,7 +109,7 @@ public class BasicShape implements Shape {
                 normal.normalize();
             } else {
                 normal = null;
-                Logger.DEBUG.printSpamless(fileName, fileName + " has at least one not-computed normal");
+                Logger.DEBUG.printSpamless(file.name, file.name + " has at least one not-computed normal");
             }
 
             container.addPlane(normal, edges);

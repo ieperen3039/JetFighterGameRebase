@@ -14,7 +14,6 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -28,6 +27,8 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Engine.JetFighterGame.GameMode.MENU_MODE;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.TARGET_FPS;
+import static nl.NG.Jetfightergame.Settings.ServerSettings.PRINT_STATE_INTERVAL;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -55,7 +56,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window, Camera camera,
                               ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> hudProvider, Mode displayMode
     ) throws IOException, ShaderException {
-        super("Rendering", ClientSettings.TARGET_FPS, false);
+        super("Rendering", TARGET_FPS, false);
 
         this.gameState = gameState;
         this.window = window;
@@ -104,7 +105,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         frameNumber++;
 
         //noinspection ConstantConditions,divzero
-        if (ServerSettings.PRINT_STATE_INTERVAL > 0 && (frameNumber % (int) (ClientSettings.TARGET_FPS * ServerSettings.PRINT_STATE_INTERVAL)) == 0) {
+        if (PRINT_STATE_INTERVAL > 0 && (frameNumber % (int) (TARGET_FPS * PRINT_STATE_INTERVAL)) == 0) {
             printStateOfJets(gameState);
         }
 
@@ -174,28 +175,17 @@ public class JetFighterRenderer extends AbstractGameLoop {
     }
 
     private static void printStateOfJets(Environment gameState) {
-        String pre = "entities.add(makeCheckpoint(raceProgress, ";
-        String post = "));";
         gameState.getEntities().stream()
                 .filter(e -> e instanceof AbstractJet)
-                .forEach(s -> {
+                .map(e -> (AbstractJet) e)
+                .findFirst()
+                .ifPresent(s -> {
                     PosVector pos = s.interpolatedPosition();
-                    DirVector dir = ((AbstractJet) s).interpolatedForward();
+                    DirVector dir = s.interpolatedForward();
                     System.out.printf(Locale.US,
-                            "%s%.0f, %.0f, %.0f, %.2ff, %.2ff, %.2ff%s\n", pre, pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, post);
+                            "c %.0f %.0f %.0f %.2f %.2f %.2f 100\n", pos.x, pos.y, pos.z, dir.x, dir.y, dir.z);
                         }
                 );
-
-//        String pre = "entities.add(powerup(";
-//        String post = ", ));";
-//        gameState.getEntities().stream()
-//                .filter(e -> e instanceof AbstractJet)
-//                .forEach(s -> {
-//                            PosVector pos = s.interpolatedPosition();
-//                            System.out.printf(Locale.US,
-//                                    "%s%.0f, %.0f, %.0f%s\n", pre, pos.x, pos.y, pos.z, post);
-//                        }
-//                );
     }
 
     @Override

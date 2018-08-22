@@ -35,6 +35,8 @@ public final class ServerSettings {
     public static final float PRINT_STATE_INTERVAL = 0;
     public static final int NOF_FUN = 0;
 
+    public static final String CHECKPOINT_DESCRIPTION_EXT = ".chp";
+
     public static final int CUBE_SIZE_LARGE = 25;
     public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.001f;
 }

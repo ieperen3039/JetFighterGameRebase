@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Rendering;
 
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
@@ -173,7 +174,7 @@ public class GLFWWindow {
         glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
         Toolbox.checkGLError();
 
-        File file = new File("ScreenShots/" + filename + ".png"); // The file to save to.
+        File file = Directory.screenShots.getFile(filename + ".png"); // The file to save to.
         boolean success = file.mkdirs();
         if (!success) return false;
 

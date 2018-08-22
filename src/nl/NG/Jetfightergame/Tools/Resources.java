@@ -14,8 +14,6 @@ import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 import static org.lwjgl.BufferUtils.createByteBuffer;
@@ -24,7 +22,6 @@ import static org.lwjgl.BufferUtils.createByteBuffer;
  * @author Jorren
  */
 public final class Resources {
-
     public static String loadText(Path path) throws IOException {
         String result;
         try (
@@ -36,17 +33,6 @@ public final class Resources {
             throw new IOException("Resource not found: " + path);
         }
         return result;
-    }
-
-    public static List<String> readAllLines(String fileName) throws IOException {
-        List<String> list = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName)))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                list.add(line);
-            }
-        }
-        return list;
     }
 
     public static ByteBuffer toByteBuffer(String resource, int bufferSize) throws IOException {
@@ -90,11 +76,6 @@ public final class Resources {
         buffer.flip();
         newBuffer.put(buffer);
         return newBuffer;
-    }
-
-    public static BufferedInputStream getInputStream(String filename) throws FileNotFoundException {
-        final InputStream fileInputStream = new FileInputStream(filename);
-        return new BufferedInputStream(fileInputStream);
     }
 
     /**

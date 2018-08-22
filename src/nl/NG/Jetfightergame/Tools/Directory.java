@@ -15,7 +15,8 @@ public enum Directory {
     shaders(Paths.get("res", "shaders")),
     meshes(Paths.get("res", "models")),
     pictures(Paths.get("res", "pictures")),
-    recordings(Paths.get("ScreenShots"));
+    recordings(Paths.get("Recordings")),
+    screenShots(Paths.get("ScreenShots"));
 
     private final Path directory;
 
@@ -40,4 +41,5 @@ public enum Directory {
     public static Path currentDirectory() {
         return Paths.get("").toAbsolutePath();
     }
+
 }
