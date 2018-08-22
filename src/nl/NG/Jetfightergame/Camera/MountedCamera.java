@@ -15,7 +15,7 @@ public class MountedCamera implements Camera {
     private final AbstractJet target;
     private final SmoothTrackedVector<DirVector> eye;
 
-    public MountedCamera(AbstractJet target) {
+    public MountedCamera(AbstractJet target) { // TODO player
         this.target = target;
         this.eye = new ExponentialSmoothVector<>(getFocus(target), 0.002f);
     }

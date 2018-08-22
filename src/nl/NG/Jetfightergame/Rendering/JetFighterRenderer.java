@@ -18,6 +18,7 @@ import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
+import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.IOException;
@@ -45,8 +46,14 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private final String sessionName;
     private long frameNumber = 0;
 
-    public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window,
-                              Camera camera, ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> gravityHud
+    public enum Mode {
+        SHOW, RECORD_AND_SHOW, RECORD
+    }
+
+    private Mode displayMode;
+
+    public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window, Camera camera,
+                              ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> hudProvider, Mode displayMode
     ) throws IOException, ShaderException {
         super("Rendering", ClientSettings.TARGET_FPS, false);
 
@@ -54,6 +61,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.window = window;
         this.activeCamera = camera;
         this.engine = engine;
+        this.displayMode = displayMode;
 
         Logger.printOnline(() -> {
             Float currentTime = engine.getTimer().getRenderTime().current();
@@ -77,7 +85,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         );
 
         overlay.addMenuItem(menu);
-        overlay.addHudItem(gravityHud);
+        overlay.addHudItem(hudProvider);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yymmdd_hhmmss");
         sessionName = dateFormat.format(new Date());
@@ -87,12 +95,15 @@ public class JetFighterRenderer extends AbstractGameLoop {
     protected void update(float realDeltaTime) {
         GameTimer timer = engine.getTimer();
         timer.updateRenderTime();
+        timer.updateGameTime(); // will never run together with serverloop
+
         Float currentRenderTime = timer.getRenderTime().current();
         Float deltaRenderTime = timer.getRenderTime().difference();
 
         activeCamera.updatePosition(deltaRenderTime);
         frameNumber++;
 
+        //noinspection ConstantConditions,divzero
         if (ServerSettings.PRINT_STATE_INTERVAL > 0 && (frameNumber % (int) (ClientSettings.TARGET_FPS * ServerSettings.PRINT_STATE_INTERVAL)) == 0) {
             printStateOfJets(gameState);
         }
@@ -145,10 +156,13 @@ public class JetFighterRenderer extends AbstractGameLoop {
         overlay.draw(window.getWidth(), window.getHeight(), gl::getPositionOnScreen, activeCamera.getEye());
 
         // update window
-        window.update();
+        if (displayMode == Mode.RECORD_AND_SHOW || displayMode == Mode.SHOW) {
+            window.update();
+        }
 
-        if (ClientSettings.SAVE_PLAYBACK && !engine.isPaused()) {
-            window.printScreen("session_" + sessionName + "/" + frameNumber);
+        if (displayMode == Mode.RECORD_AND_SHOW || displayMode == Mode.RECORD) {
+            boolean canUseFront = (displayMode == Mode.RECORD_AND_SHOW);
+            window.printScreen("session_" + sessionName + "/" + frameNumber, canUseFront);
         }
 
         // update stop-condition
@@ -159,28 +173,29 @@ public class JetFighterRenderer extends AbstractGameLoop {
         Toolbox.checkGLError();
     }
 
-    public static void printStateOfJets(Environment gameState) {
-//        String pre = "entities.add(makeCheckpoint(raceProgress, ";
-////        String post = "));";
-////        gameState.getEntities().stream()
-////                .filter(e -> e instanceof AbstractJet)
-////                .forEach(s -> {
-////                    PosVector pos = s.interpolatedPosition();
-////                    DirVector dir = ((AbstractJet) s).interpolatedForward();
-////                    System.out.printf(Locale.US,
-////                                    "%s%.0f, %.0f, %.0f, %.2ff, %.2ff, %.2ff%s\n", pre, pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, post);
-////                        }
-////                );
-        String pre = "entities.add(powerup(";
-        String post = ", ));";
+    private static void printStateOfJets(Environment gameState) {
+        String pre = "entities.add(makeCheckpoint(raceProgress, ";
+        String post = "));";
         gameState.getEntities().stream()
                 .filter(e -> e instanceof AbstractJet)
                 .forEach(s -> {
-                            PosVector pos = s.interpolatedPosition();
-                            System.out.printf(Locale.US,
-                                    "%s%.0f, %.0f, %.0f%s\n", pre, pos.x, pos.y, pos.z, post);
+                    PosVector pos = s.interpolatedPosition();
+                    DirVector dir = ((AbstractJet) s).interpolatedForward();
+                    System.out.printf(Locale.US,
+                            "%s%.0f, %.0f, %.0f, %.2ff, %.2ff, %.2ff%s\n", pre, pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, post);
                         }
                 );
+
+//        String pre = "entities.add(powerup(";
+//        String post = ", ));";
+//        gameState.getEntities().stream()
+//                .filter(e -> e instanceof AbstractJet)
+//                .forEach(s -> {
+//                            PosVector pos = s.interpolatedPosition();
+//                            System.out.printf(Locale.US,
+//                                    "%s%.0f, %.0f, %.0f%s\n", pre, pos.x, pos.y, pos.z, post);
+//                        }
+//                );
     }
 
     @Override

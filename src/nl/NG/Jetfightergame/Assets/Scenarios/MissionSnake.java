@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
@@ -9,7 +10,6 @@ import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.GridMesh;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -105,7 +105,7 @@ public class MissionSnake extends GameState {
         squareRing(frame, upper, top);
         squareRing(frame, top, roof);
 
-        return frame.wrapUp(ServerSettings.RENDER_ENABLED);
+        return frame.wrapUp(GeneralShapes.RENDER_ENABLED);
     }
 
     /**

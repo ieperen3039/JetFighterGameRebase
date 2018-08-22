@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.EntityGeneral.Factory;
 import nl.NG.Jetfightergame.Assets.Entities.*;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
+import nl.NG.Jetfightergame.Camera.CameraFocusMovable;
 import nl.NG.Jetfightergame.EntityGeneral.InvisibleEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 
@@ -13,6 +14,7 @@ import java.util.function.Supplier;
  * @see EntityFactory for how to create entities
  */
 public enum EntityClass {
+    SPECTATOR_CAMERA(CameraFocusMovable.Factory::new),
     JET_BASIC(JetBasic.Factory::new),
     JET_SPITZ(JetSpitsy.Factory::new),
 

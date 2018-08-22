@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.Assets.Shapes;
 
 import nl.NG.Jetfightergame.Assets.WorldObjects.CheckpointRing;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -16,6 +15,8 @@ import java.util.List;
  * @author Geert van Ieperen created on 7-11-2017.
  */
 public final class GeneralShapes {
+    public static boolean RENDER_ENABLED = false;
+
     private static final float CONTAINER_SIZE = 200f;
     private static boolean isLoaded = false;
 
@@ -38,7 +39,7 @@ public final class GeneralShapes {
      *                   Shape#render(GL2.Painter)} will result in a {@link NullPointerException}
      */
     public static void init(boolean doLoadMesh) {
-        ServerSettings.RENDER_ENABLED = doLoadMesh;
+        RENDER_ENABLED = doLoadMesh;
         if (isLoaded) {
             Logger.ERROR.print("Tried loading shapes while they where already loaded");
             return;

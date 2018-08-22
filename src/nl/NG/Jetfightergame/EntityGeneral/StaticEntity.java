@@ -106,6 +106,6 @@ public class StaticEntity implements Touchable {
     }
 
     public Quaternionf getRotation() {
-        return rotation;
+        return new Quaternionf(rotation);
     }
 }

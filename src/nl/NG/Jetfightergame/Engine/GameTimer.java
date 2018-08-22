@@ -92,4 +92,9 @@ public class GameTimer {
         updateGameTime();
         updateRenderTime();
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " @" + currentInGameTime + (isPaused ? "(paused)" : "");
+    }
 }

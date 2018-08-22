@@ -14,6 +14,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Interpolation.QuaternionInterpolator;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -175,9 +176,15 @@ public abstract class MovingEntity implements Touchable {
      * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
      */
     public void update(float currentTime) {
-        if (extraVelocity.isRegular()) velocity.set(extraVelocity);
-        if (extraPosition.isRegular()) position.set(extraPosition);
-        if (Toolbox.isValidQuaternion(extraRotation)) rotation.set(extraRotation);
+        if (extraVelocity.isRegular()) {
+            velocity.set(extraVelocity);
+        } else Logger.WARN.print("Ignored invalid velocity of " + this + " " + extraVelocity);
+        if (extraPosition.isRegular()) {
+            position.set(extraPosition);
+        } else Logger.WARN.print("Ignored invalid position of " + this + " " + extraPosition);
+        if (Toolbox.isValidQuaternion(extraRotation)) {
+            rotation.set(extraRotation);
+        } else Logger.WARN.print("Ignored invalid rotation of " + this + " " + extraRotation);
         hitPoints = null;
     }
 
@@ -376,6 +383,7 @@ public abstract class MovingEntity implements Touchable {
     public void addStatePoint(float currentTime, PosVector newPosition, Quaternionf newRotation) {
         position.set(newPosition);
         rotation.set(newRotation);
+
         positionInterpolator.add(newPosition, currentTime);
         rotationInterpolator.add(newRotation, currentTime);
     }

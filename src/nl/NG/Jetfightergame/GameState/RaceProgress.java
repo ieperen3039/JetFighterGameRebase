@@ -10,7 +10,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -145,8 +144,6 @@ public class RaceProgress {
             raceOrder[newInd] = newInd;
         }
 
-        Logger.printOnline(() -> getState(pIndex).toString());
-
         players[pIndex] = newPlayer;
     }
 
@@ -197,6 +194,7 @@ public class RaceProgress {
     }
 
     public Checkpoint nextPointEntityOf(int pInd, int lookAhead) {
+        if (pInd < 0) return allPoints.get(0);
         int index = nextPointOf(pInd);
         if (index < 0) return null;
         index = (index + lookAhead) % nOfCheckpoints;
@@ -359,7 +357,7 @@ public class RaceProgress {
 
         @Override
         public PosVector getExpectedMiddle() {
-            return position;
+            return new PosVector(position);
         }
     }
 

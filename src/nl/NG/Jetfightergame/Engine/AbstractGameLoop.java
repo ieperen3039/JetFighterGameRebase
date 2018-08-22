@@ -17,7 +17,7 @@ import java.util.function.Supplier;
  * also usable for rendering
  */
 public abstract class AbstractGameLoop extends Thread {
-    private float targetDeltaMillis;
+    private Float targetDeltaMillis;
     private CountDownLatch pauseBlock = new CountDownLatch(0);
     private boolean shouldStop;
     private boolean isPaused = true;
@@ -36,6 +36,7 @@ public abstract class AbstractGameLoop extends Thread {
      */
     public AbstractGameLoop(String name, int targetTps, boolean notifyDelay) {
         super(name);
+        if (targetTps == 0) pauseBlock = new CountDownLatch(1);
         this.targetDeltaMillis = 1000f/targetTps;
         this.notifyDelay = notifyDelay;
 

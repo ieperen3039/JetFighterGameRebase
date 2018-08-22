@@ -177,6 +177,7 @@ public abstract class GameState implements Environment {
 
     @Override
     public void addEntity(MovingEntity entity) {
+        if (entity == null) throw new IllegalArgumentException("received null entity");
         physicsEngine.addEntity(entity);
     }
 

@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Engine.GameTimer;
+import nl.NG.Jetfightergame.Engine.StateWriter;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
@@ -16,6 +17,7 @@ import nl.NG.Jetfightergame.GameState.EnvironmentManager;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -113,11 +115,12 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         // establish communication handler
         ServerConnection player = new ServerConnection(
-                receive, send,
-                this, (spawn, id) -> connections.forEach(conn -> conn.sendEntitySpawn(spawn)),
-                gameWorld.getNewSpawnPosition(), gameWorld.getCurrentType(), gameWorld,
-                asAdmin
+                receive, send, this,
+                gameWorld.getNewSpawnPosition(), gameWorld.getCurrentType(), gameWorld, asAdmin
         );
+
+        EntityFactory factory = player.jet().getFactory();
+        connections.forEach(conn -> conn.sendEntitySpawn(factory));
 
         if (connections.contains(player)) {
             Logger.ERROR.print("Player " + player + " already exists on the server");
@@ -137,6 +140,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         player.sendPlayerSpawn(player, pInd);
 
         for (ServerConnection conn : connections) {
+            if (conn instanceof StateWriter) continue;
             player.sendPlayerSpawn(conn, raceProgress.getPlayerInd(conn));
             conn.sendPlayerSpawn(player, pInd);
             conn.flush();
@@ -181,6 +185,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
+    public void addParticles(ParticleCloud particles) {
+        Logger.WARN.print("Tried adding particles while headless: sending just particles is not supported");
+    }
+
+    @Override
     public void addGravitySource(Supplier<PosVector> position, float magnitude, float duration) {
         gameWorld.addGravitySource(position, magnitude, globalTime.time() + duration);
     }
@@ -194,19 +203,26 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     protected void update(float deltaTime) {
         if (worldShouldSwitch) {
             if (gameWorld.getCurrentType() == lobby) {
+                if (ServerSettings.MAKE_RECORDING) startStateWriter();
                 setWorld(raceWorld, maxRounds);
+                allowPlayerJoin = false;
 
             } else {
                 setWorld(lobby, 0);
+                allowPlayerJoin = true;
             }
         }
 
-        for (ServerConnection conn : connections) {
+        // indexed loop for removing
+        for (int i = 0; i < connections.size(); i++) {
+            ServerConnection conn = connections.get(i);
             if (conn.isClosed()) {
                 Logger.WARN.print("Removing " + conn.playerName() + " from the game (disconnect)");
-                connections.remove(conn);
-                removeEntity(conn.jet());
 
+                AbstractJet jet = conn.jet();
+                if (jet != null) removeEntity(conn.jet());
+
+                connections.remove(i--);
                 if (connections.isEmpty()) stopLoop();
             }
         }
@@ -227,7 +243,17 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 connections.forEach(conn -> conn.sendEntityUpdate(ety, time.current()));
             }
         }
+
         connections.forEach(ServerConnection::flush);
+    }
+
+    private void startStateWriter() {
+        try {
+            StateWriter st = new StateWriter(globalTime.time());
+            connections.add(st);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void removeEntity(MovingEntity ety) {
@@ -279,7 +305,6 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         Logger.INFO.print("Switching world to " + world);
 
         worldShouldSwitch = false;
-        allowPlayerJoin = false;
         float countDown = maxRounds > 0 ? ServerSettings.COUNT_DOWN : 0;
 
         connections.forEach(conn -> conn.sendWorldSwitch(world, countDown, maxRounds));
@@ -289,6 +314,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         // sync new world with players
         for (ServerConnection player : connections) {
+            if (player instanceof StateWriter) continue;
+
             int pInd = raceProgress.addPlayer(player);
             AbstractJet jet = player.jet();
             jet.set(gameWorld.getNewSpawnPosition());

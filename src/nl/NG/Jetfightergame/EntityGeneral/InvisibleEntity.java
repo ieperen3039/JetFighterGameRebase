@@ -34,7 +34,6 @@ public class InvisibleEntity extends FallingCube implements TemporalEntity {
 
     @Override
     protected void updateShape(float deltaTime) {
-        super.updateShape(deltaTime);
         timeRemaining -= deltaTime;
     }
 
@@ -63,7 +62,7 @@ public class InvisibleEntity extends FallingCube implements TemporalEntity {
 
     @Override
     public EntityFactory getFactory() {
-        return new Factory(position, velocity, timeRemaining);
+        return new InvisibleEntity.Factory(position, velocity, timeRemaining);
     }
 
     public static class Factory extends EntityFactory {

@@ -24,14 +24,13 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.io.*;
-import java.util.function.BiConsumer;
 
 /**
  *
  * @author Geert van Ieperen created on 9-5-2018.
  */
 public class JetFighterProtocol {
-    public static final int versionNumber = 6;
+    public static final int versionNumber = 7;
     private static final byte TIMER_SYNC_PINGS = 10;
 
     private final DataInputStream input;
@@ -56,6 +55,27 @@ public class JetFighterProtocol {
             throw new IOException("connected client has version " + reply + " and we have " + versionNumber);
 
         StatusCode.check(input);
+    }
+
+    /**
+     * creates a protocol for reading from / writing to a file
+     * @param file  the file to write to
+     * @param write if true, allow writing, if false, allow reading
+     * @throws FileNotFoundException if the file does not exist
+     */
+    public JetFighterProtocol(File file, boolean write) throws IOException {
+        if (write) {
+            output = new DataOutputStream(new FileOutputStream(file));
+            input = new DataInputStream(System.in);
+            output.writeInt(versionNumber);
+
+        } else {
+            output = new DataOutputStream(System.out);
+            input = new DataInputStream(new BufferedInputStream(new FileInputStream(file)));
+            int fileVersion = input.readInt();
+            if (fileVersion != versionNumber)
+                throw new IOException("File has version " + fileVersion + " and we have " + versionNumber);
+        }
     }
 
     /**
@@ -84,10 +104,10 @@ public class JetFighterProtocol {
     /**
      * read an entity from the DataInputStream, match the entity with one in the list, and updates it
      * @param entities a list of all entities of which one of them must be the one on the stream
-     * @return the relevant entity, or null if it was not found
+     * @return the associated time, or 0 if the entity is not found
      * @throws IOException if anything goes wrong with the connection
      */
-    public MovingEntity entityUpdateRead(Environment entities) throws IOException {
+    public float entityUpdateRead(Environment entities) throws IOException {
         // identity and time
         int id = input.readInt();
         float time = input.readFloat();
@@ -98,11 +118,11 @@ public class JetFighterProtocol {
         MovingEntity target = entities.getEntity(id);
         if (target == null) {
             Logger.ERROR.print("Entity with id " + id + " not found");
-            return null;
+            return 0;
         }
 
         target.addStatePoint(time, pos, rot);
-        return target;
+        return time;
     }
 
     /** server sending a new entity */
@@ -158,7 +178,7 @@ public class JetFighterProtocol {
      */
     public Pair<String, AbstractJet> playerSpawnAccept(
             EntityState spawnState, SpawnReceiver server, Controller controls,
-            BiConsumer<EntityFactory, Integer> others, EntityMapping entities, boolean isAdmin
+            EntityMapping entities, boolean isAdmin
     ) throws IOException {
 
         String name = input.readUTF();
@@ -173,8 +193,6 @@ public class JetFighterProtocol {
         newEntitySend(factory);
         output.writeBoolean(isAdmin);
         output.flush();
-
-        others.accept(factory, jet.idNumber());
         return new Pair<>(name, jet);
     }
 
@@ -379,6 +397,14 @@ public class JetFighterProtocol {
 
     public String readText() throws IOException {
         return input.readUTF();
+    }
+
+    public InputStream getInput() {
+        return input;
+    }
+
+    public OutputStream getOutput() {
+        return output;
     }
 
     private enum StatusCode {

@@ -109,7 +109,7 @@ public abstract class AbstractJet extends MovingEntity {
 
         float time = gameTimer.time();
         forward = DirVector.xVector();
-        relativeStateDirection(forward).normalize(forward);
+        forward.rotate(rotation);
         forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
         velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
         nuzzle = new ArrayList<>();
@@ -215,7 +215,8 @@ public abstract class AbstractJet extends MovingEntity {
     @Override
     public void addStatePoint(float currentTime, PosVector newPosition, Quaternionf newRotation) {
         super.addStatePoint(currentTime, newPosition, newRotation);
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        forward = DirVector.xVector();
+        forward.rotate(rotation);
         forwardInterpolator.add(new DirVector(forward), currentTime);
 
         velocity.set(super.velocityAtRenderTime());

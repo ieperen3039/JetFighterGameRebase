@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 import org.junit.Assert;
@@ -32,7 +33,7 @@ public class JetFighterServerTest {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             ClientConnection cc = new ClientConnection("TheLegend27",
-                    client.getOutputStream(), client.getInputStream()
+                    client.getOutputStream(), client.getInputStream(), EntityClass.JET_SPITZ
             );
             Logger.DEBUG.print("received a " + cc);
         } catch (IOException e) {

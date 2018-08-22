@@ -44,7 +44,7 @@ public class ActionButtonHandler implements TrackerKeyListener {
             SimpleDateFormat ft = new SimpleDateFormat("mm_dd-hh_mm_ss");
             final String name = "Screenshot_" + ft.format(new Date());
 
-            boolean success = client.getWindow().printScreen(name);
+            boolean success = client.getWindow().printScreen(name, true);
             if (success) {
                 Logger.DEBUG.print("Saved screenshot as \"" + name + "\"");
             }

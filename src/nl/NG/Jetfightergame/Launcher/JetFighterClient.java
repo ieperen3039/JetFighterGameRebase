@@ -65,7 +65,7 @@ public class JetFighterClient {
             renderLoop();
 
             if (action.get() == START_GAME) {
-                new JetFighterGame(ClientSettings.LOCAL_SERVER).root();
+                new JetFighterGame(ClientSettings.LOCAL_SERVER, false, false, null).root();
                 window = newWindow();
             }
         }

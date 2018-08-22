@@ -9,7 +9,7 @@ import nl.NG.Jetfightergame.GameState.GameState;
  * @author Geert van Ieperen. Created on 4-7-2018.
  */
 public enum EnvironmentClass {
-    LOBBY,
+    LOBBY, VOID,
     PLAYERJET_LABORATORY, ISLAND_MAP;
 
     private static final EnvironmentClass[] VALUES = values();

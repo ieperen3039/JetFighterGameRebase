@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Scenarios;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
@@ -12,7 +13,6 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.ServerNetwork.ClientControl;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -292,7 +292,7 @@ public abstract class Process592 {
                     i.next(), i.next(), i.next(), i.next()
             );
 
-            Shape shape = frame.wrapUp(ServerSettings.RENDER_ENABLED);
+            Shape shape = frame.wrapUp(GeneralShapes.RENDER_ENABLED);
             cache.put(parts, shape);
 
             return new MenuPanel(shape, action, parts);

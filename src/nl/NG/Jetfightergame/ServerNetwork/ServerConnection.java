@@ -14,13 +14,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiConsumer;
 
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 
@@ -40,15 +36,13 @@ public class ServerConnection implements BlockingListener, Player {
     private final JetFighterProtocol protocol;
 
     private Lock sendLock = new ReentrantLock();
-    private volatile boolean isClosed;
+    protected volatile boolean isClosed;
 
     /**
      * construct a server-side connection to a player
      * @param inputStream  the incoming communication from the player
      * @param outputStream the outgoing communication to the player
      * @param server       the object that accepts server-commands
-     * @param spawnAccept  a function that takes the spawn and id of an {@link AbstractJet}, and communicates this to the other
-     *                     players.
      * @param playerSpawn  the place and state of the player at the moment of spawning. this should be an unoccupied
      *                     place in space
      * @param worldType    the current selected world
@@ -58,7 +52,7 @@ public class ServerConnection implements BlockingListener, Player {
      */
     public ServerConnection(
             InputStream inputStream, OutputStream outputStream,
-            GameServer server, BiConsumer<EntityFactory, Integer> spawnAccept, EntityState playerSpawn,
+            GameServer server, EntityState playerSpawn,
             EnvironmentClass worldType, EntityMapping entities, boolean isAdmin
     ) throws IOException {
         this.clientOut = new BufferedOutputStream(outputStream);
@@ -71,14 +65,35 @@ public class ServerConnection implements BlockingListener, Player {
         this.controls = new RemoteControlReceiver();
         protocol.worldSwitchSend(worldType, 0f, 0);
         clientOut.flush();
-        Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, spawnAccept, entities, isAdmin);
+        Pair<String, AbstractJet> p = protocol.playerSpawnAccept(playerSpawn, server, controls, entities, isAdmin);
         clientName = p.left;
         playerJet = p.right;
     }
 
+    protected ServerConnection(String name, File outputFile, float currentTime) throws IOException {
+        this.protocol = new JetFighterProtocol(outputFile, true);
+        clientOut = protocol.getOutput();
+        clientIn = protocol.getInput();
+        new DataOutputStream(clientOut).writeFloat(currentTime);
+
+        clientName = name;
+        hasAdminCapabilities = false;
+
+        server = null;
+        playerJet = null;
+        controls = new RemoteControlReceiver();
+    }
+
     @Override
     public boolean handleMessage() throws IOException {
-        MessageType type = MessageType.get(clientIn.read());
+        MessageType type;
+        try {
+            type = MessageType.get(clientIn.read());
+        } catch (IOException ex) {
+            Logger.ERROR.print(ex.getMessage());
+            type = MessageType.CONNECTION_CLOSE;
+        }
+
 
         if (type == CONNECTION_CLOSE) {
             isClosed = true;
@@ -267,6 +282,14 @@ public class ServerConnection implements BlockingListener, Player {
 
     public void send(MessageType messageType) {
         sendMessage(messageType, clientOut::flush);
+    }
+
+    /**
+     * closes the output stream, which won't happen by default
+     * @throws IOException
+     */
+    protected void closeOutputStream() throws IOException {
+        clientOut.close();
     }
 
     /** executes the action, which may throw an IOException */

@@ -162,11 +162,12 @@ public class GLFWWindow {
     /**
      * saves a copy of the front buffer (the display) to disc
      * @param filename the file to save to
-     * @return
+     * @param front if false, the current content of the back buffer is drawn instead of what is visible on the screen
+     * @return success
      */
     @SuppressWarnings("NumericOverflow")
-    public boolean printScreen(String filename) {
-        glReadBuffer(GL11.GL_FRONT);
+    public boolean printScreen(String filename, boolean front) {
+        glReadBuffer(front ? GL11.GL_FRONT : GL11.GL_BACK);
         int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
         ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
         glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );

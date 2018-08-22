@@ -2,8 +2,8 @@ package nl.NG.Jetfightergame.Camera;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerListener;
-import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.GameState.Environment;
+import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -14,7 +14,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
  */
 public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> {
     private static final CameraImpl[] VALUES = CameraImpl.values();
-    private MovingEntity target = null;
+    private Player target = null;
     private Camera instance = null;
     private Environment gameState;
 
@@ -26,6 +26,7 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
     public enum CameraImpl {
         PointCenteredCamera,
         FollowingCamera,
+        SpectatorFollowing,
         MountedCamera
     }
 
@@ -45,26 +46,35 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
      * @param gameState
      * @param up current upvector
      */
-    public void switchTo(CameraImpl camera, PosVector eye, MovingEntity target, Environment gameState, DirVector up) {
+    public void switchTo(CameraImpl camera, PosVector eye, Player target, Environment gameState, DirVector up) {
         if (instance instanceof TrackerListener) {
             ((TrackerListener) instance).cleanUp();
         }
         this.target = target;
         this.gameState = gameState;
 
+        AbstractJet jet = target.jet();
+        DirVector vecToFocus = (instance == null) ? eye.to(jet.getPosition(), new DirVector()) : vectorToFocus();
+
         switch (camera){
             case PointCenteredCamera:
-                instance = new PointCenteredCamera(eye, target.getPosition());
+                instance = new PointCenteredCamera(eye, jet.getPosition());
                 break;
+
             case FollowingCamera:
-                instance = new FollowingCamera(eye, target, up, vectorToFocus(), gameState);
+                instance = new FollowingCamera(eye, target, up, vecToFocus, gameState);
                 break;
+
             case MountedCamera:
-                if (target instanceof AbstractJet)
-                    instance = new MountedCamera((AbstractJet) target);
-                else
-                    instance = new FollowingCamera(eye, target, up, target.getVelocity(), gameState);
+                instance = new MountedCamera(jet);
                 break;
+
+            case SpectatorFollowing:
+                instance = new SpectatorFollowingCamera(
+                        eye, target, up, jet.getPosition(), gameState
+                );
+                break;
+
             default:
                 throw new UnsupportedOperationException("unknown enum: " + camera);
         }

@@ -3,10 +3,14 @@ package nl.NG.Jetfightergame.Engine;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Camera.CameraFocusMovable;
 import nl.NG.Jetfightergame.Camera.CameraManager;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
+import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
 import nl.NG.Jetfightergame.Rendering.JetFighterRenderer;
@@ -25,10 +29,12 @@ import nl.NG.Jetfightergame.Tools.StreamPipe;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Quaternionf;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -40,15 +46,16 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.FollowingCamera;
-import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.PointCenteredCamera;
+import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.SpectatorFollowing;
+import static nl.NG.Jetfightergame.Rendering.JetFighterRenderer.Mode.*;
 
 /**
- * @author Geert van Ieperen
- *         created on 29-10-2017.
- *         a class that manages all game objects, and houses both the rendering- and the gameloop
+ * @author Geert van Ieperen created on 29-10-2017.
  */
 public class JetFighterGame {
+    private static final EntityClass JET_TYPE = EntityClass.SPECTATOR_CAMERA;
     private static final boolean USE_SOCKET_FOR_OFFLINE = false;
+
     private final ActionButtonHandler actionHandler;
     private GLFWWindow window;
     private GameMode currentGameMode;
@@ -61,16 +68,24 @@ public class JetFighterGame {
     /**
      * Shows a splash screen, and creates a window in which the game runs
      * @param makeLocalServer if true, a new server will be created and connected to on this machine.
+     * @param doShow if false, nothing will show up
+     * @param doStore
+     * @param file
      */
-    public JetFighterGame(boolean makeLocalServer) throws Exception {
+    public JetFighterGame(boolean makeLocalServer, boolean doShow, boolean doStore, File file) throws Exception {
         Logger.INFO.print("Starting the game...");
         Logger.DEBUG.print("General debug information: " +
                 "\n\tSystem OS:          " + System.getProperty("os.name") +
                 "\n\tJava VM:            " + System.getProperty("java.runtime.version") +
                 "\n\tWorking directory:  " + Directory.currentDirectory() +
                 "\n\tProtocol version:   " + JetFighterProtocol.versionNumber +
-                ""
+                (makeLocalServer ? "\n\tLocal server enabled" : "") +
+                (file == null ? "" : "\n\tReplay file:        " + file.getName()) +
+                (doStore ? "\n\tStoring replay enabled" : "") +
+                (doShow ? "" : "\n\tHeadless mode enabled")
         );
+
+        if (!doShow && file == null) throw new IllegalArgumentException("No show without replay file");
 
         this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
 
@@ -85,72 +100,92 @@ public class JetFighterGame {
 
         Splash splash = new Splash();
         splash.run();
-        String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
-
         try {
-            OutputStream sendChannel;
-            InputStream receiveChannel;
+            if (file == null) {
+                String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
 
-            if (makeLocalServer) {
-                Logger.INFO.print("Creating new local server");
+                OutputStream sendChannel;
+                InputStream receiveChannel;
 
-                JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
+                if (makeLocalServer) {
+                    Logger.INFO.print("Creating new local server");
 
-                if (USE_SOCKET_FOR_OFFLINE) {
-                    new Thread(server::listenForHost).start();
+                    JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
 
-                    Socket client = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
-                    sendChannel = client.getOutputStream();
-                    receiveChannel = client.getInputStream();
+                    if (USE_SOCKET_FOR_OFFLINE) {
+                        new Thread(server::listenForHost).start();
+
+                        Socket client = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
+                        sendChannel = client.getOutputStream();
+                        receiveChannel = client.getInputStream();
+
+                    } else {
+                        StreamPipe serverToClient = new StreamPipe(1024);
+                        StreamPipe clientToServer = new StreamPipe(256);
+
+                        InputStream serverReceive = serverToClient.getInputStream();
+                        OutputStream serverSend = clientToServer.getOutputStream();
+                        new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
+
+                        sendChannel = serverToClient.getOutputStream();
+                        receiveChannel = clientToServer.getInputStream();
+                    }
+
+                    server.listenInThread(true);
+                    AbstractGameLoop serverLoop = server.getRunnable();
+                    serverLoop.setDaemon(true);
+                    serverLoop.start();
 
                 } else {
-                    StreamPipe serverToClient = new StreamPipe(1024);
-                    StreamPipe clientToServer = new StreamPipe(256);
-
-                    InputStream serverReceive = serverToClient.getInputStream();
-                    OutputStream serverSend = clientToServer.getOutputStream();
-                    new Thread(() -> server.shortConnect(serverReceive, serverSend, true)).start();
-
-                    sendChannel = serverToClient.getOutputStream();
-                    receiveChannel = clientToServer.getInputStream();
+                    Logger.INFO.print("Searching local server");
+                    Socket socket = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
+                    sendChannel = socket.getOutputStream();
+                    receiveChannel = socket.getInputStream();
                 }
 
-                server.listenInThread(true);
-                AbstractGameLoop serverLoop = server.getRunnable();
-                serverLoop.setDaemon(true);
-                serverLoop.start();
+                connection = new ClientConnection(playerName, sendChannel, receiveChannel, JET_TYPE);
+                otherLoops.add(connection);
+                Logger.printOnline(() -> connection.getTimer().toString());
 
-            } else {
-                Logger.INFO.print("Searching local server");
-                Socket socket = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
-                sendChannel = socket.getOutputStream();
-                receiveChannel = socket.getInputStream();
+                ClientControl player = connection;
+                Environment gameState = connection.getWorld();
+                AbstractJet playerJet = player.jet();
+                Logger.DEBUG.print("Received " + playerJet + " from the server");
+
+                camera = new CameraManager();
+                camera.switchTo(FollowingCamera, new PosVector(-5, 4, 2), player, gameState, DirVector.zVector());
+                Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera)
+                        .andThen(new PowerupDisplay(player))
+                        .andThen(connection.countDownGui())
+                        .andThen(new RaceProgressDisplay(connection));
+
+                renderLoop = new JetFighterRenderer(
+                        this, gameState, window, camera, player.getInputControl(), hud, SHOW
+                );
+
+            } else { // file != null, start a replay file
+                Logger.INFO.print("Starting replay of " + file.getPath());
+
+                camera = new CameraManager();
+                EntityFactory focus = new CameraFocusMovable.Factory(new PosVector(0, 0, 0), new Quaternionf());
+
+                connection = new StateReader(file, doShow, focus, this::exitGame);
+                otherLoops.add(connection);
+                Environment gameState = connection.getWorld();
+                ControllerManager controls = connection.getInputControl();
+
+                camera.switchTo(SpectatorFollowing, new PosVector(0, 0, 500), connection, gameState, DirVector.zVector());
+
+                RaceProgressDisplay raceHud = new RaceProgressDisplay(connection);
+                JetFighterRenderer.Mode renderMode = doStore ? (doShow ? RECORD_AND_SHOW : RECORD) : SHOW;
+                renderLoop = new JetFighterRenderer(this, gameState, window, camera, controls, raceHud, renderMode);
             }
 
-            connection = new ClientConnection(playerName, sendChannel, receiveChannel);
-            otherLoops.add(connection);
-
-            ClientControl player = connection;
-            Environment gameState = connection.getWorld();
-            AbstractJet playerJet = player.jet();
-            Logger.DEBUG.print("Received " + playerJet + " from the server");
-
-            camera = new CameraManager();
-            camera.switchTo(PointCenteredCamera, new PosVector(-5, 4, 2), playerJet, gameState, DirVector.zVector());
-            Consumer<ScreenOverlay.Painter> hud = new GravityHud(playerJet, camera)
-                    .andThen(new PowerupDisplay(player))
-                    .andThen(connection.countDownGui())
-                    .andThen(new RaceProgressDisplay(connection));
-
-            renderLoop = new JetFighterRenderer(
-                    this, gameState, window, camera, player.getInputControl(), hud
-            );
-
             actionHandler = new ActionButtonHandler(this, connection);
-            connection.listenInThread(true);
 
             // set currentGameMode and engine.isPaused
-            setMenuMode();
+            if (doShow) setMenuMode();
+            connection.listenInThread(true);
 
         } finally {
             // remove splash frame
@@ -160,6 +195,7 @@ public class JetFighterGame {
         // reclaim all space used for initialisation
         System.gc();
         Logger.INFO.print("Initialisation complete\n");
+        if (doShow) window.open();
     }
 
     public void setMenuMode() {
@@ -171,7 +207,6 @@ public class JetFighterGame {
     public void setPlayMode() {
         currentGameMode = GameMode.PLAY_MODE;
         window.capturePointer();
-        camera.switchTo(FollowingCamera);
         otherLoops.forEach(AbstractGameLoop::unPause);
     }
 
@@ -190,18 +225,16 @@ public class JetFighterGame {
     }
 
     /**
-     * create a thread for everyone who wants one, open the main window and start the game Rendering must happen in the
-     * main thread.
+     * Starts all threads and blocks until rendering has terminated again.
+     * must be called in the current GL context
      */
     public void root() {
-        window.open();
-
         Logger.DEBUG.print("Starting " + otherLoops);
         otherLoops.forEach(Thread::start);
 
         try {
             renderLoop.unPause();
-            renderLoop.run(); // blocks until the client is quit
+            renderLoop.run(); // blocks until the client has quit
 
             for (AbstractGameLoop gameLoop : otherLoops) {
                 Logger.DEBUG.print("Waiting for " + gameLoop + " to stop");
@@ -262,7 +295,7 @@ public class JetFighterGame {
 
 
     /**
-     * @param argArray The arguments of the program. -debug - enable debug mode -local - start a new server locally
+     * @param argArray The arguments of the program.
      * @throws Exception if anything goes terribly wrong
      */
     public static void main(String... argArray) throws Exception {
@@ -270,9 +303,38 @@ public class JetFighterGame {
 
         boolean makeLocalServer = args.contains("-local");
         ServerSettings.DEBUG = args.contains("-debug");
+        boolean playReplay = args.contains("-replay");
+        boolean storeReplay = args.contains("-store");
+        File file = null;
+
+        if (playReplay || storeReplay) {
+            for (String arg : args) {
+                if (arg.endsWith(StateWriter.EXTENSION)) {
+                    file = Directory.recordings.getFile(arg);
+                    if (!file.exists()) file = null;
+                }
+            }
+            if (file == null) {
+                Frame frame = new Frame();
+                try {
+                    FileDialog fd = new FileDialog(frame, "Select a replay file");
+                    fd.setVisible(true);
+
+                    File[] f = fd.getFiles();
+                    if (f.length == 0) {
+                        throw new IllegalArgumentException("Replay cancelled by user");
+                    }
+                    file = f[0];
+
+                } finally {
+                    frame.dispose();
+                }
+            }
+        }
 
         Logger.setOutputLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
-        new JetFighterGame(makeLocalServer).root();
+        boolean doShow = (file == null) || playReplay;
+        new JetFighterGame(makeLocalServer, doShow, storeReplay, file).root();
     }
 
     /**
@@ -308,7 +370,7 @@ public class JetFighterGame {
         /**
          * makes a frame identical to the image, also adapts size
          * @param target some frame
-         * @param image some image
+         * @param image  some image
          */
         private void setImage(Frame target, final BufferedImage image) {
             target.add(new Component() {

@@ -25,15 +25,13 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.AIController;
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.FIRE_PARTICLE_SIZE;
 
@@ -46,18 +44,18 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final EnvironmentManager game;
     private final JetFighterProtocol protocol;
     private final boolean isAdmin;
+    private final AbstractJet jet;
+    private final GameTimer gameTimer;
+    private final SubControl input;
+    private final CountDownTimer counter;
+    private final String name;
 
     private Lock sendLock = new ReentrantLock();
-
-    private final AbstractJet jet;
-    private String name;
-    private GameTimer gameTimer;
-    private final SubControl input;
     private RaceProgress raceProgress;
-    private final CountDownTimer counter;
     private boolean controlTeardown = false;
+    protected float maxServerTime = 0;
 
-    public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel) throws IOException {
+    public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel, EntityClass jetType) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
@@ -72,12 +70,37 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.counter = new CountDownTimer(0, gameTimer);
         protocol.worldSwitchRead(game, counter, gameTimer.time(), raceProgress);
 
-        Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, EntityClass.JET_SPITZ, input, this, game);
+        Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, jetType, input, this, game);
         this.isAdmin = pair.right;
         this.jet = pair.left;
         game.addEntity(jet);
 
         Logger.printOnline(() -> jet.interpolatedPosition() + " | " + jet.interpolatedForward());
+    }
+
+    protected ClientConnection(String name, File readFile, GameTimer timer, EntityFactory jetReplacement, int tps) throws IOException {
+        super(name, tps, false);
+
+        this.raceProgress = new RaceProgress();
+        this.game = new EnvironmentManager(null, this, raceProgress, false, false);
+        this.game.switchTo(EnvironmentClass.LOBBY);
+        this.protocol = new JetFighterProtocol(readFile, false);
+        this.input = new SubControl(EmptyController, raceProgress);
+        this.gameTimer = timer;
+        this.counter = new CountDownTimer(0, gameTimer);
+        this.name = name;
+
+        serverIn = protocol.getInput();
+        serverOut = protocol.getOutput();
+        gameTimer.set(new DataInputStream(serverIn).readFloat());
+
+        MovingEntity construct = jetReplacement.construct(this, game);
+        jet = (AbstractJet) construct;
+        jet.setController(input);
+
+        isAdmin = false;
+        controlTeardown = true;
+        input.disable();
     }
 
     @Override
@@ -123,7 +146,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 break;
 
             case ENTITY_UPDATE:
-                protocol.entityUpdateRead(game);
+                float t = protocol.entityUpdateRead(game);
+                maxServerTime = Math.max(maxServerTime, t);
                 break;
 
             case ENTITY_REMOVE:
@@ -168,9 +192,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
             case WORLD_SWITCH:
                 protocol.worldSwitchRead(game, counter, gameTimer.time(), raceProgress);
-                game.addEntity(jet);
-                controlTeardown = false;
-                input.enable();
+                worldSwitch();
                 break;
 
             case SHUTDOWN_GAME:
@@ -178,10 +200,16 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 return false;
 
             default:
-                Logger.DEBUG.print("Inappropriate message: " + type);
+                Logger.WARN.print("Inappropriate message: " + type);
         }
 
         return true;
+    }
+
+    protected void worldSwitch() {
+        game.addEntity(jet);
+        controlTeardown = false;
+        input.enable();
     }
 
     private void startTimerSync() throws IOException {

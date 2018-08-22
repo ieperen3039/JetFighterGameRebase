@@ -12,44 +12,48 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 /**
  * Implementation of a camera with a position and orientation.
  */
-public class FollowingCamera implements Camera {
+public class SpectatorFollowingCamera implements Camera {
     /** camera settings */
-    private static final DirVector eyeRelative = new DirVector(-20, 0, 5);
-    private static final double EYE_PRESERVE = 1.0E-5;
-    private static final double ORIENT_PRESERVE = 1.0E-4;
-    private static final float TELEPORT_DISTANCE_SQ = 50f * 50f;
+    private static final DirVector eyeRelative = new DirVector(-20, 0, 10);
+    private static final DirVector focusRelative = new DirVector(5, 0, 0);
+    private static final double EYE_PRESERVE = 0.5f;
+    private static final double FOCUS_PRESERVE = 0.1f;
+    private static final double UP_PRESERVE = 0.5f;
+    private static final float TELEPORT_DISTANCE_SQ = 300f * 300f;
 
     /**
      * The position of the camera.
      */
     private final SmoothTrackedVector<PosVector> eye;
-    private final SmoothTrackedVector<DirVector> vecToFocus;
+    private final SmoothTrackedVector<PosVector> focus;
     private final SmoothTrackedVector<DirVector> up;
     private final Player target;
     private final Environment gameState;
 
-    public FollowingCamera(Player target, Environment gameState) {
-        this(jetPosition(eyeRelative,
-                target.jet()).toPosVector(), target,
+    public SpectatorFollowingCamera(Player target, Environment gameState) {
+        this(
+                jetPosition(eyeRelative, target.jet()).toPosVector(), target,
                 jetPosition(DirVector.zVector(), target.jet()).toDirVector(),
-                target.jet().getVelocity(), gameState
+                target.jet().getPosition(), gameState
         );
     }
 
-    public FollowingCamera(PosVector eye, Player playerJet, DirVector up, DirVector vecToFocus, Environment gameState) {
+    public SpectatorFollowingCamera(PosVector eye, Player playerJet, DirVector up, PosVector focus, Environment gameState) {
         this.eye = new ExponentialSmoothVector<>(eye, EYE_PRESERVE);
-        this.vecToFocus = new ExponentialSmoothVector<>(vecToFocus, ORIENT_PRESERVE);
-        this.up = new ExponentialSmoothVector<>(up, ORIENT_PRESERVE);
+        this.focus = new ExponentialSmoothVector<>(focus, FOCUS_PRESERVE);
+        this.up = new ExponentialSmoothVector<>(up, UP_PRESERVE);
         this.target = playerJet;
         this.gameState = gameState;
     }
 
     /**
      * @param relativePosition a position relative to target
-     * @param target a target jet, where DirVector.X points forward
+     * @param target           a target jet, where DirVector.X points forward
      * @return a new vector with the position translated to world-space
      */
     private static PosVector jetPosition(DirVector relativePosition, MovingEntity target) {
+        if (TemporalEntity.isOverdue(target)) return relativePosition.toPosVector();
+
         PosVector targetPos = target.interpolatedPosition();
         if (!targetPos.isScalable()) return PosVector.zeroVector();
 
@@ -67,24 +71,23 @@ public class FollowingCamera implements Camera {
         final DirVector targetUp = rawUp.normalize(rawUp);
 
         final PosVector targetEye = jetPosition(eyeRelative, target);
-        final DirVector targetFocus;
+        final PosVector targetFocus = jetPosition(focusRelative, target);
 
-        if (TemporalEntity.isOverdue(target)) {
-            targetFocus = new DirVector(eye.current()); // look at (0, 0, 0)
-            targetFocus.negate();
-        } else {
-            targetFocus = target.relativeInterpolatedDirection(DirVector.xVector());
-        }
+//        if (eye.current().distanceSquared(targetEye) > TELEPORT_DISTANCE_SQ) {
+//            eye.update(targetEye);
+//            focus.update(targetFocus);
+//        } else {
+        eye.updateFluent(targetEye, deltaTime);
+        focus.updateFluent(targetFocus, deltaTime);
+//        }
 
-        if (eye.current().distanceSquared(targetEye) > TELEPORT_DISTANCE_SQ) eye.update(targetEye);
-        else eye.updateFluent(targetEye, deltaTime);
-        vecToFocus.updateFluent(targetFocus, deltaTime);
+        focus.updateFluent(targetFocus, deltaTime);
         up.updateFluent(targetUp, deltaTime);
     }
 
     @Override
-    public DirVector vectorToFocus(){
-        return vecToFocus.current();
+    public DirVector vectorToFocus() {
+        return getEye().to(getFocus(), new DirVector());
     }
 
     @Override
@@ -95,7 +98,7 @@ public class FollowingCamera implements Camera {
 
     @Override
     public PosVector getFocus() {
-        return getEye().add(vectorToFocus(), new PosVector());
+        return focus.current();
     }
 
     @Override

@@ -20,7 +20,12 @@ public enum MessageType {
     private static final MessageType[] VALUES = values();
     public static EnumSet<MessageType> controls = EnumSet.of(THROTTLE, PITCH, YAW, ROLL, PRIMARY_FIRE, SECONDARY_FIRE);
     public static EnumSet<MessageType> adminOnly = EnumSet.of(START_GAME, PAUSE_GAME, UNPAUSE_GAME, SHUTDOWN_GAME);
-    public static EnumSet<MessageType> variableLength = EnumSet.of(ENTITY_SPAWN, ENTITY_UPDATE, PLAYER_SPAWN, PLAYER_UPDATE);
+
+    public static EnumSet<MessageType> oneArgument = EnumSet.of(POWERUP_COLLECT);
+    public static EnumSet<MessageType> signals = EnumSet.of(
+            CONFIRM_CONNECTION, CONNECTION_CLOSE, CLOSE_REQUEST, PING, PONG,
+            PAUSE_GAME, UNPAUSE_GAME, START_GAME, SHUTDOWN_GAME
+    );
 
     /**
      * @param id a number n corresponing to an enum ordinal
@@ -53,8 +58,8 @@ public enum MessageType {
 
     /** @return the number of values must be send after this message, or Integer.MAX_VALUE if this is undetermined */
     public int nOfBits() {
-        if (isOf(controls) || (this == ENTITY_REMOVE)) return 1;
-        if (isOf(variableLength)) return Integer.MAX_VALUE;
-        else return 0;
+        if (isOf(signals)) return 0;
+        if (isOf(controls) || isOf(oneArgument)) return 1;
+        else return Integer.MAX_VALUE;
     }
 }
