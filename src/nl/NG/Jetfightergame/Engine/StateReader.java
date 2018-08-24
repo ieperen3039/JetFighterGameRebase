@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -29,7 +30,6 @@ public class StateReader extends ClientConnection {
 
     /**
      * @param file       the file to read
-     * @param liveAction if true, the returned timer will be continuous, if false, it will be a static timer
      * @param jet
      * @param exitGame
      * @throws IOException whenever it feels like
@@ -47,6 +47,12 @@ public class StateReader extends ClientConnection {
                 float currentTime = getTimer().getRenderTime().current();
                 float dt = maxServerTime - currentTime;
                 if (dt > LOOK_AHEAD) {
+                    float percent = getPercent();
+                    if (percent > 100) {
+                        System.out.printf("\r[INFO ]: Recorded %.1f sec (Aftermatch)", currentTime);
+                    } else {
+                        System.out.printf("\r[INFO ]: Recorded %.1f sec (%3.1f%%)", currentTime, percent);
+                    }
                     int millis = (int) (500 * dt);
                     Toolbox.waitFor(millis);
                 }
@@ -57,6 +63,17 @@ public class StateReader extends ClientConnection {
         }
 
         exitGame.run();
+    }
+
+    private float getPercent() {
+        RaceProgress race = getRaceProgress();
+        int lastPos = race.getNumPlayers() - 1;
+        int last = race.raceOrder().get(lastPos);
+        Pair<Integer, Integer> state = race.getState(last);
+        float nOfRounds = race.getNumRounds();
+        float raceProgress = state.left * nOfRounds;
+        float roundProgress = (state.right / nOfRounds) / race.getNumCheckpoints();
+        return 100 * (raceProgress + roundProgress);
     }
 
     @Override

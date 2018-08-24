@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
-import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Resources;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -10,8 +9,10 @@ import org.joml.Vector2i;
 import org.lwjgl.nanovg.NVGColor;
 import org.lwjgl.nanovg.NVGPaint;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.*;
-import static nl.NG.Jetfightergame.Tools.Directory.fonts;
 import static org.lwjgl.nanovg.NanoVG.*;
 import static org.lwjgl.nanovg.NanoVGGL3.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -41,7 +41,7 @@ public final class ScreenOverlay {
 
     /** fontbuffer MUST be a field */
     @SuppressWarnings("FieldCanBeLocal")
-    private final ByteBuffer[] fontBuffer = new ByteBuffer[Font.values().length];
+    private final ByteBuffer[] fontBuffer = new ByteBuffer[JFGFont.values().length];
     private Map<String, Integer> imageBuffer = new HashMap<>();
 
     private final Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
@@ -53,22 +53,6 @@ public final class ScreenOverlay {
 
     public boolean isMenuMode() {
         return menuMode.getAsBoolean();
-    }
-
-    public enum Font {
-        ORBITRON_REGULAR(fonts, "Orbitron/Orbitron-Regular.ttf"),
-        ORBITRON_MEDIUM(fonts, "Orbitron/Orbitron-Medium.ttf"),
-        ORBITRON_BOLD(fonts, "Orbitron/Orbitron-Bold.ttf"),
-        ORBITRON_BLACK(fonts, "Orbitron/Orbitron-Black.ttf"),
-        LUCIDA_CONSOLE(fonts, "LucidaConsole/lucon.ttf");
-
-        public final String name;
-        public final String source;
-
-        Font(Directory dir, String file) {
-            this.name = toString().toLowerCase().replace("_", "");
-            this.source = dir.getPath(file).toString();
-        }
     }
 
     /**
@@ -84,10 +68,10 @@ public final class ScreenOverlay {
         if (vg == NULL) {
             throw new IOException("Could not initialize NanoVG");
         }
-        Font[] fonts = Font.values();
+        JFGFont[] fonts = JFGFont.values();
 
         for (int i = 0; i < fonts.length; i++) {
-            fontBuffer[i] = Resources.toByteBuffer(fonts[i].source, 96 * 1024);
+            fontBuffer[i] = fonts[i].asByteBuffer();
             if (nvgCreateFontMem(vg, fonts[i].name, fontBuffer[i], 1) == -1) {
                 throw new IOException("Could not create font " + fonts[i].name);
             }
@@ -324,7 +308,7 @@ public final class ScreenOverlay {
 
         // non-shape defining functions
 
-        public void text(int x, int y, float size, Font font, int align, Color4f color, String text) {
+        public void text(int x, int y, float size, JFGFont font, int align, Color4f color, String text) {
             nvgFontSize(vg, size);
             nvgFontFace(vg, font.name);
             nvgTextAlign(vg, align);
@@ -335,7 +319,7 @@ public final class ScreenOverlay {
         public void printRoll(String text){
             int y = yPrintRoll + ((printRollSize + 5) * printRollEntry);
 
-            text(xPrintRoll, y, printRollSize, Font.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
+            text(xPrintRoll, y, printRollSize, JFGFont.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
             printRollEntry++;
         }
 
@@ -376,7 +360,7 @@ public final class ScreenOverlay {
             if (imageBuffer.containsKey(filename)) {
                 return imageBuffer.get(filename);
             }
-            ByteBuffer image = Resources.toByteBuffer(filename, 1);
+            ByteBuffer image = Resources.toByteBuffer(Paths.get(filename), new File(filename), 1);
             int img = nvgCreateImageMem(vg, imageFlags, image);
             imageBuffer.put(filename, img);
             return img;

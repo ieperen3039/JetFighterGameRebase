@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.ServerNetwork;
 import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
+import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import java.io.IOException;
@@ -27,11 +28,12 @@ public class JetFighterServer implements BlockingListener {
     /**
      * starts a single environment to run exactly once.
      * @param world the world to simulate in.
+     * @param makeRecording if true, the gamestate is written to a file
      * @throws IOException if a serversocket could not be created
      */
-    public JetFighterServer(EnvironmentClass world) throws IOException {
+    public JetFighterServer(EnvironmentClass world, boolean makeRecording) throws IOException {
         this.socket = new ServerSocket(SERVER_PORT);
-        this.game = new ServerLoop(EnvironmentClass.LOBBY, world);
+        this.game = new ServerLoop(EnvironmentClass.LOBBY, world, makeRecording);
     }
 
     /**
@@ -82,7 +84,7 @@ public class JetFighterServer implements BlockingListener {
     public static void main(String[] args) throws IOException {
         GeneralShapes.init(false);
         CustomJetShapes.init(false);
-        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
+        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP, ServerSettings.MAKE_RECORDING);
         server.listenForHost();
 
         server.listenInThread(true);

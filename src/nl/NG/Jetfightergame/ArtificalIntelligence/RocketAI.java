@@ -23,7 +23,7 @@ public class RocketAI implements Controller {
     protected Touchable target;
     private final float pSpeed;
     private PosVector projectilePos;
-    private PosVector targetPos;
+    protected PosVector targetPos;
 
     protected DirVector vecToTarget;
     protected DirVector xVec;
@@ -47,7 +47,7 @@ public class RocketAI implements Controller {
         this.explodeDistSq = explodeDistance * explodeDistance;
         doExtrapolate = true;
         projectilePos = projectile.getPosition();
-        targetPos = new PosVector();
+        targetPos = target.getExpectedMiddle();
         rollFactor = 0.1f;
         pitchFactor = 2.5f;
         yawFactor = 2.5f;
@@ -79,15 +79,7 @@ public class RocketAI implements Controller {
         if (TemporalEntity.isOverdue(target)) return;
 
         projectilePos = projectile.getPosition();
-        PosVector tPos = target.getExpectedMiddle();
-
-        if (doExtrapolate && target instanceof MovingEntity && !arrivesWithin(tPos, 0.1f)) {
-            MovingEntity target = (MovingEntity) this.target;
-            targetPos = extrapolateTarget(target.getVelocity(), tPos, projectilePos, pSpeed);
-
-        } else {
-            targetPos = tPos;
-        }
+        targetPos = getTargetPosition();
 
         vecToTarget = projectilePos.to(targetPos, new DirVector());
         vecToTarget.normalize();
@@ -98,6 +90,21 @@ public class RocketAI implements Controller {
         xVec.normalize();
         yVec.normalize();
         zVec.normalize();
+    }
+
+    protected PosVector getTargetPosition() {
+        if (target == null) {
+            return new PosVector();
+        }
+
+        PosVector tPos = target.getExpectedMiddle();
+        if (doExtrapolate && target instanceof MovingEntity && !arrivesWithin(tPos, 0.2f)) {
+            MovingEntity entity = (MovingEntity) this.target;
+
+            return extrapolateTarget(entity.getVelocity(), tPos, projectilePos, pSpeed);
+        }
+
+        return tPos;
     }
 
     private boolean arrivesWithin(PosVector tPos, float time) {
@@ -165,7 +172,7 @@ public class RocketAI implements Controller {
     }
 
 
-    private float bound(float input, float lower, float upper) {
+    public static float bound(float input, float lower, float upper) {
         return (input < lower) ? lower : ((input > upper) ? upper : input);
     }
 

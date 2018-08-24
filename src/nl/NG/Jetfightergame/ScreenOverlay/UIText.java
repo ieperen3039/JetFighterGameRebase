@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.util.function.Supplier;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.ORBITRON_MEDIUM;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.ORBITRON_MEDIUM;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_TOP;
 

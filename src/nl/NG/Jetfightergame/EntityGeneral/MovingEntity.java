@@ -434,7 +434,7 @@ public abstract class MovingEntity implements Touchable {
      * @return the object's current rotation
      */
     public Quaternionf getRotation() {
-        return rotation;
+        return new Quaternionf(rotation);
     }
 
     @Override

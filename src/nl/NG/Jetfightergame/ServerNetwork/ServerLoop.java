@@ -44,6 +44,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     private final List<ServerConnection> connections;
     private final List<Player> npcPlayers;
     private final RaceProgress raceProgress;
+    private final boolean makeRecording;
 
     private GameTimer globalTime;
     private EnvironmentManager gameWorld;
@@ -54,7 +55,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     private volatile boolean allowPlayerJoin = true;
     private int maxRounds = 1;
 
-    public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld) {
+    public ServerLoop(EnvironmentClass lobby, EnvironmentClass raceWorld, boolean makeRecording) {
         super("Server", ServerSettings.TARGET_TPS, true);
         this.raceProgress = new RaceProgress(8, this);
         this.gameWorld = new EnvironmentManager(lobby, this, raceProgress, true, true);
@@ -66,6 +67,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         npcPlayers = getNPCPlayers(ServerSettings.NOF_FUN);
 
         gameWorld.build();
+        this.makeRecording = makeRecording;
     }
 
     /**
@@ -203,7 +205,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     protected void update(float deltaTime) {
         if (worldShouldSwitch) {
             if (gameWorld.getCurrentType() == lobby) {
-                if (ServerSettings.MAKE_RECORDING) startStateWriter();
+                if (makeRecording) startStateWriter();
                 setWorld(raceWorld, maxRounds);
                 allowPlayerJoin = false;
 

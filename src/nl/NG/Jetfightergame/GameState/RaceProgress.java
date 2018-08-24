@@ -291,6 +291,25 @@ public class RaceProgress {
         return (nOfCheckpoints == 0) || (winners.size() == nOfPlayers);
     }
 
+    public Checkpoint nextCheckpointOf(int pInd) {
+        return allPoints.get(nextCheckpointIndOf(pInd));
+    }
+
+    private int nextCheckpointIndOf(int pInd) {
+        int i = nextPointOf(pInd);
+        if (i < 0) return -1;
+        for (; i < allPoints.size(); i++) {
+            Checkpoint ch = allPoints.get(i);
+            if (ch.visible()) return i;
+        }
+
+        return 0;
+    }
+
+    public int getNumRounds() {
+        return maxRounds;
+    }
+
     /**
      * @author Geert van Ieperen created on 28-6-2018.
      */
@@ -317,7 +336,7 @@ public class RaceProgress {
                     return;
                 }
 
-                int nextCh = nextCheckpoint(pInd);
+                int nextCh = next(pInd);
                 // check for passing the right checkpoint
                 if (nextCh == checkpointNumber) {
                     update(pInd, checkpointNumber);
@@ -325,25 +344,18 @@ public class RaceProgress {
             }
         }
 
-        protected int nextCheckpoint(int pInd) {
-            int i = nextPointOf(pInd);
-            if (i < 0) return -1;
-            for (; i < allPoints.size(); i++) {
-                Checkpoint ch = allPoints.get(i);
-                if (ch.visible()) return i;
-            }
-
-            return 0;
-        }
-
         protected boolean visible() {
             return true;
+        }
+
+        protected int next(int pInd) {
+            return nextCheckpointIndOf(pInd);
         }
 
         @Override
         public void preDraw(GL2 gl) {
             Color4f color = this.color;
-            if (thisPlayer != -1 && nextCheckpoint(thisPlayer) == checkpointNumber) {
+            if (thisPlayer != -1 && nextCheckpointIndOf(thisPlayer) == checkpointNumber) {
                 color = activeColor;
             }
 
@@ -367,7 +379,7 @@ public class RaceProgress {
         }
 
         @Override
-        protected int nextCheckpoint(int pInd) {
+        protected int next(int pInd) {
             return nextPointOf(pInd);
         }
 

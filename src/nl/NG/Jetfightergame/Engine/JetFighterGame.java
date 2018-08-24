@@ -53,7 +53,7 @@ import static nl.NG.Jetfightergame.Rendering.JetFighterRenderer.Mode.*;
  * @author Geert van Ieperen created on 29-10-2017.
  */
 public class JetFighterGame {
-    private static final EntityClass JET_TYPE = EntityClass.SPECTATOR_CAMERA;
+    private static final EntityClass JET_TYPE = EntityClass.JET_SPITZ;
     private static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
     private final ActionButtonHandler actionHandler;
@@ -68,11 +68,12 @@ public class JetFighterGame {
     /**
      * Shows a splash screen, and creates a window in which the game runs
      * @param makeLocalServer if true, a new server will be created and connected to on this machine.
-     * @param doShow if false, nothing will show up
+     * @param doShow if false, the game will run headless (for recording)
      * @param doStore
      * @param file
+     * @param map
      */
-    public JetFighterGame(boolean makeLocalServer, boolean doShow, boolean doStore, File file) throws Exception {
+    public JetFighterGame(boolean makeLocalServer, boolean doShow, boolean doStore, File file, EnvironmentClass map) throws Exception {
         Logger.INFO.print("Starting the game...");
         Logger.DEBUG.print("General debug information: " +
                 "\n\tSystem OS:          " + System.getProperty("os.name") +
@@ -81,7 +82,8 @@ public class JetFighterGame {
                 "\n\tProtocol version:   " + JetFighterProtocol.versionNumber +
                 (makeLocalServer ? "\n\tLocal server enabled" : "") +
                 (file == null ? "" : "\n\tReplay file:        " + file.getName()) +
-                (doStore ? "\n\tStoring replay enabled" : "") +
+                (file != null && doStore ? "\n\tCreating video from replay" : "") +
+                (file == null && doStore ? "\n\tStoring game state enabled" : "") +
                 (doShow ? "" : "\n\tHeadless mode enabled")
         );
 
@@ -110,7 +112,7 @@ public class JetFighterGame {
                 if (makeLocalServer) {
                     Logger.INFO.print("Creating new local server");
 
-                    JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP);
+                    JetFighterServer server = new JetFighterServer(map, doStore);
 
                     if (USE_SOCKET_FOR_OFFLINE) {
                         new Thread(server::listenForHost).start();
@@ -169,7 +171,7 @@ public class JetFighterGame {
                 camera = new CameraManager();
                 EntityFactory focus = new CameraFocusMovable.Factory(new PosVector(0, 0, 0), new Quaternionf());
 
-                connection = new StateReader(file, doShow, focus, this::exitGame);
+                connection = new StateReader(file, !doStore, focus, this::exitGame);
                 otherLoops.add(connection);
                 Environment gameState = connection.getWorld();
                 ControllerManager controls = connection.getInputControl();
@@ -185,6 +187,7 @@ public class JetFighterGame {
 
             // set currentGameMode and engine.isPaused
             if (doShow) setMenuMode();
+            else setPlayMode();
             connection.listenInThread(true);
 
         } finally {
@@ -286,13 +289,12 @@ public class JetFighterGame {
     }
 
     public boolean isPaused() {
-        return getCurrentGameMode() == GameMode.MENU_MODE;
+        return currentGameMode != GameMode.PLAY_MODE;
     }
 
     public enum GameMode {
         PLAY_MODE, MENU_MODE
     }
-
 
     /**
      * @param argArray The arguments of the program.
@@ -306,7 +308,11 @@ public class JetFighterGame {
         ServerSettings.DEBUG = args.contains("-debug");
         boolean playReplay = args.contains("-replay");
         boolean storeReplay = args.contains("-store");
+        int mapNameArg = args.indexOf("-map") + 1;
         File file = null;
+        EnvironmentClass serverMap = EnvironmentClass.ISLAND_MAP;
+
+        if (mapNameArg > 0) serverMap = EnvironmentClass.valueOf(args.get(mapNameArg));
 
         if (playReplay || storeReplay) {
             for (String arg : args) {
@@ -335,7 +341,7 @@ public class JetFighterGame {
 
         Logger.setOutputLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
         boolean doShow = (file == null) || playReplay;
-        new JetFighterGame(makeLocalServer, doShow, storeReplay, file).root();
+        new JetFighterGame(makeLocalServer, doShow, storeReplay, file, serverMap).root();
     }
 
     /**

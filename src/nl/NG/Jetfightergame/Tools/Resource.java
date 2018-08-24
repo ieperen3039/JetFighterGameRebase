@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Tools;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * @author Geert van Ieperen. Created on 22-8-2018.
@@ -9,21 +10,17 @@ import java.nio.file.Path;
 public enum Resource {
     GLITCHMAP(Directory.meshes, "maps", "GlitchIsland");
 
-    Path localPath;
+    private String localPath;
 
     Resource(Directory dir, String... path) {
-        localPath = dir.getPath(path);
+        localPath = dir.getPath(path).toString();
     }
 
-    public File getFile() {
-        return localPath.toFile();
+    public File getFileAs(String ext) {
+        return new File(localPath + ext);
     }
 
-    public File getWithExtension(String ext) {
-        return new File(localPath.toString() + ext);
-    }
-
-    public Path getPath() {
-        return localPath;
+    public Path getPathAs(String ext) {
+        return Paths.get(localPath + ext);
     }
 }

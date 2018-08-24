@@ -8,18 +8,19 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
  * a class that harbours a gameloop timer and a render timer, upon retrieving either of these timers, they are updated
  * with a modifiable in-game time.
  */
+@SuppressWarnings("WeakerAccess")
 public class GameTimer {
 
     /** game-seconds since creating this gametimer */
-    private float currentInGameTime;
+    protected float currentInGameTime;
     /** last record of system time */
     private long lastMark;
     /** multiplication factor to multiply system time units to game-seconds */
     private static final float MUL_TO_SECONDS = 1E-9f;
 
-    private final TrackedFloat gameTime;
-    private final TrackedFloat renderTime;
-    private boolean isPaused = false;
+    protected final TrackedFloat gameTime;
+    protected final TrackedFloat renderTime;
+    protected boolean isPaused = false;
 
     public GameTimer() {
         this(0f);
@@ -57,7 +58,7 @@ public class GameTimer {
     }
 
     /** may be called anytime */
-    private void updateTimer(){
+    protected void updateTimer() {
         long currentTime = System.nanoTime();
         float deltaTime = (currentTime - lastMark) * MUL_TO_SECONDS;
         lastMark = currentTime;
@@ -96,5 +97,9 @@ public class GameTimer {
     @Override
     public String toString() {
         return getClass().getSimpleName() + " @" + currentInGameTime + (isPaused ? "(paused)" : "");
+    }
+
+    public boolean isPaused() {
+        return isPaused;
     }
 }

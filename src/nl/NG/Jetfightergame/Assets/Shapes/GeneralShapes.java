@@ -47,7 +47,7 @@ public final class GeneralShapes {
         }
         isLoaded = true;
 
-        ARROW = new BasicShape(doLoadMesh, "arrow");
+        ARROW = new BasicShape(doLoadMesh, "arrow.obj");
         INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
         LAB_CUBE = makeInverseCube(3, doLoadMesh);
         CUBE = makeCube(doLoadMesh);

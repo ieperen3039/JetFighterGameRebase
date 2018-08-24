@@ -2,7 +2,9 @@ package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
+import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -19,14 +21,15 @@ import static java.lang.Float.valueOf;
  * @author Geert van Ieperen. Created on 22-8-2018.
  */
 public class RacePathDescription {
+    public static final String RACEPATH_EXTENSION = ".rpd";
     private final List<CheckpointDescription> checkpoints;
     private final List<PowerupEntity.Factory> powerups;
 
-    public RacePathDescription(Resource fileName) {
+    public RacePathDescription(Resource res) {
         checkpoints = new ArrayList<>();
         powerups = new ArrayList<>();
 
-        File file = fileName.getWithExtension(".obj");
+        File file = res.getFileAs(RACEPATH_EXTENSION);
         Scanner in;
 
         try {
@@ -38,9 +41,11 @@ public class RacePathDescription {
         }
 
         String header = in.nextLine();
-        Logger.INFO.print(header);
+        Logger.INFO.print("Reading " + res.name() + ": " + header);
+        int lineNr = 1;
 
         while (in.hasNext()) {
+            lineNr++;
             String line = in.nextLine();
             String[] parts = line.split(" ");
             switch (parts[0]) {
@@ -53,11 +58,29 @@ public class RacePathDescription {
                 case "p":
                     powerups.add(readPowerup(1, parts));
                     break;
+                case "#": // ignore
+                    break;
                 default:
-                    Logger.WARN.print("Unknown checkpoint identifier: " + Arrays.toString(parts));
+                    Logger.WARN.print("Unknown checkpoint identifier on line " + lineNr + ": " + Arrays.toString(parts));
             }
         }
         in.close();
+    }
+
+    /** prints the position and direction in the way it should (radius is always 100) */
+    public static void printCheckpointData(boolean visible, PosVector pos, DirVector dir, int radius) {
+        String prefix = visible ? "c" : "r";
+        System.out.printf(Locale.US,
+                prefix + " %.0f %.0f %.0f %.2f %.2f %.2f %d\n",
+                pos.x, pos.y, pos.z, dir.x, dir.y, dir.z, radius
+        );
+    }
+
+    public static void printPowerupData(PosVector pos, PowerupType color) {
+        System.out.printf(Locale.US,
+                "p %.0f %.0f %.0f %s\n",
+                pos.x, pos.y, pos.z, color
+        );
     }
 
     public Iterable<RaceProgress.Checkpoint> getCheckpoints(RaceProgress race, Color4f color) {
@@ -73,6 +96,11 @@ public class RacePathDescription {
         PosVector pos = new PosVector(valueOf(parts[i++]), valueOf(parts[i++]), valueOf(parts[i++]));
         PowerupColor color = PowerupColor.valueOf(parts[i]);
         return new PowerupEntity.Factory(pos, color);
+    }
+
+    public Pair<PosVector, DirVector> getFirstCheckpoint() {
+        CheckpointDescription ch = checkpoints.get(0);
+        return new Pair<>(ch.position, ch.direction);
     }
 
     public static class CheckpointDescription {

@@ -123,6 +123,7 @@ public class GLFWWindow {
     }
 
     /**
+     * creates a window of the given width and height,
      * @modifies window
      * @param width
      * @param height
@@ -133,6 +134,8 @@ public class GLFWWindow {
         if (newWindow == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
+//        glfwSetWindowIcon(newWindow, null);
+
         if (this.resizable) {
             // Setup resize callback
             glfwSetFramebufferSizeCallback(newWindow, (window, newWidth, newHeight) -> {
@@ -157,47 +160,48 @@ public class GLFWWindow {
         // Poll for events
         glfwPollEvents();
 
-        clear();
+        // Clear framebuffer
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     /**
      * saves a copy of the front buffer (the display) to disc
-     * @param filename the file to save to
+     * @param dir
      * @param front if false, the current content of the back buffer is drawn instead of what is visible on the screen
+     * @param filename the file to save to
      * @return success
      */
     @SuppressWarnings("NumericOverflow")
-    public boolean printScreen(String filename, boolean front) {
+    public void printScreen(Directory dir, boolean front, String filename) {
         glReadBuffer(front ? GL11.GL_FRONT : GL11.GL_BACK);
         int bpp = 4; // Assuming a 32-bit display with a byte each for red, green, blue, and alpha.
         ByteBuffer buffer = BufferUtils.createByteBuffer(width * height * bpp);
-        glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer );
-        Toolbox.checkGLError();
+        glReadPixels(0, 0, width, height, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, buffer);
 
-        File file = Directory.screenShots.getFile(filename + ".png"); // The file to save to.
-        boolean success = file.mkdirs();
-        if (!success) return false;
+        new Thread(() -> {
+            String format = "JPG";
+            BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-        String format = "PNG";
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int i = (x + (width * y)) * bpp;
-                int r = buffer.get(i) & 0xFF;
-                int g = buffer.get(i + 1) & 0xFF;
-                int b = buffer.get(i + 2) & 0xFF;
-                image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    int i = (x + (width * y)) * bpp;
+                    int r = buffer.get(i) & 0xFF;
+                    int g = buffer.get(i + 1) & 0xFF;
+                    int b = buffer.get(i + 2) & 0xFF;
+                    image.setRGB(x, height - (y + 1), (0xFF << 24) | (r << 16) | (g << 8) | b);
+                }
             }
-        }
 
-        try {
-            ImageIO.write(image, format, file);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+            try {
+                File file = dir.getFile(filename + ".jpg"); // The file to save to.
+                boolean success = file.mkdirs();
+                if (!success) return;
+                ImageIO.write(image, format, file);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }, "Writing frame to disc").start();
+
     }
 
     /**

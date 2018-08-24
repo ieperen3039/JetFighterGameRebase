@@ -5,11 +5,12 @@ import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
-import nl.NG.Jetfightergame.EntityGeneral.Touchable;
+import nl.NG.Jetfightergame.EntityGeneral.StaticEntity;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
+import org.joml.Vector3f;
 
 /**
  * @author Geert van Ieperen. Created on 19-8-2018.
@@ -17,14 +18,20 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 public class RaceAI extends RocketAI {
     private static final float SHOOT_ACCURACY = 0.05f;
     private static final float SAFE_DIST = 200f;
-    private static final float POWERUP_COLLECT_BENDOUT = (float) Math.cos(0.3);
-    private static final int LOOK_AHEAD = 3;
+    private static final float POWERUP_COLLECT_BENDOUT = (float) (Math.PI / 16);
+    private static final float OFF_TARGET_BENDOUT = (float) (Math.PI / 8);
+    private static final int LOOK_AHEAD = 0;
+    private static final float CHECKPOINT_MARGIN = 0.5f; // [0, 1]
+    private static final float POWERUP_LOSE_ANGLE = 1f;
 
     private final RaceProgress race;
     private final Player player;
-    private final AbstractJet jet;
     private final EntityMapping entities;
+
     private PowerupEntity powerupTarget;
+    private AbstractJet jet;
+    private PosVector jetPosition;
+    private int pInd;
 
     /**
      * a controller that follows the course of the race
@@ -34,7 +41,6 @@ public class RaceAI extends RocketAI {
     public RaceAI(Player player, RaceProgress race, EntityMapping entities) {
         super(player.jet(), null, 300f, 1f, 2f, 1.5f);
         this.entities = entities;
-        this.jet = player.jet();
         this.player = player;
         this.race = race;
         this.powerupTarget = null;
@@ -42,9 +48,12 @@ public class RaceAI extends RocketAI {
 
     @Override
     public void update() {
-        Touchable p = nextPoint();
+        this.jet = player.jet();
+        jetPosition = jet.getPosition();
+        target = nextPoint();
+        pInd = race.getPlayerInd(player);
 
-        if (p == null) {
+        if (target == null) {
             xVec = projectile.relativeStateDirection(DirVector.xVector());
             yVec = projectile.relativeStateDirection(DirVector.yVector());
             zVec = projectile.relativeStateDirection(DirVector.zVector());
@@ -53,23 +62,58 @@ public class RaceAI extends RocketAI {
         }
 
         if (powerupTarget == null || powerupTarget.isCollected()) {
-            powerupTarget = getPowerupOnPath(p.getExpectedMiddle());
-
-        } else if (vecTo(powerupTarget).dot(jet.getVelocity()) < 0) {
-            powerupTarget = null;
+            if (pInd > 0) {
+                StaticEntity ety = race.nextCheckpointOf(pInd);
+                powerupTarget = getPowerupOnPath(ety.getExpectedMiddle());
+            }
+        } else {
+            DirVector vecToTarget = projectile.getPosition().to(powerupTarget.getExpectedMiddle(), new DirVector());
+            if (vecToTarget.angle(jet.getVelocity()) > POWERUP_LOSE_ANGLE) {
+                powerupTarget = null;
+            }
         }
 
-        target = (powerupTarget == null) ? p : powerupTarget;
+        target = (powerupTarget == null) ? target : powerupTarget;
 
         super.update();
     }
 
-    private DirVector vecTo(Touchable p) {
-        return projectile.getPosition().to(p.getExpectedMiddle(), new DirVector());
+    @Override
+    protected PosVector getTargetPosition() {
+        if (target == null) {
+            return new PosVector();
+
+        } else if (target instanceof StaticEntity) {
+            StaticEntity checkpoint = (StaticEntity) target;
+            PosVector chPosition = checkpoint.getExpectedMiddle();
+
+            DirVector forward = DirVector.xVector();
+            forward.rotate(checkpoint.getRotation());
+            DirVector vecToTgt = jetPosition.to(chPosition, new DirVector());
+            DirVector down = forward.cross(vecToTgt, new DirVector());
+            DirVector offset = forward.cross(down, down);
+
+            offset.normalize();
+            float proj = vecToTgt.negate().dot(offset); // scalar projection
+            Vector3f vel = jet.getVelocity();
+            if (vel.lengthSquared() > 500) vel.normalize(20);
+
+            float maxOffsetLength = CHECKPOINT_MARGIN * checkpoint.getRange();
+            if (proj < maxOffsetLength) {
+                offset.scale(proj);
+                offset.add(forward.scale(20));
+            } else {
+                offset.scale(maxOffsetLength);
+            }
+            offset.add(vel);
+
+            return chPosition.add(offset, new PosVector());
+        }
+
+        return target.getExpectedMiddle();
     }
 
-    private Touchable nextPoint() {
-        int pInd = race.getPlayerInd(player);
+    private StaticEntity nextPoint() {
         if (pInd < 0) return null;
         return race.nextPointEntityOf(pInd, LOOK_AHEAD);
     }
@@ -103,9 +147,8 @@ public class RaceAI extends RocketAI {
     private PowerupEntity getPowerupOnPath(PosVector targetPos) {
         float min = Float.MAX_VALUE;
         PowerupEntity thing = null;
-        PosVector jetPos = jet.getPosition();
         PowerupType currPop = jet.getCurrentPowerup();
-        DirVector vecToTarget = jetPos.to(targetPos, new DirVector());
+        DirVector vecToTarget = jetPosition.to(targetPos, new DirVector());
         DirVector velocityNorm = jet.getVelocity().normalize(new DirVector());
 
         for (MovingEntity entity : entities) {
@@ -118,8 +161,9 @@ public class RaceAI extends RocketAI {
 
                 // pop is behind
                 PosVector popPos = pop.getPosition();
-                DirVector vecToPop = jetPos.to(popPos, new DirVector());
+                DirVector vecToPop = jetPosition.to(popPos, new DirVector());
                 if (velocityNorm.dot(vecToPop) < 0) continue;
+                if (vecToTarget.dot(vecToPop) < 0) continue;
 
                 // (a2 + b2 > c2) => (corner jet-pop-tgt > 90 deg)
                 float jetToPopDistSq = vecToPop.lengthSquared();
@@ -127,7 +171,8 @@ public class RaceAI extends RocketAI {
                 if (jetToPopDistSq + popToTgtDistSq > vecToTarget.lengthSquared()) continue;
 
                 // (1 - corner jet-extrajet-pop) < cosh(BENDOUT)
-                if (velocityNorm.dot(vecToPop.normalize()) < POWERUP_COLLECT_BENDOUT) continue;
+                if (velocityNorm.dot(vecToPop.normalize()) < 1 - POWERUP_COLLECT_BENDOUT) continue;
+                if (vecToTarget.normalize().dot(vecToPop) < 1 - OFF_TARGET_BENDOUT) continue;
 
                 if ((jetToPopDistSq + popToTgtDistSq) < min) {
                     min = jetToPopDistSq;

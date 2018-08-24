@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Tools;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Sound.OggData;
 import nl.NG.Jetfightergame.Sound.WaveData;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -13,15 +14,13 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Scanner;
-
-import static org.lwjgl.BufferUtils.createByteBuffer;
 
 /**
  * @author Jorren
  */
 public final class Resources {
+
     public static String loadText(Path path) throws IOException {
         String result;
         try (
@@ -35,16 +34,18 @@ public final class Resources {
         return result;
     }
 
-    public static ByteBuffer toByteBuffer(String resource, int bufferSize) throws IOException {
+    public static ByteBuffer toByteBuffer(Path path, File resource, int bufferSize) throws IOException {
         ByteBuffer buffer;
 
-        Path path = Paths.get(resource);
         if (Files.isReadable(path)) {
-            buffer = toByteBuffer(path);
+            try (SeekableByteChannel fc = Files.newByteChannel(path)) {
+                buffer = BufferUtils.createByteBuffer((int) fc.size() + 1);
+                while (fc.read(buffer) != -1) ;
+            }
         } else {
             try (InputStream source = new FileInputStream(resource);
                  ReadableByteChannel rbc = Channels.newChannel(source)) {
-                buffer = createByteBuffer(bufferSize);
+                buffer = BufferUtils.createByteBuffer(bufferSize);
 
                 while (true) {
                     int bytes = rbc.read(buffer);
@@ -62,17 +63,8 @@ public final class Resources {
         return buffer;
     }
 
-    private static ByteBuffer toByteBuffer(Path path) throws IOException {
-        ByteBuffer buffer;
-        try (SeekableByteChannel fc = Files.newByteChannel(path)) {
-            buffer = createByteBuffer((int) fc.size() + 1);
-            while (fc.read(buffer) != -1) ;
-        }
-        return buffer;
-    }
-
     private static ByteBuffer resizeBuffer(ByteBuffer buffer, int newCapacity) {
-        ByteBuffer newBuffer = createByteBuffer(newCapacity);
+        ByteBuffer newBuffer = BufferUtils.createByteBuffer(newCapacity);
         buffer.flip();
         newBuffer.put(buffer);
         return newBuffer;

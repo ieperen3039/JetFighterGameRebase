@@ -9,6 +9,7 @@ import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Spectral;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
+import nl.NG.Jetfightergame.GameState.RacePathDescription;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
@@ -20,7 +21,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import java.util.Locale;
 import java.util.function.Consumer;
 
 /**
@@ -48,12 +48,10 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
         float toLeft = controller.yaw() * deltaTime * MOVE_FACTOR;
 
         if (controller.primaryFire() && !didPrint) {
-            PosVector pos = interpolatedPosition();
-            DirVector dir = interpolatedForward();
-            System.out.printf(Locale.US,
-                    "c %.0f %.0f %.0f %.2f %.2f %.2f 100\n",
-                    pos.x, pos.y, pos.z, dir.x, dir.y, dir.z
-            );
+            PosVector pos = getPosition();
+            DirVector dir = DirVector.xVector();
+            dir.rotate(rotation);
+            RacePathDescription.printCheckpointData(true, pos, dir, 100);
         }
         didPrint = controller.primaryFire();
 
@@ -92,7 +90,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
 
     @Override
     public PosVector getExpectedMiddle() {
-        return getPosition();
+        return new PosVector(extraPosition);
     }
 
     @Override

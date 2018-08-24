@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +29,7 @@ public class ShapeParameters {
      * @param fileName path to the .obj file. Extension should NOT be included
      */
     public ShapeParameters(String[] fileName) {
-        this(PosVector.zeroVector(), 1f, Paths.get("", fileName), fileName[fileName.length - 1]);
+        this(PosVector.zeroVector(), 1f, Directory.meshes.getPath(fileName), fileName[fileName.length - 1]);
     }
 
     /**
@@ -39,7 +38,7 @@ public class ShapeParameters {
      * @param res    path from the directory main to the .obj file. Extension should NOT be included
      */
     public ShapeParameters(PosVector offSet, float scale, Resource res) {
-        this(offSet, scale, res.getPath(), res.name());
+        this(offSet, scale, res.getPathAs(".obj"), res.name());
     }
 
     /**
@@ -88,7 +87,7 @@ public class ShapeParameters {
         }
 
         if (vertices.isEmpty() || faces.isEmpty()) {
-            Logger.ERROR.print("Empty mesh loaded: " + (path) + " (this may result in errors)");
+            Logger.ERROR.print("Empty mesh loaded: " + path + " (this may result in errors)");
         }
     }
 
@@ -97,8 +96,7 @@ public class ShapeParameters {
             // add extension to path
             return Files.readAllLines(path);
         } catch (IOException e) {
-            Logger.ERROR.print("Could not read mesh '" + path.toString() + "'. Continuing game without model.");
-            Logger.ERROR.print("Current dir: " + Directory.currentDirectory());
+            Logger.ERROR.print("Could not read mesh '" + path.toAbsolutePath() + "'. Continuing game without model.");
             if (ServerSettings.DEBUG) e.printStackTrace();
             return new ArrayList<>();
         }

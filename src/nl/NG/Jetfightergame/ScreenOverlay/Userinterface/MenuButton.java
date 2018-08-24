@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.ScreenOverlay.Userinterface;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.ORBITRON_MEDIUM;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.ORBITRON_MEDIUM;
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.*;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 

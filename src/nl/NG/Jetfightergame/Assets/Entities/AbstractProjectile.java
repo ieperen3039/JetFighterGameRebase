@@ -188,7 +188,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
     @Override
     public PosVector getExpectedMiddle() {
-        return extraPosition;
+        return new PosVector(extraPosition);
     }
 
     @Override

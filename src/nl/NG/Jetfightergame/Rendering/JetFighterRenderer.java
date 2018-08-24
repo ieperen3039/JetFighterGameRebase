@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Rendering;
 
-import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Camera.Camera;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
@@ -14,21 +13,20 @@ import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
-import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Engine.JetFighterGame.GameMode.MENU_MODE;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.TARGET_FPS;
-import static nl.NG.Jetfightergame.Settings.ServerSettings.PRINT_STATE_INTERVAL;
 import static org.lwjgl.opengl.GL11.*;
 
 /**
@@ -88,7 +86,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         overlay.addMenuItem(menu);
         overlay.addHudItem(hudProvider);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yymmdd_hhmmss");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd_hhmmss");
         sessionName = dateFormat.format(new Date());
     }
 
@@ -103,11 +101,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
 
         activeCamera.updatePosition(deltaRenderTime);
         frameNumber++;
-
-        //noinspection ConstantConditions,divzero
-        if (PRINT_STATE_INTERVAL > 0 && (frameNumber % (int) (TARGET_FPS * PRINT_STATE_INTERVAL)) == 0) {
-            printStateOfJets(gameState);
-        }
 
         // shader preparation and background
         Color4f ambientLight = gameState.fogColor();
@@ -162,8 +155,11 @@ public class JetFighterRenderer extends AbstractGameLoop {
         }
 
         if (displayMode == Mode.RECORD_AND_SHOW || displayMode == Mode.RECORD) {
-            boolean canUseFront = (displayMode == Mode.RECORD_AND_SHOW);
-            window.printScreen("session_" + sessionName + "/" + frameNumber, canUseFront);
+            if (!engine.isPaused()) {
+                boolean canUseFront = (displayMode == Mode.RECORD_AND_SHOW);
+                Path path = Paths.get("session_" + sessionName, String.valueOf(frameNumber));
+                window.printScreen(Directory.recordings, canUseFront, path.toString());
+            }
         }
 
         // update stop-condition
@@ -172,20 +168,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         }
 
         Toolbox.checkGLError();
-    }
-
-    private static void printStateOfJets(Environment gameState) {
-        gameState.getEntities().stream()
-                .filter(e -> e instanceof AbstractJet)
-                .map(e -> (AbstractJet) e)
-                .findFirst()
-                .ifPresent(s -> {
-                    PosVector pos = s.interpolatedPosition();
-                    DirVector dir = s.interpolatedForward();
-                    System.out.printf(Locale.US,
-                            "c %.0f %.0f %.0f %.2f %.2f %.2f 100\n", pos.x, pos.y, pos.z, dir.x, dir.y, dir.z);
-                        }
-                );
     }
 
     @Override

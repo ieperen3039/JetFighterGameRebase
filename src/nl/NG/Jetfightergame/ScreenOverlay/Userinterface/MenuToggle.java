@@ -6,7 +6,7 @@ import org.joml.Vector2i;
 
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay.Font.ORBITRON_MEDIUM;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.ORBITRON_MEDIUM;
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.TEXT_COLOR;
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.TEXT_SIZE_LARGE;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;

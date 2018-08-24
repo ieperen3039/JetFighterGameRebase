@@ -93,7 +93,7 @@ public class FallingCube extends MovingEntity {
 
     @Override
     public PosVector getExpectedMiddle() {
-        return extraPosition;
+        return new PosVector(extraPosition);
     }
 
     @Override

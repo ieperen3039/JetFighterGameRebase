@@ -5,7 +5,6 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
-import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.EntityGeneral.StaticEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
@@ -15,6 +14,7 @@ import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.GameState.RaceProgress.Checkpoint;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -31,7 +31,7 @@ import java.util.List;
 public class IslandMap extends GameState {
     private static final int FOG_DIST = 750;
     private PosVector nextSpawnPosition = new PosVector();
-    private DirVector nextSpawnOffset = new DirVector(0, 30, 0);
+    private DirVector nextSpawnOffset = new DirVector();
 
     private static RacePathDescription racePath = new RacePathDescription(Resource.GLITCHMAP);
 
@@ -43,21 +43,18 @@ public class IslandMap extends GameState {
             entities.add(new StaticEntity(s, Material.GLASS, Color4f.BLACK));
         }
 
-        nextSpawnPosition = new PosVector(-50, 400, 0);
+        Pair<PosVector, DirVector> start = racePath.getFirstCheckpoint();
+        nextSpawnPosition.set(start.left);
+        DirVector offset = DirVector.yVector();
+        DirVector backwait = new DirVector(start.right).scale(-100);
+        offset.cross(start.right).normalize(30).add(backwait);
+        nextSpawnOffset = offset;
 
         for (Checkpoint ch : racePath.getCheckpoints(raceProgress, Color4f.BLUE)) {
             entities.add(ch);
         }
 
         return entities;
-    }
-
-    private Checkpoint makeCheckpoint(RaceProgress raceProgress, int x, int y, int z, float dx, float dy, float dz, int radius) {
-        return raceProgress.addCheckpoint(new PosVector(x, y, z), new DirVector(dx, dy, dz), radius, Color4f.BLUE);
-    }
-
-    private Checkpoint makeRoadPoint(RaceProgress raceProgress, int x, int y, int z, float dx, float dy, float dz) {
-        return raceProgress.addRoadpoint(new PosVector(x, y, z), new DirVector(dx, dy, dz), 500);
     }
 
     @Override
@@ -71,10 +68,6 @@ public class IslandMap extends GameState {
 
         return entities;
 
-    }
-
-    private PowerupEntity.Factory powerup(int x, int y, int z, PowerupColor green) {
-        return new PowerupEntity.Factory(new PosVector(x, y, z), green);
     }
 
     @Override

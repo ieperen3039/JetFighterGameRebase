@@ -84,6 +84,11 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
 
     void addGravitySource(Supplier<PosVector> position, float magnitude, float endTime);
 
+    /**
+     * @param from start position
+     * @param to   end position
+     * @return the position that can be reached along the line of from - to without hitting anything
+     */
     PosVector rayTrace(PosVector from, PosVector to);
 
     /**
