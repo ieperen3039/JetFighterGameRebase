@@ -33,6 +33,8 @@ public enum EntityClass {
     GRAPPLING_HOOK(GrapplingHook.Factory::new);
 
     private static final EntityClass[] VALUES = values();
+    private static final EntityClass[] jets = new EntityClass[]{JET_BASIC, JET_SPITZ};
+
     private final Supplier<EntityFactory> constructor;
 
     EntityClass(Supplier<EntityFactory> constructor) {
@@ -51,6 +53,10 @@ public enum EntityClass {
 
     public static String asString(int id) {
         return id < VALUES.length ? get(id).toString() : id + " (Invalid entity id)";
+    }
+
+    public static EntityClass[] getJets() {
+        return jets.clone();
     }
 
     EntityFactory getFactory() {

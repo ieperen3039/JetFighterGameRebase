@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Tools.Interpolation;
 
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import org.joml.Quaternionf;
 
 /**
@@ -24,7 +23,7 @@ public class QuaternionInterpolator extends LinearInterpolator<Quaternionf> {
     protected Quaternionf interpolate(Quaternionf firstElt, Quaternionf secondElt, float fraction) {
         final Quaternionf result = new Quaternionf();
 
-        if (ClientSettings.ITERATIVE_ROTATION_INTERPOLATION && firstElt.dot(secondElt) > DOT_THRESHOLD) {
+        if (true && firstElt.dot(secondElt) > DOT_THRESHOLD) {
             firstElt.nlerpIterative(secondElt, fraction, DOT_THRESHOLD, result);
         } else {
             firstElt.nlerp(secondElt, fraction, result);

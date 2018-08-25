@@ -103,6 +103,20 @@ public class Color4f {
         return new Color4f(red, green, blue, alpha);
     }
 
+    public static Color4f parse(String asVector4f) {
+        String[] numbers = asVector4f
+                .replaceFirst("\\(", "")
+                .replaceFirst("\\)", "")
+                .split(", ");
+
+        return new Color4f(
+                Float.valueOf(numbers[0]),
+                Float.valueOf(numbers[1]),
+                Float.valueOf(numbers[2]),
+                Float.valueOf(numbers[3])
+        );
+    }
+
     /**
      * flat add this color with the given other color
      * @param other another color

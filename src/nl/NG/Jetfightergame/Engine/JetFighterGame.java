@@ -9,7 +9,6 @@ import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
-import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
@@ -19,6 +18,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.PowerupDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.RaceProgressDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.*;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Mesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
@@ -53,8 +53,6 @@ import static nl.NG.Jetfightergame.Rendering.JetFighterRenderer.Mode.*;
  * @author Geert van Ieperen created on 29-10-2017.
  */
 public class JetFighterGame {
-    private static final EntityClass JET_TYPE = EntityClass.JET_SPITZ;
-    private static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
     private final ActionButtonHandler actionHandler;
     private GLFWWindow window;
@@ -67,54 +65,57 @@ public class JetFighterGame {
 
     /**
      * Shows a splash screen, and creates a window in which the game runs
-     * @param makeLocalServer if true, a new server will be created and connected to on this machine.
      * @param doShow if false, the game will run headless (for recording)
-     * @param doStore
-     * @param file
-     * @param map
+     * @param doStore if true, a video of the replay file will be recorded
+     * @param replayFile a replay file to play, or null if no file should be played
+     * @param map the map for racing
+     * @param hostAddress address of server to find. When null, a new local server will be created
      */
-    public JetFighterGame(boolean makeLocalServer, boolean doShow, boolean doStore, File file, EnvironmentClass map) throws Exception {
+    public JetFighterGame(boolean doShow, boolean doStore, File replayFile, EnvironmentClass map, InetAddress hostAddress) throws Exception {
         Logger.INFO.print("Starting the game...");
         Logger.DEBUG.print("General debug information: " +
                 "\n\tSystem OS:          " + System.getProperty("os.name") +
                 "\n\tJava VM:            " + System.getProperty("java.runtime.version") +
                 "\n\tWorking directory:  " + Directory.currentDirectory() +
                 "\n\tProtocol version:   " + JetFighterProtocol.versionNumber +
-                (makeLocalServer ? "\n\tLocal server enabled" : "") +
-                (file == null ? "" : "\n\tReplay file:        " + file.getName()) +
-                (file != null && doStore ? "\n\tCreating video from replay" : "") +
-                (file == null && doStore ? "\n\tStoring game state enabled" : "") +
+                (hostAddress == null ? "\n\tLocal server enabled" : "") +
+                (replayFile == null ? "" : "\n\tReplay file:        " + replayFile.getName()) +
+                (replayFile != null && doStore ? "\n\tCreating video from replay" : "") +
+                (replayFile == null && doStore ? "\n\tStoring game state enabled" : "") +
                 (doShow ? "" : "\n\tHeadless mode enabled")
         );
 
-        if (!doShow && file == null) throw new IllegalArgumentException("No show without replay file");
 
-        this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
-
-        GeneralShapes.init(true);
-        CustomJetShapes.init(true);
-        MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
-        MouseTracker.getInstance().listenTo(window);
-        KeyTracker.getInstance().listenTo(window);
-
-//        new SoundEngine();
-//        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
+        if (!doShow && replayFile == null) throw new IllegalArgumentException("No show without replay file");
 
         Splash splash = new Splash();
         splash.run();
+
         try {
-            if (file == null) {
+            this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
+
+            GeneralShapes.init(true);
+            CustomJetShapes.init(true);
+            MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
+            MouseTracker.getInstance().listenTo(window);
+            KeyTracker.getInstance().listenTo(window);
+
+            //        new SoundEngine();
+            //        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
+
+
+            if (replayFile == null) {
                 String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
 
                 OutputStream sendChannel;
                 InputStream receiveChannel;
 
-                if (makeLocalServer) {
+                if (hostAddress == null) {
                     Logger.INFO.print("Creating new local server");
 
                     JetFighterServer server = new JetFighterServer(map, doStore);
 
-                    if (USE_SOCKET_FOR_OFFLINE) {
+                    if (ClientSettings.USE_SOCKET_FOR_OFFLINE) {
                         new Thread(server::listenForHost).start();
 
                         Socket client = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
@@ -140,12 +141,12 @@ public class JetFighterGame {
 
                 } else {
                     Logger.INFO.print("Searching local server");
-                    Socket socket = new Socket(InetAddress.getLocalHost(), ServerSettings.SERVER_PORT);
+                    Socket socket = new Socket(hostAddress, ServerSettings.SERVER_PORT);
                     sendChannel = socket.getOutputStream();
                     receiveChannel = socket.getInputStream();
                 }
 
-                connection = new ClientConnection(playerName, sendChannel, receiveChannel, JET_TYPE);
+                connection = new ClientConnection(playerName, sendChannel, receiveChannel, ClientSettings.JET_TYPE);
                 otherLoops.add(connection);
                 Logger.printOnline(() -> connection.getTimer().toString());
 
@@ -166,12 +167,12 @@ public class JetFighterGame {
                 );
 
             } else { // file != null, start a replay file
-                Logger.INFO.print("Starting replay of " + file.getPath());
+                Logger.INFO.print("Starting replay of " + replayFile.getPath());
 
                 camera = new CameraManager();
                 EntityFactory focus = new CameraFocusMovable.Factory(new PosVector(0, 0, 0), new Quaternionf());
 
-                connection = new StateReader(file, !doStore, focus, this::exitGame);
+                connection = new StateReader(replayFile, !doStore, focus, this::exitGame);
                 otherLoops.add(connection);
                 Environment gameState = connection.getWorld();
                 ControllerManager controls = connection.getInputControl();
@@ -338,10 +339,11 @@ public class JetFighterGame {
                 }
             }
         }
+        InetAddress localHost = makeLocalServer ? null : InetAddress.getLocalHost();
 
         Logger.setOutputLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
         boolean doShow = (file == null) || playReplay;
-        new JetFighterGame(makeLocalServer, doShow, storeReplay, file, serverMap).root();
+        new JetFighterGame(doShow, storeReplay, file, serverMap, localHost).root();
     }
 
     /**

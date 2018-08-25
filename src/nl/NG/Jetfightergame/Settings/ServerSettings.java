@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Settings;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 
+
 /**
  * a class that harbours the variables that may or may not be changed by the player
  * @see MenuStyleSettings
@@ -12,14 +13,14 @@ import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 @SuppressWarnings("ConstantConditions")
 public final class ServerSettings {
     public static boolean DEBUG = true;
-    public static final boolean MAKE_RECORDING = true;
+    public static boolean MAKE_RECORDING = true;
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static final short TARGET_TPS = 19;
+    public static int TARGET_TPS = 19;
 
     /** connection settings */
-    public static final int SERVER_PORT = 3039;
+    public static int SERVER_PORT = 3039;
 
     /** collision detection */
     public static final int MAX_COLLISION_ITERATIONS = 100 / TARGET_TPS;

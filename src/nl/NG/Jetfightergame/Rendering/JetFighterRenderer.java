@@ -131,7 +131,6 @@ public class JetFighterRenderer extends AbstractGameLoop {
         if (ClientSettings.HIGHLIGHT_LINE_WIDTH > 0) {
             gl.setFill(false);
             gameState.drawObjects(gl);
-            Toolbox.checkGLError();
             gl.setFill(true);
         }
 

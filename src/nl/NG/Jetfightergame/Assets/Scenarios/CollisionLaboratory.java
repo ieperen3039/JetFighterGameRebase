@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -47,8 +46,6 @@ public class CollisionLaboratory extends GameState {
         this.labSize = labSize;
         this.nrOfCubes = nrOfCubes;
         this.speeds = labSize / 3f;
-
-        ClientSettings.SPECTATOR_MODE = true;
     }
 
     @Override

@@ -29,7 +29,7 @@ public enum JFGFont {
     private Font awtFormat;
 
     JFGFont(Directory dir, String... filepath) {
-        this.name = toString().toLowerCase().replace("_", "");
+        this.name = toString().toLowerCase().replace("_", " ");
         this.source = dir.getPath(filepath).toString();
         File file = Directory.fonts.getFile(filepath);
         Path path = Directory.fonts.getPath(filepath);
