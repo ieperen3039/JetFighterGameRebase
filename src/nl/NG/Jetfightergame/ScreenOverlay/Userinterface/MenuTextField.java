@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ScreenOverlay.UIElement;
 import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.ORBITRON_MEDIUM;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFonts.ORBITRON_MEDIUM;
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.*;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 

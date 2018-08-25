@@ -2,14 +2,14 @@ package nl.NG.Jetfightergame.Assets.Shapes;
 
 import nl.NG.Jetfightergame.Assets.WorldObjects.CheckpointRing;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
-import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
-import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
-import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.ShapeCreation.*;
+import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -42,10 +42,21 @@ public final class GeneralShapes {
     public static void init(boolean doLoadMesh) {
         RENDER_ENABLED = doLoadMesh;
         if (isLoaded) {
-            Logger.ERROR.print("Tried loading shapes while they where already loaded");
+            Logger.WARN.print("Tried loading shapes while they where already loaded");
             return;
         }
-        isLoaded = true;
+
+        rebuildAll(doLoadMesh);
+    }
+
+    /**
+     * removes all shapes from memory, if loaded, and recalculates / reloads everything. {@link #init(boolean)} is
+     * preferable, as this checks whether the shapes have already been loaded.
+     * @param doLoadMesh whether the meshes should be loaded. If this is false, calling {@link
+     *                   Shape#render(GL2.Painter)} will result in a {@link NullPointerException}
+     */
+    public static void rebuildAll(boolean doLoadMesh) {
+        Mesh.cleanAll();
 
         ARROW = new BasicShape(doLoadMesh, "arrow.obj");
         INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
@@ -53,8 +64,13 @@ public final class GeneralShapes {
         CUBE = makeCube(doLoadMesh);
         ISLAND1 = BasicShape.loadSplit(doLoadMesh, CONTAINER_SIZE, 50f, Resource.GLITCHMAP);
         CHECKPOINTRING = new CheckpointRing(10, 0.03f, doLoadMesh);
-
         ICOSAHEDRON = makeIcosahedron(doLoadMesh);
+
+        Path toJet = Directory.meshes.getPath("ConceptBlueprint.obj");
+        CustomJetShapes.BASIC = new BasicShape(new ShapeParameters(PosVector.zeroVector(), 0.5f, toJet, "Basic jet"), doLoadMesh);
+        CustomJetShapes.SPITZ = CustomJetShapes.makeSpitzPlane(doLoadMesh);
+
+        isLoaded = true;
     }
 
     private static Shape makeIcosahedron(boolean loadMesh) {
@@ -134,7 +150,7 @@ public final class GeneralShapes {
     /**
      * recursively split the given quad, and add all tiny components to frame. This results in {@code 2^splits} quads
      * @param normal the shared normal of the resulting quads
-     * @param splits the number of splits to be made, with 0 is no splits
+     * @param splits the number of split iterations. The resulting number of quads is (4 ^ splits)
      */
     private static void recursiveQuad(CustomShape frame, PosVector A, PosVector B, PosVector C, PosVector D, DirVector normal, int splits) {
         if (splits == 0) {
@@ -152,5 +168,10 @@ public final class GeneralShapes {
             recursiveQuad(frame, MID, BC, C, CD, normal, splits - 1);
             recursiveQuad(frame, AD, MID, CD, D, normal, splits - 1);
         }
+    }
+
+    public static void cleanAll() {
+        isLoaded = false;
+        Mesh.cleanAll();
     }
 }

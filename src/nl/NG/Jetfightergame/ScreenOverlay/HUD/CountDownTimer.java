@@ -8,7 +8,7 @@ import org.lwjgl.nanovg.NanoVG;
 
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.LUCIDA_CONSOLE;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFonts.LUCIDA_CONSOLE;
 
 /**
  * @author Geert van Ieperen. Created on 14-8-2018.

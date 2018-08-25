@@ -3,7 +3,6 @@ package nl.NG.Jetfightergame.ShapeCreation;
 import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.Primitives.Plane;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.Renderable;
-import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -53,21 +52,6 @@ public interface Shape extends Renderable {
     /** @see #getPoints() */
     default Stream<? extends PosVector> getPointStream() {
         return StreamSupport.stream(getPoints().spliterator(), false);
-    }
-
-    /**
-     * given a ray, determines if this ray hit this shape. Note that this method assumes local vectors,
-     * thus the parameters must be transformed to local space using for instance {@link ShadowMatrix#mapToLocal(PosVector)}
-     * @param position the local begin point of the ray
-     * @param direction the local direction in which the ray progresses. Does not have to be normalized
-     * @return true iff this shape intersects this ray
-     */
-    default boolean isHitByRay(PosVector position, DirVector direction){
-        return getPlaneStream()
-                // find the vector that hits the planes
-                .map((plane) -> plane.intersectWithRay(position, direction))
-                // return whether at least one hit
-                .findAny().orElse(false);
     }
 
     default Pair<PosVector, Float> getMinimalCircle() {

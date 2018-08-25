@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
-import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.AbstractGameLoop;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -11,6 +10,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 import static nl.NG.Jetfightergame.Settings.ServerSettings.SERVER_PORT;
 
@@ -67,7 +67,11 @@ public class JetFighterServer implements BlockingListener {
      * listens to the predefined port, adding all incoming requests to clients. blocks while listening.
      */
     public boolean handleMessage() throws IOException {
-        acceptConnection(false);
+        try {
+            acceptConnection(false);
+        } catch (SocketException sex) {
+            return false; // when the socket closes, do not report this
+        }
         return true;
     }
 
@@ -80,11 +84,19 @@ public class JetFighterServer implements BlockingListener {
         game.connectToPlayer(in, out, asAdmin);
     }
 
+    public void close() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            Logger.ERROR.print(e);
+        }
+    }
+
     /** starts a server */
     public static void main(String[] args) throws IOException {
         GeneralShapes.init(false);
-        CustomJetShapes.init(false);
-        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP, ServerSettings.MAKE_RECORDING);
+        GeneralShapes.init(false);
+        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP, ServerSettings.MAKE_REPLAY);
         server.listenForHost();
 
         server.listenInThread(true);

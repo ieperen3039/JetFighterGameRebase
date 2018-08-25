@@ -1,39 +1,21 @@
 package nl.NG.Jetfightergame.Assets.Shapes;
 
-import nl.NG.Jetfightergame.ShapeCreation.BasicShape;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.ShapeCreation.ShapeParameters;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
-import nl.NG.Jetfightergame.Tools.Directory;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import java.nio.file.Path;
-
 /**
+ * shapes for jets. The jets are loaded in GeneralShapes
  * @author Geert van Ieperen. Created on 11-8-2018.
  */
 public final class CustomJetShapes {
-    private static boolean isLoaded;
     public static Shape BASIC;
     public static Shape SPITZ;
 
     public static PairList<PosVector, PosVector> spitzBoosters;
 
-    public static void init(boolean doLoadMesh) {
-        if (isLoaded) {
-            Logger.ERROR.print("Tried loading shapes while they where already loaded");
-            return;
-        }
-        isLoaded = true;
-
-        Path s = Directory.meshes.getPath("ConceptBlueprint.obj");
-        BASIC = new BasicShape(new ShapeParameters(PosVector.zeroVector(), 0.5f, s, "Basic jet"), doLoadMesh);
-        SPITZ = makeSpitzPlane(doLoadMesh);
-    }
-
-    private static Shape makeSpitzPlane(boolean doLoadMesh) {
+    public static Shape makeSpitzPlane(boolean doLoadMesh) {
         CustomShape frame = new CustomShape();
 
         PosVector A = new PosVector(6, 0, -0.5f);

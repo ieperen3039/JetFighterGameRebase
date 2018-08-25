@@ -41,7 +41,7 @@ public final class ScreenOverlay {
 
     /** fontbuffer MUST be a field */
     @SuppressWarnings("FieldCanBeLocal")
-    private final ByteBuffer[] fontBuffer = new ByteBuffer[JFGFont.values().length];
+    private final ByteBuffer[] fontBuffer = new ByteBuffer[JFGFonts.values().length];
     private Map<String, Integer> imageBuffer = new HashMap<>();
 
     private final Collection<Consumer<Painter>> menuDrawBuffer = new ArrayList<>();
@@ -68,7 +68,7 @@ public final class ScreenOverlay {
         if (vg == NULL) {
             throw new IOException("Could not initialize NanoVG");
         }
-        JFGFont[] fonts = JFGFont.values();
+        JFGFonts[] fonts = JFGFonts.values();
 
         for (int i = 0; i < fonts.length; i++) {
             fontBuffer[i] = fonts[i].asByteBuffer();
@@ -308,7 +308,7 @@ public final class ScreenOverlay {
 
         // non-shape defining functions
 
-        public void text(int x, int y, float size, JFGFont font, int align, Color4f color, String text) {
+        public void text(int x, int y, float size, JFGFonts font, int align, Color4f color, String text) {
             nvgFontSize(vg, size);
             nvgFontFace(vg, font.name);
             nvgTextAlign(vg, align);
@@ -319,7 +319,7 @@ public final class ScreenOverlay {
         public void printRoll(String text){
             int y = yPrintRoll + ((printRollSize + 5) * printRollEntry);
 
-            text(xPrintRoll, y, printRollSize, JFGFont.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
+            text(xPrintRoll, y, printRollSize, JFGFonts.LUCIDA_CONSOLE, NVG_ALIGN_LEFT, Color4f.WHITE, text);
             printRollEntry++;
         }
 

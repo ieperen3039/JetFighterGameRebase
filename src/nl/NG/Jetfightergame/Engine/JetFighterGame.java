@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
-import nl.NG.Jetfightergame.Assets.Shapes.CustomJetShapes;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Camera.CameraFocusMovable;
 import nl.NG.Jetfightergame.Camera.CameraManager;
@@ -20,7 +19,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.ShapeCreation.Mesh;
 import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
@@ -37,11 +35,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -62,6 +59,7 @@ public class JetFighterGame {
 
     private ClientConnection connection;
     private final CameraManager camera;
+    private final List<Runnable> closeOperations = new ArrayList<>();
 
     /**
      * Shows a splash screen, and creates a window in which the game runs
@@ -93,9 +91,10 @@ public class JetFighterGame {
 
         try {
             this.window = new GLFWWindow(ServerSettings.GAME_NAME, 1600, 900, true);
+            closeOperations.add(window::cleanup);
 
             GeneralShapes.init(true);
-            CustomJetShapes.init(true);
+
             MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
             MouseTracker.getInstance().listenTo(window);
             KeyTracker.getInstance().listenTo(window);
@@ -139,9 +138,19 @@ public class JetFighterGame {
                     serverLoop.setDaemon(true);
                     serverLoop.start();
 
+                    closeOperations.add(server::close);
+
                 } else {
                     Logger.INFO.print("Searching local server");
-                    Socket socket = new Socket(hostAddress, ServerSettings.SERVER_PORT);
+                    Socket socket;
+
+                    try {
+                        socket = new Socket(hostAddress, ServerSettings.SERVER_PORT);
+                    } catch (ConnectException ex) {
+                        Logger.WARN.print("Could not find local server");
+                        throw ex;
+                    }
+
                     sendChannel = socket.getOutputStream();
                     receiveChannel = socket.getInputStream();
                 }
@@ -185,11 +194,16 @@ public class JetFighterGame {
             }
 
             actionHandler = new ActionButtonHandler(this, connection);
+            closeOperations.add(actionHandler::cleanUp);
 
             // set currentGameMode and engine.isPaused
             if (doShow) setMenuMode();
             else setPlayMode();
             connection.listenInThread(true);
+
+        } catch (Exception anyException) {
+            cleanup();
+            throw anyException;
 
         } finally {
             // remove splash frame
@@ -219,16 +233,6 @@ public class JetFighterGame {
     }
 
     /**
-     * Start closing and cleaning everything
-     */
-    public void cleanUp() {
-        Mesh.cleanAll();
-        AudioFile.cleanAll();
-        SoundEngine.closeDevices();
-        actionHandler.cleanUp();
-    }
-
-    /**
      * Starts all threads and blocks until rendering has terminated again.
      * must be called in the current GL context
      */
@@ -251,14 +255,24 @@ public class JetFighterGame {
             otherLoops.forEach(Thread::interrupt);
 
         } finally {
-            Toolbox.checkGLError();
-//            Toolbox.checkALError();
-            this.cleanUp();
-            window.cleanup();
+            cleanup();
         }
 
         Logger.INFO.print("Game has stopped! Bye ~");
         // Finish execution
+    }
+
+    private void cleanup() {
+        if (ClientSettings.CLEAN_AFTER_GAME) {
+            GeneralShapes.cleanAll();
+            AudioFile.cleanAll();
+            SoundEngine.closeDevices();
+        }
+
+        closeOperations.forEach(Runnable::run);
+
+        Toolbox.checkGLError();
+//            Toolbox.checkALError();
     }
 
     /** tells the gameloops to stop */

@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.*;
-import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.LUCIDA_CONSOLE;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFonts.LUCIDA_CONSOLE;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_LEFT;
 
 /**

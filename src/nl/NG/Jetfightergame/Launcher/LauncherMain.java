@@ -1,18 +1,26 @@
 package nl.NG.Jetfightergame.Launcher;
 
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
-import nl.NG.Jetfightergame.ScreenOverlay.JFGFont;
+import nl.NG.Jetfightergame.ScreenOverlay.JFGFonts;
 import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Sound.AudioFile;
+import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
 import javax.swing.plaf.FontUIResource;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -24,16 +32,23 @@ import static nl.NG.Jetfightergame.Launcher.SwingToolbox.*;
 /**
  * @author Geert van Ieperen. Created on 23-8-2018.
  */
-public class LauncherMain implements Runnable {
+public class LauncherMain {
     private static final String BACKDROP_IMAGE = "Backdrop.png"; // TODO backdrop image
-    private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(1100, 700);
+    private static final Font LARGE_FONT = JFGFonts.LUCIDA_CONSOLE.asAWTFont(20f);
 
-    private static final Font LARGE_FONT = JFGFont.LUCIDA_CONSOLE.asAWTFont(20f);
+    private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(800, 500);
+    private static final Dimension DEFAULT_LAUNCHER_SIZE = new Dimension(1100, 700);
+    private static final int COLUMNS_OF_SETTINGS = 3;
+    public static final Color ERROR_TEXT_COLOR = new Color(1f, 0.3f, 0.3f);
+    public static final Color REGULAR_TEXT_COLOR = Color.WHITE;
+
 
     /** settings */
     private EnvironmentClass map = EnvironmentClass.ISLAND_MAP;
-    private boolean doStore = false;
     private boolean hideLauncherWhenRunning = false;
+
+    /** main frame */
+    private JFrame frame;
 
     /** panels */
     private JPanel mainMenuPanel;
@@ -41,14 +56,15 @@ public class LauncherMain implements Runnable {
     private JPanel ipSearchPanel;
     private JPanel loadoutPanel;
     private JPanel settingsPanel;
-    private final JFrame frame;
+    private JPanel replaySelectPanel;
+    private JPanel debugOutputPanel;
+    private JPanel defaultPanel;
 
-    private final JPanel[] mutExclPanels;
+    private JPanel[] mutexPanels;
 
-    private LauncherMain() {
+    public void init() {
         frame = new JFrame();
         frame.setTitle(ServerSettings.GAME_NAME + " Launcher");
-        frame.setSize(MINIMUM_LAUNCHER_SIZE);
         frame.setMinimumSize(MINIMUM_LAUNCHER_SIZE);
 
         imagePanel = SwingToolbox.getImagePanel(Directory.pictures.getFile(BACKDROP_IMAGE));
@@ -57,22 +73,23 @@ public class LauncherMain implements Runnable {
         mainMenuPanel = getMainMenuPanel();
         imagePanel.add(mainMenuPanel, SwingToolbox.getConstraints(0, 0, BOTH));
 
-        imagePanel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(1, 0));
-
         ipSearchPanel = getIPSearchPanel();
         loadoutPanel = getLoadoutPanel();
         settingsPanel = getSettingsPanel();
+        replaySelectPanel = getReplaySelectPanel(Directory.recordings);
+        debugOutputPanel = getConsolePanel();
+        defaultPanel = getDefaultPanel();
 
-        mutExclPanels = new JPanel[]{ipSearchPanel, loadoutPanel, settingsPanel};
-        for (JPanel panel : mutExclPanels) {
+        mutexPanels = new JPanel[]{defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel, replaySelectPanel, debugOutputPanel};
+        for (JPanel panel : mutexPanels) {
             panel.setVisible(false);
-            imagePanel.add(panel, SwingToolbox.getFillConstraints(2, 0));
+            imagePanel.add(panel, SwingToolbox.getFillConstraints(1, 0));
         }
-
-        imagePanel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(3, 0));
+        select(null);
 
         frame.add(imagePanel);
 
+        frame.setSize(DEFAULT_LAUNCHER_SIZE);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Point centerPoint = ge.getCenterPoint();
 
@@ -82,68 +99,106 @@ public class LauncherMain implements Runnable {
         frame.setLocation(dx, dy);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
+        frame.setSize(DEFAULT_LAUNCHER_SIZE);
+    }
+
+    private void reboot() {
+        boolean wasVisible = frame.isVisible();
+        close();
+        frame.dispose();
+        init();
+        frame.setVisible(wasVisible);
+    }
+
+    private JPanel getDefaultPanel() {
+        return ServerSettings.DEBUG ? debugOutputPanel : SwingToolbox.invisiblePanel();
     }
 
     private JPanel getSettingsPanel() {
         JPanel panel = SwingToolbox.invisiblePanel();
         panel.setLayout(new GridBagLayout());
 
-        final int columnsOfSettings = 3;
-        final int cols = (columnsOfSettings * 2) - 1;
-        int x = 0;
-
+        final int cols = (COLUMNS_OF_SETTINGS * 2) - 1;
         ArrayList<Runnable> settings = new ArrayList<>();
+        boolean[] doReboot = new boolean[1];
 
         // for the title
-        GridBagConstraints titleCon = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(0), 0, 0);
-        final int startOfFields = 1;
+        GridBagConstraints titlePosition = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(0), 0, 0);
 
         JTextComponent title = SwingToolbox.flyingText();
         title.setFont(LARGE_FONT);
         title.setText("Settings");
-        panel.add(title, titleCon);
+        panel.add(title, titlePosition);
 
-        settings.add(getTextboxSetting(panel, posInSet(x++), "Target FPS",
-                (s) -> ClientSettings.TARGET_FPS = Integer.valueOf(s), String.valueOf(ClientSettings.TARGET_FPS)));
+        settings.add(getBooleanSetting(panel, colByIndex(1), "Debug mode",
+                ServerSettings.DEBUG, (result) -> {
+                    if (result != ServerSettings.DEBUG) doReboot[0] = true;
+                    ServerSettings.DEBUG = result;
+                }));
 
-        settings.add(getTextboxSetting(panel, posInSet(x++), "Render Delay",
-                (s) -> ClientSettings.RENDER_DELAY = Float.valueOf(s), String.valueOf(ClientSettings.RENDER_DELAY)));
+        settings.add(getBooleanSetting(panel, colByIndex(1), "Menu Transparency",
+                ALLOW_FLYING_TEXT, (result) -> {
+                    if (result != ALLOW_FLYING_TEXT) doReboot[0] = true;
+                    ALLOW_FLYING_TEXT = result;
+                }));
 
-        settings.add(getEnumSetting(panel, posInSet(x++), "Jet Type", EntityClass.getJets(),
-                (e) -> ClientSettings.JET_TYPE = e, ClientSettings.JET_TYPE));
+        settings.add(getBooleanSetting(panel, colByIndex(1), "Hide launcher while playing",
+                hideLauncherWhenRunning, (result) -> hideLauncherWhenRunning = result));
 
-        settings.add(getSliderSetting(panel, posInSet(x++), "Field of View",
+        panel.add(getFiller(), getButtonConstraints(colByIndex(1), RELATIVE));
+
+        settings.add(getTextboxSetting(panel, colByIndex(2), "Target FPS",
+                String.valueOf(ClientSettings.TARGET_FPS), (s) -> ClientSettings.TARGET_FPS = Integer.valueOf(s)));
+
+        settings.add(getTextboxSetting(panel, colByIndex(2), "Render Delay (sec)",
+                String.valueOf(ClientSettings.RENDER_DELAY), (s) -> ClientSettings.RENDER_DELAY = Float.valueOf(s)));
+
+        settings.add(getSliderSetting(panel, colByIndex(2), "Field of View (deg)",
                 (f) -> ClientSettings.FOV = f, 0.35f, 2.10f, ClientSettings.FOV));
 
-        settings.add(getTextboxSetting(panel, posInSet(x++), "Thrust particle density",
-                (f) -> ClientSettings.THRUST_PARTICLES_PER_SECOND = Float.valueOf(f), String.valueOf(ClientSettings.THRUST_PARTICLES_PER_SECOND)));
+        settings.add(getTextboxSetting(panel, colByIndex(2), "Thrust particle density",
+                String.valueOf(ClientSettings.THRUST_PARTICLES_PER_SECOND), (s) -> ClientSettings.THRUST_PARTICLES_PER_SECOND = Float.valueOf(s)));
 
-//        ServerSettings.TARGET_TPS = obj_server.getInt("server_ticks_per_second");
-//        ServerSettings.SERVER_PORT = obj_server.getInt("server_port");
-//        ServerSettings.MAKE_RECORDING = obj_server.getBoolean("store_recording");
+        panel.add(getFiller(), getButtonConstraints(colByIndex(2), RELATIVE));
 
-        int nOfRows = (((x / 3) + 1) * 2) + 1;
-        panel.add(getFiller(), getFillConstraints(0, RELATIVE));
-        panel.add(getFiller(), getFillConstraints(1, startOfFields, 1, nOfRows));
-        panel.add(getFiller(), getFillConstraints(3, startOfFields, 1, nOfRows));
-//        panel.add(getFiller(), getFillConstraints(0, startOfFields + nOfRows, cols, 1));
+        settings.add(getTextboxSetting(panel, colByIndex(3), "Server Port",
+                String.valueOf(ServerSettings.SERVER_PORT), (s) -> ServerSettings.SERVER_PORT = Integer.valueOf(s)));
 
-        JButton applyButton = SwingToolbox.getButton("Apply");
-        panel.add(applyButton, SwingToolbox.getButtonConstraints(cols - 1, startOfFields + nOfRows));
-        applyButton.addActionListener(e -> settings.forEach(Runnable::run));
+        settings.add(getBooleanSetting(panel, colByIndex(3), "Save Replays",
+                ServerSettings.MAKE_REPLAY, (result) -> ServerSettings.MAKE_REPLAY = result));
+
+        settings.add(getTextboxSetting(panel, colByIndex(3), "Server Ticks per second",
+                String.valueOf(ServerSettings.TARGET_TPS), (s) -> ServerSettings.TARGET_TPS = Integer.valueOf(s)));
+
+        panel.add(getFiller(), getButtonConstraints(colByIndex(3), RELATIVE));
+
+        for (int i = 0; i < COLUMNS_OF_SETTINGS - 1; i++) {
+            panel.add(getFiller(), getFillConstraints((i * 2) + 1, 1, 1, 1));
+        }
+        panel.add(getFiller(), getFillConstraints(0, RELATIVE, cols, 1));
+
+        JButton applyButton = SwingToolbox.getButton("Apply and close");
+        panel.add(applyButton, SwingToolbox.getButtonConstraints(cols - 1, RELATIVE));
+        applyButton.addActionListener(e -> {
+            settings.forEach(Runnable::run);
+            select(null);
+            if (doReboot[0]) reboot();
+            doReboot[0] = false;
+        });
 
         return panel;
     }
 
-    private static int posInSet(int x) {
-        return (x % 3) * 2;
+    private static int colByIndex(int x) {
+        return ((x - 1) % COLUMNS_OF_SETTINGS) * 2;
     }
 
     private JPanel getLoadoutPanel() {
         JPanel panel = SwingToolbox.invisiblePanel();
         panel.setLayout(new GridBagLayout());
 
-        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, RELATIVE));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(1, 0));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, 0, 1, REMAINDER));
 
         JTextComponent text = SwingToolbox.flyingText();
         text.setText("Choose a jet:");
@@ -155,11 +210,12 @@ public class LauncherMain implements Runnable {
             panel.add(chooseJet, SwingToolbox.getButtonConstraints(RELATIVE));
             chooseJet.addActionListener(e -> {
                 ClientSettings.JET_TYPE = jet;
-                select(mainMenuPanel);
+                select(null);
             });
         }
 
-        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, RELATIVE));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(1, RELATIVE));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(2, 0, 1, REMAINDER));
 
         return panel;
     }
@@ -169,42 +225,36 @@ public class LauncherMain implements Runnable {
         panel.setLayout(new GridBagLayout());
         GridBagConstraints cons;
 
-        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, 0));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(1, 0, 2, 1));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, 0, 1, REMAINDER));
 
         JTextComponent messageDisplay = SwingToolbox.flyingText();
         messageDisplay.setText("Enter the target IP address");
-        messageDisplay.setMinimumSize(BUTTON_DIMENSIONS);
-        cons = new GridBagConstraints(0, 1, 2, 1, 0, 0, LINE_END, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
+        messageDisplay.setMinimumSize(MAIN_BUTTON_DIM);
+        cons = new GridBagConstraints(1, 1, 2, 1, 0, 0, LINE_END, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
         panel.add(messageDisplay, cons);
 
         JTextField ipField = new JTextField();
         ipField.setFont(LARGE_FONT);
         ipField.setPreferredSize(SwingToolbox.TEXTBOX_DIMENSIONS);
-        cons = new GridBagConstraints(0, 2, 2, 1, 0, 0, LINE_END, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
+        cons = new GridBagConstraints(1, 2, 2, 1, 1, 0, LINE_END, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
         panel.add(ipField, cons);
 
-        JButton searchButton = SwingToolbox.getButton("Validate");
-        cons = new GridBagConstraints(0, 3, 1, 1, 0, 0, LINE_START, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
-        panel.add(searchButton, cons);
+        JButton searchLocal = SwingToolbox.getButton("Search Local");
+        cons = new GridBagConstraints(1, 3, 1, 1, 1, 0, LINE_START, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
+        panel.add(searchLocal, cons);
 
         JButton connectButton = SwingToolbox.getButton("Connect");
-        cons = new GridBagConstraints(1, 3, 1, 1, 0, 0, LINE_START, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
+        cons = new GridBagConstraints(2, 3, 1, 1, 1, 0, LINE_START, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
         panel.add(connectButton, cons);
 
-        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, 4));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(1, 4, 2, 1));
+        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(4, 0, 1, REMAINDER));
 
         // implementation
-        ipField.addActionListener(e -> searchButton.doClick());
+        ipField.addActionListener(e -> connectButton.doClick()); // enter -> [connect]
 
-        searchButton.addActionListener(SwingToolbox.getActionWorker("Searching IP address", () -> {
-            messageDisplay.setText("Searching...");
-            InetAddress address = getIP(ipField.getText());
-            if (address == null) {
-                messageDisplay.setText("That is not a valid address");
-            } else {
-                messageDisplay.setText("Found " + address);
-            }
-        }));
+        searchLocal.addActionListener(e -> launchGame(InetAddress.getLoopbackAddress(), null));
 
         connectButton.addActionListener(SwingToolbox.getActionWorker("Searching IP and connect", () -> {
             messageDisplay.setText("Searching...");
@@ -213,7 +263,8 @@ public class LauncherMain implements Runnable {
                 messageDisplay.setText("That is not a valid address");
             } else {
                 messageDisplay.setText("Starting game with " + address);
-                launchGame(address);
+                launchGame(address, null);
+                select(null);
             }
         }));
 
@@ -224,31 +275,79 @@ public class LauncherMain implements Runnable {
         JPanel panel = SwingToolbox.invisiblePanel();
         panel.setLayout(new GridBagLayout());
 
-        JButton startLocal = SwingToolbox.getButton("Start Local");
-        startLocal.addActionListener(e -> launchGame(null));
+        JButton startLocal = SwingToolbox.getButton("Start Local Server");
+        startLocal.addActionListener(e -> launchGame(null, null));
         panel.add(startLocal, SwingToolbox.getButtonConstraints(RELATIVE));
 
-        JButton searchLocal = SwingToolbox.getButton("Search Local");
-        searchLocal.addActionListener(e -> launchGame(InetAddress.getLoopbackAddress()));
-        panel.add(searchLocal, SwingToolbox.getButtonConstraints(RELATIVE));
-
-        JButton searchInternet = SwingToolbox.getButton("Search on IP");
+        JButton searchInternet = SwingToolbox.getButton("Search Server");
         searchInternet.addActionListener(e -> select(ipSearchPanel));
         panel.add(searchInternet, SwingToolbox.getButtonConstraints(RELATIVE));
+
+        JButton searchLocal = SwingToolbox.getButton("Replay file");
+        searchLocal.addActionListener(e -> select(replaySelectPanel));
+        panel.add(searchLocal, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton changeLoadout = SwingToolbox.getButton("Change Loadout");
         changeLoadout.addActionListener(e -> select(loadoutPanel));
         panel.add(changeLoadout, SwingToolbox.getButtonConstraints(RELATIVE));
 
-        panel.add(SwingToolbox.getFiller(), SwingToolbox.getFillConstraints(0, RELATIVE));
+        JPanel filler = SwingToolbox.getFiller();
+        filler.setMinimumSize(new Dimension(MAIN_BUTTON_DIM.width + 2 * BUTTON_BORDER, 1));
+        panel.add(filler, SwingToolbox.getFillConstraints(1, RELATIVE));
 
         JButton settingsButton = SwingToolbox.getButton("Settings");
         settingsButton.addActionListener(e -> select(settingsPanel));
         panel.add(settingsButton, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton exitGame = SwingToolbox.getButton("Exit Launcher");
-        exitGame.addActionListener(e -> frame.dispose());
+        exitGame.addActionListener(e -> this.close());
         panel.add(exitGame, SwingToolbox.getButtonConstraints(RELATIVE));
+
+        return panel;
+    }
+
+    private JPanel getReplaySelectPanel(Directory dir) {
+        JPanel panel = new JPanel(new GridBagLayout());
+//        panel.setFont(new Font("Sans Sherif", Font.PLAIN, 12));
+
+        JFileChooser dialog = new JFileChooser(dir.getFile(""));
+        dialog.addActionListener(a -> {
+            File file = dialog.getSelectedFile();
+            select(null);
+            if (file != null) launchGame(null, file);
+        });
+
+        panel.add(dialog, SwingToolbox.getFillConstraints(RELATIVE, RELATIVE));
+        return panel;
+    }
+
+    private JPanel getConsolePanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        JTextPane console = new JTextPane();
+        console.setEditable(false);
+        console.setBackground(Color.BLACK);
+        JScrollPane consoleView = new JScrollPane(console);
+        JScrollBar scrollBar = consoleView.getVerticalScrollBar();
+
+        MutableAttributeSet REGULAR = new SimpleAttributeSet(console.getInputAttributes());
+        StyleConstants.setForeground(REGULAR, REGULAR_TEXT_COLOR);
+        MutableAttributeSet ERROR = new SimpleAttributeSet(console.getInputAttributes());
+        StyleConstants.setForeground(ERROR, ERROR_TEXT_COLOR);
+
+        Logger.printCallsites = false;
+        Logger.setOutputReceiver(
+                str -> {
+                    SwingToolbox.appendToText(console, str + "\n", REGULAR);
+                    scrollBar.setValue(scrollBar.getMaximum());
+                },
+                str -> {
+                    SwingToolbox.appendToText(console, str + "\n", ERROR);
+                    scrollBar.setValue(scrollBar.getMaximum());
+                }
+        );
+
+        panel.add(consoleView, SwingToolbox.getFillConstraints(0, 0));
+        panel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 
         return panel;
     }
@@ -259,40 +358,75 @@ public class LauncherMain implements Runnable {
             return InetAddress.getByName(text);
 
         } catch (UnknownHostException e) {
-            if (ServerSettings.DEBUG) Logger.ERROR.print(e);
+            Logger.ERROR.print(e);
             return null;
         }
     }
 
     private void select(JPanel panelToShow) {
-        for (JPanel panel : mutExclPanels) {
+        if (panelToShow == null || panelToShow.isVisible()) panelToShow = defaultPanel;
+
+        for (JPanel panel : mutexPanels) {
             panel.setVisible(panel == panelToShow);
         }
+
     }
 
-    private void launchGame(InetAddress address) {
-        try {
-            JetFighterGame game = new JetFighterGame(true, doStore, null, map, address);
-            frame.setVisible(hideLauncherWhenRunning);
-            game.root();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            frame.setVisible(true);
+    /** Starts the game in another thread and returns almost immediately */
+    private void launchGame(InetAddress address, File replayFile) {
+        if (!hideLauncherWhenRunning) {
+            if (!debugOutputPanel.isVisible()) {
+                select(debugOutputPanel);
+            }
+        } else {
+            frame.setVisible(false);
+        }
+
+        new Thread(() -> {
+            try {
+                JetFighterGame game = new JetFighterGame(true, false, replayFile, map, address);
+                game.root();
+
+            } catch (Exception e) {
+                StringBuilder stacktrace = new StringBuilder();
+                stacktrace.append(e);
+                if (ServerSettings.DEBUG) {
+                    for (StackTraceElement elt : e.getStackTrace()) {
+                        stacktrace.append("\n\t").append(elt);
+                    }
+                }
+                Logger.ERROR.print(stacktrace.toString());
+
+            } finally {
+                show();
+            }
+        }, "Main Game Thread").start();
+    }
+
+    private void close() {
+        frame.dispose();
+
+        if (!ClientSettings.CLEAN_AFTER_GAME) {
+            // no cleaning before, so do it now
+            GeneralShapes.cleanAll();
+            AudioFile.cleanAll();
+            SoundEngine.closeDevices();
         }
     }
 
-    @Override
-    public void run() {
+    private void show() {
         frame.setVisible(true);
+        Logger.INFO.print("Opened Launcher");
     }
 
     public static void main(String[] args) {
-        setLookAndFeel(JFGFont.LUCIDA_CONSOLE);
-        new LauncherMain().run();
+        setLookAndFeel(JFGFonts.LUCIDA_CONSOLE);
+        LauncherMain launcher = new LauncherMain();
+        launcher.init();
+        launcher.show();
     }
 
-    private static void setLookAndFeel(JFGFont font) {
+    private static void setLookAndFeel(JFGFonts font) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
@@ -310,7 +444,6 @@ public class LauncherMain implements Runnable {
                     }
                 }
             }
-            Logger.DEBUG.print("Changed " + count + " font fields to " + font.name);
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             Logger.ERROR.print("Error while loading Look&Feel : " + e);

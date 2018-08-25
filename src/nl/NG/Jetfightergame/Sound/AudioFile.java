@@ -43,13 +43,10 @@ public class AudioFile {
      * inverses an action of {@link #dispose()}
      */
     public void load() {
-        Toolbox.checkALError();
-
         // only load if this is not done yet
         if (dataID >= 0) return;
 
         this.dataID = AL10.alGenBuffers();
-        Toolbox.checkALError();
 
         boolean success = false;
         switch (type){
@@ -67,6 +64,8 @@ public class AudioFile {
         } else {
             dataID = -2;
         }
+
+        Toolbox.checkALError();
     }
 
     public int getID(){
@@ -80,6 +79,7 @@ public class AudioFile {
     public void dispose(){
         AL10.alDeleteBuffers(dataID);
         dataID = -1;
+
         registeredSoundfiles.remove(this);
     }
 
@@ -87,6 +87,7 @@ public class AudioFile {
      * all sounds that have been written to the soundcard will be removed
      * @see #load()
      */
+    @SuppressWarnings("ConstantConditions")
     public static void cleanAll() {
         while (!registeredSoundfiles.isEmpty()){
             registeredSoundfiles.peek().dispose();

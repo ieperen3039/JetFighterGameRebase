@@ -9,12 +9,12 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
  */
 public final class ClientSettings {
     /** engine settings */
-    public static int TARGET_FPS = 60;
     public static boolean DEBUG_SCREEN = false;
-    // rendering is delayed by RENDER_DELAY seconds to smoothen rendering and prevent extrapolation of the gamestate
-    public static float RENDER_DELAY = 1f / ServerSettings.TARGET_TPS;
 
     /** visual settings */
+    public static int TARGET_FPS = 60;
+    // rendering is delayed by RENDER_DELAY seconds to smooth out rendering and prevent extrapolation
+    public static float RENDER_DELAY = 1f / ServerSettings.TARGET_TPS;
     public static float FOV = (float) Math.toRadians(60);
     // absolute size of frustum
     public static float Z_NEAR = 0.05f;
@@ -60,4 +60,5 @@ public final class ClientSettings {
     public static Material PORTAL_MATERIAL = Material.PLASTIC;
     public static EntityClass JET_TYPE = EntityClass.JET_SPITZ;
     public static final boolean USE_SOCKET_FOR_OFFLINE = false;
+    public static final boolean CLEAN_AFTER_GAME = true;
 }

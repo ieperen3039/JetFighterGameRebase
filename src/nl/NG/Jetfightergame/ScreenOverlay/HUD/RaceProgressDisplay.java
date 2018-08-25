@@ -4,7 +4,7 @@ import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings;
-import nl.NG.Jetfightergame.ScreenOverlay.JFGFont;
+import nl.NG.Jetfightergame.ScreenOverlay.JFGFonts;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
@@ -152,12 +152,12 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
             );
             hud.text(
                     (int) (pos.x + textMargin), (int) (pos.y + textMargin),
-                    TEXT_SIZE, JFGFont.LUCIDA_CONSOLE, NanoVG.NVG_ALIGN_MIDDLE, color,
+                    TEXT_SIZE, JFGFonts.LUCIDA_CONSOLE, NanoVG.NVG_ALIGN_MIDDLE, color,
                     player.playerName()
             );
             hud.text(
                     (int) ((pos.x + dimensions.x) - textMargin), (int) (pos.y + textMargin),
-                    TEXT_SIZE, JFGFont.LUCIDA_CONSOLE,
+                    TEXT_SIZE, JFGFonts.LUCIDA_CONSOLE,
                     NanoVG.NVG_ALIGN_MIDDLE | NanoVG.NVG_ALIGN_RIGHT, color, text
             );
         }

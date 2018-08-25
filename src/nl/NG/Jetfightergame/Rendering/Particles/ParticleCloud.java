@@ -95,7 +95,6 @@ public class ParticleCloud {
             splitOff(mid, currentTime);
         }
 
-        Toolbox.checkGLError();
         int n = bulk.size();
         maxTTL += currentTime;
         minTTL += currentTime;
@@ -130,11 +129,9 @@ public class ParticleCloud {
             moveVboID = loadToGL(moveBuffer, 3, 3); // Movement VBO
             colorVboID = loadToGL(colorBuffer, 4, 4); // Color VBO
             ttlVboID = loadToGL(ttlBuffer, 5, 2); // beginTime-maxTTL VBO
-            Toolbox.checkGLError();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
-            Toolbox.checkGLError();
 
         } finally {
             MemoryUtil.memFree(posRelBuffer);
@@ -145,6 +142,7 @@ public class ParticleCloud {
             MemoryUtil.memFree(ttlBuffer);
         }
 
+        Toolbox.checkGLError();
         bulk = null;
     }
 

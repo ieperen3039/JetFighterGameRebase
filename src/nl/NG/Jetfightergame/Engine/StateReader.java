@@ -25,6 +25,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
 public class StateReader extends ClientConnection {
     public static final float LOOK_AHEAD = RENDER_DELAY * 2;
     private AbstractJet firstJet;
+    private final boolean liveAction;
     private Runnable exitGame;
     private boolean raceIsInProgress = false;
 
@@ -36,6 +37,7 @@ public class StateReader extends ClientConnection {
      */
     public StateReader(File file, boolean liveAction, EntityFactory jet, Runnable exitGame) throws IOException {
         super("StateReader", file, liveAction ? new GameTimer() : new StaticTimer(ClientSettings.TARGET_FPS), jet, 10);
+        this.liveAction = liveAction;
         this.exitGame = exitGame;
         firstJet = super.jet();
     }
@@ -46,7 +48,7 @@ public class StateReader extends ClientConnection {
             while (handleMessage()) {
                 float currentTime = getTimer().getRenderTime().current();
                 float dt = maxServerTime - currentTime;
-                if (dt > LOOK_AHEAD) {
+                if (!liveAction && dt > LOOK_AHEAD) {
                     float percent = getPercent();
                     if (percent > 100) {
                         System.out.printf("\r[INFO ]: Recorded %.1f sec (Aftermatch)", currentTime);

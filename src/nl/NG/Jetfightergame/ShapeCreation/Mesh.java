@@ -10,9 +10,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
@@ -24,7 +24,7 @@ import static org.lwjgl.opengl.GL30.*;
  *         created on 17-11-2017.
  */
 public class Mesh implements Renderable {
-    private static Collection<Mesh> loadedMeshes = new ArrayList<>(20);
+    private static Queue<Mesh> loadedMeshes = new ArrayDeque<>(20);
     public static Mesh EMPTY_MESH = new EmptyMesh();
 
     private final int drawMethod;
@@ -152,8 +152,11 @@ public class Mesh implements Renderable {
     /**
      * all meshes that have been written to the GPU will be removed
      */
+    @SuppressWarnings("ConstantConditions")
     public static void cleanAll() {
-        loadedMeshes.forEach(Mesh::dispose);
+        while (!loadedMeshes.isEmpty()) {
+            loadedMeshes.peek().dispose();
+        }
         Toolbox.checkGLError();
     }
 
@@ -167,6 +170,8 @@ public class Mesh implements Renderable {
         // Delete the VAO
         glBindVertexArray(0);
         glDeleteVertexArrays(vaoId);
+
+        loadedMeshes.remove(this);
     }
 
     /** allows for an empty mesh */

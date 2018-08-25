@@ -16,7 +16,7 @@ import static nl.NG.Jetfightergame.Tools.Directory.fonts;
 /**
  * @author Geert van Ieperen. Created on 23-8-2018.
  */
-public enum JFGFont {
+public enum JFGFonts {
     ORBITRON_REGULAR(fonts, "Orbitron", "Orbitron-Regular.ttf"),
     ORBITRON_MEDIUM(fonts, "Orbitron", "Orbitron-Medium.ttf"),
     ORBITRON_BOLD(fonts, "Orbitron", "Orbitron-Bold.ttf"),
@@ -28,7 +28,7 @@ public enum JFGFont {
     private ByteBuffer byteFormat;
     private Font awtFormat;
 
-    JFGFont(Directory dir, String... filepath) {
+    JFGFonts(Directory dir, String... filepath) {
         this.name = toString().toLowerCase().replace("_", " ");
         this.source = dir.getPath(filepath).toString();
         File file = Directory.fonts.getFile(filepath);

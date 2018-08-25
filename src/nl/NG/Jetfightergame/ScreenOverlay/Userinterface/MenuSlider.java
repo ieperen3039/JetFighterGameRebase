@@ -1,6 +1,6 @@
 package nl.NG.Jetfightergame.ScreenOverlay.Userinterface;
 
-import nl.NG.Jetfightergame.ScreenOverlay.JFGFont;
+import nl.NG.Jetfightergame.ScreenOverlay.JFGFonts;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
@@ -35,7 +35,7 @@ public class MenuSlider extends MenuClickable {
         hud.roundedRectangle(x + MENU_STROKE_WIDTH/2, y + MENU_STROKE_WIDTH/2,
                 (int) ((width - MENU_STROKE_WIDTH) * Math.max(value, 0.05f)),height - MENU_STROKE_WIDTH, INDENT,
                 COLOR_DARK, MENU_STROKE_COLOR, MENU_STROKE_WIDTH);
-        hud.text(x + width / 2, y + MenuStyleSettings.TEXT_SIZE_LARGE + 10, MenuStyleSettings.TEXT_SIZE_LARGE, JFGFont.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
+        hud.text(x + width / 2, y + MenuStyleSettings.TEXT_SIZE_LARGE + 10, MenuStyleSettings.TEXT_SIZE_LARGE, JFGFonts.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
                 MenuStyleSettings.TEXT_COLOR, String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)));
     }
 

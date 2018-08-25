@@ -21,5 +21,5 @@ public final class HUDStyleSettings {
 
     public static final int TICKSIZE = 15;
     public static final int TEXT_SIZE_LARGE = 30;
-    public static final JFGFont FONT = JFGFont.LUCIDA_CONSOLE;
+    public static final JFGFonts FONT = JFGFonts.LUCIDA_CONSOLE;
 }

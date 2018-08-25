@@ -26,6 +26,7 @@ public class SoundEngine {
 
     // default device
     private static final long device = ALC10.alcOpenDevice((ByteBuffer) null);
+    private static boolean isStarted = false;
 
     /**
      * set up openAL environment
@@ -65,6 +66,11 @@ public class SoundEngine {
         setListenerOrientation(DirVector.xVector(), DirVector.yVector());
 
         checkALError();
+        isStarted = true;
+    }
+
+    public static boolean isStarted() {
+        return isStarted;
     }
 
     /**
@@ -94,7 +100,10 @@ public class SoundEngine {
     }
 
     public static void closeDevices() {
-        ALC10.alcCloseDevice(device);
+        if (isStarted) {
+            ALC10.alcCloseDevice(device);
+            isStarted = false;
+        }
     }
 
     public static void main(String[] args) {
@@ -109,8 +118,10 @@ public class SoundEngine {
             AudioSource src = new AudioSource(audioData, PosVector.zeroVector(), 1f, 1f);
             Thread.sleep(5000);
             src.dispose();
+
         } catch (Exception e) {
             e.printStackTrace();
+
         } finally {
             checkALError();
             closeDevices();

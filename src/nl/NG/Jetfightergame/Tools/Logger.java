@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Tools;
 
+import nl.NG.Jetfightergame.Settings.ServerSettings;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -15,10 +17,17 @@ public enum Logger {
     DEBUG, INFO, WARN, ERROR;
 
     /** prevents spamming the chat */
-    static Set<String> callerBlacklist = new HashSet<>();
+    protected static Set<String> callerBlacklist = new HashSet<>();
     private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
+    private static Consumer<String> out = null;
+    private static Consumer<String> err = null;
 
-    private Consumer<String> out = System.out::println;
+    public static boolean printCallsites = ServerSettings.DEBUG;
+
+    static {
+        setOutputReceiver(null, null);
+    }
+
     private boolean enabled = true;
     private String codeName = String.format("[%-5s]", this);
 
@@ -36,16 +45,21 @@ public enum Logger {
     }
 
     /**
-     * sets the debug output of the given print method to the specified output
-     * @param newOutput
+     * sets the debug output of the given print method to the specified output. If both regular and error is null, reset
+     * to the default outputs
+     * @param regular the new output
+     * @param error   the error output
      */
-    public void setOutput(Consumer<String> newOutput) {
-        if (newOutput == null) {
-            Logger.ERROR.print("New output is null");
+    public static void setOutputReceiver(Consumer<String> regular, Consumer<String> error) {
+        if (regular == null && error == null) {
+            // default
+            out = System.out::println;
+            err = System.err::println;
             return;
         }
 
-        out = newOutput;
+        if (regular != null) out = regular;
+        if (error != null) err = error;
     }
 
     /**
@@ -105,9 +119,9 @@ public enum Logger {
     }
 
     /**
-     * prints the toString method of the given objects to System.out, preceded with calling method. Every unique
-     * callside will only be allowed to print once. For recursive calls, every level will be regarded as a new level,
-     * thus print once for every unique depth
+     * prints the result of {@link Object#toString()} of the given objects to the output, preceded with calling method.
+     * Every unique callside will only be allowed to print once. For recursive calls, every level will be regarded as a
+     * new level, thus print once for every unique depth
      * @param identifier the string that identifies this call as unique
      * @param s          the strings to print
      */
@@ -127,7 +141,7 @@ public enum Logger {
         if (!enabled) return;
 
         String prefix = codeName;
-        if (DEBUG.enabled) prefix = getCallingMethod(depth) + prefix;
+        if (printCallsites) prefix = getCallingMethod(depth) + prefix;
 
         switch (this) {
             case DEBUG:
@@ -136,7 +150,7 @@ public enum Logger {
                 break;
             case WARN:
             case ERROR:
-                System.err.println(prefix + ": " + concatenate(s));
+                err.accept(prefix + ": " + concatenate(s));
                 break;
         }
     }

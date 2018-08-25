@@ -1,5 +1,7 @@
-package nl.NG.Jetfightergame.Assets.Shapes;
+package unrelated.unused;
 
+import nl.NG.Jetfightergame.Assets.Shapes.Direction;
+import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.CustomShape;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -10,8 +12,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.util.List;
 
 /**
+ * @deprecated Invoking this will probably crash the game
  * Created by Geert van Ieperen on 2-3-2017.
- * a singleton class that houses a set of shapes
  */
 @SuppressWarnings("SuspiciousNameCombination")
 public class NGRobotSecondShapes {

@@ -6,6 +6,8 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionListener;
@@ -19,11 +21,15 @@ import static java.awt.GridBagConstraints.*;
  * @author Geert van Ieperen. Created on 23-8-2018.
  */
 public final class SwingToolbox {
+    private static final String BUTTON_TRUE_TEXT = "Enabled";
+    private static final String BUTTON_FALSE_TEXT = "Disabled";
 
-    public static final Dimension BUTTON_DIMENSIONS = new Dimension(200, 45);
-    public static final Dimension TEXTBOX_DIMENSIONS = new Dimension(300, BUTTON_DIMENSIONS.height);
-    public static final int BUTTON_BORDER = 5;
-    private static final boolean ALLOW_FLYiNG_TEXT = false;
+    public static final Dimension MAIN_BUTTON_DIM = new Dimension(200, 40);
+    public static final Dimension SMALL_BUTTON_DIM = new Dimension(50, 20);
+    public static final Dimension TEXTBOX_DIMENSIONS = new Dimension(300, MAIN_BUTTON_DIM.height);
+    public static final int BUTTON_BORDER = 8;
+
+    public static boolean ALLOW_FLYING_TEXT = false;
 
     public static Insets borderOf(int pixels) {
         return new Insets(pixels, pixels, pixels, pixels);
@@ -31,7 +37,7 @@ public final class SwingToolbox {
 
     public static JButton getButton(String text) {
         JButton button = new JButton(text);
-        button.setPreferredSize(BUTTON_DIMENSIONS);
+        button.setPreferredSize(MAIN_BUTTON_DIM);
         return button;
     }
 
@@ -49,11 +55,11 @@ public final class SwingToolbox {
     }
 
     public static GridBagConstraints getButtonConstraints(int index) {
-        return new GridBagConstraints(0, index, 1, 1, 1, 0, CENTER, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
+        return new GridBagConstraints(1, index, 1, 1, 1, 0, CENTER, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 5);
     }
 
     public static GridBagConstraints getButtonConstraints(int x, int y) {
-        return new GridBagConstraints(x, y, 1, 1, 1, 0, CENTER, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
+        return new GridBagConstraints(x, y, 1, 1, 1, 0, CENTER, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 5);
     }
 
     public static GridBagConstraints getFillConstraints(int x, int y) {
@@ -120,7 +126,7 @@ public final class SwingToolbox {
             @Override
             public void setText(String t) {
                 super.setText(t);
-                if (ALLOW_FLYiNG_TEXT) {
+                if (ALLOW_FLYING_TEXT) {
                     setOpaque(true);
                     JRootPane rootPane = getRootPane();
                     if (rootPane != null) rootPane.repaint();
@@ -132,13 +138,12 @@ public final class SwingToolbox {
         return jText;
     }
 
-    static Runnable getSliderSetting(JPanel panel, int col, String text, Consumer<Float> effect, float min, float max, float current) {
-        JTextArea settingName = new JTextArea(text);
-        panel.add(settingName, SwingToolbox.getButtonConstraints(col, RELATIVE));
+    static Runnable getSliderSetting(JPanel parent, int col, String text, Consumer<Float> effect, float min, float max, float current) {
+        JPanel panel = getSettingPanel(text);
 
         JPanel combo = new JPanel(new BorderLayout());
         JSlider userInput = new JSlider();
-        userInput.setMinimumSize(BUTTON_DIMENSIONS);
+        userInput.setMinimumSize(MAIN_BUTTON_DIM);
         float diff = max - min;
         combo.add(userInput);
         JTextComponent valueDisplay = flyingText();
@@ -147,37 +152,68 @@ public final class SwingToolbox {
         ));
         userInput.setValue((int) (100 * (current - min) / diff));
         combo.add(valueDisplay, BorderLayout.EAST);
+        panel.add(combo);
 
-        panel.add(combo, SwingToolbox.getButtonConstraints(col, RELATIVE));
+        parent.add(panel, getButtonConstraints(col, RELATIVE));
 
         return () -> effect.accept(((userInput.getValue() / 100f) * diff) + min);
     }
 
-    static Runnable getTextboxSetting(JPanel panel, int col, String text, Consumer<String> effect, String current) {
-        JTextArea settingName = new JTextArea(text);
-        panel.add(settingName, SwingToolbox.getButtonConstraints(col, RELATIVE));
+    static Runnable getTextboxSetting(JPanel parent, int col, String text, String current, Consumer<String> effect) {
+        JPanel panel = getSettingPanel(text);
+
         JTextField userInput = new JTextField();
-        userInput.setMinimumSize(BUTTON_DIMENSIONS);
+        userInput.setMinimumSize(TEXTBOX_DIMENSIONS);
         userInput.setText(current);
-        panel.add(userInput, SwingToolbox.getButtonConstraints(col, RELATIVE));
+        panel.add(userInput);
+
+        parent.add(panel, getButtonConstraints(col, RELATIVE));
+
         return () -> effect.accept(userInput.getText());
     }
 
-    private static Runnable getBooleanSetting(JPanel panel, int col, String text, Consumer<Boolean> effect, boolean current) {
-        JTextArea settingName = new JTextArea(text);
-        panel.add(settingName, SwingToolbox.getButtonConstraints(col, RELATIVE));
-        JToggleButton button = new JToggleButton();
-        button.setEnabled(current);
-        panel.add(button, SwingToolbox.getButtonConstraints(col, RELATIVE));
+    public static Runnable getBooleanSetting(JPanel parent, int col, String text, boolean current, Consumer<Boolean> effect) {
+        JPanel panel = getSettingPanel(text);
+
+        JToggleButton button = new JToggleButton(current ? BUTTON_TRUE_TEXT : BUTTON_FALSE_TEXT);
+        button.addActionListener(e -> button.setText(button.isSelected() ? BUTTON_TRUE_TEXT : BUTTON_FALSE_TEXT));
+        button.setMinimumSize(SMALL_BUTTON_DIM);
+        button.setSelected(current);
+        panel.add(button);
+
+        parent.add(panel, getButtonConstraints(col, RELATIVE));
+
         return () -> effect.accept(button.isSelected());
     }
 
-    static <Type> Runnable getEnumSetting(JPanel panel, int col, String text, Type[] values, Consumer<Type> effect, Type current) {
-        JTextArea settingName = new JTextArea(text);
-        panel.add(settingName, SwingToolbox.getButtonConstraints(col, RELATIVE));
+    static <Type> Runnable getEnumSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
+        JPanel panel = getSettingPanel(text);
+
         JComboBox<Type> userInput = new JComboBox<>(values);
         userInput.setSelectedItem(current);
-        panel.add(userInput, SwingToolbox.getButtonConstraints(col, RELATIVE));
+        panel.add(userInput);
+
+        parent.add(panel, getButtonConstraints(col, RELATIVE));
+
         return () -> effect.accept(userInput.getItemAt(userInput.getSelectedIndex()));
+    }
+
+    private static JPanel getSettingPanel(String text) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+        panel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        JTextComponent settingName = flyingText();
+        settingName.setText(text);
+        panel.add(settingName, BorderLayout.NORTH);
+        return panel;
+    }
+
+    public static void appendToText(JTextPane console, String text, AttributeSet attributes) {
+        try {
+            int pos = console.getDocument().getLength();
+            console.getStyledDocument().insertString(pos, text, attributes);
+        } catch (BadLocationException ex) {
+            console.setText(ex.toString());
+        }
     }
 }

@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.Settings.MenuStyleSettings;
 
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.ScreenOverlay.JFGFont.ORBITRON_MEDIUM;
+import static nl.NG.Jetfightergame.ScreenOverlay.JFGFonts.ORBITRON_MEDIUM;
 import static nl.NG.Jetfightergame.Settings.MenuStyleSettings.*;
 import static org.lwjgl.nanovg.NanoVG.NVG_ALIGN_CENTER;
 
