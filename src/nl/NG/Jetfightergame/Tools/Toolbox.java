@@ -301,4 +301,11 @@ public final class Toolbox {
         return !(Float.isNaN(rotation.x) || Float.isNaN(rotation.y) || Float.isNaN(rotation.z) || Float.isNaN(rotation.w));
     }
 
+    public static String[] toStringArray(Object[] values) {
+        String[] result = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            result[i] = values[i].toString();
+        }
+        return result;
+    }
 }

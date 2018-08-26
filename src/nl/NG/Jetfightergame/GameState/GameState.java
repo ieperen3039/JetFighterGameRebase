@@ -43,6 +43,7 @@ public abstract class GameState implements Environment {
 
     private EntityManagement physicsEngine;
     private Lock addParticleLock = new ReentrantLock();
+    private GameTimer gameTimer;
 
     /**
      * initialize the scene. Make sure to have called Shapes.init() for all shapes you want to initialize
@@ -54,7 +55,8 @@ public abstract class GameState implements Environment {
      * @param doCollDet if true, collision detection is enabled
      */
     public void buildScene(SpawnReceiver deposit, RaceProgress raceProgress, boolean loadDynamic, boolean doCollDet) {
-        final Collection<Touchable> staticEntities = createWorld(raceProgress, deposit.getTimer());
+        gameTimer = deposit.getTimer();
+        final Collection<Touchable> staticEntities = createWorld(raceProgress, gameTimer);
 
         if (doCollDet) {
             physicsEngine = new CollisionDetection(staticEntities);
@@ -82,7 +84,10 @@ public abstract class GameState implements Environment {
 
     @Override
     @SuppressWarnings("ConstantConditions")
-    public void updateGameLoop(float currentTime, float deltaTime) {
+    public void updateGameLoop() {
+        float currentTime = gameTimer.getGameTime().current();
+        float deltaTime = gameTimer.getGameTime().difference();
+
         // update positions and apply physics
         gravitySources.removeIf(s -> s.isOverdue(currentTime));
         physicsEngine.preUpdateEntities(this::getNetForce);

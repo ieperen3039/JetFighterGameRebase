@@ -101,8 +101,8 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     }
 
     @Override
-    public void updateGameLoop(float currentTime, float deltaTime) {
-        instance.updateGameLoop(currentTime, deltaTime);
+    public void updateGameLoop() {
+        instance.updateGameLoop();
     }
 
     @Override

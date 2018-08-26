@@ -47,7 +47,7 @@ public interface EntityManagement {
     Collection<MovingEntity> getDynamicEntities();
 
     /**
-     * calls {@link MovingEntity#update(float)}
+     * calls {@link MovingEntity#update()}
      * @param currentTime gametime
      */
     void updateEntities(float currentTime);

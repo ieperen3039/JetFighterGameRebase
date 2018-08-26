@@ -107,7 +107,6 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
         public Box(int tgtIndex) {
             pos = new Vector2f(OUTER_MARGIN, OUTER_MARGIN + tgtIndex * BOX_HEIGHT);
             dimensions = new Vector2f(BOX_WIDTH, BOX_HEIGHT);
-            lastUpdateTime = timer.time();
             this.tgtIndex = tgtIndex;
         }
 
@@ -121,6 +120,7 @@ public class RaceProgressDisplay implements Consumer<ScreenOverlay.Painter> {
         }
 
         protected void creep(Vector2f pos, float tgtXPos, float tgtYPos, float speed) {
+            if (deltaTime == 0) return;
             Vector2f diff = new Vector2f(tgtXPos, tgtYPos).sub(pos);
 
             float movement = speed * deltaTime;

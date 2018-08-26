@@ -16,6 +16,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.HUD.GravityHud;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.PowerupDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.RaceProgressDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuToggleMultiple;
 import nl.NG.Jetfightergame.ServerNetwork.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
@@ -54,7 +55,7 @@ public class JetFighterGame {
     private final ActionButtonHandler actionHandler;
     private GLFWWindow window;
     private GameMode currentGameMode;
-    private AbstractGameLoop renderLoop;
+    private JetFighterRenderer renderLoop;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
 
     private ClientConnection connection;
@@ -179,9 +180,10 @@ public class JetFighterGame {
                 Logger.INFO.print("Starting replay of " + replayFile.getPath());
 
                 camera = new CameraManager();
-                EntityFactory focus = new CameraFocusMovable.Factory(new PosVector(0, 0, 0), new Quaternionf());
+                EntityFactory focus = new CameraFocusMovable.Factory(new PosVector(0, 0, 0), new Quaternionf(), false);
 
-                connection = new StateReader(replayFile, !doStore, focus, this::exitGame);
+                StateReader reader = new StateReader(replayFile, !doStore, focus, camera, this::exitGame);
+                connection = reader;
                 otherLoops.add(connection);
                 Environment gameState = connection.getWorld();
                 ControllerManager controls = connection.getInputControl();
@@ -190,7 +192,13 @@ public class JetFighterGame {
 
                 RaceProgressDisplay raceHud = new RaceProgressDisplay(connection);
                 JetFighterRenderer.Mode renderMode = doStore ? (doShow ? RECORD_AND_SHOW : RECORD) : SHOW;
-                renderLoop = new JetFighterRenderer(this, gameState, window, camera, controls, raceHud, renderMode);
+                JetFighterRenderer renderer = new JetFighterRenderer(this, gameState, window, camera, controls, raceHud, renderMode);
+                this.renderLoop = renderer;
+
+                StateReader.SpectatorModus[] values = StateReader.SpectatorModus.values();
+                renderer.getMainMenu().appendToMain(new MenuToggleMultiple("Camera Modus",
+                        Toolbox.toStringArray(values), (i) -> reader.setModus(values[i]))
+                );
             }
 
             actionHandler = new ActionButtonHandler(this, connection);
@@ -307,8 +315,12 @@ public class JetFighterGame {
         return currentGameMode != GameMode.PLAY_MODE;
     }
 
+    public void toggleHud() {
+        renderLoop.toggleHud();
+    }
+
     public enum GameMode {
-        PLAY_MODE, MENU_MODE
+        PLAY_MODE, MENU_MODE, SPECTATOR_MODE
     }
 
     /**
@@ -355,7 +367,7 @@ public class JetFighterGame {
         }
         InetAddress localHost = makeLocalServer ? null : InetAddress.getLocalHost();
 
-        Logger.setOutputLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
+        Logger.setLoggingLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
         boolean doShow = (file == null) || playReplay;
         new JetFighterGame(doShow, storeReplay, file, serverMap, localHost).root();
     }

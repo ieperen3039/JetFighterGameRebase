@@ -33,10 +33,12 @@ import java.util.function.Consumer;
 public class DeathIcosahedron extends AbstractProjectile {
     private static final float SCALE = 3f;
     private static final float SPARK_COOLDOWN = 0.005f;
-    private static final float FIRE_SPEED = 20f;
-    private static final float SEEKER_COOLDOWN = 1f;
+    private static final float FIRE_SPEED = 30f;
     private static final float SEEKER_LAUNCH_SPEED = 20f;
     private static final Color4f COLOR = new Color4f(0.8f, 0.3f, 0);
+    public static final float SEEKER_COOLDOWN_INCREASE = 0.03f;
+
+    private static float seekerCooldown = 0.2f;
     private final EntityMapping entities;
     private float sparkTimeRemain;
     private float seekerTimeRemain;
@@ -52,8 +54,8 @@ public class DeathIcosahedron extends AbstractProjectile {
         );
         this.entities = entities;
         sparkTimeRemain = 0;
-        seekerTimeRemain = SEEKER_COOLDOWN;
-        particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 2 * FIRE_SPEED / velocity.length(), 100, 2f, 3f);
+        seekerTimeRemain = 1f;
+        particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 2 * FIRE_SPEED, 100, 2f, 2f);
     }
 
     @Override
@@ -110,7 +112,8 @@ public class DeathIcosahedron extends AbstractProjectile {
             target = sourceJet.getTarget(randDirection, getPosition(), entities);
             entityDeposit.addSpawn(new Seeker.Factory(state, timeFraction, sourceJet, target));
 
-            seekerTimeRemain += SEEKER_COOLDOWN;
+            seekerTimeRemain += seekerCooldown;
+            seekerCooldown += SEEKER_COOLDOWN_INCREASE;
         } while (seekerTimeRemain < 0);
     }
 

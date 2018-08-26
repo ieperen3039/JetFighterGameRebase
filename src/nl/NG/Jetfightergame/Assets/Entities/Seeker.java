@@ -41,7 +41,7 @@ public class Seeker extends AbstractProjectile {
     public static final float EXPLOSION_CLOUD_POWER = 0.4f;
     public static final float ROTATION_REDUCTION = 0.95f;
     public static final float EXPLOSION_PARTICLE_SIZE = 0.3f;
-    private static final float TRAIL_PARTICLES_PER_SEC = 250;
+    private static final float TRAIL_PARTICLES_PER_SEC = 1000;
     private static final Color4f EXPLOSION_COLOR = new Color4f(0.6f, 0.1f, 0.1f);
 
     private BoosterLine trail;

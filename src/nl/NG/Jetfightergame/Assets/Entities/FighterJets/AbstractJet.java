@@ -388,7 +388,7 @@ public abstract class AbstractJet extends MovingEntity {
                 ((int) (100 * factor))
         );
 
-        return String.format("[ %s ] %s", toString(), boost);
+        return String.format("(%3d) [ %s ] %s", idNumber(), toString(), boost);
     }
 
     @Override

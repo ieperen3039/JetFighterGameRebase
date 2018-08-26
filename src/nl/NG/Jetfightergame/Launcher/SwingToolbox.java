@@ -11,6 +11,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.function.Consumer;
@@ -24,12 +26,12 @@ public final class SwingToolbox {
     private static final String BUTTON_TRUE_TEXT = "Enabled";
     private static final String BUTTON_FALSE_TEXT = "Disabled";
 
-    public static final Dimension MAIN_BUTTON_DIM = new Dimension(200, 40);
-    public static final Dimension SMALL_BUTTON_DIM = new Dimension(50, 20);
+    public static final Dimension MAIN_BUTTON_DIM = new Dimension(250, 40);
+    public static final Dimension SMALL_BUTTON_DIM = new Dimension(150, 20);
     public static final Dimension TEXTBOX_DIMENSIONS = new Dimension(300, MAIN_BUTTON_DIM.height);
     public static final int BUTTON_BORDER = 8;
 
-    public static boolean ALLOW_FLYING_TEXT = false;
+    public static boolean ALLOW_FLYING_TEXT = true;
 
     public static Insets borderOf(int pixels) {
         return new Insets(pixels, pixels, pixels, pixels);
@@ -38,6 +40,7 @@ public final class SwingToolbox {
     public static JButton getButton(String text) {
         JButton button = new JButton(text);
         button.setPreferredSize(MAIN_BUTTON_DIM);
+        button.setMinimumSize(SMALL_BUTTON_DIM);
         return button;
     }
 
@@ -77,6 +80,22 @@ public final class SwingToolbox {
                 paintChildren(g);
             }
         };
+    }
+
+    static JScrollPane scrollable(JPanel panel) {
+        JScrollPane scrollPane = new JScrollPane(panel) {
+            @Override
+            public void paint(Graphics g) {
+                paintChildren(g);
+            }
+        };
+        scrollPane.getVerticalScrollBar().addAdjustmentListener(a ->
+                scrollPane.getRootPane().repaint()
+        );
+        scrollPane.getHorizontalScrollBar().addAdjustmentListener(a ->
+                scrollPane.getRootPane().repaint()
+        );
+        return scrollPane;
     }
 
     public static JPanel getImagePanel(File imageFile) {
@@ -122,18 +141,11 @@ public final class SwingToolbox {
     }
 
     public static JTextComponent flyingText() {
-        JTextComponent jText = new JTextArea() {
-            @Override
-            public void setText(String t) {
-                super.setText(t);
-                if (ALLOW_FLYING_TEXT) {
-                    setOpaque(true);
-                    JRootPane rootPane = getRootPane();
-                    if (rootPane != null) rootPane.repaint();
-                    setOpaque(false);
-                }
-            }
-        };
+        JTextComponent jText = new JTextArea();
+        if (ALLOW_FLYING_TEXT) {
+            jText.addMouseListener(new RepaintUponMouseEvent(jText));
+            jText.setOpaque(false);
+        }
         jText.setEditable(false);
         return jText;
     }
@@ -186,10 +198,11 @@ public final class SwingToolbox {
         return () -> effect.accept(button.isSelected());
     }
 
-    static <Type> Runnable getEnumSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
+    static <Type> Runnable getChoiceSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
         JPanel panel = getSettingPanel(text);
 
         JComboBox<Type> userInput = new JComboBox<>(values);
+
         userInput.setSelectedItem(current);
         panel.add(userInput);
 
@@ -214,6 +227,43 @@ public final class SwingToolbox {
             console.getStyledDocument().insertString(pos, text, attributes);
         } catch (BadLocationException ex) {
             console.setText(ex.toString());
+        }
+    }
+
+    private static class RepaintUponMouseEvent implements MouseListener {
+        private final JComponent component;
+
+        public RepaintUponMouseEvent(JTextComponent component) {
+            this.component = component;
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            SwingUtilities.invokeLater(this::repaint);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            repaint();
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            repaint();
+        }
+
+        private void repaint() {
+            component.getRootPane().repaint(
+                    component.getX(), component.getY(), component.getWidth(), component.getHeight()
+            );
         }
     }
 }

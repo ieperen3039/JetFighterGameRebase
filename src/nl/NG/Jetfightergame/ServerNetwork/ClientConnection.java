@@ -52,7 +52,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     private Lock sendLock = new ReentrantLock();
     private RaceProgress raceProgress;
-    private boolean controlTeardown = false;
+    protected boolean controlTeardown = false;
     protected float maxServerTime = 0;
 
     public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel, EntityClass jetType) throws IOException {
@@ -99,7 +99,6 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         jet.setController(input);
 
         isAdmin = false;
-        controlTeardown = true;
         input.disable();
     }
 

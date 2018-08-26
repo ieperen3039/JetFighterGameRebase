@@ -1,5 +1,7 @@
 package nl.NG.Jetfightergame.Engine;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
+
 /**
  * adds a fixed timestamp every loop. this results in slowdown when collisions ramp up and results in deterministic behaviour
  * @author Geert van Ieperen
@@ -13,7 +15,17 @@ public class StaticTimer extends GameTimer {
     }
 
     @Override
+    public void updateGameTime() {
+        currentInGameTime += deltaTime;
+        gameTime.update(currentInGameTime);
+    }
+
+    @Override
     protected void updateTimer() {
-        if (!isPaused) currentInGameTime += deltaTime;
+    }
+
+    @Override
+    public void updateRenderTime() {
+        renderTime.update(currentInGameTime - RENDER_DELAY);
     }
 }

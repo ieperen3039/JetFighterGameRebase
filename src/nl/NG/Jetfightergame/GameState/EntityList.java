@@ -60,7 +60,7 @@ public class EntityList implements EntityManagement {
     @Override
     public void updateEntities(float currentTime) {
         for (MovingEntity entity : dynamicEntities) {
-            entity.update(currentTime);
+            entity.update();
         }
     }
 

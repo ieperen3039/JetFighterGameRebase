@@ -86,7 +86,7 @@ public abstract class AbstractShield extends MovingEntity implements TemporalEnt
     }
 
     @Override
-    public void update(float currentTime) {
+    public void update() {
         position = jet.getPosition();
     }
 

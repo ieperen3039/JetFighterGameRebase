@@ -18,6 +18,9 @@ public class MenuSlider extends MenuClickable {
     private float value;
     private Consumer<Float> handler;
 
+    /**
+     * @param handler accepts a value [0, 1]
+     */
     public MenuSlider(String text, int width, int height, Consumer<Float> handler) {
         super(width, height);
         this.text = text;
@@ -34,14 +37,14 @@ public class MenuSlider extends MenuClickable {
         hud.roundedRectangle(x, y, width, height, INDENT);
         hud.roundedRectangle(x + MENU_STROKE_WIDTH/2, y + MENU_STROKE_WIDTH/2,
                 (int) ((width - MENU_STROKE_WIDTH) * Math.max(value, 0.05f)),height - MENU_STROKE_WIDTH, INDENT,
-                COLOR_DARK, MENU_STROKE_COLOR, MENU_STROKE_WIDTH);
+                COLOR_DARK, MENU_STROKE_COLOR, 0);
         hud.text(x + width / 2, y + MenuStyleSettings.TEXT_SIZE_LARGE + 10, MenuStyleSettings.TEXT_SIZE_LARGE, JFGFonts.ORBITRON_MEDIUM, NVG_ALIGN_CENTER,
                 MenuStyleSettings.TEXT_COLOR, String.format("%1$s: %2$d%%", text, (int) ((value * 100) >= 1 ? value * 100 : 1)));
     }
 
     @Override
     public void onClick(int x, int y) {
-        value = Math.max((float) (x - this.x) / (float) this.width, 0f);
+        value = Math.max((float) (x - this.x) / (float) this.width, 0f) / 100;
         try {
             handler.accept(value);
         } catch (Exception ex){

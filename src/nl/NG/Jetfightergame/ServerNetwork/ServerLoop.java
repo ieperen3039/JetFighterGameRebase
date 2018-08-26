@@ -21,7 +21,6 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Logger;
-import nl.NG.Jetfightergame.Tools.Tracked.TrackedFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -136,8 +135,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
 
         AbstractJet playerJet = player.jet();
         gameWorld.addEntity(playerJet);
-        TrackedFloat time = globalTime.getGameTime();
-        gameWorld.updateGameLoop(time.current(), time.difference());
+        gameWorld.updateGameLoop();
         int pInd = raceProgress.addPlayer(player);
         player.sendPlayerSpawn(player, pInd);
 
@@ -230,8 +228,8 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         }
 
         globalTime.updateGameTime();
-        TrackedFloat time = globalTime.getGameTime();
-        gameWorld.updateGameLoop(time.current(), time.difference());
+        Float currentTime = globalTime.getGameTime().current();
+        gameWorld.updateGameLoop();
 
         Collection<MovingEntity> entities = gameWorld.getEntities();
 
@@ -242,7 +240,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
                 removeEntity(ety);
 
             } else {
-                connections.forEach(conn -> conn.sendEntityUpdate(ety, time.current()));
+                connections.forEach(conn -> conn.sendEntityUpdate(ety, currentTime));
             }
         }
 

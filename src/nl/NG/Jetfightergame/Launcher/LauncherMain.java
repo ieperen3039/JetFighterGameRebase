@@ -34,10 +34,11 @@ import static nl.NG.Jetfightergame.Launcher.SwingToolbox.*;
  */
 public class LauncherMain {
     private static final String BACKDROP_IMAGE = "Backdrop.png"; // TODO backdrop image
-    private static final Font LARGE_FONT = JFGFonts.LUCIDA_CONSOLE.asAWTFont(20f);
+    private static final Font LARGE_FONT = JFGFonts.LUCIDA_CONSOLE.asAWTFont(24f);
+    private static final Font BASE_FONT = JFGFonts.LUCIDA_CONSOLE.asAWTFont(16f);
 
-    private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(800, 500);
-    private static final Dimension DEFAULT_LAUNCHER_SIZE = new Dimension(1100, 700);
+    private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(900, 600);
+    private static final Dimension DEFAULT_LAUNCHER_SIZE = new Dimension(1200, 700);
     private static final int COLUMNS_OF_SETTINGS = 3;
     public static final Color ERROR_TEXT_COLOR = new Color(1f, 0.3f, 0.3f);
     public static final Color REGULAR_TEXT_COLOR = Color.WHITE;
@@ -51,16 +52,16 @@ public class LauncherMain {
     private JFrame frame;
 
     /** panels */
-    private JPanel mainMenuPanel;
-    private JPanel imagePanel;
-    private JPanel ipSearchPanel;
-    private JPanel loadoutPanel;
-    private JPanel settingsPanel;
-    private JPanel replaySelectPanel;
-    private JPanel debugOutputPanel;
-    private JPanel defaultPanel;
+    private JComponent mainMenuPanel;
+    private JComponent imagePanel;
+    private JComponent ipSearchPanel;
+    private JComponent loadoutPanel;
+    private JComponent settingsPanel;
+    private JComponent replaySelectPanel;
+    private JComponent debugOutputPanel;
+    private JComponent defaultPanel;
 
-    private JPanel[] mutexPanels;
+    private JComponent[] mutexPanels;
 
     public void init() {
         frame = new JFrame();
@@ -80,8 +81,8 @@ public class LauncherMain {
         debugOutputPanel = getConsolePanel();
         defaultPanel = getDefaultPanel();
 
-        mutexPanels = new JPanel[]{defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel, replaySelectPanel, debugOutputPanel};
-        for (JPanel panel : mutexPanels) {
+        mutexPanels = new JComponent[]{defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel, replaySelectPanel, debugOutputPanel};
+        for (JComponent panel : mutexPanels) {
             panel.setVisible(false);
             imagePanel.add(panel, SwingToolbox.getFillConstraints(1, 0));
         }
@@ -107,14 +108,14 @@ public class LauncherMain {
         close();
         frame.dispose();
         init();
-        frame.setVisible(wasVisible);
+        if (wasVisible) show();
     }
 
-    private JPanel getDefaultPanel() {
+    private JComponent getDefaultPanel() {
         return ServerSettings.DEBUG ? debugOutputPanel : SwingToolbox.invisiblePanel();
     }
 
-    private JPanel getSettingsPanel() {
+    private JComponent getSettingsPanel() {
         JPanel panel = SwingToolbox.invisiblePanel();
         panel.setLayout(new GridBagLayout());
 
@@ -123,54 +124,60 @@ public class LauncherMain {
         boolean[] doReboot = new boolean[1];
 
         // for the title
-        GridBagConstraints titlePosition = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(0), 0, 0);
+        GridBagConstraints titlePosition = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(20), 0, 0);
 
         JTextComponent title = SwingToolbox.flyingText();
         title.setFont(LARGE_FONT);
         title.setText("Settings");
         panel.add(title, titlePosition);
 
-        settings.add(getBooleanSetting(panel, colByIndex(1), "Debug mode",
+        settings.add(getBooleanSetting(panel, column(1), "Debug mode",
                 ServerSettings.DEBUG, (result) -> {
                     if (result != ServerSettings.DEBUG) doReboot[0] = true;
                     ServerSettings.DEBUG = result;
                 }));
 
-        settings.add(getBooleanSetting(panel, colByIndex(1), "Menu Transparency",
+        settings.add(getBooleanSetting(panel, column(1), "Menu Transparency",
                 ALLOW_FLYING_TEXT, (result) -> {
                     if (result != ALLOW_FLYING_TEXT) doReboot[0] = true;
                     ALLOW_FLYING_TEXT = result;
                 }));
 
-        settings.add(getBooleanSetting(panel, colByIndex(1), "Hide launcher while playing",
+        settings.add(getBooleanSetting(panel, column(1), "Hide launcher while playing",
                 hideLauncherWhenRunning, (result) -> hideLauncherWhenRunning = result));
 
-        panel.add(getFiller(), getButtonConstraints(colByIndex(1), RELATIVE));
+        settings.add(getChoiceSetting(panel, column(1), "Logger output level",
+                Logger.values(), Logger.getLoggingLevel(), Logger::setLoggingLevel));
 
-        settings.add(getTextboxSetting(panel, colByIndex(2), "Target FPS",
+        panel.add(getFiller(), getButtonConstraints(column(1), RELATIVE));
+
+        settings.add(getTextboxSetting(panel, column(2), "Target FPS",
                 String.valueOf(ClientSettings.TARGET_FPS), (s) -> ClientSettings.TARGET_FPS = Integer.valueOf(s)));
 
-        settings.add(getTextboxSetting(panel, colByIndex(2), "Render Delay (sec)",
+        settings.add(getTextboxSetting(panel, column(2), "Render Delay (sec)",
                 String.valueOf(ClientSettings.RENDER_DELAY), (s) -> ClientSettings.RENDER_DELAY = Float.valueOf(s)));
 
-        settings.add(getSliderSetting(panel, colByIndex(2), "Field of View (deg)",
+        settings.add(getSliderSetting(panel, column(2), "Field of View (deg)",
                 (f) -> ClientSettings.FOV = f, 0.35f, 2.10f, ClientSettings.FOV));
 
-        settings.add(getTextboxSetting(panel, colByIndex(2), "Thrust particle density",
+        settings.add(getTextboxSetting(panel, column(2), "Thrust particle density",
                 String.valueOf(ClientSettings.THRUST_PARTICLES_PER_SECOND), (s) -> ClientSettings.THRUST_PARTICLES_PER_SECOND = Float.valueOf(s)));
 
-        panel.add(getFiller(), getButtonConstraints(colByIndex(2), RELATIVE));
+        panel.add(getFiller(), getButtonConstraints(column(2), RELATIVE));
 
-        settings.add(getTextboxSetting(panel, colByIndex(3), "Server Port",
+        settings.add(getTextboxSetting(panel, column(3), "Server Port",
                 String.valueOf(ServerSettings.SERVER_PORT), (s) -> ServerSettings.SERVER_PORT = Integer.valueOf(s)));
 
-        settings.add(getBooleanSetting(panel, colByIndex(3), "Save Replays",
+        settings.add(getBooleanSetting(panel, column(3), "Save Replays",
                 ServerSettings.MAKE_REPLAY, (result) -> ServerSettings.MAKE_REPLAY = result));
 
-        settings.add(getTextboxSetting(panel, colByIndex(3), "Server Ticks per second",
+        settings.add(getTextboxSetting(panel, column(3), "Server Ticks per second",
                 String.valueOf(ServerSettings.TARGET_TPS), (s) -> ServerSettings.TARGET_TPS = Integer.valueOf(s)));
 
-        panel.add(getFiller(), getButtonConstraints(colByIndex(3), RELATIVE));
+        settings.add(getChoiceSetting(panel, column(3), "Race map",
+                EnvironmentClass.raceWorlds, map, (m) -> map = m));
+
+        panel.add(getFiller(), getButtonConstraints(column(3), RELATIVE));
 
         for (int i = 0; i < COLUMNS_OF_SETTINGS - 1; i++) {
             panel.add(getFiller(), getFillConstraints((i * 2) + 1, 1, 1, 1));
@@ -186,11 +193,12 @@ public class LauncherMain {
             doReboot[0] = false;
         });
 
-        return panel;
+        return scrollable(panel);
     }
 
-    private static int colByIndex(int x) {
-        return ((x - 1) % COLUMNS_OF_SETTINGS) * 2;
+    /** @return the column number for a setting of type i, where i > 0 */
+    private static int column(int i) {
+        return ((i - 1) % COLUMNS_OF_SETTINGS) * 2;
     }
 
     private JPanel getLoadoutPanel() {
@@ -334,7 +342,7 @@ public class LauncherMain {
         MutableAttributeSet ERROR = new SimpleAttributeSet(console.getInputAttributes());
         StyleConstants.setForeground(ERROR, ERROR_TEXT_COLOR);
 
-        Logger.printCallsites = false;
+        Logger.doPrintCallsites = false;
         Logger.setOutputReceiver(
                 str -> {
                     SwingToolbox.appendToText(console, str + "\n", REGULAR);
@@ -363,10 +371,10 @@ public class LauncherMain {
         }
     }
 
-    private void select(JPanel panelToShow) {
+    private void select(JComponent panelToShow) {
         if (panelToShow == null || panelToShow.isVisible()) panelToShow = defaultPanel;
 
-        for (JPanel panel : mutexPanels) {
+        for (JComponent panel : mutexPanels) {
             panel.setVisible(panel == panelToShow);
         }
 
@@ -420,17 +428,17 @@ public class LauncherMain {
     }
 
     public static void main(String[] args) {
-        setLookAndFeel(JFGFonts.LUCIDA_CONSOLE);
+        setLookAndFeel(LauncherMain.BASE_FONT);
         LauncherMain launcher = new LauncherMain();
         launcher.init();
         launcher.show();
     }
 
-    private static void setLookAndFeel(JFGFonts font) {
+    private static void setLookAndFeel(Font font) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-            FontUIResource fontResource = new FontUIResource(font.asAWTFont(14f));
+            FontUIResource fontResource = new FontUIResource(font);
             int count = 0;
 
             UIDefaults uiDefaults = UIManager.getDefaults();

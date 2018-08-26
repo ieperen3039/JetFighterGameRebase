@@ -70,4 +70,5 @@ public abstract class HudMenu implements TrackerClickListener, Consumer<ScreenOv
     public void cleanUp() {
         MouseTracker.getInstance().removeClickListener(this, false);
     }
+
 }

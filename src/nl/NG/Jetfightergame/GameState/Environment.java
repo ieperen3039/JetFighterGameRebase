@@ -29,11 +29,9 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
 
     /**
      * update the physics of all game objects and check for collisions
-     * @param currentTime
-     * @param deltaTime
      */
     @SuppressWarnings("ConstantConditions")
-    void updateGameLoop(float currentTime, float deltaTime);
+    void updateGameLoop();
 
     /**
      * initializes the lights of this environment in the gl environment
@@ -112,7 +110,7 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         }
 
         @Override
-        public void updateGameLoop(float currentTime, float deltaTime) {
+        public void updateGameLoop() {
         }
 
         @Override

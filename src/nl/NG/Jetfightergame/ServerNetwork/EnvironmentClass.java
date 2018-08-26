@@ -13,6 +13,7 @@ public enum EnvironmentClass {
     PLAYERJET_LABORATORY, ISLAND_MAP;
 
     private static final EnvironmentClass[] VALUES = values();
+    public static EnvironmentClass[] raceWorlds = {ISLAND_MAP};
 
     public GameState create() {
         switch (this) {

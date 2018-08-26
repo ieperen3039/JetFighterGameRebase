@@ -38,6 +38,7 @@ public final class KeyBindings {
     public static int PRINT_SCREEN = GLFW_KEY_PRINT_SCREEN;
     public static int START_GAME = GLFW_KEY_ENTER;
     public static int TOGGLE_DEBUG_SCREEN = GLFW_KEY_F3;
+    public static int DISABLE_HUD = GLFW_KEY_H;
 
     public static int KEY_THROTTLE_UP = GLFW_KEY_W;
     public static int KEY_THROTTLE_DOWN = GLFW_KEY_S;

@@ -50,6 +50,9 @@ public class ActionButtonHandler implements TrackerKeyListener {
 
         } else if (key == TOGGLE_DEBUG_SCREEN) {
             ClientSettings.DEBUG_SCREEN = !ClientSettings.DEBUG_SCREEN;
+
+        } else if (key == DISABLE_HUD) {
+            client.toggleHud();
         }
     }
 

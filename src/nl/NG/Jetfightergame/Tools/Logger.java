@@ -16,20 +16,20 @@ import java.util.function.Supplier;
 public enum Logger {
     DEBUG, INFO, WARN, ERROR;
 
+    public static boolean doPrintCallsites = ServerSettings.DEBUG;
+
     /** prevents spamming the chat */
     protected static Set<String> callerBlacklist = new HashSet<>();
     private static List<Supplier<String>> onlinePrints = new CopyOnWriteArrayList<>();
     private static Consumer<String> out = null;
     private static Consumer<String> err = null;
 
-    public static boolean printCallsites = ServerSettings.DEBUG;
+    private boolean enabled = true;
+    private String codeName = String.format("[%-5s]", this);
 
     static {
         setOutputReceiver(null, null);
     }
-
-    private boolean enabled = true;
-    private String codeName = String.format("[%-5s]", this);
 
     private static String concatenate(Object[] x) {
         if (x.length == 0) return "";
@@ -111,11 +111,19 @@ public enum Logger {
         onlinePrints.remove(source);
     }
 
-    public static void setOutputLevel(Logger minimum) {
+    public static void setLoggingLevel(Logger minimum) {
         Logger[] levels = values();
         for (int i = 0; i < levels.length; i++) {
             levels[i].enabled = (i >= minimum.ordinal());
         }
+    }
+
+    public static Logger getLoggingLevel() {
+        Logger[] values = values();
+        for (Logger logger : values) {
+            if (logger.enabled) return logger;
+        }
+        return null; // no logging is enabled
     }
 
     /**
@@ -141,7 +149,7 @@ public enum Logger {
         if (!enabled) return;
 
         String prefix = codeName;
-        if (printCallsites) prefix = getCallingMethod(depth) + prefix;
+        if (doPrintCallsites) prefix = getCallingMethod(depth) + prefix;
 
         switch (this) {
             case DEBUG:

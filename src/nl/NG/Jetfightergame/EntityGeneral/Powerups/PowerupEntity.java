@@ -93,8 +93,9 @@ public class PowerupEntity extends MovingEntity implements Spectral {
     }
 
     @Override
-    public void update(float currentTime) {
-        if (isCollected && (currentTime > (collectionTime + RESPAWN_TIME))) {
+    public void update() {
+        float time = gameTimer.time();
+        if (isCollected && (time > (collectionTime + RESPAWN_TIME))) {
             entityDeposit.powerupCollect(this, collectionTime, false);
             isCollected = false;
         }

@@ -34,6 +34,7 @@ import static org.lwjgl.opengl.GL11.*;
  * @author Geert van Ieperen
  */
 public class JetFighterRenderer extends AbstractGameLoop {
+    private final Consumer<ScreenOverlay.Painter> HUD;
     private GLFWWindow window;
     private Camera activeCamera;
     private final JetFighterGame engine;
@@ -41,15 +42,16 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private Environment gameState;
     private ScreenOverlay overlay;
     private ParticleShader particleShader;
+    private final JetFighterMenu menu;
 
     private final String sessionName;
     private long frameNumber = 0;
+    private Mode displayMode;
+    private boolean hudIsDisabled = false;
 
     public enum Mode {
         SHOW, RECORD_AND_SHOW, RECORD
     }
-
-    private Mode displayMode;
 
     public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window, Camera camera,
                               ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> hudProvider, Mode displayMode
@@ -77,14 +79,15 @@ public class JetFighterRenderer extends AbstractGameLoop {
             }
         });
 
-        JetFighterMenu menu = new JetFighterMenu(
+        menu = new JetFighterMenu(
                 window::getWidth, window::getHeight,
                 engine::setPlayMode, engine::exitGame,
                 controllerManager, shaderManager, overlay::isMenuMode
         );
+        HUD = hudProvider;
 
         overlay.addMenuItem(menu);
-        overlay.addHudItem(hudProvider);
+        overlay.addHudItem(HUD);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyMMdd_hhmmss");
         sessionName = dateFormat.format(new Date());
@@ -169,6 +172,20 @@ public class JetFighterRenderer extends AbstractGameLoop {
         Toolbox.checkGLError();
     }
 
+    public JetFighterMenu getMainMenu() {
+        return menu;
+    }
+
+    public void toggleHud() {
+        if (hudIsDisabled) {
+            overlay.addHudItem(HUD);
+            hudIsDisabled = false;
+        } else {
+            overlay.removeHudItem(HUD);
+            hudIsDisabled = true;
+        }
+    }
+
     @Override
     protected void exceptionHandler(Exception ex) {
         super.exceptionHandler(ex);
@@ -178,5 +195,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
     @Override
     public void cleanup() {
         shaderManager.cleanup();
+        overlay.removeHudItem(HUD);
+        overlay.removeMenuItem(menu);
     }
 }

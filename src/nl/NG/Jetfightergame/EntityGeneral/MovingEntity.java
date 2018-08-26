@@ -173,9 +173,8 @@ public abstract class MovingEntity implements Touchable {
     /**
      * update the state of this object, may not be called by any method from another interface. Other operations on
      * position and rotation should be synchronized
-     * @param currentTime seconds between some starttime t0 and the begin of the current gameloop
      */
-    public void update(float currentTime) {
+    public void update() {
         if (extraVelocity.isRegular()) {
             velocity.set(extraVelocity);
         } else Logger.WARN.print("Ignored invalid velocity of " + this + " " + extraVelocity);
@@ -346,7 +345,7 @@ public abstract class MovingEntity implements Touchable {
 
     /**
      * applies a change in firstVel by applying the given momentum to the firstVel. This may only be applied between
-     * calls to {@link #preUpdate(DirVector)} and {@link #update(float)}
+     * calls to {@link #preUpdate(DirVector)} and {@link #update()}
      * @param direction the normalized direction in which the force is applied
      * @param energy    the energy in Newton to be applied to the gravity center of this entity
      * @param deltaTime time difference of the current gameloop
