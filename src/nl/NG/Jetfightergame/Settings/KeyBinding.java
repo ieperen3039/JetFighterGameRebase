@@ -81,7 +81,17 @@ public enum KeyBinding {
         else return getKeyName(key);
     }
 
-    /** sets the xbox binding or the keyboard binding of this key to the new value */
+    public String xBoxName() {
+        return "XBOX_" + (isXBoxAxis ? "AXIS_" : "") + xBoxButton;
+    }
+
+    /**
+     * sets the xbox binding or the keyboard binding of this key to the new value
+     * @param k      the new key code
+     * @param isAxis true if the key code represents an axis, false if it represents a binary input (button)
+     * @param isXBox true if the key code represents and xbox controller value, false if it represents keyboard or mouse
+     *               values
+     */
     public void installNew(int k, boolean isAxis, boolean isXBox) {
         if (isXBox) {
             xBoxButton = k;

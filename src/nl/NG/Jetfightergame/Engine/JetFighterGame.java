@@ -323,29 +323,30 @@ public class JetFighterGame {
     }
 
     /**
+     * @see #JetFighterGame(boolean, boolean, File, EnvironmentClass, InetAddress, String)
      * @param argArray The arguments of the program.
      * @throws Exception if anything goes terribly wrong
      */
     public static void main(String... argArray) throws Exception {
-        List<String> args = Arrays.asList(argArray);
-        System.out.println("args: " + args);
+        List<String> args = new ArrayList<>(Arrays.asList(argArray));
 
-        if (args.get(0).equals("-json")) {
-            String settings = args.remove(1);
-            ClientSettings.readJSONString(settings);
-        }
+        System.out.println("args: " + args);
 
         boolean makeLocalServer = args.contains("-local");
         ServerSettings.DEBUG = args.contains("-debug");
         boolean playReplay = args.contains("-replay");
         boolean storeReplay = args.contains("-store");
+
         int mapNameArg = args.indexOf("-map") + 1;
         int playerNameArg = args.indexOf("-name") + 1;
+        int jsonArg = args.indexOf("-json") + 1;
+
         EnvironmentClass serverMap = EnvironmentClass.ISLAND_MAP;
         String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
 
         if (mapNameArg > 0) serverMap = EnvironmentClass.valueOf(args.get(mapNameArg));
         if (playerNameArg > 0) playerName = args.get(playerNameArg);
+        if (jsonArg > 0) ClientSettings.readSettingsFromFile(args.get(jsonArg));
 
         File file = null;
         if (playReplay || storeReplay) {

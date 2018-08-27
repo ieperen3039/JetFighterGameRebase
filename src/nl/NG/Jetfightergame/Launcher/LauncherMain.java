@@ -438,16 +438,17 @@ public class LauncherMain {
 
         new Thread(() -> {
             try {
-                StringBuilder args = new StringBuilder("-json ").append(ClientSettings.toJSONString());
+                File str = ClientSettings.writeSettingsToFile("settings.json");
+                StringBuilder args = new StringBuilder("-json \"").append(str.getPath()).append("\"");
                 if (address == null) args.append(" -local");
                 if (ServerSettings.DEBUG) args.append(" -debug");
                 if (replayFile != null && replayFile.exists()) args.append(" -replay ").append(replayFile.getName());
                 args.append(" -map ").append(map);
                 args.append(" -name ").append(getPlayerName());
-                String command = "java -jar " + jarName + " " + args;
+                String command = "java -jar \"" + jarName + "\" " + args;
 
-                Logger.DEBUG.print("Calling \"" + command + "\"");
-                System.out.println("Calling \"" + command + "\"");
+                Logger.DEBUG.print("Calling Command:\n" + command);
+
                 Process proc = Runtime.getRuntime().exec(command);
                 bindOutputToLogger(proc);
 

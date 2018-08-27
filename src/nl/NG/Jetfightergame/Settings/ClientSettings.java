@@ -2,14 +2,19 @@ package nl.NG.Jetfightergame.Settings;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * @author Geert van Ieperen created on 26-4-2018.
@@ -70,54 +75,93 @@ public final class ClientSettings {
     public static EntityClass JET_TYPE = EntityClass.JET_SPITZ;
     public static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
-    public static String toJSONString() throws IOException {
-        StringWriter writer = new StringWriter();
-        JsonGenerator gen = new JsonFactory().createGenerator(writer);
+    public static File writeSettingsToFile(String fileName) throws IOException {
+        File file = Directory.settings.getFile(fileName);
+        FileOutputStream out = new FileOutputStream(file);
+        JsonGenerator gen = new JsonFactory().createGenerator(out);
+        gen.useDefaultPrettyPrinter();
 
         gen.writeStartObject();
-        /* DO NOT CHANGE STRING NAMES (for backward compatibility) */
-        gen.writeNumberField("TARGET_FPS", TARGET_FPS);
-        gen.writeNumberField("RENDER_DELAY", RENDER_DELAY);
-        gen.writeNumberField("SERVER_PORT", ServerSettings.SERVER_PORT);
-        gen.writeBooleanField("MAKE_REPLAY", ServerSettings.MAKE_REPLAY);
-        gen.writeNumberField("TARGET_TPS", ServerSettings.TARGET_TPS);
-        gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
-        gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
-        gen.writeStringField("JET_TYPE", JET_TYPE.toString());
-//        gen.writeNumberField("",);
-//        gen.writeNumberField("",);
+        {
+            // settings
+            /* DO NOT CHANGE STRING NAMES (for backward compatibility) */
+            gen.writeNumberField("TARGET_FPS", TARGET_FPS);
+            gen.writeNumberField("RENDER_DELAY", RENDER_DELAY);
+            gen.writeNumberField("SERVER_PORT", ServerSettings.SERVER_PORT);
+            gen.writeBooleanField("MAKE_REPLAY", ServerSettings.MAKE_REPLAY);
+            gen.writeNumberField("TARGET_TPS", ServerSettings.TARGET_TPS);
+            gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
+            gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
+            gen.writeStringField("JET_TYPE", JET_TYPE.toString());
+//              gen.writeNumberField("",);
+            // keybindings
+            for (KeyBinding binding : KeyBinding.values()) {
+                gen.writeArrayFieldStart(binding.name());
+                {
+                    gen.writeNumber(binding.getKey());
+                    gen.writeBoolean(binding.isMouseAxis());
+                    gen.writeNumber(binding.getXBox());
+                    gen.writeBoolean(binding.isXBoxAxis());
+                }
+                gen.writeEndArray();
+            }
+        }
         gen.writeEndObject();
 
         gen.close();
-        return writer.toString();
+        return file;
     }
 
-    public static void readJSONString(String entry) throws IOException {
-        JsonParser src = new JsonFactory().createParser(entry);
+    public static void readSettingsFromFile(String filename) throws IOException {
+        ObjectNode src = new ObjectMapper().readValue(Directory.settings.getFile(filename), ObjectNode.class);
+        KeyBinding[] keyBindings = KeyBinding.values();
 
-        String fieldName = src.nextFieldName();
-        while (src.nextToken() != JsonToken.END_OBJECT) {
+        Iterator<Map.Entry<String, JsonNode>> fields = src.fields();
+        while (fields.hasNext()) {
+            Map.Entry<String, JsonNode> entry = fields.next();
+            String fieldName = entry.getKey();
+            JsonNode result = entry.getValue();
+
             switch (fieldName) {
                 /* DO NOT CHANGE STRING NAMES (for backward compatibility) */
                 case "TARGET_FPS":
-                    TARGET_FPS = src.getIntValue();
+                    TARGET_FPS = result.intValue();
+                    break;
                 case "RENDER_DELAY":
-                    RENDER_DELAY = src.getIntValue();
-                case "ServerSettings.SERVER_PORT":
-                    ServerSettings.SERVER_PORT = src.getIntValue();
-                case "ServerSettings.MAKE_REPLAY":
-                    ServerSettings.MAKE_REPLAY = src.getBooleanValue();
-                case "ServerSettings.TARGET_TPS":
-                    ServerSettings.TARGET_TPS = src.getIntValue();
+                    RENDER_DELAY = result.intValue();
+                    break;
+                case "SERVER_PORT":
+                    ServerSettings.SERVER_PORT = result.intValue();
+                    break;
+                case "MAKE_REPLAY":
+                    ServerSettings.MAKE_REPLAY = result.booleanValue();
+                    break;
+                case "TARGET_TPS":
+                    ServerSettings.TARGET_TPS = result.intValue();
+                    break;
                 case "PARTICLE_MODIFIER":
-                    PARTICLE_MODIFIER = src.getFloatValue();
+                    PARTICLE_MODIFIER = result.floatValue();
+                    break;
                 case "CONNECTION_SEND_FREQUENCY":
-                    CONNECTION_SEND_FREQUENCY = src.getIntValue();
+                    CONNECTION_SEND_FREQUENCY = result.intValue();
+                    break;
                 case "JET_TYPE":
-                    JET_TYPE = EntityClass.valueOf(src.getValueAsString());
+                    JET_TYPE = EntityClass.valueOf(result.textValue());
+                    break;
+
+                default: // maybe not the fastest, but no exception is thrown when the string is not found
+                    for (KeyBinding target : keyBindings) {
+                        if (fieldName.equals(target.toString())) {
+                            assert result.isArray();
+                            Iterator<JsonNode> node = result.elements();
+                            target.installNew(node.next().intValue(), node.next().booleanValue(), false);
+                            target.installNew(node.next().intValue(), node.next().booleanValue(), true);
+                            assert !node.hasNext();
+
+                            break;
+                        }
+                    }
             }
         }
-
-        src.close();
     }
 }

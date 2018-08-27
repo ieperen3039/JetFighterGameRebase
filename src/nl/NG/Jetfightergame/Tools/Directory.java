@@ -16,7 +16,8 @@ public enum Directory {
     meshes(Paths.get("res", "models")),
     pictures(Paths.get("res", "pictures")),
     recordings(Paths.get("Recordings")),
-    screenShots(Paths.get("ScreenShots"));
+    screenShots(Paths.get("ScreenShots")),
+    settings(Paths.get(""));
 
     private final Path directory;
 
