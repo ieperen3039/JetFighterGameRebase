@@ -10,6 +10,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShaderUniformGL;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleShader;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderException;
 import nl.NG.Jetfightergame.Rendering.Shaders.ShaderManager;
+import nl.NG.Jetfightergame.ScreenOverlay.HeadsUpDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
@@ -184,6 +185,10 @@ public class JetFighterRenderer extends AbstractGameLoop {
             overlay.removeHudItem(HUD);
             hudIsDisabled = true;
         }
+    }
+
+    public HeadsUpDisplay getHeadsUpDisplay() {
+        return overlay;
     }
 
     @Override

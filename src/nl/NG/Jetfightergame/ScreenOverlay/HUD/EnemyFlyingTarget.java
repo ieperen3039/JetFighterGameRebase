@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.ScreenOverlay.HUD;
 
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.ScreenOverlay.HeadsUpDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
@@ -21,7 +22,7 @@ public class EnemyFlyingTarget extends MovingTarget {
      * @param subject the entity aimed at
      * @param hud
      */
-    public EnemyFlyingTarget(MovingEntity subject, ScreenOverlay hud) {
+    public EnemyFlyingTarget(MovingEntity subject, HeadsUpDisplay hud) {
         super(subject, hud);
     }
 

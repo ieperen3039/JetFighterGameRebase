@@ -11,9 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.function.BooleanSupplier;
 
-import static nl.NG.Jetfightergame.Settings.KeyBindings.*;
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * singleton design
@@ -116,19 +114,19 @@ public class MouseTracker {
     private void mousePressed(MouseEvent e) {
         if (inPlayMode.getAsBoolean()) {
             switch (e.button) {
-                case MOUSE_BUTTON_LEFT:
+                case GLFW_MOUSE_BUTTON_LEFT:
                     leftMouse = true;
                     break;
-                case MOUSE_BUTTON_MIDDLE:
+                case GLFW_MOUSE_BUTTON_MIDDLE:
                     middleMouse = true;
                     break;
-                case MOUSE_BUTTON_RIGHT:
+                case GLFW_MOUSE_BUTTON_RIGHT:
                     rightMouse = true;
                     break;
             }
             inGameClickListeners.forEach(l -> l.clickEvent(e.x, e.y));
 
-        } else if (e.button == MOUSE_BUTTON_LEFT) {
+        } else if (e.button == GLFW_MOUSE_BUTTON_LEFT) {
             menuClick = true;
             // call if button is left and in menu-mode
             menuClickListeners.forEach(l -> l.clickEvent(e.x, e.y));
@@ -137,14 +135,14 @@ public class MouseTracker {
 
     private void mouseReleased(MouseEvent e) {
         switch (e.button) {
-            case MOUSE_BUTTON_LEFT:
+            case GLFW_MOUSE_BUTTON_LEFT:
                 leftMouse = false;
                 menuClick = false;
                 break;
-            case MOUSE_BUTTON_MIDDLE:
+            case GLFW_MOUSE_BUTTON_MIDDLE:
                 middleMouse = false;
                 break;
-            case MOUSE_BUTTON_RIGHT:
+            case GLFW_MOUSE_BUTTON_RIGHT:
                 rightMouse = false;
                 break;
         }
@@ -188,7 +186,7 @@ public class MouseTracker {
         if (inPlayMode.getAsBoolean()) {
             inGameMotionListeners.forEach(l -> l.mouseMoved(dx, dy));
 
-        } else if (e.button == MOUSE_BUTTON_LEFT) { // note that only left is enabled in menu (yet)
+        } else if (e.button == GLFW_MOUSE_BUTTON_LEFT) { // note that only left is enabled in menu (yet)
             menuDragListener.forEach(l -> l.mouseDragged(dx, dy));
         }
     }
@@ -274,13 +272,13 @@ public class MouseTracker {
         public void invoke(long windowHandle, double xPos, double yPos) {
             int button;
             if (leftButton()) {
-                button = MOUSE_BUTTON_LEFT;
+                button = GLFW_MOUSE_BUTTON_LEFT;
             } else if (rightMouse) {
-                button = MOUSE_BUTTON_RIGHT;
+                button = GLFW_MOUSE_BUTTON_RIGHT;
             } else if (middleMouse) {
-                button = MOUSE_BUTTON_MIDDLE;
+                button = GLFW_MOUSE_BUTTON_MIDDLE;
             } else {
-                button = MOUSE_BUTTON_NONE;
+                button = -1;
             }
 
             mouseMoved(new MouseEvent((int) xPos, (int) yPos, button));

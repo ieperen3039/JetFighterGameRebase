@@ -30,10 +30,9 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 /**
- * @author Jorren
- * semi-singleton design to assist debug output to HUD
+ * @author Jorren & Geert
  */
-public final class ScreenOverlay {
+public final class ScreenOverlay implements HeadsUpDisplay {
 
     private long vg;
     private NVGColor color;
@@ -114,12 +113,7 @@ public final class ScreenOverlay {
         menuBufferLock.unlock();
     }
 
-    /**
-     * Create something for the hud to be drawn. Package the NanoVG drawObjects commands inside a
-     * {@link Consumer<Painter>} which will execute {@link Painter} commands once the Hud is ready to draw
-     *
-     * @param render The code for drawing inside the hud.
-     */
+    @Override
     public void addHudItem(Consumer<Painter> render) {
         if (render == null) return;
 
@@ -128,11 +122,7 @@ public final class ScreenOverlay {
         hudBufferLock.unlock();
     }
 
-    /**
-     * Remove an existing drawObjects handler from the Hud.
-     *
-     * @param render The handler to remove.
-     */
+    @Override
     public void removeHudItem(Consumer<Painter> render) {
         if (render == null) return;
 

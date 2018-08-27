@@ -15,7 +15,6 @@ import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.CountDownTimer;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -282,7 +281,7 @@ public class JetFighterProtocol {
         float lingerTime = input.readFloat();
         float particleSize = input.readFloat();
 
-        if (density == 0) density = ClientSettings.EXPLOSION_PARTICLE_DENSITY;
+        if (density == 0) density = Particles.EXPLOSION_PARTICLE_DENSITY;
 
         ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, density, lingerTime, particleSize);
         game.addParticles(cloud);

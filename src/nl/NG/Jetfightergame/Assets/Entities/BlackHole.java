@@ -28,13 +28,13 @@ import java.util.function.Consumer;
  */
 public class BlackHole extends AbstractProjectile {
     private static final float SPARK_COOLDOWN = 0.02f;
-    private static final float FIRE_SPEED = 35f;
+    private static final float FIRE_SPEED = 50f;
     public static final Color4f PARTICLE_COLOR_1 = Color4f.BLACK;
     public static final Color4f PARTICLE_COLOR_2 = new Color4f(0, 0, 0.3f);
     private static final float PARTICLE_REACH = 10f;
     private static final float PARTICLE_SIZE = 1f;
     private static final float TIME_TO_LIVE = 10f;
-    private static final float YOUR_PULL_FORCE = 400f;
+    private static final float YOUR_PULL_FORCE = 800f;
     private static final float OTHER_PULL_FORCE = 800f;
 
     private float sparkTimeRemain = 0;

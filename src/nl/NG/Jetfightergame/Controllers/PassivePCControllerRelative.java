@@ -1,14 +1,13 @@
 package nl.NG.Jetfightergame.Controllers;
 
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
+import nl.NG.Jetfightergame.Settings.KeyBinding;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_COLOR;
 import static nl.NG.Jetfightergame.ScreenOverlay.HUDStyleSettings.HUD_STROKE_WIDTH;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.PITCH_MODIFIER;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
 
 /**
  * @author Geert van Ieperen
@@ -23,25 +22,33 @@ public class PassivePCControllerRelative extends PassivePCController {
     @Override
     public Consumer<ScreenOverlay.Painter> hudElement() {
         return (hud) -> {
-            final int xPos = (currentRoll / INDICATOR_SENSITIVITY) + (hud.windowWidth / 2);
-            final int yPos = (currentPitch / INDICATOR_SENSITIVITY) + (hud.windowHeight / 2);
+            final int xPos = (mouseX / INDICATOR_SENSITIVITY) + (hud.windowWidth / 2);
+            final int yPos = -(mouseY / INDICATOR_SENSITIVITY) + (hud.windowHeight / 2); // minus for (mouse -> screen)
             hud.circle(xPos, yPos, 30, Color4f.INVISIBLE, HUD_STROKE_WIDTH, HUD_COLOR);
             hud.line(HUD_STROKE_WIDTH, Color4f.BLACK, hud.windowWidth/2, hud.windowHeight/2, xPos, yPos);
         };
     }
 
     @Override
-    public float pitch() {
-        return normalize(currentPitch * PITCH_MODIFIER * SENSITIVITY * -1);
-    }
-
-    @Override
-    public float roll() {
-        return normalize(currentRoll * ROLL_MODIFIER * SENSITIVITY);
-    }
-
-    @Override
     public void cleanUp() {
         super.cleanUp();
+    }
+
+    @Override
+    protected float getKeyAxis(KeyBinding keyUp, KeyBinding keyDown) {
+        int i = 0;
+        if (keyboard.isPressed(keyUp.getKey())) i++;
+        if (keyboard.isPressed(keyDown.getKey())) i--;
+        return (i);
+    }
+
+    @Override
+    protected float getMouseY(float modifier) {
+        return normalize(mouseY * modifier * SENSITIVITY);
+    }
+
+    @Override
+    protected float getMouseX(float modifier) {
+        return normalize(mouseX * modifier * SENSITIVITY);
     }
 }

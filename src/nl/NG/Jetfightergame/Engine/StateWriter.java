@@ -22,10 +22,23 @@ public class StateWriter extends ServerConnection {
     public static final String EXTENSION = ".jfgr";
     private static final Set<MessageType> filteredMessages =
             EnumSet.of(PAUSE_GAME, UNPAUSE_GAME, PING, PONG, SYNC_TIMER);
+    private final File file;
     private int worldSwitches = 0;
 
+    /** @see #StateWriter(float, File) */
     public StateWriter(float currentTime) throws IOException {
-        super("StateWriter", getfile(), currentTime);
+        this(currentTime, getfile());
+    }
+
+    /**
+     * a connection to a file, that writes its state to a file. This player does not have a valid jet.
+     * @param currentTime the time of the server when starting
+     * @param file        the file to write to
+     * @throws IOException if a file exception occurs
+     */
+    public StateWriter(float currentTime, File file) throws IOException {
+        super("StateWriter", file, currentTime);
+        this.file = file;
     }
 
     @Override
@@ -43,7 +56,7 @@ public class StateWriter extends ServerConnection {
 
     @Override
     public String toString() {
-        return "StateWriter";
+        return "StateWriter (" + file.getName() + ")";
     }
 
     @Override
@@ -72,6 +85,7 @@ public class StateWriter extends ServerConnection {
     protected void closeOutputStream() {
         try {
             super.closeOutputStream();
+            Logger.INFO.print("Stored recording to file " + file);
         } catch (IOException e) {
             e.printStackTrace();
         }

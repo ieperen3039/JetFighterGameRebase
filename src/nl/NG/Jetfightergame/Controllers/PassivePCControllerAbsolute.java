@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Controllers;
 
-import static nl.NG.Jetfightergame.Settings.ClientSettings.PITCH_MODIFIER;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
+import nl.NG.Jetfightergame.Settings.KeyBinding;
 
 /**
  * @author Geert van Ieperen
@@ -10,19 +9,25 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.ROLL_MODIFIER;
  * Not moving the mouse will result in not rolling/pitching the plane
  */
 public class PassivePCControllerAbsolute extends PassivePCController {
-    private static final float SENSITIVITY = 1.0f;
-
     @Override
-    public float pitch() {
-        int pitch = currentPitch;
-        currentPitch = 0;
-        return normalize(pitch * PITCH_MODIFIER * SENSITIVITY);
+    protected float getKeyAxis(KeyBinding keyUp, KeyBinding keyDown) {
+        int i = 0;
+        if (keyboard.isPressed(keyUp.getKey())) i++;
+        if (keyboard.isPressed(keyDown.getKey())) i--;
+        return (i);
     }
 
     @Override
-    public float roll() {
-        int roll = currentRoll;
-        currentRoll = 0;
-        return normalize(roll * ROLL_MODIFIER * SENSITIVITY);
+    protected float getMouseY(float modifier) {
+        int prev = mouseY;
+        mouseY = 0;
+        return normalize(prev * modifier);
+    }
+
+    @Override
+    protected float getMouseX(float modifier) {
+        int roll = mouseX;
+        mouseX = 0;
+        return normalize(roll * modifier);
     }
 }

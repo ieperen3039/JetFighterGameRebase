@@ -6,7 +6,7 @@ import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 /**
  * a class that harbours the variables that may or may not be changed by the player
  * @see MenuStyleSettings
- * @see KeyBindings
+ * @see KeyBinding
  * @author Geert van Ieperen
  *         created on 2-11-2017.
  */
@@ -17,7 +17,7 @@ public final class ServerSettings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static int TARGET_TPS = 20;
+    public static int TARGET_TPS = 30;
 
     /** connection settings */
     public static int SERVER_PORT = 3039;

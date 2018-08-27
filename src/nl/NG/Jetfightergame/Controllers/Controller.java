@@ -46,12 +46,11 @@ public interface Controller {
 
     /**
      * the amount of yaw requested by this controller.
-     * a positive yaw makes the plane turn right
      * Values out of the range [-1, 1] do not occur (should be taken care of in implementation).
      * @return the desired pitch as fraction [-1, 1].
-     *          If (return < 0) the controller wants to roll clockwise,
+     *          If (return < 0) the controller wants to turn left,
      *          if (return = 0) the controller wants to hold rotation,
-     *          if (return > 0) the controller wants to roll counterclockwise.
+     *          if (return > 0) the controller wants to turn right.
      */
     float yaw();
 

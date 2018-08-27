@@ -37,11 +37,11 @@ public class Seeker extends AbstractProjectile {
     public static final float MASS = 0.9f;
     public static final Color4f COLOR_1 = Color4f.RED;
     public static final Color4f COLOR_2 = new Color4f(0.6f, 0.1f, 0.1f);
-    public static final int NOF_PARTICLES = 25;
+    public static final int NOF_PARTICLES = (int) (25 * ClientSettings.PARTICLE_MODIFIER);
     public static final float EXPLOSION_CLOUD_POWER = 0.4f;
-    public static final float ROTATION_REDUCTION = 0.95f;
+    public static final float ROTATION_REDUCTION = 0.98f;
     public static final float EXPLOSION_PARTICLE_SIZE = 0.3f;
-    private static final float TRAIL_PARTICLES_PER_SEC = 1000;
+    private static final float TRAIL_PARTICLES_PER_SEC = 1000 * ClientSettings.PARTICLE_MODIFIER;
     private static final Color4f EXPLOSION_COLOR = new Color4f(0.6f, 0.1f, 0.1f);
 
     private BoosterLine trail;
@@ -62,13 +62,17 @@ public class Seeker extends AbstractProjectile {
 
         trail = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
-                TRAIL_PARTICLES_PER_SEC, ClientSettings.THRUST_PARTICLE_LINGER_TIME, COLOR_1, COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE,
+                TRAIL_PARTICLES_PER_SEC, ClientSettings.THRUST_PARTICLE_LINGER_TIME,
+                COLOR_1, COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE,
                 gameTimer);
     }
 
     @Override
     public ParticleCloud explode() {
-        return Particles.explosion(position, velocity, EXPLOSION_COLOR, EXPLOSION_COLOR, EXPLOSION_CLOUD_POWER, NOF_PARTICLES, 2f, EXPLOSION_PARTICLE_SIZE);
+        return Particles.explosion(
+                position, velocity, EXPLOSION_COLOR, EXPLOSION_COLOR, EXPLOSION_CLOUD_POWER,
+                NOF_PARTICLES, 2f, EXPLOSION_PARTICLE_SIZE
+        );
     }
 
     @Override
@@ -78,7 +82,9 @@ public class Seeker extends AbstractProjectile {
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm,
-                () -> entityDeposit.addParticles(trail.update(sm, DirVector.zeroVector(), 0, TRAIL_PARTICLES_PER_SEC)),
+                () -> entityDeposit.addParticles(trail.update(
+                        sm, DirVector.zeroVector(), 0, TRAIL_PARTICLES_PER_SEC
+                )),
                 currPos, currRot
         );
     }

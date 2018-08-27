@@ -155,12 +155,12 @@ public class RocketAI implements Controller {
     @Override
     public float pitch() {
         float dot = zVec.dot(vecToTarget);
-        return bound(-dot * pitchFactor, -1, 1);
+        return bound(dot * pitchFactor, -1, 1);
     }
 
     @Override
     public float yaw() {
-        float dot = yVec.dot(vecToTarget);
+        float dot = -yVec.dot(vecToTarget);
         return bound(dot * yawFactor, -1, 1);
     }
 

@@ -209,7 +209,7 @@ public abstract class AbstractJet extends MovingEntity {
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, temp), extraPosition);
-        rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
+        rotation.rotate(rollSpeed * deltaTime, -pitchSpeed * deltaTime, -yawSpeed * deltaTime, extraRotation);
     }
 
     @Override

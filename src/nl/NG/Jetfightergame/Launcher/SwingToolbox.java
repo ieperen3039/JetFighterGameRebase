@@ -1,6 +1,9 @@
 package nl.NG.Jetfightergame.Launcher;
 
+import nl.NG.Jetfightergame.ServerNetwork.BlockingListener;
+import nl.NG.Jetfightergame.Settings.KeyBinding;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.KeyNameMapper;
 import nl.NG.Jetfightergame.Tools.Logger;
 
 import javax.imageio.ImageIO;
@@ -10,14 +13,13 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.*;
 import java.util.function.Consumer;
 
 import static java.awt.GridBagConstraints.*;
+import static nl.NG.Jetfightergame.Tools.KeyNameMapper.*;
 
 /**
  * @author Geert van Ieperen. Created on 23-8-2018.
@@ -25,13 +27,19 @@ import static java.awt.GridBagConstraints.*;
 public final class SwingToolbox {
     private static final String BUTTON_TRUE_TEXT = "Enabled";
     private static final String BUTTON_FALSE_TEXT = "Disabled";
+    public static final int BUTTON_BORDER = 8;
+    public static final int MOUSE_DETECTION_MINIMUM = 50;
 
     public static final Dimension MAIN_BUTTON_DIM = new Dimension(250, 40);
     public static final Dimension SMALL_BUTTON_DIM = new Dimension(150, 20);
-    public static final Dimension TEXTBOX_DIMENSIONS = new Dimension(300, MAIN_BUTTON_DIM.height);
-    public static final int BUTTON_BORDER = 8;
+    public static final Dimension TEXTBOX_DIM = new Dimension(300, MAIN_BUTTON_DIM.height);
+    public static final Dimension KEYFETCH_DIALOG_DIM = new Dimension(MOUSE_DETECTION_MINIMUM * 2 + 100, MOUSE_DETECTION_MINIMUM * 2 + 100);
 
     public static boolean ALLOW_FLYING_TEXT = true;
+
+    private static final Cursor BLANK_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(
+            new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB),
+            new Point(0, 0), "blank cursor");
 
     public static Insets borderOf(int pixels) {
         return new Insets(pixels, pixels, pixels, pixels);
@@ -124,14 +132,6 @@ public final class SwingToolbox {
         }
     }
 
-    public static ActionListener getActionWorker(Runnable runnable) {
-        return e -> {
-            Thread thread = new Thread(runnable, "Action worker");
-            thread.setDaemon(true);
-            thread.start();
-        };
-    }
-
     public static ActionListener getActionWorker(String name, Runnable runnable) {
         return e -> {
             Thread thread = new Thread(runnable, name);
@@ -160,7 +160,7 @@ public final class SwingToolbox {
         combo.add(userInput);
         JTextComponent valueDisplay = flyingText();
         userInput.addChangeListener(e -> valueDisplay.setText(
-                String.format("%5.1f", Math.toDegrees((userInput.getValue() / 100f) * diff + min))
+                String.format("%5.1f", (userInput.getValue() / 100f) * diff + min)
         ));
         userInput.setValue((int) (100 * (current - min) / diff));
         combo.add(valueDisplay, BorderLayout.EAST);
@@ -175,7 +175,7 @@ public final class SwingToolbox {
         JPanel panel = getSettingPanel(text);
 
         JTextField userInput = new JTextField();
-        userInput.setMinimumSize(TEXTBOX_DIMENSIONS);
+        userInput.setMinimumSize(TEXTBOX_DIM);
         userInput.setText(current);
         panel.add(userInput);
 
@@ -228,6 +228,133 @@ public final class SwingToolbox {
         } catch (BadLocationException ex) {
             console.setText(ex.toString());
         }
+    }
+
+    public static JPanel getKeyPanel(KeyBinding key, Frame parentFrame) {
+        JPanel panel = getSettingPanel(key.name().replace("_", " ").toLowerCase());
+
+        JButton userInput = getButton(key.name());
+        userInput.setHorizontalAlignment(JTextField.CENTER);
+        userInput.setText(key.keyName());
+        userInput.addActionListener(a -> getGetKeyDialog(key, parentFrame, userInput));
+        panel.add(userInput);
+
+        return panel;
+    }
+
+    private static void getGetKeyDialog(KeyBinding key, Frame parentFrame, JButton userInput) {
+        JDialog keyFetcherFrame = new JDialog(parentFrame, false);
+        JTextArea keyFetcher = new JTextArea("Press any key");
+        keyFetcher.setEditable(false);
+        int xMid = parentFrame.getX() + (parentFrame.getWidth() / 2);
+        int yMid = parentFrame.getY() + (parentFrame.getHeight() / 2);
+        int x = xMid - (KEYFETCH_DIALOG_DIM.width / 2);
+        int y = yMid - (KEYFETCH_DIALOG_DIM.height / 2);
+        keyFetcherFrame.setLocation(x, y);
+        keyFetcher.setPreferredSize(KEYFETCH_DIALOG_DIM);
+        keyFetcher.setCursor(BLANK_CURSOR);
+        keyFetcherFrame.add(keyFetcher);
+
+        Runnable disposeSeq = () -> {
+            parentFrame.setCursor(null);
+            userInput.setText(key.keyName());
+            keyFetcherFrame.dispose();
+            Point p = userInput.getLocationOnScreen();
+            moveMouseTo(
+                    p.x + userInput.getWidth() / 2,
+                    p.y + userInput.getHeight() / 2
+            );
+        };
+
+        // move mouse and set/validate sizes before installing listeners
+        moveMouseTo(xMid, yMid);
+        keyFetcherFrame.pack();
+        keyFetcherFrame.setVisible(true);
+        keyFetcher.setFocusable(true);
+        keyFetcher.requestFocusInWindow();
+
+        // keyboard key
+        keyFetcher.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int glfwKey = KeyNameMapper.swingKeyToGlfw(e.getKeyCode());
+                key.installNew(glfwKey, false, false);
+                disposeSeq.run();
+            }
+        });
+
+        // mouse button
+        keyFetcher.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                key.installNew(e.getButton(), false, false);
+                disposeSeq.run();
+            }
+        });
+
+        // mouse movement
+        keyFetcher.addMouseMotionListener(new MouseMotionAdapter() {
+            private final Point mousePos = keyFetcher.getMousePosition();
+            private final double xMax = mousePos.getX() + MOUSE_DETECTION_MINIMUM;
+            private final double xMin = mousePos.getX() - MOUSE_DETECTION_MINIMUM;
+            private final double yMax = mousePos.getY() + MOUSE_DETECTION_MINIMUM;
+            private final double yMin = mousePos.getY() - MOUSE_DETECTION_MINIMUM;
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                if (e.getX() > xMax) {
+                    choose(MOUSE_RIGHT);
+                } else if (e.getX() < xMin) {
+                    choose(MOUSE_LEFT);
+                } else if (e.getY() > yMax) { // screen coordinates
+                    choose(MOUSE_DOWN);
+                } else if (e.getY() < yMin) {
+                    choose(MOUSE_UP);
+                }
+            }
+
+            private void choose(int value) {
+                key.installNew(value, true, false);
+                disposeSeq.run();
+            }
+        });
+    }
+
+    /** try moving the mouse to the screen coordinates, but this may fail (silently) */
+    private static void moveMouseTo(int x, int y) {
+        try {
+            new Robot().mouseMove(x, y);
+        } catch (AWTException ignored) {
+        }
+    }
+
+    static void bindOutputToLogger(Process proc) throws IOException {
+        InputStream in = proc.getInputStream();
+        InputStream err = proc.getErrorStream();
+        BufferedReader stdIn = new BufferedReader(new InputStreamReader(in));
+        BufferedReader stdErr = new BufferedReader(new InputStreamReader(err));
+
+        //noinspection Convert2Lambda
+        new BlockingListener() {
+            @Override
+            public boolean handleMessage() throws IOException {
+                String line = stdIn.readLine();
+                if (line == null) return false;
+                Logger.printRaw(line);
+                return true;
+            }
+        }.listenInThread(false);
+
+        //noinspection Convert2Lambda
+        new BlockingListener() {
+            @Override
+            public boolean handleMessage() throws IOException {
+                String line = stdErr.readLine();
+                if (line == null) return false;
+                Logger.errorRaw(line);
+                return true;
+            }
+        }.listenInThread(false);
     }
 
     private static class RepaintUponMouseEvent implements MouseListener {

@@ -64,13 +64,16 @@ public class JetFighterGame {
 
     /**
      * Shows a splash screen, and creates a window in which the game runs
-     * @param doShow if false, the game will run headless (for recording)
-     * @param doStore if true, a video of the replay file will be recorded
-     * @param replayFile a replay file to play, or null if no file should be played
-     * @param map the map for racing
+     * @param doShow      if false, the game will run headless (for recording)
+     * @param doStore     This is a two-sided flag. if true and a replay is provided, a video of the replay file will be
+     *                    recorded. If true and no file is provided, a replay file is generated. if false, none of these
+     *                    is generated
+     * @param replayFile  a replay file to play, or null if no file should be played
+     * @param map         the map for racing
      * @param hostAddress address of server to find. When null, a new local server will be created
+     * @param playerName
      */
-    public JetFighterGame(boolean doShow, boolean doStore, File replayFile, EnvironmentClass map, InetAddress hostAddress) throws Exception {
+    public JetFighterGame(boolean doShow, boolean doStore, File replayFile, EnvironmentClass map, InetAddress hostAddress, String playerName) throws Exception {
         Logger.INFO.print("Starting the game...");
         Logger.DEBUG.print("General debug information: " +
                 "\n\tSystem OS:          " + System.getProperty("os.name") +
@@ -105,8 +108,6 @@ public class JetFighterGame {
 
 
             if (replayFile == null) {
-                String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
-
                 OutputStream sendChannel;
                 InputStream receiveChannel;
 
@@ -175,6 +176,7 @@ public class JetFighterGame {
                 renderLoop = new JetFighterRenderer(
                         this, gameState, window, camera, player.getInputControl(), hud, SHOW
                 );
+                connection.getInputControl().setHud(renderLoop.getHeadsUpDisplay());
 
             } else { // file != null, start a replay file
                 Logger.INFO.print("Starting replay of " + replayFile.getPath());
@@ -241,8 +243,7 @@ public class JetFighterGame {
     }
 
     /**
-     * Starts all threads and blocks until rendering has terminated again.
-     * must be called in the current GL context
+     * Starts all threads and blocks until rendering has terminated again. must be called in the current GL context
      */
     public void root() {
         Logger.DEBUG.print("Starting " + otherLoops);
@@ -271,11 +272,9 @@ public class JetFighterGame {
     }
 
     private void cleanup() {
-        if (ClientSettings.CLEAN_AFTER_GAME) {
-            GeneralShapes.cleanAll();
-            AudioFile.cleanAll();
-            SoundEngine.closeDevices();
-        }
+        GeneralShapes.cleanAll();
+        AudioFile.cleanAll();
+        SoundEngine.closeDevices();
 
         closeOperations.forEach(Runnable::run);
 
@@ -288,7 +287,7 @@ public class JetFighterGame {
         // wait for possible printing
         Toolbox.waitFor(10);
 
-        System.out.println();
+        Logger.INFO.newLine();
         Logger.INFO.print("Stopping game...");
 
         renderLoop.stopLoop();
@@ -331,16 +330,24 @@ public class JetFighterGame {
         List<String> args = Arrays.asList(argArray);
         System.out.println("args: " + args);
 
+        if (args.get(0).equals("-json")) {
+            String settings = args.remove(1);
+            ClientSettings.readJSONString(settings);
+        }
+
         boolean makeLocalServer = args.contains("-local");
         ServerSettings.DEBUG = args.contains("-debug");
         boolean playReplay = args.contains("-replay");
         boolean storeReplay = args.contains("-store");
         int mapNameArg = args.indexOf("-map") + 1;
-        File file = null;
+        int playerNameArg = args.indexOf("-name") + 1;
         EnvironmentClass serverMap = EnvironmentClass.ISLAND_MAP;
+        String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
 
         if (mapNameArg > 0) serverMap = EnvironmentClass.valueOf(args.get(mapNameArg));
+        if (playerNameArg > 0) playerName = args.get(playerNameArg);
 
+        File file = null;
         if (playReplay || storeReplay) {
             for (String arg : args) {
                 if (arg.endsWith(StateWriter.EXTENSION)) {
@@ -369,7 +376,7 @@ public class JetFighterGame {
 
         Logger.setLoggingLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
         boolean doShow = (file == null) || playReplay;
-        new JetFighterGame(doShow, storeReplay, file, serverMap, localHost).root();
+        new JetFighterGame(doShow, storeReplay, file, serverMap, localHost, playerName).root();
     }
 
     /**

@@ -25,14 +25,15 @@ import static org.lwjgl.openal.EXTEfx.ALC_MAX_AUXILIARY_SENDS;
 public class SoundEngine {
 
     // default device
-    private static final long device = ALC10.alcOpenDevice((ByteBuffer) null);
-    private static boolean isStarted = false;
+    private final long device;
+    private boolean isStarted = false;
 
     /**
      * set up openAL environment
      */
     public SoundEngine() {
         // Create a handle for the device capabilities
+        device = ALC10.alcOpenDevice((ByteBuffer) null);
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
         IntBuffer contextAttribList = BufferUtils.createIntBuffer(16);
@@ -70,7 +71,7 @@ public class SoundEngine {
     }
 
     public static boolean isStarted() {
-        return isStarted;
+        return false;
     }
 
     /**
@@ -100,10 +101,6 @@ public class SoundEngine {
     }
 
     public static void closeDevices() {
-        if (isStarted) {
-            ALC10.alcCloseDevice(device);
-            isStarted = false;
-        }
     }
 
     public static void main(String[] args) {

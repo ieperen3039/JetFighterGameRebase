@@ -6,8 +6,7 @@ import org.lwjgl.glfw.GLFWKeyCallback;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
+import static org.lwjgl.glfw.GLFW.*;
 
 /**
  * Singleton Design
@@ -44,17 +43,27 @@ public class KeyTracker {
         eventListeners.remove(leaver);
     }
 
-    public void keyPressed(int keyCode) {
-        eventListeners.forEach(l -> l.keyPressed(keyCode));
-    }
-
     /**
      * @param key keycode of the key of which the button should be get.
      * @return  true    if the key is pressed
      *          false   if the key is not pressed
      */
-    public Boolean isPressed(int key) {
-        return window.isKeyPressed(key);
+    public boolean isPressed(int key) {
+        if (key < 0) return false;
+        switch (key) {
+            case GLFW_MOUSE_BUTTON_LEFT:
+            case GLFW_MOUSE_BUTTON_RIGHT:
+            case GLFW_MOUSE_BUTTON_MIDDLE:
+            case GLFW_MOUSE_BUTTON_4:
+            case GLFW_MOUSE_BUTTON_5:
+            case GLFW_MOUSE_BUTTON_6:
+            case GLFW_MOUSE_BUTTON_7:
+            case GLFW_MOUSE_BUTTON_8:
+                return window.isMouseButtonPressed(key);
+            default:
+                return window.isKeyPressed(key);
+        }
+
     }
 
     public void listenTo(GLFWWindow window) {
@@ -68,8 +77,8 @@ public class KeyTracker {
             if (keyCode < 0) return;
 
             if (action == GLFW_PRESS) {
-                keyPressed(keyCode);
-            } else if (action == GLFW_RELEASE) {
+                eventListeners.forEach(l -> l.keyPressed(keyCode));
+//            } else if (action == GLFW_RELEASE) {
 
             }
         }

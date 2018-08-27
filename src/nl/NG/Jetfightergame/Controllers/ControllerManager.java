@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Controllers;
 
 import nl.NG.Jetfightergame.ArtificalIntelligence.RaceAI;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
+import nl.NG.Jetfightergame.ScreenOverlay.HeadsUpDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Tools.Manager;
@@ -20,11 +21,12 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
 
     private static final ControllerImpl[] SELECTABLE_CONTROLLERS = {MouseAbsolute, MouseAbsoluteActive, MouseRelative, XBoxController};
     private final ClientConnection controlReceiver;
-    private ScreenOverlay hud;
+
+    private HeadsUpDisplay hud;
     private Controller instance;
     private RaceProgress raceProgress;
 
-    public ControllerManager(ScreenOverlay hud, ClientConnection controlReceiver, RaceProgress raceProgress) {
+    public ControllerManager(HeadsUpDisplay hud, ClientConnection controlReceiver, RaceProgress raceProgress) {
         this.controlReceiver = controlReceiver;
         this.raceProgress = raceProgress;
         instance = new EmptyController();
@@ -65,7 +67,7 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
                 break;
 
             case MouseAbsoluteActive:
-                newInst = new ActivePCControllerAbsolute(controlReceiver);
+                newInst = new ActivePCController(controlReceiver);
                 break;
 
             case EmptyController:
@@ -92,11 +94,15 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
         }
     }
 
-    public void setDisplay(ScreenOverlay target) {
+    public void setDisplay(HeadsUpDisplay target) {
         if (hud != null) hud.removeHudItem(instance.hudElement());
         hud = target;
         Consumer<ScreenOverlay.Painter> newElement = instance.hudElement();
         if (newElement != null) hud.addHudItem(newElement);
+    }
+
+    public void setHud(HeadsUpDisplay hud) {
+        this.hud = hud;
     }
 
     @Override

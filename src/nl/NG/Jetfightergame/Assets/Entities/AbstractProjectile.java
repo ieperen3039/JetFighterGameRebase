@@ -148,7 +148,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, temp), extraPosition);
-        rotation.rotate(rollSpeed * deltaTime, pitchSpeed * deltaTime, yawSpeed * deltaTime, extraRotation);
+        rotation.rotate(rollSpeed * deltaTime, -pitchSpeed * deltaTime, -yawSpeed * deltaTime, extraRotation);
     }
 
     private void reduceDriftLinear(DirVector ev, float yReduction, float zReduction) {

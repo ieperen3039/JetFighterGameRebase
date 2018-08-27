@@ -3,6 +3,7 @@ package nl.NG.Jetfightergame.Rendering;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Directory;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector2i;
@@ -61,7 +62,7 @@ public class GLFWWindow {
         this.mousePosY = BufferUtils.createDoubleBuffer(1);
 
         // Setup error callback, print to System.err
-        GLFWErrorCallback.createPrint(System.err).set();
+        GLFWErrorCallback.createPrint(Logger.ERROR.getPrintStream()).set();
 
         // Initialize GLFW
         if (!glfwInit()) {
@@ -87,7 +88,7 @@ public class GLFWWindow {
 
         setWindowed();
 
-        if (vSyncEnabled()) {
+        if (ClientSettings.V_SYNC) {
             // Turn on vSync
             glfwSwapInterval(1);
         }
@@ -134,7 +135,7 @@ public class GLFWWindow {
         if (newWindow == NULL) {
             throw new RuntimeException("Failed to create the GLFW window");
         }
-//        glfwSetWindowIcon(newWindow, null);
+//        glfwSetWindowIcon(newWindow, null); // TODO icon
 
         if (this.resizable) {
             // Setup resize callback
@@ -344,7 +345,13 @@ public class GLFWWindow {
 
     public void setFullScreen(){
         GLFWVidMode vidmode = glfwGetVideoMode(primaryMonitor);
-        glfwSetWindowMonitor(window, primaryMonitor, 0, 0, vidmode.width(), vidmode.height(), GLFW_DONT_CARE);
+        glfwSetWindowMonitor(window, primaryMonitor, 0, 0, vidmode.width(), vidmode.height(), ClientSettings.TARGET_FPS);
+
+        if (ClientSettings.V_SYNC) {
+            // Turn on vSync
+            glfwSwapInterval(1);
+        }
+
         fullScreen = true;
     }
 

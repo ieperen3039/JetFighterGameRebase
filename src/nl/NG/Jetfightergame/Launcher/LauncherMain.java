@@ -1,16 +1,14 @@
 package nl.NG.Jetfightergame.Launcher;
 
-import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Engine.JetFighterGame;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.ScreenOverlay.JFGFonts;
 import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Settings.KeyBinding;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Sound.AudioFile;
-import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -43,10 +41,10 @@ public class LauncherMain {
     public static final Color ERROR_TEXT_COLOR = new Color(1f, 0.3f, 0.3f);
     public static final Color REGULAR_TEXT_COLOR = Color.WHITE;
 
-
     /** settings */
     private EnvironmentClass map = EnvironmentClass.ISLAND_MAP;
     private boolean hideLauncherWhenRunning = false;
+    private String playerName = null;
 
     /** main frame */
     private JFrame frame;
@@ -57,11 +55,14 @@ public class LauncherMain {
     private JComponent ipSearchPanel;
     private JComponent loadoutPanel;
     private JComponent settingsPanel;
+    private JComponent keyBindingPanel;
     private JComponent replaySelectPanel;
     private JComponent debugOutputPanel;
     private JComponent defaultPanel;
 
     private JComponent[] mutexPanels;
+    private String jarName = Directory.currentDirectory()
+            .resolve("jar").resolve("JetFighterGame.jar").toString();
 
     public void init() {
         frame = new JFrame();
@@ -77,11 +78,12 @@ public class LauncherMain {
         ipSearchPanel = getIPSearchPanel();
         loadoutPanel = getLoadoutPanel();
         settingsPanel = getSettingsPanel();
+        keyBindingPanel = getKeyBindingPanel();
         replaySelectPanel = getReplaySelectPanel(Directory.recordings);
         debugOutputPanel = getConsolePanel();
         defaultPanel = getDefaultPanel();
 
-        mutexPanels = new JComponent[]{defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel, replaySelectPanel, debugOutputPanel};
+        mutexPanels = new JComponent[]{defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel, keyBindingPanel, replaySelectPanel, debugOutputPanel};
         for (JComponent panel : mutexPanels) {
             panel.setVisible(false);
             imagePanel.add(panel, SwingToolbox.getFillConstraints(1, 0));
@@ -160,8 +162,11 @@ public class LauncherMain {
         settings.add(getSliderSetting(panel, column(2), "Field of View (deg)",
                 (f) -> ClientSettings.FOV = f, 0.35f, 2.10f, ClientSettings.FOV));
 
-        settings.add(getTextboxSetting(panel, column(2), "Thrust particle density",
-                String.valueOf(ClientSettings.THRUST_PARTICLES_PER_SECOND), (s) -> ClientSettings.THRUST_PARTICLES_PER_SECOND = Float.valueOf(s)));
+        settings.add(getSliderSetting(panel, column(2), "Particle Modifier (exp scale)",
+                (f) -> ClientSettings.PARTICLE_MODIFIER = (float) Math.exp(f), -3, 7, (float) Math.log(ClientSettings.PARTICLE_MODIFIER)));
+
+        settings.add(getTextboxSetting(panel, column(2), "Player Name",
+                getPlayerName(), (s) -> playerName = s));
 
         panel.add(getFiller(), getButtonConstraints(column(2), RELATIVE));
 
@@ -192,6 +197,39 @@ public class LauncherMain {
             if (doReboot[0]) reboot();
             doReboot[0] = false;
         });
+
+        return scrollable(panel);
+    }
+
+    private String getPlayerName() {
+        return playerName != null ? playerName : "TheLegend" + Toolbox.random.nextInt(1000);
+    }
+
+    private JComponent getKeyBindingPanel() {
+        JPanel panel = SwingToolbox.invisiblePanel();
+        panel.setLayout(new GridBagLayout());
+
+        final int cols = (COLUMNS_OF_SETTINGS * 2) - 1;
+
+        // for the title
+        GridBagConstraints titlePosition = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(20), 0, 0);
+
+        JTextComponent title = SwingToolbox.flyingText();
+        title.setFont(LARGE_FONT);
+        title.setText("Keybindings");
+        panel.add(title, titlePosition);
+
+        for (KeyBinding key : KeyBinding.getActionButtons()) {
+            panel.add(getKeyPanel(key, frame), getButtonConstraints(column(1), RELATIVE));
+        }
+        for (KeyBinding key : KeyBinding.getControlButtons()) {
+            panel.add(getKeyPanel(key, frame), getButtonConstraints(column(2), RELATIVE));
+        }
+
+        for (int i = 0; i < COLUMNS_OF_SETTINGS - 1; i++) {
+            panel.add(getFiller(), getFillConstraints((i * 2) + 1, 1, 1, 1));
+        }
+        panel.add(getFiller(), getFillConstraints(0, RELATIVE, cols, 1));
 
         return scrollable(panel);
     }
@@ -244,7 +282,7 @@ public class LauncherMain {
 
         JTextField ipField = new JTextField();
         ipField.setFont(LARGE_FONT);
-        ipField.setPreferredSize(SwingToolbox.TEXTBOX_DIMENSIONS);
+        ipField.setPreferredSize(SwingToolbox.TEXTBOX_DIM);
         cons = new GridBagConstraints(1, 2, 2, 1, 1, 0, LINE_END, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
         panel.add(ipField, cons);
 
@@ -299,9 +337,17 @@ public class LauncherMain {
         changeLoadout.addActionListener(e -> select(loadoutPanel));
         panel.add(changeLoadout, SwingToolbox.getButtonConstraints(RELATIVE));
 
+        JButton showDebug = SwingToolbox.getButton("Show Console");
+        showDebug.addActionListener(e -> select(debugOutputPanel));
+        panel.add(showDebug, SwingToolbox.getButtonConstraints(RELATIVE));
+
         JPanel filler = SwingToolbox.getFiller();
         filler.setMinimumSize(new Dimension(MAIN_BUTTON_DIM.width + 2 * BUTTON_BORDER, 1));
         panel.add(filler, SwingToolbox.getFillConstraints(1, RELATIVE));
+
+        JButton keyBindingsButton = SwingToolbox.getButton("Key Bindings");
+        keyBindingsButton.addActionListener(e -> select(keyBindingPanel));
+        panel.add(keyBindingsButton, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton settingsButton = SwingToolbox.getButton("Settings");
         settingsButton.addActionListener(e -> select(settingsPanel));
@@ -392,8 +438,21 @@ public class LauncherMain {
 
         new Thread(() -> {
             try {
-                JetFighterGame game = new JetFighterGame(true, false, replayFile, map, address);
-                game.root();
+                StringBuilder args = new StringBuilder("-json ").append(ClientSettings.toJSONString());
+                if (address == null) args.append(" -local");
+                if (ServerSettings.DEBUG) args.append(" -debug");
+                if (replayFile != null && replayFile.exists()) args.append(" -replay ").append(replayFile.getName());
+                args.append(" -map ").append(map);
+                args.append(" -name ").append(getPlayerName());
+                String command = "java -jar " + jarName + " " + args;
+
+                Logger.DEBUG.print("Calling \"" + command + "\"");
+                System.out.println("Calling \"" + command + "\"");
+                Process proc = Runtime.getRuntime().exec(command);
+                bindOutputToLogger(proc);
+
+                int exitCode = proc.waitFor();
+                Logger.INFO.print("Game finished with exit code " + exitCode + ".");
 
             } catch (Exception e) {
                 StringBuilder stacktrace = new StringBuilder();
@@ -413,13 +472,6 @@ public class LauncherMain {
 
     private void close() {
         frame.dispose();
-
-        if (!ClientSettings.CLEAN_AFTER_GAME) {
-            // no cleaning before, so do it now
-            GeneralShapes.cleanAll();
-            AudioFile.cleanAll();
-            SoundEngine.closeDevices();
-        }
     }
 
     private void show() {
@@ -439,7 +491,6 @@ public class LauncherMain {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
             FontUIResource fontResource = new FontUIResource(font);
-            int count = 0;
 
             UIDefaults uiDefaults = UIManager.getDefaults();
             for (Map.Entry<Object, Object> e : uiDefaults.entrySet()) {
@@ -448,7 +499,6 @@ public class LauncherMain {
                     String property = (String) item;
                     if (property.contains(".font")) {
                         uiDefaults.put(item, fontResource);
-                        count++;
                     }
                 }
             }

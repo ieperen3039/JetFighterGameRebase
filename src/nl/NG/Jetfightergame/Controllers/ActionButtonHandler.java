@@ -13,7 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static nl.NG.Jetfightergame.Engine.JetFighterGame.GameMode.MENU_MODE;
-import static nl.NG.Jetfightergame.Settings.KeyBindings.*;
+import static nl.NG.Jetfightergame.Settings.KeyBinding.*;
 
 /**
  * @author Geert van Ieperen. Created on 7-7-2018.
@@ -30,28 +30,28 @@ public class ActionButtonHandler implements TrackerKeyListener {
 
     @Override
     public void keyPressed(int key) {
-        if (key == START_GAME) {
+        if (START_GAME.is(key)) {
             connection.sendCommand(MessageType.START_GAME);
 
-        } else if (key == EXIT_GAME) {
+        } else if (EXIT_GAME.is(key)) {
             if (client.getCurrentGameMode() == MENU_MODE) client.exitGame();
             else client.setMenuMode();
 
-        } else if (key == TOGGLE_FULLSCREEN) {
+        } else if (TOGGLE_FULLSCREEN.is(key)) {
             Logger.DEBUG.print("Switching fullscreen");
             client.getWindow().toggleFullScreen();
 
-        } else if (key == PRINT_SCREEN) {
+        } else if (PRINT_SCREEN.is(key)) {
             SimpleDateFormat ft = new SimpleDateFormat("mm_dd-hh_mm_ss");
             final String name = "Screenshot_" + ft.format(new Date());
 
             client.getWindow().printScreen(Directory.screenShots, true, name);
             Logger.DEBUG.print("Saved screenshot as \"" + name + "\"");
 
-        } else if (key == TOGGLE_DEBUG_SCREEN) {
+        } else if (TOGGLE_DEBUG_SCREEN.is(key)) {
             ClientSettings.DEBUG_SCREEN = !ClientSettings.DEBUG_SCREEN;
 
-        } else if (key == DISABLE_HUD) {
+        } else if (DISABLE_HUD.is(key)) {
             client.toggleHud();
         }
     }

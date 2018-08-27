@@ -141,7 +141,7 @@ public final class Toolbox {
         }
 
         try {
-            System.out.println();
+            Logger.ERROR.newLine();
             Logger.DEBUG.printFrom(2, "Ending JVM");
             Thread.sleep(10);
             Thread.dumpStack();
@@ -307,5 +307,30 @@ public final class Toolbox {
             result[i] = values[i].toString();
         }
         return result;
+    }
+
+    /**
+     * computes the hamming distance between string a and b as: {@code LCSLength(X[1..m], Y[1..n]) C = array(0..m, 0..n)
+     * for i := 1..m for j := 1..n if X[i] = Y[j] C[i,j] := C[i-1,j-1] + 1 else C[i,j] := max(C[i,j-1], C[i-1,j]) return
+     * C[m,n] }
+     */
+    public static int hammingDistance(String a, String b) {
+        int m = a.length();
+        int n = b.length();
+        int[][] cMat = new int[m + 1][n + 1]; // initialized at 0
+
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                char ca = a.charAt(i - 1);
+                char cb = b.charAt(j - 1);
+                if (ca == cb) {
+                    cMat[i][j] = cMat[i - 1][j - 1] + 1;
+                } else {
+                    cMat[i][j] = Math.max(cMat[i][j - 1], cMat[i - 1][j]);
+                }
+            }
+        }
+
+        return cMat[m][n];
     }
 }

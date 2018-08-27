@@ -20,6 +20,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLE_MODIFIER;
+
 /**
  * A utility-class for particles
  * @author Geert van Ieperen created on 12-1-2018.
@@ -27,6 +29,8 @@ import java.util.stream.Stream;
 public final class Particles {
     public static final float FIRE_LINGER_TIME = 10f;
     private static final float METAL_LINGER_TIME = 2f;
+    /** particle settings */
+    public static int EXPLOSION_PARTICLE_DENSITY = (int) (1000 * PARTICLE_MODIFIER); // particles in total
 
     /**
      * creates an explosion of particles from the given position, using a blend of the two colors
@@ -40,7 +44,7 @@ public final class Particles {
     public static ParticleCloud explosion(PosVector position, DirVector direction, Color4f color2, float power) {
         return explosion(
                 position, direction, Color4f.WHITE, color2, power,
-                ClientSettings.EXPLOSION_PARTICLE_DENSITY, FIRE_LINGER_TIME, ClientSettings.FIRE_PARTICLE_SIZE
+                EXPLOSION_PARTICLE_DENSITY, FIRE_LINGER_TIME, ClientSettings.FIRE_PARTICLE_SIZE
         );
     }
 

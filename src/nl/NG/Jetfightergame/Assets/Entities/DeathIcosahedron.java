@@ -15,6 +15,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -32,11 +33,12 @@ import java.util.function.Consumer;
  */
 public class DeathIcosahedron extends AbstractProjectile {
     private static final float SCALE = 3f;
-    private static final float SPARK_COOLDOWN = 0.005f;
+    private static final float SPARK_COOLDOWN = 0.005f / ClientSettings.PARTICLE_MODIFIER;
     private static final float FIRE_SPEED = 30f;
     private static final float SEEKER_LAUNCH_SPEED = 20f;
     private static final Color4f COLOR = new Color4f(0.8f, 0.3f, 0);
     public static final float SEEKER_COOLDOWN_INCREASE = 0.03f;
+    public static final int NOF_PARTICLES = (int) (1000 * ClientSettings.PARTICLE_MODIFIER);
 
     private static float seekerCooldown = 0.2f;
     private final EntityMapping entities;
@@ -55,7 +57,7 @@ public class DeathIcosahedron extends AbstractProjectile {
         this.entities = entities;
         sparkTimeRemain = 0;
         seekerTimeRemain = 1f;
-        particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 2 * FIRE_SPEED, 100, 2f, 2f);
+        particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 5f, 100, 2f, 2f);
     }
 
     @Override
@@ -91,7 +93,10 @@ public class DeathIcosahedron extends AbstractProjectile {
 
     @Override
     public ParticleCloud explode() {
-        return Particles.explosion(position, DirVector.zeroVector(), Color4f.YELLOW, Color4f.RED, 50, 1000, 2, 6f);
+        return Particles.explosion(
+                position, DirVector.zeroVector(), Color4f.YELLOW, Color4f.RED,
+                50, NOF_PARTICLES, 2, 6f
+        );
     }
 
     @Override
