@@ -1,5 +1,5 @@
 C:\\Users\\s152717\\Documents\\intelliJ
-projects\\JetFighterGame\\src\\nl\\NG\\Jetfightergame\
+projects\\JetFighterGame\\src\\nl\\NG\\nl.NG.Jetfightergame\
 │ Identity.java >> A class for universal ID generation\
 │ Player.java >> THE Player\
 │\
