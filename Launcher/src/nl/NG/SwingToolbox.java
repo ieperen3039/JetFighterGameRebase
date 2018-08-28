@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Launcher;
+package nl.NG;
 
 import nl.NG.Jetfightergame.ServerNetwork.BlockingListener;
 import nl.NG.Jetfightergame.Settings.KeyBinding;

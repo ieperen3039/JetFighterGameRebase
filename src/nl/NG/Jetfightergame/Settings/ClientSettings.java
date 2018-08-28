@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Directory;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.io.File;
@@ -93,6 +94,7 @@ public final class ClientSettings {
             gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
             gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
             gen.writeStringField("JET_TYPE", JET_TYPE.toString());
+            gen.writeBooleanField("LOGGER_PRINT_CALLSITES", Logger.doPrintCallsites);
 //              gen.writeNumberField("",);
             // keybindings
             for (KeyBinding binding : KeyBinding.values()) {
@@ -147,6 +149,9 @@ public final class ClientSettings {
                     break;
                 case "JET_TYPE":
                     JET_TYPE = EntityClass.valueOf(result.textValue());
+                    break;
+                case "LOGGER_PRINT_CALLSITES":
+                    Logger.doPrintCallsites = result.booleanValue();
                     break;
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found

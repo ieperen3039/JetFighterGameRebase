@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Launcher;
+package nl.NG;
 
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.ScreenOverlay.JFGFonts;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import static java.awt.GridBagConstraints.*;
-import static nl.NG.Jetfightergame.Launcher.SwingToolbox.*;
+import static nl.NG.SwingToolbox.*;
 
 /**
  * @author Geert van Ieperen. Created on 23-8-2018.
@@ -61,12 +61,11 @@ public class LauncherMain {
     private JComponent defaultPanel;
 
     private JComponent[] mutexPanels;
-    private String jarName = Directory.currentDirectory()
-            .resolve("jar").resolve("JetFighterGame.jar").toString();
+    private String jarName = Directory.gameJar.getPath("JetFighterGame.jar").toString();
 
     public void init() {
         frame = new JFrame();
-        frame.setTitle(ServerSettings.GAME_NAME + " Launcher");
+        frame.setTitle(ServerSettings.GAME_NAME + "nl/NG");
         frame.setMinimumSize(MINIMUM_LAUNCHER_SIZE);
 
         imagePanel = SwingToolbox.getImagePanel(Directory.pictures.getFile(BACKDROP_IMAGE));
