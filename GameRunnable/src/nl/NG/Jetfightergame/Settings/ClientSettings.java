@@ -64,9 +64,9 @@ public final class ClientSettings {
     public static float FIRE_PARTICLE_SIZE = 0.8f;
 
     /** thrust particle settings */
+    public static final float BASE_THRUST_PPS = 500f;
     public static float THRUST_PARTICLE_SIZE = 0.8f;
     public static float THRUST_PARTICLE_LINGER_TIME = 0.5f;
-    public static float THRUST_PARTICLES_PER_SECOND = 500f * PARTICLE_MODIFIER;
     public static float JET_THRUST_SPEED = 60f;
     public static float ROCKET_THRUST_SPEED = 50f;
     public static Color4f THRUST_COLOR_1 = Color4f.ORANGE;

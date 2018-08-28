@@ -322,9 +322,32 @@ public class JetFighterGame {
     }
 
     /**
-     * @see #JetFighterGame(boolean, boolean, File, EnvironmentClass, InetAddress, String)
+     * The following flags are accepted
+     * <dl>
+     * <dt>-rebuild</dt>
+     * <dd>creates the tables.dt file for launchers</dd>
+     * <dt>-local</dt>
+     * <dd>start a local server and connect with it (use for singleplayer)</dd>
+     * <dt>-debug</dt>
+     * <dd>allow debug output and possible other features for development</dd>
+     * <dt>-replay</dt>
+     * <dd>takes a replay file and plays the previously captured race again. Spectator camera options are added to the
+     * main menu</dd>
+     * <dt>-store</dt>
+     * <dd>if a replay is provided, store a video of it to the map Recordings. System may become unresponsive while
+     * doing so</dd>
+     * <dt>-map</dt>
+     * <dd>if -local is set, the next argument will be selected as the map on which the server will run the race. This
+     * should be a name of EnvironmentClass</dd>
+     * <dt>-name</dt>
+     * <dd>sets the player name for this session to the next argument. A random one is provided if this flag is
+     * missing</dd>
+     * <dt>-json</dt>
+     * <dd>loads the settings file provided by the next argument</dd>
+     * </dl>
      * @param argArray The arguments of the program.
      * @throws Exception if anything goes terribly wrong
+     * @see #JetFighterGame(boolean, boolean, File, EnvironmentClass, InetAddress, String)
      */
     public static void main(String... argArray) throws Exception {
         List<String> args = new ArrayList<>(Arrays.asList(argArray));
@@ -347,7 +370,8 @@ public class JetFighterGame {
         if (jsonArg > 0) ClientSettings.readSettingsFromFile(args.get(jsonArg));
 
         File file = null;
-        if (playReplay || storeReplay) {
+        if (playReplay) {
+            // try finding an arg with the replay file extension
             for (String arg : args) {
                 if (arg.endsWith(StateWriter.EXTENSION)) {
                     file = Directory.recordings.getFile(arg);
@@ -355,6 +379,7 @@ public class JetFighterGame {
                 }
             }
             if (file == null) {
+                // prompt the user to provide a replay
                 Frame frame = new Frame();
                 try {
                     FileDialog fd = new FileDialog(frame, "Select a replay file");

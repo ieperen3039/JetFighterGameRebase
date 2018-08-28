@@ -251,7 +251,7 @@ public abstract class AbstractJet extends MovingEntity {
      * @param right       second relative position of booster
      */
     protected void addBooster(int nOfBoosters, PosVector left, PosVector right) {
-        float pps = THRUST_PARTICLES_PER_SECOND / nOfBoosters;
+        float pps = (BASE_THRUST_PPS * PARTICLE_MODIFIER) / nOfBoosters;
         nuzzle.add(new BoosterLine(
                 left, right, DirVector.zeroVector(), pps, THRUST_PARTICLE_LINGER_TIME,
                 THRUST_COLOR_1, THRUST_COLOR_2, THRUST_PARTICLE_SIZE, gameTimer
@@ -283,7 +283,7 @@ public abstract class AbstractJet extends MovingEntity {
         for (Pair<Float, Float> modifier : speedModifiers) {
             thrust *= modifier.left;
         }
-        float pps = Math.max((THRUST_PARTICLES_PER_SECOND * thrust * thrust) / nuzzle.size(), 3);
+        float pps = Math.max((BASE_THRUST_PPS * PARTICLE_MODIFIER * thrust * thrust) / nuzzle.size(), 3);
 
         PosVector currPos = interpolatedPosition();
         Quaternionf currRot = interpolatedRotation();

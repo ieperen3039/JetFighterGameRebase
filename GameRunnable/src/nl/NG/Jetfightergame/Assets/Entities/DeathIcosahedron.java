@@ -33,15 +33,16 @@ import java.util.function.Consumer;
  */
 public class DeathIcosahedron extends AbstractProjectile {
     private static final float SCALE = 3f;
-    private static final float SPARK_COOLDOWN = 0.005f / ClientSettings.PARTICLE_MODIFIER;
     private static final float FIRE_SPEED = 30f;
     private static final float SEEKER_LAUNCH_SPEED = 20f;
     private static final Color4f COLOR = new Color4f(0.8f, 0.3f, 0);
-    public static final float SEEKER_COOLDOWN_INCREASE = 0.03f;
-    public static final int NOF_PARTICLES = (int) (1000 * ClientSettings.PARTICLE_MODIFIER);
+    private static final float SEEKER_COOLDOWN_INCREASE = 0.03f;
 
-    private static float seekerCooldown = 0.2f;
+    private final int NOF_PARTICLES = (int) (1000 * ClientSettings.PARTICLE_MODIFIER);
+    private final float SPARK_COOLDOWN = 0.005f / ClientSettings.PARTICLE_MODIFIER;
     private final EntityMapping entities;
+
+    private float seekerCooldown = 0.2f;
     private float sparkTimeRemain;
     private float seekerTimeRemain;
 

@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
@@ -26,7 +27,7 @@ import static nl.NG.SwingToolbox.*;
  * @author Geert van Ieperen. Created on 23-8-2018.
  */
 public class LauncherMain {
-    private static final String BACKDROP_IMAGE = "Backdrop.png"; // TODO backdrop image
+    private static final String[] BACKDROP_IMAGE = {"Backdrop.png", "Passage1.png", "Passage2.png", "Seekers.png", "Seekers2.png", "Seekers3.png"};
     private static final Path jarName = Directory.gameJar.getPath("GameRunnable.jar");
 
     private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(900, 600);
@@ -60,6 +61,7 @@ public class LauncherMain {
     private JComponent keyBindingPanel;
     private JComponent replaySelectPanel;
     private JComponent debugOutputPanel;
+    private JComponent updatePanel;
     private JComponent defaultPanel;
     private JComponent[] mutexPanels;
 
@@ -72,10 +74,10 @@ public class LauncherMain {
 
     public void init() {
         frame = new JFrame();
-        frame.setTitle(ClientSettings.GAME_NAME + " Launcher");
+        frame.setTitle(LauncherSettings.GAME_NAME + " Launcher");
         frame.setMinimumSize(MINIMUM_LAUNCHER_SIZE);
 
-        imagePanel = SwingToolbox.getImagePanel(Directory.pictures.getFile(BACKDROP_IMAGE));
+        imagePanel = SwingToolbox.getImagePanel(randomBackdrop());
         imagePanel.setLayout(new GridBagLayout());
 
         mainMenuPanel = getMainMenuPanel();
@@ -87,9 +89,13 @@ public class LauncherMain {
         keyBindingPanel = getKeyBindingPanel();
         replaySelectPanel = getReplaySelectPanel(Directory.recordings);
         debugOutputPanel = getConsolePanel();
+        updatePanel = getUpdatePanel(Directory.gameJar);
         defaultPanel = getDefaultPanel();
 
-        mutexPanels = new JComponent[]{defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel, keyBindingPanel, replaySelectPanel, debugOutputPanel};
+        mutexPanels = new JComponent[]{
+                defaultPanel, ipSearchPanel, loadoutPanel, settingsPanel,
+                keyBindingPanel, replaySelectPanel, debugOutputPanel, updatePanel
+        };
         for (JComponent panel : mutexPanels) {
             panel.setVisible(false);
             imagePanel.add(panel, SwingToolbox.getFillConstraints(1, 0));
@@ -111,6 +117,20 @@ public class LauncherMain {
         frame.setSize(DEFAULT_LAUNCHER_SIZE);
     }
 
+    private File randomBackdrop() {
+        File file;
+        while (true) {
+            int index = RANDOM.nextInt(BACKDROP_IMAGE.length);
+            String image = BACKDROP_IMAGE[index];
+            file = Directory.pictures.getFile(image);
+            if (!file.exists()) {
+                Logger.WARN.print("Could not load " + file);
+            } else break;
+        }
+
+        return file;
+    }
+
     private void reboot() {
         boolean wasVisible = frame.isVisible();
         close();
@@ -120,7 +140,7 @@ public class LauncherMain {
     }
 
     private JComponent getDefaultPanel() {
-        return ClientSettings.DEBUG ? debugOutputPanel : SwingToolbox.invisiblePanel();
+        return LauncherSettings.DEBUG ? debugOutputPanel : SwingToolbox.invisiblePanel();
     }
 
     private JComponent getSettingsPanel() {
@@ -140,15 +160,15 @@ public class LauncherMain {
         panel.add(title, titlePosition);
 
         settings.add(getBooleanSetting(panel, column(1), "Debug mode",
-                ClientSettings.DEBUG, (result) -> {
-                    if (result != ClientSettings.DEBUG) doReboot[0] = true;
-                    ClientSettings.DEBUG = result;
+                LauncherSettings.DEBUG, (result) -> {
+                    if (result != LauncherSettings.DEBUG) doReboot[0] = true;
+                    LauncherSettings.DEBUG = result;
                 }));
 
         settings.add(getBooleanSetting(panel, column(1), "Menu Transparency",
-                ALLOW_FLYING_TEXT, (result) -> {
-                    if (result != ALLOW_FLYING_TEXT) doReboot[0] = true;
-                    ALLOW_FLYING_TEXT = result;
+                LauncherSettings.ALLOW_FLYING_TEXT, (result) -> {
+                    if (result != LauncherSettings.ALLOW_FLYING_TEXT) doReboot[0] = true;
+                    LauncherSettings.ALLOW_FLYING_TEXT = result;
                 }));
 
         settings.add(getBooleanSetting(panel, column(1), "Hide launcher while playing",
@@ -160,16 +180,16 @@ public class LauncherMain {
         panel.add(getFiller(), getButtonConstraints(column(1), RELATIVE));
 
         settings.add(getTextboxSetting(panel, column(2), "Target FPS",
-                String.valueOf(ClientSettings.TARGET_FPS), (s) -> ClientSettings.TARGET_FPS = Integer.valueOf(s)));
+                String.valueOf(LauncherSettings.TARGET_FPS), (s) -> LauncherSettings.TARGET_FPS = Integer.valueOf(s)));
 
         settings.add(getTextboxSetting(panel, column(2), "Render Delay (sec)",
-                String.valueOf(ClientSettings.RENDER_DELAY), (s) -> ClientSettings.RENDER_DELAY = Float.valueOf(s)));
+                String.valueOf(LauncherSettings.RENDER_DELAY), (s) -> LauncherSettings.RENDER_DELAY = Float.valueOf(s)));
 
         settings.add(getSliderSetting(panel, column(2), "Field of View (deg)",
-                (f) -> ClientSettings.FOV = f, 0.35f, 2.10f, ClientSettings.FOV));
+                (f) -> LauncherSettings.FOV = f, 0.35f, 2.10f, LauncherSettings.FOV));
 
         settings.add(getSliderSetting(panel, column(2), "Particle Modifier (exp scale)",
-                (f) -> ClientSettings.PARTICLE_MODIFIER = (float) Math.exp(f), -3, 7, (float) Math.log(ClientSettings.PARTICLE_MODIFIER)));
+                (f) -> LauncherSettings.PARTICLE_MODIFIER = (float) Math.exp(f), -2, 3, (float) Math.log(LauncherSettings.PARTICLE_MODIFIER)));
 
         settings.add(getTextboxSetting(panel, column(2), "Player Name",
                 getPlayerName(), (s) -> playerName = s));
@@ -177,13 +197,13 @@ public class LauncherMain {
         panel.add(getFiller(), getButtonConstraints(column(2), RELATIVE));
 
         settings.add(getTextboxSetting(panel, column(3), "Server Port",
-                String.valueOf(ClientSettings.SERVER_PORT), (s) -> ClientSettings.SERVER_PORT = Integer.valueOf(s)));
+                String.valueOf(LauncherSettings.SERVER_PORT), (s) -> LauncherSettings.SERVER_PORT = Integer.valueOf(s)));
 
         settings.add(getBooleanSetting(panel, column(3), "Save Replays",
-                ClientSettings.MAKE_REPLAY, (result) -> ClientSettings.MAKE_REPLAY = result));
+                LauncherSettings.MAKE_REPLAY, (result) -> LauncherSettings.MAKE_REPLAY = result));
 
         settings.add(getTextboxSetting(panel, column(3), "Server Ticks per second",
-                String.valueOf(ClientSettings.TARGET_TPS), (s) -> ClientSettings.TARGET_TPS = Integer.valueOf(s)));
+                String.valueOf(LauncherSettings.TARGET_TPS), (s) -> LauncherSettings.TARGET_TPS = Integer.valueOf(s)));
 
         settings.add(getChoiceSetting(panel, column(3), "Race map",
                 names.getWorlds(), map, (m) -> map = m));
@@ -260,7 +280,7 @@ public class LauncherMain {
             JButton chooseJet = SwingToolbox.getButton(jet);
             panel.add(chooseJet, SwingToolbox.getButtonConstraints(RELATIVE));
             chooseJet.addActionListener(e -> {
-                ClientSettings.JET_TYPE = jet;
+                LauncherSettings.JET_TYPE = jet;
                 select(null);
             });
         }
@@ -347,8 +367,8 @@ public class LauncherMain {
         panel.add(showDebug, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton checkUpdates = SwingToolbox.getButton("Check for Updates");
-        checkUpdates.addActionListener(e -> Logger.WARN.print("That is not supported in this version of the launcher"));
-//        panel.add(checkUpdates, SwingToolbox.getButtonConstraints(RELATIVE)); TODO add update
+        checkUpdates.addActionListener(e -> select(updatePanel));
+        panel.add(checkUpdates, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JPanel filler = SwingToolbox.getFiller();
         filler.setMinimumSize(new Dimension(MAIN_BUTTON_DIM.width + 2 * BUTTON_BORDER, 1));
@@ -371,7 +391,6 @@ public class LauncherMain {
 
     private JPanel getReplaySelectPanel(Directory dir) {
         JPanel panel = new JPanel(new GridBagLayout());
-//        panel.setFont(new Font("Sans Sherif", Font.PLAIN, 12));
 
         JFileChooser dialog = new JFileChooser(dir.getFile(""));
         dialog.addActionListener(a -> {
@@ -381,6 +400,37 @@ public class LauncherMain {
         });
 
         panel.add(dialog, SwingToolbox.getFillConstraints(RELATIVE, RELATIVE));
+        return panel;
+    }
+
+    private JPanel getUpdatePanel(Directory dir) {
+        JPanel panel = new JPanel(new GridBagLayout());
+
+        // for the title
+        GridBagConstraints titlePosition = SwingToolbox.getConstraints(0, 0, HORIZONTAL);
+        JTextComponent title = SwingToolbox.flyingText();
+        title.setFont(largeFont);
+        title.setText("Only manual updating is enabled at the moment.\nSelect the newest GameRunnable.jar");
+        panel.add(title, titlePosition);
+
+        JFileChooser dialog = new JFileChooser(dir.getFile(""));
+        dialog.addActionListener(a -> {
+            try {
+                File file = dialog.getSelectedFile();
+                File original = jarName.toFile();
+                if (file != null && file != original) {
+                    Files.deleteIfExists(jarName);
+                    Files.move(file.toPath(), jarName);
+                }
+                select(null);
+
+            } catch (IOException e) {
+                Logger.ERROR.print(e);
+                select(debugOutputPanel);
+            }
+        });
+
+        panel.add(dialog, SwingToolbox.getFillConstraints(0, RELATIVE));
         return panel;
     }
 
@@ -450,13 +500,13 @@ public class LauncherMain {
                 StringBuilder args = new StringBuilder();
                 boolean doReplay = replayFile != null && replayFile.exists();
 
-                File str = ClientSettings.writeSettingsToFile("settings.json");
+                File str = LauncherSettings.writeSettingsToFile("settings.json");
                 args.append("-json \"").append(str.getPath()).append("\"");
                 if (!names.loadedSuccessful()) args.append(" -rebuild");
                 if (!doReplay && address == null) args.append(" -local");
-                if (ClientSettings.DEBUG) args.append(" -debug");
+                if (LauncherSettings.DEBUG) args.append(" -debug");
                 if (doReplay) args.append(" -replay ").append(replayFile.getName());
-                if (!doReplay && ClientSettings.MAKE_REPLAY) args.append("-store");
+                if (!doReplay && LauncherSettings.MAKE_REPLAY) args.append(" -store");
                 if (!doReplay) args.append(" -map ").append(map);
                 if (!doReplay) args.append(" -name ").append(getPlayerName());
 
@@ -472,7 +522,7 @@ public class LauncherMain {
             } catch (Exception e) {
                 StringBuilder stacktrace = new StringBuilder();
                 stacktrace.append(e);
-                if (ClientSettings.DEBUG) {
+                if (LauncherSettings.DEBUG) {
                     for (StackTraceElement elt : e.getStackTrace()) {
                         stacktrace.append("\n\t").append(elt);
                     }
@@ -523,12 +573,12 @@ public class LauncherMain {
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             Logger.ERROR.print("Error while loading Look&Feel : " + e);
-            if (ClientSettings.DEBUG) e.printStackTrace();
-            Logger.ERROR.print("Falling back on default L&F, this may look weird");
+            if (LauncherSettings.DEBUG) e.printStackTrace();
+            Logger.WARN.print("Falling back on default L&F, this may look weird");
         } catch (UnsupportedLookAndFeelException e) {
             Logger.ERROR.print("Invalid Look&Feel : " + e.getMessage());
-            if (ClientSettings.DEBUG) e.printStackTrace();
-            Logger.ERROR.print("Falling back on default L&F, this may look weird");
+            if (LauncherSettings.DEBUG) e.printStackTrace();
+            Logger.WARN.print("Falling back on default L&F, this may look weird");
         }
     }
 }

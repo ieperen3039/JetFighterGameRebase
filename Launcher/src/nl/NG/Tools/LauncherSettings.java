@@ -16,7 +16,7 @@ import java.util.Map;
  * @author Geert van Ieperen created on 26-4-2018.
  */
 @SuppressWarnings("Duplicates")
-public final class ClientSettings {
+public final class LauncherSettings {
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
     public static boolean DEBUG = false;
@@ -38,7 +38,7 @@ public final class ClientSettings {
 
     /** miscellaneous */
     public static String JET_TYPE = "JET_SPITZ";
-
+    public static boolean ALLOW_FLYING_TEXT = false;
 
     public static File writeSettingsToFile(String fileName) throws IOException {
         File file = Directory.settings.getFile(fileName);

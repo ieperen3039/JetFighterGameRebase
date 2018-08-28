@@ -27,11 +27,9 @@ public final class SwingToolbox {
     public static final int MOUSE_DETECTION_MINIMUM = 50;
 
     public static final Dimension MAIN_BUTTON_DIM = new Dimension(250, 40);
-    public static final Dimension SMALL_BUTTON_DIM = new Dimension(150, 20);
+    public static final Dimension SMALL_BUTTON_DIM = new Dimension(150, 30);
     public static final Dimension TEXTBOX_DIM = new Dimension(300, MAIN_BUTTON_DIM.height);
     public static final Dimension KEYFETCH_DIALOG_DIM = new Dimension(MOUSE_DETECTION_MINIMUM * 2 + 100, MOUSE_DETECTION_MINIMUM * 2 + 100);
-
-    public static boolean ALLOW_FLYING_TEXT = true;
 
     private static final Cursor BLANK_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(
             new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB),
@@ -51,7 +49,7 @@ public final class SwingToolbox {
     public static JPanel getFiller() {
         JPanel filler = new JPanel();
         filler.setOpaque(false);
-        if (ClientSettings.DEBUG) {
+        if (LauncherSettings.DEBUG) {
             filler.setBorder(new BevelBorder(BevelBorder.LOWERED));
         }
         return filler;
@@ -115,7 +113,7 @@ public final class SwingToolbox {
                     float scalar1 = (float) getHeight() / height;
                     float scalar2 = (float) getWidth() / width;
                     float scalar = Math.max(scalar1, scalar2);
-                    Image image = sourceImage.getScaledInstance((int) (this.width * scalar), (int) (height * scalar), Image.SCALE_FAST);
+                    Image image = sourceImage.getScaledInstance((int) (this.width * scalar), (int) (height * scalar), Image.SCALE_SMOOTH);
                     g.drawImage(image, 0, 0, null);
 
                     paintChildren(g);
@@ -138,7 +136,7 @@ public final class SwingToolbox {
 
     public static JTextComponent flyingText() {
         JTextComponent jText = new JTextArea();
-        if (ALLOW_FLYING_TEXT) {
+        if (LauncherSettings.ALLOW_FLYING_TEXT) {
             jText.addMouseListener(new RepaintUponMouseEvent(jText));
             jText.setOpaque(false);
         }

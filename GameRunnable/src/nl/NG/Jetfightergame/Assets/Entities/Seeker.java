@@ -18,6 +18,7 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -30,19 +31,20 @@ import java.util.function.Consumer;
  * @author Geert van Ieperen. Created on 17-7-2018.
  */
 public class Seeker extends AbstractProjectile {
-    public static final int THRUST_POWER = 300;
-    public static final float TURN_ACC = 5f;
-    public static final float AIR_RESIST = 0.05f;
-    public static final float TIME_TO_LIVE = 15f;
-    public static final float MASS = 0.9f;
-    public static final Color4f COLOR_1 = Color4f.RED;
-    public static final Color4f COLOR_2 = new Color4f(0.6f, 0.1f, 0.1f);
-    public static final int NOF_PARTICLES = (int) (25 * ClientSettings.PARTICLE_MODIFIER);
-    public static final float EXPLOSION_CLOUD_POWER = 0.4f;
-    public static final float ROTATION_REDUCTION = 0.98f;
-    public static final float EXPLOSION_PARTICLE_SIZE = 0.3f;
-    private static final float TRAIL_PARTICLES_PER_SEC = 1000 * ClientSettings.PARTICLE_MODIFIER;
+    private static final int THRUST_POWER = 500;
+    private static final float TURN_ACC = 5f;
+    private static final float AIR_RESIST = 0.07f;
+    private static final float TIME_TO_LIVE = 15f;
+    private static final float MASS = 1f;
+    private static final Color4f COLOR_1 = Color4f.RED;
+    private static final Color4f COLOR_2 = new Color4f(0.6f, 0.1f, 0.1f);
+    private static final float EXPLOSION_CLOUD_POWER = 0.4f;
+    private static final float ROTATION_REDUCTION = 0.95f;
+    private static final float EXPLOSION_PARTICLE_SIZE = 0.3f;
     private static final Color4f EXPLOSION_COLOR = new Color4f(0.6f, 0.1f, 0.1f);
+
+    private final int NOF_PARTICLES = (int) (25 * ClientSettings.PARTICLE_MODIFIER);
+    private final float TRAIL_PARTICLES_PER_SEC = 1000 * ClientSettings.PARTICLE_MODIFIER;
 
     private BoosterLine trail;
 
@@ -59,6 +61,7 @@ public class Seeker extends AbstractProjectile {
             this.target = tgt;
             setController(new RocketAI(this, tgt, 100f, 0.1f));
         }
+        Logger.printOnline(() -> String.valueOf(this.velocity.length()));
 
         trail = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),

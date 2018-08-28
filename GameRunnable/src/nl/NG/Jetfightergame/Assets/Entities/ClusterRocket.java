@@ -34,15 +34,15 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
  */
 public class ClusterRocket extends AbstractProjectile {
 
-    public static final int NOF_PELLETS_LAUNCHED = 50;
-    public static final float EXPLOSION_POWER = 10f;
+    public static final int NOF_PELLETS_LAUNCHED = 25;
+    public static final float EXPLOSION_POWER = 12f;
     public static final int EXPLOSION_DENSITY = 200;
-    public static final float THRUST_POWER = 250f;
+    public static final float THRUST_POWER = 300f;
     public static final float TIME_TO_LIVE = 30f;
-    public static final float SHOOT_ACCURACY = 0.4f;
+    public static final float SHOOT_ACCURACY = 0.35f;
     public static final float TURN_ACC = 0.6f;
     public static final float AIR_RESIST = 0.05f;
-    public static final float MASS = 5f;
+    public static final float MASS = 3f;
     public static final float THRUST_PARTICLE_PER_SECOND = 15;
     private boolean hasExploded = false;
     private BoosterLine nuzzle;
@@ -65,7 +65,7 @@ public class ClusterRocket extends AbstractProjectile {
         super(
                 id, initialPosition, initialRotation, initialVelocity, MASS,
                 AIR_RESIST, TIME_TO_LIVE, TURN_ACC, 0f, THRUST_POWER,
-                0.8f, entityDeposit, gameTimer, sourceEntity
+                0.9f, entityDeposit, gameTimer, sourceEntity
         );
 
         if (tgt != null) {

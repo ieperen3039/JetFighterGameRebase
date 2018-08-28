@@ -42,27 +42,27 @@ public enum PowerupType {
 
     public static final float SEEKER_LAUNCH_SPEED = 2f;
     public static final float SEEKER_SLOW_FACTOR = 2f;
-    public static final int NOF_SEEKERS_LAUNCHED = 20;
+    public static final int NOF_SEEKERS_LAUNCHED = 15;
 
-    public static final float SPEED_BOOST_DURATION = 3f;
+    public static final float SPEED_BOOST_DURATION = 2.5f;
     public static final float SPEED_BOOST_FACTOR = 2f;
 
     public static final float OHSHIELD_DURATION = 10f;
     public static final float REFLECTOR_DURATION = 5f;
 
     public static final float STAR_BOOST_DURATION = 15f;
-    public static final float STAR_BOOST_FACTOR = 1.4f;
+    public static final float STAR_BOOST_FACTOR = 1.2f;
     public static final float STAR_BOOST_PUSH = 1_000f;
 
     public static final float SMOKE_LINGER_TIME = 30f;
-    public static final float SMOKE_LAUNCH_SPEED = 20f;
-    public static final float SMOKE_SPREAD = 10f;
-    public static final int SMOKE_DENSITY = 1_000;
-    public static final int SMOKE_DISTRACTION_ELEMENTS = 3;
+    public static final float SMOKE_LAUNCH_SPEED = 40f;
+    public static final float SMOKE_SPREAD = 0.5f;
+    public static final int SMOKE_DENSITY = 500;
+    public static final int SMOKE_DISTRACTION_ELEMENTS = 5;
 
-    public static final float GRAPPLE_YOUR_PULL_FORCE = 1500f;
-    public static final float GRAPPLE_HIS_PULL_FORCE = 400f;
-    public static final float GRAPPLE_PULL_DURATION = 2f;
+    public static final float GRAPPLE_YOUR_PULL_FORCE = 3000f;
+    public static final float GRAPPLE_HIS_PULL_FORCE = 1000f;
+    public static final float GRAPPLE_PULL_DURATION = 2.5f;
     public static final float GRAPPLE_FIRE_SPEED = 400f;
 
     private final EnumSet<PowerupColor> required;
@@ -122,7 +122,7 @@ public enum PowerupType {
         deposit.addExplosion(
                 jet.getPosition(), dir,
                 Color4f.BLACK, Color4f.GREY,
-                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 10f
+                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 30f
         );
         // distraction
         for (int i = 0; i < SMOKE_DISTRACTION_ELEMENTS; i++) {

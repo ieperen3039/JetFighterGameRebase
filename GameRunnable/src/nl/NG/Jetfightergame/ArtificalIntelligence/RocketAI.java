@@ -143,7 +143,7 @@ public class RocketAI implements Controller {
 
     @Override
     public float throttle() {
-        if (targetPos != null && arrivesWithin(targetPos, 0.5f)) {
+        if (targetPos != null && arrivesWithin(targetPos, 1f)) {
             return 1;
         }
 

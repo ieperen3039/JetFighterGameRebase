@@ -24,6 +24,8 @@ import org.joml.Quaternionf;
 
 import java.io.*;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLE_MODIFIER;
+
 /**
  *
  * @author Geert van Ieperen created on 9-5-2018.
@@ -281,7 +283,7 @@ public class JetFighterProtocol {
         float lingerTime = input.readFloat();
         float particleSize = input.readFloat();
 
-        if (density == 0) density = Particles.EXPLOSION_PARTICLE_DENSITY;
+        if (density == 0) density = (int) (Particles.EXPLOSION_BASE_DENSITY * PARTICLE_MODIFIER);
 
         ParticleCloud cloud = Particles.explosion(position, direction, color1, color2, power, density, lingerTime, particleSize);
         game.addParticles(cloud);
