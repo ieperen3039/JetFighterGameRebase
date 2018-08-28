@@ -1,10 +1,8 @@
 package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import org.apache.commons.io.output.WriterOutputStream;
 
 import java.io.PrintStream;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -129,14 +127,6 @@ public enum Logger {
         return null; // no logging is enabled
     }
 
-    public static void printRaw(String line) {
-        out.accept(line);
-    }
-
-    public static void errorRaw(String line) {
-        err.accept(line);
-    }
-
     /**
      * prints the result of {@link Object#toString()} of the given objects to the output, preceded with calling method.
      * Every unique callside will only be allowed to print once. For recursive calls, every level will be regarded as a
@@ -190,11 +180,6 @@ public enum Logger {
     }
 
     public PrintStream getPrintStream() {
-        return new PrintStream(new WriterOutputStream(new StringWriter() {
-            @Override
-            public void flush() {
-                out.accept(getBuffer().toString());
-            }
-        }), true);
+        return System.err;
     }
 }

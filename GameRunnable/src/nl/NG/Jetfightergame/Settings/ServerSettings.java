@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 @SuppressWarnings("ConstantConditions")
 public final class ServerSettings {
     public static boolean DEBUG = true;
-    public static boolean MAKE_REPLAY = true;
+    public static boolean SERVER_MAKE_REPLAY = true;
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame

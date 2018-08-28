@@ -1,10 +1,6 @@
 package nl.NG;
 
-import nl.NG.Jetfightergame.ServerNetwork.BlockingListener;
-import nl.NG.Jetfightergame.Settings.KeyBinding;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.KeyNameMapper;
-import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Tools.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,7 +15,7 @@ import java.io.*;
 import java.util.function.Consumer;
 
 import static java.awt.GridBagConstraints.*;
-import static nl.NG.Jetfightergame.Tools.KeyNameMapper.*;
+import static nl.NG.Tools.KeyNameMapper.*;
 
 /**
  * @author Geert van Ieperen. Created on 23-8-2018.
@@ -55,7 +51,7 @@ public final class SwingToolbox {
     public static JPanel getFiller() {
         JPanel filler = new JPanel();
         filler.setOpaque(false);
-        if (ServerSettings.DEBUG) {
+        if (ClientSettings.DEBUG) {
             filler.setBorder(new BevelBorder(BevelBorder.LOWERED));
         }
         return filler;
@@ -328,7 +324,7 @@ public final class SwingToolbox {
         }
     }
 
-    static void bindOutputToLogger(Process proc) throws IOException {
+    static void bindOutputToLogger(Process proc) {
         InputStream in = proc.getInputStream();
         InputStream err = proc.getErrorStream();
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(in));

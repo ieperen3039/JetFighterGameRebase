@@ -96,7 +96,7 @@ public class JetFighterServer implements BlockingListener {
     public static void main(String[] args) throws IOException {
         GeneralShapes.init(false);
         GeneralShapes.init(false);
-        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP, ServerSettings.MAKE_REPLAY);
+        JetFighterServer server = new JetFighterServer(EnvironmentClass.ISLAND_MAP, ServerSettings.SERVER_MAKE_REPLAY);
         server.listenForHost();
 
         server.listenInThread(true);

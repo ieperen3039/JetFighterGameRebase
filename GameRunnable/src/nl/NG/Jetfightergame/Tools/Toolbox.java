@@ -309,6 +309,45 @@ public final class Toolbox {
         return result;
     }
 
+    public static String findClosest(String target, String[] options) {
+        int max = 0;
+        int lengthOfMax = Integer.MAX_VALUE;
+        String best = "";
+
+        for (String candidate : options) {
+            int wordLength = Math.abs(candidate.length() - target.length());
+            int dist = hammingDistance(target, candidate);
+
+            if (dist > max || (dist == max && wordLength < lengthOfMax)) {
+                max = dist;
+                lengthOfMax = wordLength;
+                best = candidate;
+            }
+        }
+
+        return best;
+    }
+
+    public static <T extends Enum> T findClosest(String target, T[] options) {
+        int max = 0;
+        int lengthOfMax = Integer.MAX_VALUE;
+        T best = null;
+
+        for (T candidate : options) {
+            String asString = candidate.toString();
+            int wordLength = Math.abs(asString.length() - target.length());
+            int dist = hammingDistance(target, asString);
+
+            if (dist > max || (dist == max && wordLength < lengthOfMax)) {
+                max = dist;
+                lengthOfMax = wordLength;
+                best = candidate;
+            }
+        }
+
+        return best;
+    }
+
     /**
      * computes the hamming distance between string a and b as: {@code LCSLength(X[1..m], Y[1..n]) C = array(0..m, 0..n)
      * for i := 1..m for j := 1..n if X[i] = Y[j] C[i,j] := C[i-1,j-1] + 1 else C[i,j] := max(C[i,j-1], C[i-1,j]) return

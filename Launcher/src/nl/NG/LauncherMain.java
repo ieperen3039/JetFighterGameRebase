@@ -1,14 +1,6 @@
 package nl.NG;
 
-import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
-import nl.NG.Jetfightergame.ScreenOverlay.JFGFonts;
-import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
-import nl.NG.Jetfightergame.Settings.KeyBinding;
-import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Tools.Directory;
-import nl.NG.Jetfightergame.Tools.Logger;
-import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Tools.*;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -19,10 +11,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Random;
 
 import static java.awt.GridBagConstraints.*;
 import static nl.NG.SwingToolbox.*;
@@ -32,17 +27,24 @@ import static nl.NG.SwingToolbox.*;
  */
 public class LauncherMain {
     private static final String BACKDROP_IMAGE = "Backdrop.png"; // TODO backdrop image
-    private static final Font LARGE_FONT = JFGFonts.LUCIDA_CONSOLE.asAWTFont(24f);
-    private static final Font BASE_FONT = JFGFonts.LUCIDA_CONSOLE.asAWTFont(16f);
+    private static final Path jarName = Directory.gameJar.getPath("GameRunnable.jar");
 
     private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(900, 600);
     private static final Dimension DEFAULT_LAUNCHER_SIZE = new Dimension(1200, 700);
     private static final int COLUMNS_OF_SETTINGS = 3;
     public static final Color ERROR_TEXT_COLOR = new Color(1f, 0.3f, 0.3f);
     public static final Color REGULAR_TEXT_COLOR = Color.WHITE;
+    private static final float BASE_FONT_SIZE = 14f;
+    private static final float LARGE_FONT_SIZE = 24f;
+
+    private static final File fontFileLucidaConsole = Directory.fonts.getFile("LucidaConsole", "lucon.ttf");
+    private static final Random RANDOM = new Random();
+    private final Tables names;
+
+    private final Font largeFont;
 
     /** settings */
-    private EnvironmentClass map = EnvironmentClass.ISLAND_MAP;
+    private String map;
     private boolean hideLauncherWhenRunning = false;
     private String playerName = null;
 
@@ -59,13 +61,18 @@ public class LauncherMain {
     private JComponent replaySelectPanel;
     private JComponent debugOutputPanel;
     private JComponent defaultPanel;
-
     private JComponent[] mutexPanels;
-    private String jarName = Directory.gameJar.getPath("JetFighterGame.jar").toString();
+
+    public LauncherMain() throws IOException, FontFormatException {
+        Font lucidaConsole = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
+        largeFont = lucidaConsole.deriveFont(LARGE_FONT_SIZE);
+        names = new Tables(Directory.tables.getFile("tables.tb"));
+        map = names.findWorld("ISLAND");
+    }
 
     public void init() {
         frame = new JFrame();
-        frame.setTitle(ServerSettings.GAME_NAME + "nl/NG");
+        frame.setTitle(ClientSettings.GAME_NAME + " Launcher");
         frame.setMinimumSize(MINIMUM_LAUNCHER_SIZE);
 
         imagePanel = SwingToolbox.getImagePanel(Directory.pictures.getFile(BACKDROP_IMAGE));
@@ -113,7 +120,7 @@ public class LauncherMain {
     }
 
     private JComponent getDefaultPanel() {
-        return ServerSettings.DEBUG ? debugOutputPanel : SwingToolbox.invisiblePanel();
+        return ClientSettings.DEBUG ? debugOutputPanel : SwingToolbox.invisiblePanel();
     }
 
     private JComponent getSettingsPanel() {
@@ -128,14 +135,14 @@ public class LauncherMain {
         GridBagConstraints titlePosition = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(20), 0, 0);
 
         JTextComponent title = SwingToolbox.flyingText();
-        title.setFont(LARGE_FONT);
+        title.setFont(largeFont);
         title.setText("Settings");
         panel.add(title, titlePosition);
 
         settings.add(getBooleanSetting(panel, column(1), "Debug mode",
-                ServerSettings.DEBUG, (result) -> {
-                    if (result != ServerSettings.DEBUG) doReboot[0] = true;
-                    ServerSettings.DEBUG = result;
+                ClientSettings.DEBUG, (result) -> {
+                    if (result != ClientSettings.DEBUG) doReboot[0] = true;
+                    ClientSettings.DEBUG = result;
                 }));
 
         settings.add(getBooleanSetting(panel, column(1), "Menu Transparency",
@@ -170,16 +177,16 @@ public class LauncherMain {
         panel.add(getFiller(), getButtonConstraints(column(2), RELATIVE));
 
         settings.add(getTextboxSetting(panel, column(3), "Server Port",
-                String.valueOf(ServerSettings.SERVER_PORT), (s) -> ServerSettings.SERVER_PORT = Integer.valueOf(s)));
+                String.valueOf(ClientSettings.SERVER_PORT), (s) -> ClientSettings.SERVER_PORT = Integer.valueOf(s)));
 
         settings.add(getBooleanSetting(panel, column(3), "Save Replays",
-                ServerSettings.MAKE_REPLAY, (result) -> ServerSettings.MAKE_REPLAY = result));
+                ClientSettings.MAKE_REPLAY, (result) -> ClientSettings.MAKE_REPLAY = result));
 
         settings.add(getTextboxSetting(panel, column(3), "Server Ticks per second",
-                String.valueOf(ServerSettings.TARGET_TPS), (s) -> ServerSettings.TARGET_TPS = Integer.valueOf(s)));
+                String.valueOf(ClientSettings.TARGET_TPS), (s) -> ClientSettings.TARGET_TPS = Integer.valueOf(s)));
 
         settings.add(getChoiceSetting(panel, column(3), "Race map",
-                EnvironmentClass.raceWorlds, map, (m) -> map = m));
+                names.getWorlds(), map, (m) -> map = m));
 
         panel.add(getFiller(), getButtonConstraints(column(3), RELATIVE));
 
@@ -201,7 +208,7 @@ public class LauncherMain {
     }
 
     private String getPlayerName() {
-        return playerName != null ? playerName : "TheLegend" + Toolbox.random.nextInt(1000);
+        return playerName != null ? playerName : "TheLegend" + RANDOM.nextInt(1000);
     }
 
     private JComponent getKeyBindingPanel() {
@@ -214,7 +221,7 @@ public class LauncherMain {
         GridBagConstraints titlePosition = new GridBagConstraints(0, 1, cols, 1, 1, 1, CENTER, HORIZONTAL, borderOf(20), 0, 0);
 
         JTextComponent title = SwingToolbox.flyingText();
-        title.setFont(LARGE_FONT);
+        title.setFont(largeFont);
         title.setText("Keybindings");
         panel.add(title, titlePosition);
 
@@ -249,9 +256,8 @@ public class LauncherMain {
         text.setText("Choose a jet:");
         panel.add(text, SwingToolbox.getButtonConstraints(RELATIVE));
 
-        for (EntityClass jet : EntityClass.getJets()) {
-            String jetName = jet.name().replace("_", " ");
-            JButton chooseJet = SwingToolbox.getButton(jetName);
+        for (String jet : names.getJets()) {
+            JButton chooseJet = SwingToolbox.getButton(jet);
             panel.add(chooseJet, SwingToolbox.getButtonConstraints(RELATIVE));
             chooseJet.addActionListener(e -> {
                 ClientSettings.JET_TYPE = jet;
@@ -280,7 +286,7 @@ public class LauncherMain {
         panel.add(messageDisplay, cons);
 
         JTextField ipField = new JTextField();
-        ipField.setFont(LARGE_FONT);
+        ipField.setFont(largeFont);
         ipField.setPreferredSize(SwingToolbox.TEXTBOX_DIM);
         cons = new GridBagConstraints(1, 2, 2, 1, 1, 0, LINE_END, HORIZONTAL, borderOf(BUTTON_BORDER), 0, 0);
         panel.add(ipField, cons);
@@ -340,6 +346,10 @@ public class LauncherMain {
         showDebug.addActionListener(e -> select(debugOutputPanel));
         panel.add(showDebug, SwingToolbox.getButtonConstraints(RELATIVE));
 
+        JButton checkUpdates = SwingToolbox.getButton("Check for Updates");
+        checkUpdates.addActionListener(e -> Logger.WARN.print("That is not supported in this version of the launcher"));
+//        panel.add(checkUpdates, SwingToolbox.getButtonConstraints(RELATIVE)); TODO add update
+
         JPanel filler = SwingToolbox.getFiller();
         filler.setMinimumSize(new Dimension(MAIN_BUTTON_DIM.width + 2 * BUTTON_BORDER, 1));
         panel.add(filler, SwingToolbox.getFillConstraints(1, RELATIVE));
@@ -387,7 +397,6 @@ public class LauncherMain {
         MutableAttributeSet ERROR = new SimpleAttributeSet(console.getInputAttributes());
         StyleConstants.setForeground(ERROR, ERROR_TEXT_COLOR);
 
-        Logger.doPrintCallsites = false;
         Logger.setOutputReceiver(
                 str -> {
                     SwingToolbox.appendToText(console, str + "\n", REGULAR);
@@ -398,6 +407,7 @@ public class LauncherMain {
                     scrollBar.setValue(scrollBar.getMaximum());
                 }
         );
+        Logger.ERROR.addOutputReceiver(System.err::println);
 
         panel.add(consoleView, SwingToolbox.getFillConstraints(0, 0));
         panel.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -437,15 +447,20 @@ public class LauncherMain {
 
         new Thread(() -> {
             try {
-                File str = ClientSettings.writeSettingsToFile("settings.json");
-                StringBuilder args = new StringBuilder("-json \"").append(str.getPath()).append("\"");
-                if (address == null) args.append(" -local");
-                if (ServerSettings.DEBUG) args.append(" -debug");
-                if (replayFile != null && replayFile.exists()) args.append(" -replay ").append(replayFile.getName());
-                args.append(" -map ").append(map);
-                args.append(" -name ").append(getPlayerName());
-                String command = "java -jar \"" + jarName + "\" " + args;
+                StringBuilder args = new StringBuilder();
+                boolean doReplay = replayFile != null && replayFile.exists();
 
+                File str = ClientSettings.writeSettingsToFile("settings.json");
+                args.append("-json \"").append(str.getPath()).append("\"");
+                if (!names.loadedSuccessful()) args.append(" -rebuild");
+                if (!doReplay && address == null) args.append(" -local");
+                if (ClientSettings.DEBUG) args.append(" -debug");
+                if (doReplay) args.append(" -replay ").append(replayFile.getName());
+                if (!doReplay && ClientSettings.MAKE_REPLAY) args.append("-store");
+                if (!doReplay) args.append(" -map ").append(map);
+                if (!doReplay) args.append(" -name ").append(getPlayerName());
+
+                String command = "java -jar \"" + jarName + "\" " + args;
                 Logger.DEBUG.print("Calling Command:\n" + command);
 
                 Process proc = Runtime.getRuntime().exec(command);
@@ -457,7 +472,7 @@ public class LauncherMain {
             } catch (Exception e) {
                 StringBuilder stacktrace = new StringBuilder();
                 stacktrace.append(e);
-                if (ServerSettings.DEBUG) {
+                if (ClientSettings.DEBUG) {
                     for (StackTraceElement elt : e.getStackTrace()) {
                         stacktrace.append("\n\t").append(elt);
                     }
@@ -475,12 +490,15 @@ public class LauncherMain {
     }
 
     private void show() {
+        frame.invalidate();
         frame.setVisible(true);
         Logger.INFO.print("Opened Launcher");
     }
 
-    public static void main(String[] args) {
-        setLookAndFeel(LauncherMain.BASE_FONT);
+    public static void main(String[] args) throws IOException, FontFormatException {
+        Font font = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
+        setLookAndFeel(font.deriveFont(LauncherMain.BASE_FONT_SIZE));
+
         LauncherMain launcher = new LauncherMain();
         launcher.init();
         launcher.show();
@@ -505,11 +523,11 @@ public class LauncherMain {
 
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
             Logger.ERROR.print("Error while loading Look&Feel : " + e);
-            if (ServerSettings.DEBUG) e.printStackTrace();
+            if (ClientSettings.DEBUG) e.printStackTrace();
             Logger.ERROR.print("Falling back on default L&F, this may look weird");
         } catch (UnsupportedLookAndFeelException e) {
             Logger.ERROR.print("Invalid Look&Feel : " + e.getMessage());
-            if (ServerSettings.DEBUG) e.printStackTrace();
+            if (ClientSettings.DEBUG) e.printStackTrace();
             Logger.ERROR.print("Falling back on default L&F, this may look weird");
         }
     }

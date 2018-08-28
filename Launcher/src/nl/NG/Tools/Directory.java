@@ -1,12 +1,11 @@
-package nl.NG.Jetfightergame.Tools;
+package nl.NG.Tools;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * @author Geert van Ieperen
- * created on 10-2-2018.
+ * @author Geert van Ieperen created on 10-2-2018.
  */
 public enum Directory {
     music(Paths.get("res", "music")),
@@ -19,7 +18,8 @@ public enum Directory {
     screenShots(Paths.get("ScreenShots")),
     settings(Paths.get("res")),
     gameJar(Paths.get("jar")),
-    launcher(Paths.get("jar"));
+    launcher(Paths.get("jar")),
+    tables(currentDirectory());
 
     private final Path directory;
 

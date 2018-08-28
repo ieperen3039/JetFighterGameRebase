@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Tools;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -80,7 +79,7 @@ public class StreamPipe {
         }
 
         @Override
-        public int read(@Nonnull byte[] bytes, int offset, int length) throws IOException {
+        public int read(byte[] bytes, int offset, int length) throws IOException {
             if (length <= 0 || offset < 0 || offset + length > bytes.length) {
                 if (length == 0) {
                     return 0;
@@ -180,7 +179,7 @@ public class StreamPipe {
         }
 
         @Override
-        public void write(@Nonnull byte[] bytes, int offset, int length) throws IOException {
+        public void write(byte[] bytes, int offset, int length) throws IOException {
             if (length <= 0 || offset < 0 || offset + length > bytes.length) {
                 if (length == 0) {
                     return;

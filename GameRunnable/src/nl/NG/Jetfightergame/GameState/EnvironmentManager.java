@@ -11,7 +11,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.function.Supplier;
@@ -160,7 +159,6 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
         return instance.getMiddleOfPath(collision);
     }
 
-    @Nonnull
     @Override
     public Iterator<MovingEntity> iterator() {
         return instance.iterator();

@@ -13,7 +13,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -121,7 +120,6 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
         public void drawObjects(GL2 gl) {
         }
 
-        @Nonnull
         @Override
         public Iterator<MovingEntity> iterator() {
             return getEntities().iterator();

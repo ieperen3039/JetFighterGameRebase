@@ -1,16 +1,10 @@
-package nl.NG.Jetfightergame.Settings;
+package nl.NG.Tools;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
-import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Tools.Directory;
-import nl.NG.Jetfightergame.Tools.Logger;
-import nl.NG.Jetfightergame.Tools.Toolbox;
-import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,61 +15,30 @@ import java.util.Map;
 /**
  * @author Geert van Ieperen created on 26-4-2018.
  */
+@SuppressWarnings("Duplicates")
 public final class ClientSettings {
-    /** engine settings */
-    public static boolean DEBUG_SCREEN = false;
+    /** general settings */
+    public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
+    public static boolean DEBUG = false;
+
+    /** server settings */
+    public static int SERVER_PORT = 3039;
+    public static int TARGET_TPS = 30;
+    public static int CONNECTION_SEND_FREQUENCY = TARGET_TPS;
+    public static boolean MAKE_REPLAY = true;
 
     /** visual settings */
     public static int TARGET_FPS = 60;
     // rendering is delayed by RENDER_DELAY seconds to smooth out rendering and prevent extrapolation
-    public static float RENDER_DELAY = 1f / ServerSettings.TARGET_TPS;
+    public static float RENDER_DELAY = 1f / TARGET_TPS;
     public static float FOV = (float) Math.toRadians(60);
-    // absolute size of frustum
-    public static float Z_NEAR = 0.05f;
-    public static float Z_FAR = 4000.0f;
-    public static boolean CULL_FACES = true;
-    public static boolean INVERT_CAMERA_ROTATION = false;
-    public static boolean V_SYNC = true;
-    public static int ANTIALIAS = 1;
-    public static boolean SHOW_LIGHT_POSITIONS = DEBUG_SCREEN;
-    public static float HIGHLIGHT_LINE_WIDTH = 1f;
-    public static Color4f CHECKPOINT_ACTIVE_COLOR = Color4f.YELLOW;
-    public static final int MAX_POINT_LIGHTS = 10;
-
-    /** controller settings; these modifiers are also used to inverse direction */
-    public static float THROTTLE_MODIFIER = 1f;
-    public static float YAW_MODIFIER = 1f;
-    public static float PITCH_MODIFIER = 0.05f;
-    public static float ROLL_MODIFIER = 0.05f;
-    public static int CONNECTION_SEND_FREQUENCY = ServerSettings.TARGET_TPS;
-
-    /** sound */
-    public static float SOUND_MASTER_GAIN = 0;
-    public static float MAX_VOLUME = 6f;
-    public static float MIN_VOLUME = -20f;
 
     /** particle settings */
     public static float PARTICLE_MODIFIER = 1f;
-    public static Color4f EXPLOSION_COLOR_1 = Color4f.RED;
-    public static Color4f EXPLOSION_COLOR_2 = Color4f.YELLOW;
-    public static int PARTICLE_SPLITS = 2;
-    public static int PARTICLECLOUD_SPLIT_SIZE = 2000;
-    public static float PARTICLECLOUD_MIN_TIME = 0.5f;
-    public static float FIRE_PARTICLE_SIZE = 0.8f;
-
-    /** thrust particle settings */
-    public static float THRUST_PARTICLE_SIZE = 0.8f;
-    public static float THRUST_PARTICLE_LINGER_TIME = 0.5f;
-    public static float THRUST_PARTICLES_PER_SECOND = 500f * PARTICLE_MODIFIER;
-    public static float JET_THRUST_SPEED = 60f;
-    public static float ROCKET_THRUST_SPEED = 50f;
-    public static Color4f THRUST_COLOR_1 = Color4f.ORANGE;
-    public static Color4f THRUST_COLOR_2 = Color4f.RED;
 
     /** miscellaneous */
-    public static Material PORTAL_MATERIAL = Material.PLASTIC;
-    public static EntityClass JET_TYPE = EntityClass.JET_SPITZ;
-    public static final boolean USE_SOCKET_FOR_OFFLINE = false;
+    public static String JET_TYPE = "JET_SPITZ";
+
 
     public static File writeSettingsToFile(String fileName) throws IOException {
         File file = Directory.settings.getFile(fileName);
@@ -89,13 +52,13 @@ public final class ClientSettings {
             /* DO NOT CHANGE STRING NAMES (for backward compatibility) */
             gen.writeNumberField("TARGET_FPS", TARGET_FPS);
             gen.writeNumberField("RENDER_DELAY", RENDER_DELAY);
-            gen.writeNumberField("SERVER_PORT", ServerSettings.SERVER_PORT);
-            gen.writeBooleanField("SERVER_MAKE_REPLAY", ServerSettings.SERVER_MAKE_REPLAY);
-            gen.writeNumberField("TARGET_TPS", ServerSettings.TARGET_TPS);
+            gen.writeNumberField("SERVER_PORT", SERVER_PORT);
+            gen.writeBooleanField("MAKE_REPLAY", MAKE_REPLAY);
+            gen.writeNumberField("TARGET_TPS", TARGET_TPS);
             gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
             gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
-            gen.writeStringField("JET_TYPE", JET_TYPE.toString());
-            gen.writeBooleanField("LOGGER_PRINT_CALLSITES", Logger.doPrintCallsites);
+            gen.writeStringField("JET_TYPE", JET_TYPE);
+            gen.writeBooleanField("LOGGER_PRINT_CALLSITES", false);
 //              gen.writeNumberField("",);
             // keybindings
             for (KeyBinding binding : KeyBinding.values()) {
@@ -134,13 +97,13 @@ public final class ClientSettings {
                     RENDER_DELAY = result.intValue();
                     break;
                 case "SERVER_PORT":
-                    ServerSettings.SERVER_PORT = result.intValue();
+                    SERVER_PORT = result.intValue();
                     break;
-                case "SERVER_MAKE_REPLAY":
-                    ServerSettings.SERVER_MAKE_REPLAY = result.booleanValue();
+                case "MAKE_REPLAY":
+                    MAKE_REPLAY = result.booleanValue();
                     break;
                 case "TARGET_TPS":
-                    ServerSettings.TARGET_TPS = result.intValue();
+                    TARGET_TPS = result.intValue();
                     break;
                 case "PARTICLE_MODIFIER":
                     PARTICLE_MODIFIER = result.floatValue();
@@ -149,11 +112,9 @@ public final class ClientSettings {
                     CONNECTION_SEND_FREQUENCY = result.intValue();
                     break;
                 case "JET_TYPE":
-                    String s = result.textValue();
-                    JET_TYPE = Toolbox.findClosest(s, EntityClass.getJets());
+                    JET_TYPE = result.textValue();
                     break;
                 case "LOGGER_PRINT_CALLSITES":
-                    Logger.doPrintCallsites = result.booleanValue();
                     break;
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found

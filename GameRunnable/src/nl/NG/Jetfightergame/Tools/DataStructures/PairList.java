@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Tools.DataStructures;
 
-import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -50,7 +49,7 @@ public class PairList<L, R> extends AbstractList<Pair<L, R>> {
     }
 
     @Override
-    public boolean addAll(@Nonnull Collection<? extends Pair<L, R>> c) {
+    public boolean addAll(Collection<? extends Pair<L, R>> c) {
         c.forEach(this::add);
         return true;
     }
@@ -150,7 +149,6 @@ public class PairList<L, R> extends AbstractList<Pair<L, R>> {
         return new PairSpliterator(0, size() - 1);
     }
 
-    @Nonnull
     @Override
     public ListIterator<Pair<L, R>> listIterator(int index) {
         return new PairListIterator(index);

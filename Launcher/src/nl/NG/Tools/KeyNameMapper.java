@@ -1,6 +1,4 @@
-package nl.NG.Jetfightergame.Tools;
-
-import java.util.*;
+package nl.NG.Tools;
 
 import static java.awt.event.KeyEvent.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -589,45 +587,6 @@ public final class KeyNameMapper {
 
             default:
                 return GLFW_KEY_UNKNOWN;
-        }
-    }
-
-    /** returns the combinations with a minimum hamming distance */
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        int MIN_DIST = 3;
-
-        List<String> aList = new ArrayList<>();
-        Collection<String> bList = new HashSet<>();
-
-        System.out.println("enter list 1");
-        String line;
-        while (!(line = sc.nextLine()).isEmpty()) {
-            aList.add(line);
-        }
-
-        System.out.println("enter list 2");
-        while (!(line = sc.nextLine()).isEmpty()) {
-            bList.add(line);
-        }
-
-        for (String a : aList) {
-            int max = Math.min(a.length() - 1, MIN_DIST);
-            int lengthOfMax = Integer.MAX_VALUE;
-            String best = null;
-
-            for (String b : bList) {
-                int wordLength = Math.abs(b.length() - a.length());
-                int dist = Toolbox.hammingDistance(a, b);
-
-                if (dist > max || (dist == max && wordLength < lengthOfMax)) {
-                    max = dist;
-                    lengthOfMax = wordLength;
-                    best = b;
-                }
-            }
-
-            if (best != null) System.out.println("case VK_" + a + ": return GLFW_KEY_" + best + ";");
         }
     }
 }

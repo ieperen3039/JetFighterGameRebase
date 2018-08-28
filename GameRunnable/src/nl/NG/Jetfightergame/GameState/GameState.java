@@ -18,7 +18,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -157,7 +156,6 @@ public abstract class GameState implements Environment {
         return physicsEngine.getDynamicEntities();
     }
 
-    @Nonnull
     @Override
     public Iterator<MovingEntity> iterator() {
         return physicsEngine.getDynamicEntities().iterator();

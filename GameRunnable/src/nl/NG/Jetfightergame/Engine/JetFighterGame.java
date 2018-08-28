@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
 import nl.NG.Jetfightergame.Controllers.ControllerManager;
 import nl.NG.Jetfightergame.Controllers.InputHandling.KeyTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.GameState.Environment;
 import nl.NG.Jetfightergame.Rendering.GLFWWindow;
@@ -33,9 +34,7 @@ import org.joml.Quaternionf;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -330,6 +329,7 @@ public class JetFighterGame {
     public static void main(String... argArray) throws Exception {
         List<String> args = new ArrayList<>(Arrays.asList(argArray));
 
+        if (args.contains("-rebuild")) buildTables();
         boolean makeLocalServer = args.contains("-local");
         ServerSettings.DEBUG = args.contains("-debug");
         boolean playReplay = args.contains("-replay");
@@ -342,7 +342,7 @@ public class JetFighterGame {
         EnvironmentClass serverMap = EnvironmentClass.ISLAND_MAP;
         String playerName = "TheLegend" + Toolbox.random.nextInt(1000);
 
-        if (mapNameArg > 0) serverMap = EnvironmentClass.valueOf(args.get(mapNameArg));
+        if (mapNameArg > 0) serverMap = Toolbox.findClosest(args.get(mapNameArg), EnvironmentClass.values());
         if (playerNameArg > 0) playerName = args.get(playerNameArg);
         if (jsonArg > 0) ClientSettings.readSettingsFromFile(args.get(jsonArg));
 
@@ -376,6 +376,35 @@ public class JetFighterGame {
         Logger.setLoggingLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
         boolean doShow = (file == null) || playReplay;
         new JetFighterGame(doShow, storeReplay, file, serverMap, localHost, playerName).root();
+    }
+
+    private static void buildTables() {
+        File tables = Directory.currentDirectory().resolve("tables.tb").toFile();
+
+        try (FileOutputStream fileOut = new FileOutputStream(tables)) {
+            DataOutputStream out = new DataOutputStream(fileOut);
+
+            {
+                EntityClass[] jets = EntityClass.getJets();
+                out.writeInt(jets.length);
+                for (EntityClass type : jets) {
+                    out.writeUTF(type.toString().replace("_", " "));
+                }
+            }
+            {
+                EnvironmentClass[] worlds = EnvironmentClass.raceWorlds;
+                out.writeInt(worlds.length);
+                for (EnvironmentClass world : worlds) {
+                    out.writeUTF(world.toString().replace("_", " "));
+                }
+            }
+
+            out.close();
+
+        } catch (IOException cause) {
+            IOException ex = new IOException("Could not build tables:", cause);
+            Logger.ERROR.print(ex);
+        }
     }
 
     /**

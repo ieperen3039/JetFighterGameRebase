@@ -1,6 +1,5 @@
 package nl.NG.Jetfightergame.Tools;
 
-import javax.annotation.Nonnull;
 import java.util.Iterator;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -23,11 +22,11 @@ public class MultiThreadDeposit<T> implements Consumer<T>, Iterable<T> {
 
     private Lock threadRegistration;
 
-    public MultiThreadDeposit(int maxNofProducers, int itemsQueued) {
+    public MultiThreadDeposit(int maxNumProducers, int itemsQueued) {
         maxItems = itemsQueued;
-        storage = new Object[maxNofProducers][itemsQueued];
-        producers = new Thread[maxNofProducers];
-        writeIndices = new int[maxNofProducers];
+        storage = new Object[maxNumProducers][itemsQueued];
+        producers = new Thread[maxNumProducers];
+        writeIndices = new int[maxNumProducers];
         threadRegistration = new ReentrantLock();
     }
 
@@ -43,10 +42,10 @@ public class MultiThreadDeposit<T> implements Consumer<T>, Iterable<T> {
         writeIndices[listNr] = (index + 1) % maxItems;
 
         try {
-            // try adding the item, but wait if there is no place yet
+            // try adding the item, but wait (busy) if there is no place yet
             while (storage[listNr][index] != null) Thread.sleep(1);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            return;
         }
 
         storage[listNr][index] = value;
@@ -77,7 +76,6 @@ public class MultiThreadDeposit<T> implements Consumer<T>, Iterable<T> {
         }
     }
 
-    @Nonnull
     @Override
     public Iterator<T> iterator() {
         return new CarelessIterator();
