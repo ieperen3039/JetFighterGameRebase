@@ -37,7 +37,7 @@ public class ReflectorShield extends AbstractShield {
 
         EntityState state = new EntityState(position, randDirection, move);
         MovingEntity target = jet.getTarget(randDirection, getPosition(), entities);
-        entityDeposit.addSpawn(new Seeker.Factory(state, 0, jet, target));
+        entityDeposit.add(new Seeker.Factory(state, 0, jet, target));
     }
 
     @Override

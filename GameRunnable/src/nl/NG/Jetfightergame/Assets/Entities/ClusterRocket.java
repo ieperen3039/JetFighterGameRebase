@@ -14,8 +14,6 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
-import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
-import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -24,9 +22,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
-
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_1;
-import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
 
 /**
  * AKA the BUK rocket
@@ -106,25 +101,16 @@ public class ClusterRocket extends AbstractProjectile {
         DirVector back = new DirVector();
         forward.scale(controller.throttle() * -THRUST_POWER, back).add(forward);
 
-        toLocalSpace(gl, () -> entityDeposit.addParticles(
+        toLocalSpace(gl, () -> entityDeposit.add(
                 nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_PER_SECOND)
         ));
-    }
-
-    @Override
-    public ParticleCloud explode() {
-//        new AudioSource(Sounds.explosion, position, 1f, 1f);
-        return Particles.explosion(
-                interpolatedPosition(), DirVector.zeroVector(),
-                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, EXPLOSION_DENSITY, Particles.FIRE_LINGER_TIME, 0.5f
-        );
     }
 
     @Override
     protected void updateShape(float deltaTime) {
         if (!hasExploded && controller.primaryFire()) {
             timeToLive = 0;
-            entityDeposit.addSpawns(AbstractProjectile.createCloud(
+            entityDeposit.add(AbstractProjectile.createCloud(
                     getPosition(), getVelocity().scale(2f), NOF_PELLETS_LAUNCHED, EXPLOSION_POWER,
                     SimpleBullet.Factory::new
             ));

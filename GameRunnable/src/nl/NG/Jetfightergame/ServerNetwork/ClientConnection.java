@@ -19,6 +19,7 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ScreenOverlay.HUD.CountDownTimer;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -26,6 +27,8 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.*;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -49,6 +52,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final SubControl input;
     private final CountDownTimer counter;
     private final String name;
+
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    private final Collection<AudioSource> soundSources = new HashSet<>();
 
     private Lock sendLock = new ReentrantLock();
     private RaceProgress raceProgress;
@@ -75,7 +81,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.jet = pair.left;
         game.addEntity(jet);
 
-        Logger.printOnline(() -> jet.interpolatedPosition() + " | " + jet.interpolatedForward());
+        Logger.printOnline(() -> jet.getPosition() + " | " + jet.getForward());
     }
 
     protected ClientConnection(String name, File readFile, GameTimer timer, EntityFactory jetReplacement, int tps) throws IOException {
@@ -206,6 +212,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     protected void worldSwitch() {
+        AudioSource.disposeAll(soundSources);
+        soundSources.clear();
+        soundSources.add(new AudioSource(getWorld().backgroundMusic(), ClientSettings.BACKGROUND_MUSIC_GAIN, true));
+
         game.addEntity(jet);
         controlTeardown = false;
         input.enable();
@@ -237,7 +247,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addSpawn(EntityFactory entityFactory) {
+    public void add(EntityFactory entityFactory) {
         Logger.ERROR.print("Client added an entity to its own world (" + entityFactory + ")");
         game.addEntity(entityFactory.construct(this, game));
     }
@@ -264,11 +274,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     protected void update(float deltaTime) throws Exception {
-        Controller input = getInput();
+        soundSources.forEach(AudioSource::update);
+        soundSources.removeIf(AudioSource::isOverdue);
 
-        sendLock.lock();
-        try {
-            if (!input.isActiveController()) {
+        Controller input = getInput();
+        if (!input.isActiveController()) {
+            sendLock.lock();
+            try {
                 input.update();
                 // axis controls
                 sendControlUnsafe(THROTTLE, input.throttle());
@@ -278,11 +290,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
                 // binary controls
                 sendControlUnsafe(PRIMARY_FIRE, input.primaryFire());
                 sendControlUnsafe(SECONDARY_FIRE, input.secondaryFire());
-            }
 
-            serverOut.flush();
-        } finally {
-            sendLock.unlock();
+                serverOut.flush();
+            } finally {
+                sendLock.unlock();
+            }
         }
     }
 
@@ -300,6 +312,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
 
     @Override
     protected void cleanup() {
+        AudioSource.disposeAll(soundSources);
     }
 
     @Override
@@ -336,8 +349,13 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addParticles(ParticleCloud particles) {
+    public void add(ParticleCloud particles) {
         game.addParticles(particles);
+    }
+
+    @Override
+    public void add(AudioSource source) {
+        soundSources.add(source);
     }
 
     @Override
@@ -347,6 +365,11 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     @Override
     public void boosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration) {
         jet.setBoosterColor(color1, color2, duration);
+    }
+
+    @Override
+    public boolean isHeadless() {
+        return false;
     }
 
     @Override
@@ -384,6 +407,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         } else {
             setControl(false);
         }
+        soundSources.forEach(AudioSource::pause);
 //        NOT super.pause() to allow AI to take over
     }
 
@@ -394,6 +418,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         } else {
             setControl(!controlTeardown);
         }
+        soundSources.forEach(AudioSource::play);
 //        NOT super.unPause() to allow AI to take over
     }
 

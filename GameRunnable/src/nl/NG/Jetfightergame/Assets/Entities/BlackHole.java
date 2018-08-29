@@ -72,7 +72,7 @@ public class BlackHole extends AbstractProjectile {
         ParticleCloud cloud = new ParticleCloud();
         do {
             DirVector move = DirVector.randomOrb();
-            PosVector pos = interpolatedPosition();
+            PosVector pos = getPosition();
             move.scale(PARTICLE_REACH);
             pos.sub(move);
             move.add(velocityAtRenderTime());
@@ -83,7 +83,7 @@ public class BlackHole extends AbstractProjectile {
             sparkTimeRemain += SPARK_COOLDOWN;
         } while (sparkTimeRemain < 0);
 
-        entityDeposit.addParticles(cloud);
+        entityDeposit.add(cloud);
     }
 
     @Override

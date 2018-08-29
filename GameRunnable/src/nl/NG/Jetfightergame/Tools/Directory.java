@@ -19,7 +19,8 @@ public enum Directory {
     screenShots(Paths.get("ScreenShots")),
     settings(Paths.get("res")),
     gameJar(Paths.get("jar")),
-    launcher(Paths.get("jar"));
+    launcher(Paths.get("jar")),
+    soundAmbient(Paths.get("res", "sounds", "ambient"));
 
     private final Path directory;
 

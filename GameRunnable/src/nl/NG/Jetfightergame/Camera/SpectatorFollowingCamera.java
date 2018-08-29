@@ -19,7 +19,7 @@ public class SpectatorFollowingCamera implements Camera {
     private static final double EYE_PRESERVE = 0.5f;
     private static final double FOCUS_PRESERVE = 0.1f;
     private static final double UP_PRESERVE = 0.5f;
-    private static final float TELEPORT_DISTANCE_SQ = 300f * 300f;
+    private static final float TELEPORT_DISTANCE_SQ = 500f * 500f;
 
     /**
      * The position of the camera.
@@ -29,6 +29,7 @@ public class SpectatorFollowingCamera implements Camera {
     private final SmoothTrackedVector<DirVector> up;
     private final Player target;
     private final Environment gameState;
+    private DirVector velocity;
 
     public SpectatorFollowingCamera(Player target, Environment gameState) {
         this(
@@ -54,10 +55,10 @@ public class SpectatorFollowingCamera implements Camera {
     private static PosVector jetPosition(DirVector relativePosition, MovingEntity target) {
         if (TemporalEntity.isOverdue(target)) return relativePosition.toPosVector();
 
-        PosVector targetPos = target.interpolatedPosition();
+        PosVector targetPos = target.getPosition();
         if (!targetPos.isScalable()) return PosVector.zeroVector();
 
-        final DirVector relative = target.relativeInterpolatedDirection(relativePosition);
+        final DirVector relative = target.relativeDirection(relativePosition);
         return targetPos.add(relative, new PosVector());
     }
 
@@ -67,22 +68,25 @@ public class SpectatorFollowingCamera implements Camera {
     @Override
     public void updatePosition(float deltaTime) {
         MovingEntity target = this.target.jet();
-        final DirVector rawUp = target.relativeInterpolatedDirection(DirVector.zVector());
+        final DirVector rawUp = target.relativeDirection(DirVector.zVector());
         final DirVector targetUp = rawUp.normalize(rawUp);
 
         final PosVector targetEye = jetPosition(eyeRelative, target);
         final PosVector targetFocus = jetPosition(focusRelative, target);
+        if (!targetEye.isRegular() || !targetFocus.isRegular()) return;
 
-//        if (eye.current().distanceSquared(targetEye) > TELEPORT_DISTANCE_SQ) {
-//            eye.update(targetEye);
-//            focus.update(targetFocus);
-//        } else {
+        if (eye.current().distanceSquared(targetEye) > TELEPORT_DISTANCE_SQ) {
+            eye.update(targetEye);
+            focus.update(targetFocus);
+        } else {
         eye.updateFluent(targetEye, deltaTime);
         focus.updateFluent(targetFocus, deltaTime);
-//        }
+        }
 
         focus.updateFluent(targetFocus, deltaTime);
         up.updateFluent(targetUp, deltaTime);
+        velocity = eye.difference();
+        if (deltaTime != 0) velocity.scale(1 / deltaTime);
     }
 
     @Override
@@ -92,7 +96,7 @@ public class SpectatorFollowingCamera implements Camera {
 
     @Override
     public PosVector getEye() {
-        PosVector pos = target.jet().interpolatedPosition();
+        PosVector pos = target.jet().getPosition();
         return gameState.rayTrace(pos, eye.current());
     }
 
@@ -104,5 +108,10 @@ public class SpectatorFollowingCamera implements Camera {
     @Override
     public DirVector getUpVector() {
         return up.current();
+    }
+
+    @Override
+    public DirVector getVelocity() {
+        return velocity;
     }
 }

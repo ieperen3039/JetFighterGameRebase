@@ -102,19 +102,17 @@ public final class Resources {
         Toolbox.checkALError();
 
         OggData oggFile;
-
         try {
             oggFile = OggData.create(audioData.getPath());
             Toolbox.checkALError();
 
         } catch (IOException e) {
-            System.err.println("Could not load ogg file '" + audioData + "'. Continuing without this sound");
+            Logger.WARN.print("Could not load ogg file '" + audioData + "'. Continuing without this sound");
             if (ServerSettings.DEBUG) e.printStackTrace();
             return false;
         }
 
         AL10.alBufferData(dataID, oggFile.format, oggFile.data, oggFile.samplerate);
-        oggFile.dispose();
 
         Toolbox.checkALError();
         return true;

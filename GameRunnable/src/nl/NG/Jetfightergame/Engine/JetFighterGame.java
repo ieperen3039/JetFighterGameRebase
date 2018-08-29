@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Camera.CameraFocusMovable;
 import nl.NG.Jetfightergame.Camera.CameraManager;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
@@ -21,7 +22,6 @@ import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuToggleMultiple;
 import nl.NG.Jetfightergame.ServerNetwork.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
-import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -52,7 +52,7 @@ import static nl.NG.Jetfightergame.Rendering.JetFighterRenderer.Mode.*;
 public class JetFighterGame {
 
     private final ActionButtonHandler actionHandler;
-    private GLFWWindow window;
+    private final GLFWWindow window;
     private GameMode currentGameMode;
     private JetFighterRenderer renderLoop;
     private Collection<AbstractGameLoop> otherLoops = new HashSet<>();
@@ -97,13 +97,13 @@ public class JetFighterGame {
             closeOperations.add(window::cleanup);
 
             GeneralShapes.init(true);
+            SoundEngine soundEngine = new SoundEngine();
+            closeOperations.add(soundEngine::closeDevices);
+            Sounds.initAll();
 
             MouseTracker.getInstance().setGameModeDecision(() -> currentGameMode != GameMode.MENU_MODE);
             MouseTracker.getInstance().listenTo(window);
             KeyTracker.getInstance().listenTo(window);
-
-            //        new SoundEngine();
-            //        Sounds.initAll(); // TODO also enable checkALError() in exitGame()
 
 
             if (replayFile == null) {
@@ -173,7 +173,7 @@ public class JetFighterGame {
                         .andThen(new RaceProgressDisplay(connection));
 
                 renderLoop = new JetFighterRenderer(
-                        this, gameState, window, camera, player.getInputControl(), hud, SHOW
+                        this, gameState, window, camera, player.getInputControl(), hud, SHOW, soundEngine
                 );
                 connection.getInputControl().setHud(renderLoop.getHeadsUpDisplay());
 
@@ -193,7 +193,7 @@ public class JetFighterGame {
 
                 RaceProgressDisplay raceHud = new RaceProgressDisplay(connection);
                 JetFighterRenderer.Mode renderMode = doStore ? (doShow ? RECORD_AND_SHOW : RECORD) : SHOW;
-                JetFighterRenderer renderer = new JetFighterRenderer(this, gameState, window, camera, controls, raceHud, renderMode);
+                JetFighterRenderer renderer = new JetFighterRenderer(this, gameState, window, camera, controls, raceHud, renderMode, soundEngine);
                 this.renderLoop = renderer;
 
                 StateReader.SpectatorModus[] values = StateReader.SpectatorModus.values();
@@ -272,13 +272,11 @@ public class JetFighterGame {
 
     private void cleanup() {
         GeneralShapes.cleanAll();
-        AudioFile.cleanAll();
-        SoundEngine.closeDevices();
-
-        closeOperations.forEach(Runnable::run);
 
         Toolbox.checkGLError();
-//            Toolbox.checkALError();
+        Toolbox.checkALError();
+
+        closeOperations.forEach(Runnable::run);
     }
 
     /** tells the gameloops to stop */

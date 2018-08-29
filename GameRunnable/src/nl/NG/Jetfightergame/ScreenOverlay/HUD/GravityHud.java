@@ -53,7 +53,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
                     xPosVelocityBar, (int) (height * inverseBarMargin)
             );
 
-            final float currentVelocity = target.interpolatedVelocity().length();
+            final float currentVelocity = target.getVelocity().length();
 
             float[] velocityTicks = ticks(currentVelocity, 10, 50);
             for (float tick : velocityTicks) {
@@ -81,7 +81,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
                     xPosAltitudeBar, (int) (height * barMargin),
                     xPosAltitudeBar, (int) (height * inverseBarMargin)
             );
-            final float currentAltitude = target.interpolatedPosition().z(); // TODO determine altitude
+            final float currentAltitude = target.getPosition().z(); // TODO determine altitude
 
             float[] heightTicks = ticks(currentAltitude, 25, 100);
             for (float tick : heightTicks) {
@@ -103,7 +103,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
         }
 
         { // boresight / direction
-            final DirVector forward = target.interpolatedForward();
+            final DirVector forward = target.getForward();
 
             final float xComp = lookRight.dot(forward);
             final float yComp = -(lookUp.dot(forward));
@@ -119,7 +119,7 @@ public class GravityHud implements Consumer<ScreenOverlay.Painter> {
         }
 
         { // Flight Path Vector
-            final DirVector velocity = target.interpolatedVelocity().normalize(new DirVector());
+            final DirVector velocity = target.getVelocity().normalize(new DirVector());
 
             final float xComp = lookRight.dot(velocity);
             final float yComp = -(lookUp.dot(velocity));

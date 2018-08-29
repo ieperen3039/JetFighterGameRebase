@@ -14,6 +14,7 @@ public class MountedCamera implements Camera {
 
     private final AbstractJet target;
     private final SmoothTrackedVector<DirVector> eye;
+    private DirVector velocity;
 
     public MountedCamera(AbstractJet target) { // TODO player
         this.target = target;
@@ -21,7 +22,7 @@ public class MountedCamera implements Camera {
     }
 
     private DirVector getFocus(AbstractJet target) {
-        return target.relativeInterpolatedDirection(DirVector.xVector());
+        return target.relativeDirection(DirVector.xVector());
     }
 
     @Override
@@ -32,11 +33,13 @@ public class MountedCamera implements Camera {
     @Override
     public void updatePosition(float deltaTime) {
         eye.updateFluent(getFocus(target), deltaTime);
+        velocity = eye.difference();
+        if (deltaTime != 0) velocity.scale(1 / deltaTime);
     }
 
     @Override
     public PosVector getEye() {
-        final PosVector dest = new PosVector(target.interpolatedPosition());
+        final PosVector dest = new PosVector(target.getPosition());
         dest.add(target.getPilotEyePosition(), dest);
         return dest;
     }
@@ -50,6 +53,11 @@ public class MountedCamera implements Camera {
 
     @Override
     public DirVector getUpVector() {
-        return target.relativeInterpolatedDirection(DirVector.zVector());
+        return target.relativeDirection(DirVector.zVector());
+    }
+
+    @Override
+    public DirVector getVelocity() {
+        return velocity;
     }
 }

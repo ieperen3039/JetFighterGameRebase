@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Entities.FighterJets;
 
 import nl.NG.Jetfightergame.Assets.Entities.*;
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
@@ -16,9 +17,13 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
+import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -38,6 +43,9 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_S
  * @author Geert van Ieperen created on 30-10-2017.
  */
 public abstract class AbstractJet extends MovingEntity {
+    private static final float BOOSTER_PITCH = 5.0f;
+    private static final float PITCH_RAISE_FACTOR = 0.8f;
+    public static final float BOOSTER_GAIN = 3f;
     protected final float airResistCoeff;
 
     protected final float throttlePower;
@@ -53,11 +61,13 @@ public abstract class AbstractJet extends MovingEntity {
     protected Material surfaceMaterial;
     protected final EntityMapping entityMapping;
     private List<BoosterLine> nuzzle;
-    private DirVector forward;
+    private MovingAudioSource boosterSound;
+    private ExponentialSmoothFloat boostPitch;
 
     /** left = factor , right = duration */
     private Collection<Pair<Float, Float>> speedModifiers;
 
+    private DirVector forward;
     private VectorInterpolator forwardInterpolator;
     private VectorInterpolator velocityInterpolator;
 
@@ -77,8 +87,7 @@ public abstract class AbstractJet extends MovingEntity {
      * @param pitchAcc                acceleration over the Y-axis when pitching up at full power in rad/ss
      * @param rollAcc                 acceleration over the X-axis when rolling at full power in rad/ss
      * @param rotationReductionFactor the fraction that the rotationspeed is reduced every second [0, 1]
-     * @param gameTimer               the timer that determines the "current rendering time" for {@link
-     *                                MovingEntity#interpolatedPosition()}
+     * @param gameTimer               the game timer
      * @param yReduction              reduces drifting/stalling in horizontal direction by this fraction
      * @param zReduction              reduces drifting/stalling in vertical direction by this fraction
      * @param entityDeposit           the class that allows new entityMapping and particles to be added to the
@@ -110,10 +119,16 @@ public abstract class AbstractJet extends MovingEntity {
         float time = gameTimer.time();
         forward = DirVector.xVector();
         forward.rotate(rotation);
-        forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
-        velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
-        nuzzle = new ArrayList<>();
         speedModifiers = new HashSet<>();
+        nuzzle = new ArrayList<>();
+
+        if (!entityDeposit.isHeadless()) {
+            forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
+            velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
+            boosterSound = new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
+            boostPitch = new ExponentialSmoothFloat(0.01f, PITCH_RAISE_FACTOR);
+            entityDeposit.add(boosterSound);
+        }
     }
 
     @Override
@@ -126,7 +141,7 @@ public abstract class AbstractJet extends MovingEntity {
 
         gyroPhysics(deltaTime, netForce, velocity);
 
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        relativeDirection(DirVector.xVector()).normalize(forward);
         if (currentPowerup != PowerupType.NONE && controller.primaryFire()) {
             usePowerup();
         }
@@ -232,17 +247,22 @@ public abstract class AbstractJet extends MovingEntity {
      * @return forward in world-space (normalized, safe copy)
      */
     public DirVector getForward() {
-        return new DirVector(forward);
+        if (entityDeposit.isHeadless()) {
+            return new DirVector(forward);
+        } else {
+            forwardInterpolator.updateTime(renderTime());
+            return forwardInterpolator.getInterpolated(renderTime()).toDirVector();
+        }
     }
 
-    public DirVector interpolatedForward() {
-        forwardInterpolator.updateTime(renderTime());
-        return forwardInterpolator.getInterpolated(renderTime()).toDirVector();
-    }
-
-    public DirVector interpolatedVelocity() {
-        velocityInterpolator.updateTime(renderTime());
-        return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
+    @Override
+    public DirVector getVelocity() {
+        if (entityDeposit.isHeadless()) {
+            return super.getVelocity();
+        } else {
+            velocityInterpolator.updateTime(renderTime());
+            return velocityInterpolator.getInterpolated(renderTime()).toDirVector();
+        }
     }
 
     /**
@@ -285,14 +305,24 @@ public abstract class AbstractJet extends MovingEntity {
         }
         float pps = Math.max((BASE_THRUST_PPS * PARTICLE_MODIFIER * thrust * thrust) / nuzzle.size(), 3);
 
-        PosVector currPos = interpolatedPosition();
-        Quaternionf currRot = interpolatedRotation();
+        PosVector currPos = getPosition();
+        Quaternionf currRot = getRotation();
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm, () -> nuzzle.forEach(boosterLine ->
-                entityDeposit.addParticles(boosterLine.update(sm, trail, 0.1f, pps))), currPos, currRot
+                entityDeposit.add(boosterLine.update(sm, trail, 0.1f, pps))), currPos, currRot
         );
 
+        boostPitch.updateFluent(Math.max(0.1f, thrust * thrust * BOOSTER_PITCH), gameTimer.getRenderTime().difference());
+        float boosterPitch = boostPitch.current();
+        if (boosterSound.isOverdue()) {
+            Logger.DEBUG.print(boosterSound);
+            boosterSound = new MovingAudioSource(Sounds.booster, this, boosterPitch, BOOSTER_GAIN, true);
+            entityDeposit.add(boosterSound);
+            Logger.DEBUG.print(boosterSound);
+        } else {
+            boosterSound.setPitch(boosterPitch);
+        }
     }
 
     public void set(EntityState spawn) {
@@ -315,13 +345,20 @@ public abstract class AbstractJet extends MovingEntity {
      * @return true iff the powerup is accepted by the player
      */
     public boolean addPowerup(PowerupColor type) {
-        PowerupType next = getCurrentPowerup().with(type);
+        PowerupType next = currentPowerup.with(type);
         if (next == currentPowerup || next == NONE) return false;
         currentPowerup = next;
         return true;
     }
 
     public void setPowerup(PowerupType color) {
+        if (color != NONE && !entityDeposit.isHeadless()) {
+            if (currentPowerup == NONE) {
+                entityDeposit.add(new AudioSource(Sounds.powerupOne.get(), 0.5f, false));
+            } else {
+                entityDeposit.add(new AudioSource(Sounds.powerupTwo.get(), 0.5f, false));
+            }
+        }
         currentPowerup = color;
     }
 
@@ -335,7 +372,7 @@ public abstract class AbstractJet extends MovingEntity {
                 entityDeposit.boosterColorChange(this, Color4f.YELLOW, Color4f.WHITE, SPEED_BOOST_DURATION);
                 break;
             case SHIELD:
-                entityDeposit.addSpawn(new OneHitShield.Factory(this));
+                entityDeposit.add(new OneHitShield.Factory(this));
                 break;
             case ROCKET:
                 launchClusterRocket(this, getTarget(), entityDeposit);
@@ -344,22 +381,22 @@ public abstract class AbstractJet extends MovingEntity {
                 launchSeekers(this, entityDeposit, this::getTarget);
                 break;
             case BLACK_HOLE:
-                entityDeposit.addSpawn(new BlackHole.Factory(this));
+                entityDeposit.add(new BlackHole.Factory(this));
                 break;
             case SMOKE:
                 launchSmokeCloud(this, entityDeposit);
                 break;
             case DEATHICOSAHEDRON:
-                entityDeposit.addSpawn(new DeathIcosahedron.Factory(this));
+                entityDeposit.add(new DeathIcosahedron.Factory(this));
                 break;
             case STAR_BOOST:
                 doStarBoost(this, this.entityDeposit);
                 break;
             case REFLECTOR_SHIELD:
-                entityDeposit.addSpawn(new ReflectorShield.Factory(this));
+                entityDeposit.add(new ReflectorShield.Factory(this));
                 break;
             case GRAPPLING_HOOK:
-                entityDeposit.addSpawn(new GrapplingHook.Factory(this, getTarget()));
+                entityDeposit.add(new GrapplingHook.Factory(this, getTarget()));
                 break;
             default:
                 throw new UnsupportedOperationException("powerup not properly registered: " + currentPowerup);

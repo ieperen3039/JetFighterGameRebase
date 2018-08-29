@@ -73,7 +73,7 @@ public class JetBasic extends AbstractJet {
 
     @Override
     public PosVector getPilotEyePosition() {
-        return relativeInterpolatedDirection(new DirVector(3, 0, 1)).toPosVector();
+        return relativeDirection(new DirVector(3, 0, 1)).toPosVector();
     }
 
     @Override

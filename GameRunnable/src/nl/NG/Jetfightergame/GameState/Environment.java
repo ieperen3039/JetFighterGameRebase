@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.GameState;
 
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.Engine.PathDescription;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
@@ -9,6 +10,7 @@ import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -87,6 +89,10 @@ public interface Environment extends EntityManagement.NetForceProvider, PathDesc
      * @return the position that can be reached along the line of from - to without hitting anything
      */
     PosVector rayTrace(PosVector from, PosVector to);
+
+    default AudioFile backgroundMusic() {
+        return Sounds.pulsePower.get();
+    }
 
     /**
      * public void... :D

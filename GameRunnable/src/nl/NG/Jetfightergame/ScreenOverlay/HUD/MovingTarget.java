@@ -37,7 +37,7 @@ public abstract class MovingTarget implements HUDTargetable {
      * @return the coordinate of this vertex on the screen, or null if this vertex is behind the player
      */
     protected Vector2i entityPosition(ScreenOverlay.Painter hud){
-        return hud.positionOnScreen(subject.interpolatedPosition());
+        return hud.positionOnScreen(subject.getPosition());
     }
 
     protected int iconSize(PosVector cameraPos){
@@ -48,7 +48,7 @@ public abstract class MovingTarget implements HUDTargetable {
     }
 
     protected float distance(PosVector cameraPos){
-        Vector distance = cameraPos.to(subject.interpolatedPosition(), new DirVector());
+        Vector distance = cameraPos.to(subject.getPosition(), new DirVector());
         return distance.length();
     }
 

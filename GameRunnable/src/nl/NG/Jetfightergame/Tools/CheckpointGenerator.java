@@ -29,8 +29,8 @@ public final class CheckpointGenerator {
                 .map(e -> (AbstractJet) e)
                 .findFirst()
                 .ifPresent(s -> {
-                    PosVector pos = s.interpolatedPosition();
-                    DirVector dir = s.interpolatedForward();
+                    PosVector pos = s.getPosition();
+                    DirVector dir = s.getForward();
 
                     if (previousPos == null || previousDir == null) {
                         previousPos = pos;

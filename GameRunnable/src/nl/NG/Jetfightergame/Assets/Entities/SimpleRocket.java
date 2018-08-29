@@ -74,7 +74,7 @@ public class SimpleRocket extends AbstractProjectile {
         DirVector back = new DirVector();
         forward.negate(back).reducedTo(ClientSettings.ROCKET_THRUST_SPEED, back).add(forward);
 
-        toLocalSpace(gl, () -> entityDeposit.addParticles(
+        toLocalSpace(gl, () -> entityDeposit.add(
                 nuzzle.update(gl, DirVector.zeroVector(), 0, THRUST_PARTICLE_DENSITY)
         ));
     }
@@ -83,7 +83,7 @@ public class SimpleRocket extends AbstractProjectile {
     public ParticleCloud explode() {
 //        new AudioSource(Sounds.explosion, position, 1f, 1f);
         return Particles.explosion(
-                interpolatedPosition(), DirVector.zeroVector(),
+                getPosition(), DirVector.zeroVector(),
                 EXPLOSION_COLOR_1, EXPLOSION_COLOR_2, EXPLOSION_POWER, DENSITY, Particles.FIRE_LINGER_TIME, FIRE_PARTICLE_SIZE
         );
     }

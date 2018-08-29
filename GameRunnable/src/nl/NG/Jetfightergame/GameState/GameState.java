@@ -65,7 +65,7 @@ public abstract class GameState implements Environment {
         }
 
         if (loadDynamic) {
-            getInitialEntities().forEach(deposit::addSpawn);
+            getInitialEntities().forEach(deposit::add);
         }
     }
 

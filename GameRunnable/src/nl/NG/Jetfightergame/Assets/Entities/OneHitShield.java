@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
@@ -12,6 +13,7 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 /**
@@ -47,6 +49,7 @@ public class OneHitShield extends AbstractShield {
 
     @Override
     public ParticleCloud explode() {
+        entityDeposit.add(new AudioSource(Sounds.shieldPop, getPosition(), velocityAtRenderTime(), 0.4f, 1f, false));
         return Particles.splitIntoParticles(this, BURST_FORCE, COLOR);
     }
 

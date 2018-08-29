@@ -124,10 +124,13 @@ public final class Toolbox {
     public static void checkALError() {
         if (!ServerSettings.DEBUG) return;
         int error;
+        int i = 0;
         while ((error = alGetError()) != AL_NO_ERROR) {
-            Logger.DEBUG.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
-            if (error == AL_INVALID_OPERATION)
-                break; // check for when method is called outside the AL context
+            Logger.WARN.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
+            if (i == 0) Thread.dumpStack();
+            if (++i == 10) {
+                throw new IllegalStateException("Context is probably not current for this thread");
+            }
         }
     }
 
@@ -137,7 +140,7 @@ public final class Toolbox {
     public static void exitJava() {
         if (!ServerSettings.DEBUG) {
             final StackTraceElement caller = new Exception().getStackTrace()[1];
-            Logger.ERROR.print(": Tried to exit JVM while DEBUG mode is false.");
+            Logger.WARN.print(caller + ": Tried to exit JVM while DEBUG mode is false.");
         }
 
         try {
@@ -145,9 +148,9 @@ public final class Toolbox {
             Logger.DEBUG.printFrom(2, "Ending JVM");
             Thread.sleep(10);
             Thread.dumpStack();
-            System.exit(1);
-        } finally {
-            throw new Error();
+            System.exit(-1);
+        } catch (InterruptedException e) {
+            System.exit(-1);
         }
     }
 

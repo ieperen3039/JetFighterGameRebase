@@ -1,16 +1,17 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Rendering.GLException;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.*;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static nl.NG.Jetfightergame.Tools.Toolbox.checkALError;
@@ -26,7 +27,6 @@ public class SoundEngine {
 
     // default device
     private final long device;
-    private boolean isStarted = false;
 
     /**
      * set up openAL environment
@@ -34,6 +34,8 @@ public class SoundEngine {
     public SoundEngine() {
         // Create a handle for the device capabilities
         device = ALC10.alcOpenDevice((ByteBuffer) null);
+        if (device == MemoryUtil.NULL) throw new RuntimeException("Could not find default device");
+
         ALCCapabilities deviceCaps = ALC.createCapabilities(device);
 
         IntBuffer contextAttribList = BufferUtils.createIntBuffer(16);
@@ -58,8 +60,8 @@ public class SoundEngine {
         checkALError();
 
         if (ServerSettings.DEBUG) {
-            if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open AL 10");
             if (!alCaps.OpenAL10) System.err.println("Warning: Sound system does not support Open AL 10");
+            if (!deviceCaps.OpenALC10) System.err.println("Warning: Sound system does not support Open ALC 10");
 //            if (!alCaps.) System.err.println("Warning: Sound system does not support ...");
         }
 
@@ -67,11 +69,6 @@ public class SoundEngine {
         setListenerOrientation(DirVector.xVector(), DirVector.yVector());
 
         checkALError();
-        isStarted = true;
-    }
-
-    public static boolean isStarted() {
-        return false;
     }
 
     /**
@@ -87,41 +84,54 @@ public class SoundEngine {
      * @param pos position
      * @param vel velocity, does not influence position
      */
-    private void setListenerPosition(PosVector pos, DirVector vel) {
-        AL10.alListener3f(AL10.AL_POSITION, pos.x(), pos.y(), pos.z());
-        AL10.alListener3f(AL10.AL_VELOCITY, vel.x(), vel.y(), vel.z());
+    public void setListenerPosition(PosVector pos, DirVector vel) {
+        AL10.alListener3f(AL10.AL_POSITION, pos.x, pos.y, pos.z);
+        AL10.alListener3f(AL10.AL_VELOCITY, vel.x, vel.y, vel.z);
     }
 
-    // TODO requires more research
-    private void setListenerOrientation(DirVector forward, DirVector up) {
-        float[] asArray = {forward.x(), forward.y(), forward.z(), up.x(), up.y(), up.z()};
-        FloatBuffer orientation = FloatBuffer.wrap(asArray);
-
-        AL10.alListenerfv(AL10.AL_ORIENTATION, orientation);
+    public void setListenerOrientation(DirVector forward, DirVector up) {
+        float[] asArray = {forward.x, forward.y, forward.z, up.x, up.y, up.z};
+        AL10.alListenerfv(AL10.AL_ORIENTATION, asArray);
     }
 
-    public static void closeDevices() {
+    public void closeDevices() {
+        boolean success = ALC10.alcCloseDevice(device);
+        if (!success) Logger.WARN.print("Could not close device");
     }
 
     public static void main(String[] args) {
-        new SoundEngine();
-        checkALError();
-        Sounds.initAll();
+        SoundEngine soundEngine = new SoundEngine();
         checkALError();
 
         try {
+            AudioSource src;
+            src = play("powerfield.ogg", (float) 2);
+
             Logger.DEBUG.print("Playing sound... Do you hear it?");
-            AudioFile audioData = Sounds.explosion;
-            AudioSource src = new AudioSource(audioData, PosVector.zeroVector(), 1f, 1f);
-            Thread.sleep(5000);
-            src.dispose();
+            checkALError();
+            while (!src.isOverdue()) {
+                src.update();
+                Toolbox.waitFor(100);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
 
         } finally {
             checkALError();
-            closeDevices();
+            soundEngine.closeDevices();
         }
+        System.exit(404);
+    }
+
+    private static AudioSource play(String file, float pitch) {
+        AudioFile audioData = new AudioFile(Directory.soundEffects,
+                file
+        );
+        audioData.load();
+        AudioSource src = new AudioSource(audioData, 1.0f, true);
+        src.setPitch(pitch);
+        src.play();
+        return src;
     }
 }

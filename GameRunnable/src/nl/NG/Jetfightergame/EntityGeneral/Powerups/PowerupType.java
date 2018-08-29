@@ -113,7 +113,7 @@ public enum PowerupType {
 
     public static void launchClusterRocket(AbstractJet jet, MovingEntity target, SpawnReceiver deposit) {
         EntityState spawnState = jet.getState();
-        deposit.addSpawn(new ClusterRocket.Factory(spawnState, jet, target));
+        deposit.add(new ClusterRocket.Factory(spawnState, jet, target));
     }
 
     public static void launchSmokeCloud(AbstractJet jet, SpawnReceiver deposit) {
@@ -128,12 +128,12 @@ public enum PowerupType {
         for (int i = 0; i < SMOKE_DISTRACTION_ELEMENTS; i++) {
             DirVector move = new DirVector(dir);
             move.add(DirVector.random().scale(SMOKE_SPREAD / 10));
-            deposit.addSpawn(new InvisibleEntity.Factory(jet.getPosition(), move, SMOKE_LINGER_TIME));
+            deposit.add(new InvisibleEntity.Factory(jet.getPosition(), move, SMOKE_LINGER_TIME));
         }
     }
 
     public static void launchSeekers(AbstractJet jet, SpawnReceiver deposit, Function<EntityState, MovingEntity> target) {
-        deposit.addSpawns(AbstractProjectile.createCloud(
+        deposit.add(AbstractProjectile.createCloud(
                 jet.getPosition(), DirVector.zeroVector(), NOF_SEEKERS_LAUNCHED, SEEKER_LAUNCH_SPEED,
                 (state) -> new Seeker.Factory(state, Toolbox.random.nextFloat(), jet, target.apply(state))
         ));

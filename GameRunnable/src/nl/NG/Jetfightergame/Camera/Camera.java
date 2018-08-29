@@ -30,4 +30,7 @@ public interface Camera {
 
     /** a copy of the direction of up, the length of this vector is undetermined. */
     DirVector getUpVector();
+
+    /** @return the velocity of the eye of this camera. This is equal to the eye displacement scaled by 1/deltaTime */
+    DirVector getVelocity();
 }

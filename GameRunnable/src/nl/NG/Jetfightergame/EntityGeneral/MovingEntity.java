@@ -76,7 +76,7 @@ public abstract class MovingEntity implements Touchable {
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
      * @param mass            the mass of the object in kilograms.
-     * @param gameTimer       A timer that defines rendering, for use in {@link MovingEntity#interpolatedPosition()}
+     * @param gameTimer       the game timer
      */
     public MovingEntity(
             int id, PosVector initialPosition, DirVector initialVelocity, Quaternionf initialRotation,
@@ -135,29 +135,14 @@ public abstract class MovingEntity implements Touchable {
 
     /**
      * translates the given relative vector of this object to the object direction in world-space. This method also
-     * considers the scaling of the vector; it can be used for relative positions The returned direction is based on the
-     * gamestate, for rendering use {@link #relativeInterpolatedDirection(DirVector)}
+     * considers the scaling of the vector; it can be used for relative positions.
      * @param relative a vector relative to this object
      * @return a vector in world-space
      */
-    public DirVector relativeStateDirection(DirVector relative) {
+    public DirVector relativeDirection(DirVector relative) {
         final DirVector[] axis = new DirVector[1];
         ShadowMatrix sm = new ShadowMatrix();
         toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), position, rotation);
-        return axis[0];
-    }
-
-    /**
-     * translates the given relative vector of this object to the true direction in world-space. This method also
-     * considers the scaling of the vector; it can be used for relative positions The returned direction is based on
-     * rendertime interpolated direction, for gamestate changes use {@link #relativeStateDirection(DirVector)}
-     * @param relative a vector relative to this object
-     * @return a vector in the current frame of reference
-     */
-    public DirVector relativeInterpolatedDirection(DirVector relative) {
-        final DirVector[] axis = new DirVector[1];
-        ShadowMatrix sm = new ShadowMatrix();
-        toLocalSpace(sm, () -> axis[0] = sm.getDirection(relative), interpolatedPosition(), interpolatedRotation());
         return axis[0];
     }
 
@@ -308,7 +293,7 @@ public abstract class MovingEntity implements Touchable {
 
     @Override
     public void toLocalSpace(MatrixStack ms, Runnable action) {
-        toLocalSpace(ms, action, false);
+        toLocalSpace(ms, action, getPosition(), getRotation());
     }
 
     /**
@@ -340,7 +325,12 @@ public abstract class MovingEntity implements Touchable {
      * @return a copy of the position of the center of mass of this object in world-space
      */
     public PosVector getPosition() {
-        return new PosVector(position);
+        if (entityDeposit.isHeadless()) {
+            return new PosVector(position);
+        } else {
+            positionInterpolator.updateTime(renderTime());
+            return positionInterpolator.getInterpolated(renderTime()).toPosVector();
+        }
     }
 
     /**
@@ -370,8 +360,8 @@ public abstract class MovingEntity implements Touchable {
     public void draw(GL2 gl) {
         if (renderTime() < spawnTime) return;
 
-        PosVector pos = interpolatedPosition();
-        Quaternionf rot = interpolatedRotation();
+        PosVector pos = getPosition();
+        Quaternionf rot = getRotation();
 
         preDraw(gl);
         Consumer<Shape> painter = gl::draw;
@@ -385,26 +375,6 @@ public abstract class MovingEntity implements Touchable {
 
         positionInterpolator.add(newPosition, currentTime);
         rotationInterpolator.add(newRotation, currentTime);
-    }
-
-    /**
-     * @return a copy of the position of the center of mass of this object, interpolated for a predefined timeStamp
-     * @implNote The entity should take care of defining a valid timestamp method to ensure correct
-     *         interpolation
-     */
-    public PosVector interpolatedPosition() {
-        positionInterpolator.updateTime(renderTime());
-        return positionInterpolator.getInterpolated(renderTime()).toPosVector();
-    }
-
-    /**
-     * @return a copy of the rotation of this object, interpolated for a predefined timeStamp
-     * @implNote The entity should take care of defining a valid timestamp method to ensure correct
-     *         interpolation
-     */
-    public Quaternionf interpolatedRotation() {
-        rotationInterpolator.updateTime(renderTime());
-        return rotationInterpolator.getInterpolated(renderTime());
     }
 
     protected Float renderTime() {
@@ -433,7 +403,12 @@ public abstract class MovingEntity implements Touchable {
      * @return the object's current rotation
      */
     public Quaternionf getRotation() {
-        return new Quaternionf(rotation);
+        if (entityDeposit.isHeadless()) {
+            return new Quaternionf(rotation);
+        } else {
+            rotationInterpolator.updateTime(renderTime());
+            return rotationInterpolator.getInterpolated(renderTime());
+        }
     }
 
     @Override

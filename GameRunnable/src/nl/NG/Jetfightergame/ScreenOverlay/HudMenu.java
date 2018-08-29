@@ -1,10 +1,13 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuClickable;
 import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuPositionerCenter;
+import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Arrays;
 import java.util.function.BooleanSupplier;
@@ -21,6 +24,7 @@ public abstract class HudMenu implements TrackerClickListener, Consumer<ScreenOv
     private final Supplier<Integer> height;
     private UIElement[] activeElements;
     private BooleanSupplier menuMode;
+    private AudioSource currentSound = AudioSource.empty;
 
     public HudMenu(Supplier<Integer> width, Supplier<Integer> height, BooleanSupplier isMenuMode) {
         this.width = width;
@@ -31,6 +35,7 @@ public abstract class HudMenu implements TrackerClickListener, Consumer<ScreenOv
 
     @Override
     public void accept(ScreenOverlay.Painter hud) {
+        Toolbox.checkALError();
         for (UIElement element : activeElements) {
             element.draw(hud);
         }
@@ -62,12 +67,19 @@ public abstract class HudMenu implements TrackerClickListener, Consumer<ScreenOv
                 .map(element -> (MenuClickable) element)
                 // take the button that is clicked
                 .filter(button -> button.contains(x, y))
+                .findAny()
                 // execute buttonpress
-                .forEach(button -> button.onClick(x, y));
+                .ifPresent(button -> {
+                    Toolbox.checkALError();
+                    currentSound.dispose();
+                    currentSound = new AudioSource(Sounds.button.get(), 1.0f, false);
+                    button.onClick(x, y);
+                });
     }
 
     @Override
     public void cleanUp() {
+        currentSound.dispose();
         MouseTracker.getInstance().removeClickListener(this, false);
     }
 

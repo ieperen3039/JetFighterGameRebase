@@ -26,7 +26,6 @@ public interface Touchable extends Drawable {
      * the matrix stack. If this object is moving, this applies to the current position
      * @param ms     reference frame to perform transformations on
      * @param action action to perform one in local space
-     * @see MovingEntity#toLocalSpace(MatrixStack, Runnable, boolean)
      */
     void toLocalSpace(MatrixStack ms, Runnable action);
 

@@ -80,12 +80,12 @@ public class Seeker extends AbstractProjectile {
 
     @Override
     public void draw(GL2 gl) {
-        PosVector currPos = interpolatedPosition();
-        Quaternionf currRot = interpolatedRotation();
+        PosVector currPos = getPosition();
+        Quaternionf currRot = getRotation();
 
         MatrixStack sm = new ShadowMatrix();
         toLocalSpace(sm,
-                () -> entityDeposit.addParticles(trail.update(
+                () -> entityDeposit.add(trail.update(
                         sm, DirVector.zeroVector(), 0, TRAIL_PARTICLES_PER_SEC
                 )),
                 currPos, currRot

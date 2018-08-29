@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
@@ -17,6 +18,7 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -89,11 +91,14 @@ public class DeathIcosahedron extends AbstractProjectile {
             sparkTimeRemain += SPARK_COOLDOWN;
         } while (sparkTimeRemain < 0);
 
-        entityDeposit.addParticles(cloud);
+        entityDeposit.add(cloud);
     }
 
     @Override
     public ParticleCloud explode() {
+        PosVector pos = getPosition();
+        DirVector vel = DirVector.zeroVector();
+        entityDeposit.add(new AudioSource(Sounds.explosion1, pos, 3f));
         return Particles.explosion(
                 position, DirVector.zeroVector(), Color4f.YELLOW, Color4f.RED,
                 50, NOF_PARTICLES, 2, 6f
@@ -116,7 +121,7 @@ public class DeathIcosahedron extends AbstractProjectile {
             EntityState state = new EntityState(position, randDirection, move);
 
             target = sourceJet.getTarget(randDirection, getPosition(), entities);
-            entityDeposit.addSpawn(new Seeker.Factory(state, timeFraction, sourceJet, target));
+            entityDeposit.add(new Seeker.Factory(state, timeFraction, sourceJet, target));
 
             seekerTimeRemain += seekerCooldown;
             seekerCooldown += SEEKER_COOLDOWN_INCREASE;

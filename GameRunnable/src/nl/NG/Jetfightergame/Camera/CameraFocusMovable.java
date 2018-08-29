@@ -120,7 +120,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
 
     @Override
     public PosVector getPilotEyePosition() {
-        return interpolatedPosition();
+        return getPosition();
     }
 
     @Override

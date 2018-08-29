@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.*;
@@ -10,6 +11,7 @@ import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -83,7 +85,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         this.sourceJet = sourceEntity;
 
         forward = new DirVector();
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        relativeDirection(DirVector.xVector()).normalize(forward);
     }
 
     public static List<EntityFactory> createCloud(PosVector position, DirVector velocity, int nOfProjectiles, float launchSpeed, Function<EntityState, EntityFactory> factory) {
@@ -108,7 +110,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     public void applyPhysics(DirVector netForce) {
         float deltaTime = gameTimer.getGameTime().difference();
 
-        relativeStateDirection(DirVector.xVector()).normalize(forward);
+        relativeDirection(DirVector.xVector()).normalize(forward);
         DirVector temp = new DirVector();
         controller.update();
 
@@ -163,9 +165,11 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
     @Override
     public ParticleCloud explode() {
         timeToLive = 0;
-//        new AudioSource(Sounds.explosion, position, 1f, 1f);
+        PosVector pos = getPosition();
+        DirVector vel = DirVector.zeroVector();
+        entityDeposit.add(new AudioSource(Sounds.explosion1, pos, 2f));
         return Particles.explosion(
-                interpolatedPosition(), DirVector.zeroVector(),
+                pos, vel,
                 EXPLOSION_COLOR_1, EXPLOSION_COLOR_2,
                 IMPACT_POWER, SPARK_DENSITY, Particles.FIRE_LINGER_TIME, FIRE_PARTICLE_SIZE
         );

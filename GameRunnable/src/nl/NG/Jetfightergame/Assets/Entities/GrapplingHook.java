@@ -85,7 +85,7 @@ public class GrapplingHook extends AbstractProjectile {
     @Override
     public void draw(GL2 gl) {
         PosVector headPos = interpolatedPosition();
-        PosVector sourcePos = sourceJet.interpolatedPosition();
+        PosVector sourcePos = sourceJet.getPosition();
         DirVector vecFromTarget = headPos.to(sourcePos, new DirVector());
 
         gl.setMaterial(Material.SILVER, COLOR);
@@ -123,10 +123,9 @@ public class GrapplingHook extends AbstractProjectile {
         }
     }
 
-    @Override
     public PosVector interpolatedPosition() {
-        if (hookedOther != null) return hookedOther.interpolatedPosition();
-        return super.interpolatedPosition();
+        if (hookedOther != null) return hookedOther.getPosition();
+        return getPosition();
     }
 
     @Override

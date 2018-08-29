@@ -104,4 +104,9 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
     public DirVector getUpVector() {
         return instance.getUpVector();
     }
+
+    @Override
+    public DirVector getVelocity() {
+        return instance.getVelocity();
+    }
 }

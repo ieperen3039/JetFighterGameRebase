@@ -27,6 +27,7 @@ public class FollowingCamera implements Camera {
     private final SmoothTrackedVector<DirVector> up;
     private final Player target;
     private final Environment gameState;
+    private DirVector velocity = new DirVector();
 
     public FollowingCamera(Player target, Environment gameState) {
         this(jetPosition(eyeRelative,
@@ -50,10 +51,10 @@ public class FollowingCamera implements Camera {
      * @return a new vector with the position translated to world-space
      */
     private static PosVector jetPosition(DirVector relativePosition, MovingEntity target) {
-        PosVector targetPos = target.interpolatedPosition();
+        PosVector targetPos = target.getPosition();
         if (!targetPos.isScalable()) return PosVector.zeroVector();
 
-        final DirVector relative = target.relativeInterpolatedDirection(relativePosition);
+        final DirVector relative = target.relativeDirection(relativePosition);
         return targetPos.add(relative, new PosVector());
     }
 
@@ -63,7 +64,7 @@ public class FollowingCamera implements Camera {
     @Override
     public void updatePosition(float deltaTime) {
         MovingEntity target = this.target.jet();
-        final DirVector rawUp = target.relativeInterpolatedDirection(DirVector.zVector());
+        final DirVector rawUp = target.relativeDirection(DirVector.zVector());
         final DirVector targetUp = rawUp.normalize(rawUp);
 
         final PosVector targetEye = jetPosition(eyeRelative, target);
@@ -73,13 +74,15 @@ public class FollowingCamera implements Camera {
             targetFocus = new DirVector(eye.current()); // look at (0, 0, 0)
             targetFocus.negate();
         } else {
-            targetFocus = target.relativeInterpolatedDirection(DirVector.xVector());
+            targetFocus = target.relativeDirection(DirVector.xVector());
         }
 
         if (eye.current().distanceSquared(targetEye) > TELEPORT_DISTANCE_SQ) eye.update(targetEye);
         else eye.updateFluent(targetEye, deltaTime);
         vecToFocus.updateFluent(targetFocus, deltaTime);
         up.updateFluent(targetUp, deltaTime);
+        velocity = eye.difference();
+        if (deltaTime != 0) velocity.scale(1 / deltaTime);
     }
 
     @Override
@@ -89,7 +92,7 @@ public class FollowingCamera implements Camera {
 
     @Override
     public PosVector getEye() {
-        PosVector pos = target.jet().interpolatedPosition();
+        PosVector pos = target.jet().getPosition();
         return gameState.rayTrace(pos, eye.current());
     }
 
@@ -101,5 +104,10 @@ public class FollowingCamera implements Camera {
     @Override
     public DirVector getUpVector() {
         return up.current();
+    }
+
+    @Override
+    public DirVector getVelocity() {
+        return velocity;
     }
 }

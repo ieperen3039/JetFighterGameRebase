@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -24,17 +25,30 @@ public interface SpawnReceiver {
      * adds an moving entity to the game's collision detection and rendering
      * @param entityFactory the new entity
      */
-    void addSpawn(EntityFactory entityFactory);
+    void add(EntityFactory entityFactory);
 
     /**
      * add multiple new entities
-     * @see #addSpawn(EntityFactory)
+     * @see #add(EntityFactory)
      */
-    default void addSpawns(Collection<EntityFactory> entityFactory) {
+    default void add(Collection<EntityFactory> entityFactory) {
         for (EntityFactory entity : entityFactory) {
-            addSpawn(entity);
+            add(entity);
         }
     }
+
+    /**
+     * adds the given ParticleCloud to the game's rendering
+     * @param particles the particles to add
+     */
+    void add(ParticleCloud particles);
+
+    /**
+     * adds a sound to the client side. When a sound file is created but not deposited, it will play but never free its
+     * memory.
+     * @param source
+     */
+    void add(AudioSource source);
 
     GameTimer getTimer();
 
@@ -60,12 +74,6 @@ public interface SpawnReceiver {
     void playerPowerupState(AbstractJet jet, PowerupType newType);
 
     /**
-     * adds the given ParticleCloud to the game's rendering
-     * @param particles the particles to add
-     */
-    void addParticles(ParticleCloud particles);
-
-    /**
      * adds a point of gravity to the world. All objects are pulled toward this with a force inversionally proportional
      * to the distance. If the magnitude is negative, the source is repulsive.
      * @param position
@@ -75,4 +83,6 @@ public interface SpawnReceiver {
     void addGravitySource(Supplier<PosVector> position, float magnitude, float duration);
 
     void boosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration);
+
+    boolean isHeadless();
 }

@@ -3,24 +3,24 @@ package nl.NG.Jetfightergame.Sound;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.openal.AL10;
 import org.lwjgl.stb.STBVorbisInfo;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.stb.STBVorbis.*;
 
 /**
- * @author Geert van Ieperen
+ * @author Sri Harsha Chilakapati
  * created on 12-2-2018.
  */
 public class OggData {
 
-    public final ByteBuffer data;
+    public final short[] data;
     public final int format;
     public final int samplerate;
 
-    private OggData(ByteBuffer data, int format, int sampleRate) {
+    private OggData(short[] data, int format, int sampleRate) {
         this.data = data;
         this.format = format;
         this.samplerate = sampleRate;
@@ -37,7 +37,7 @@ public class OggData {
         IntBuffer error = BufferUtils.createIntBuffer(1);
         long handle = stb_vorbis_open_filename(input, error, null);
 
-        if (handle == 0) throw new IOException("Vorbis Error " + error.get(0));
+        if (handle == MemoryUtil.NULL) throw new IOException("Vorbis Error " + error.get(0));
 
         // Get the information about the OGG header
         STBVorbisInfo info = STBVorbisInfo.malloc();
@@ -50,20 +50,15 @@ public class OggData {
 
         // Read all the samples once for all
         int numSamples = stb_vorbis_stream_length_in_samples(handle);
-        ByteBuffer pcm = BufferUtils.createByteBuffer(numSamples * Short.BYTES);
-        stb_vorbis_get_samples_short_interleaved(handle, channels, pcm.asShortBuffer());
+        short[] pcm = new short[numSamples * Short.BYTES];
+        stb_vorbis_get_samples_short_interleaved(handle, channels, pcm);
 
         final OggData oggData = new OggData(pcm, format, sampleRate);
 
         // Close the stb_vorbis* handle
         stb_vorbis_close(handle);
         info.free();
-        pcm.clear();
 
         return oggData;
-    }
-
-    public void dispose() {
-        data.clear();
     }
 }

@@ -20,6 +20,7 @@ import nl.NG.Jetfightergame.GameState.RaceProgress.RaceChangeListener;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -153,7 +154,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
-    public void addSpawn(EntityFactory entityFactory) {
+    public void add(EntityFactory entityFactory) {
         MovingEntity entity = entityFactory.construct(this, gameWorld);
         gameWorld.addEntity(entity);
         connections.forEach(conn -> conn.sendEntitySpawn(entityFactory));
@@ -185,8 +186,15 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     }
 
     @Override
-    public void addParticles(ParticleCloud particles) {
-        Logger.WARN.print("Tried adding particles while headless: sending just particles is not supported");
+    public void add(ParticleCloud particles) {
+        Logger.WARN.printSpamless("ServerLoop#addParticles",
+                "Tried adding particles while headless: sending just particles is not supported");
+    }
+
+    @Override
+    public void add(AudioSource source) {
+        Logger.WARN.printSpamless("ServerLoop#addSoundSource",
+                "Tried playing a sound while running headless: " + source);
     }
 
     @Override
@@ -197,6 +205,11 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     @Override
     public void boosterColorChange(AbstractJet jet, Color4f color1, Color4f color2, float duration) {
         connections.forEach(c -> c.sendBoosterColorChange(jet, color1, color2, duration));
+    }
+
+    @Override
+    public boolean isHeadless() {
+        return true;
     }
 
     @Override

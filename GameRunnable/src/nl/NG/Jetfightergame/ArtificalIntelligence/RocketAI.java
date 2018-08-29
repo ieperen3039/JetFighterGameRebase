@@ -83,9 +83,9 @@ public class RocketAI implements Controller {
 
         vecToTarget = projectilePos.to(targetPos, new DirVector());
         vecToTarget.normalize();
-        xVec = projectile.relativeStateDirection(DirVector.xVector());
-        yVec = projectile.relativeStateDirection(DirVector.yVector());
-        zVec = projectile.relativeStateDirection(DirVector.zVector());
+        xVec = projectile.relativeDirection(DirVector.xVector());
+        yVec = projectile.relativeDirection(DirVector.yVector());
+        zVec = projectile.relativeDirection(DirVector.zVector());
 
         xVec.normalize();
         yVec.normalize();

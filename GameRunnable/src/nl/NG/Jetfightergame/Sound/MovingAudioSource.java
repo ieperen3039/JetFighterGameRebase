@@ -1,9 +1,7 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
-import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
-import nl.NG.Jetfightergame.Tools.Vectors.Vector;
+import nl.NG.Jetfightergame.Assets.Sounds;
+import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import org.lwjgl.openal.AL10;
 
 /**
@@ -12,39 +10,21 @@ import org.lwjgl.openal.AL10;
  */
 public class MovingAudioSource extends AudioSource {
 
-    private VectorInterpolator movement;
-    private Vector lastPosition;
-    private float lastTime;
+    private final MovingEntity source;
 
-    public MovingAudioSource(AudioFile data, PosVector sourcePos, float pitch, float gain) {
-        super(data, sourcePos, pitch, gain);
-
-        movement = new VectorInterpolator(10, sourcePos, 0);
-        lastPosition = sourcePos;
+    public MovingAudioSource(Sounds data, MovingEntity source, float pitch, float gain, boolean repeat) {
+        super(data, source.getPosition(), source.getVelocity(), pitch, gain, repeat);
+        this.source = source;
     }
 
-    /**
-     * adds a position point to the interpolation queue
-     */
-    public void setPosition(PosVector position, float currentTime){
-        movement.add(position, currentTime);
+    public MovingAudioSource(Sounds data, MovingEntity source, float gain) {
+        this(data, source, 1.0f, gain, false);
     }
 
-    /**
-     * updates the position of the source by interpolating position and velocity
-     * @param currentTime
-     */
-    public void update(float currentTime){
-        final Vector position = movement.getInterpolated(currentTime);
-
-        // TODO store velocity
-        final DirVector velocity = new DirVector();
-        lastPosition.to(position, velocity);
-        velocity.scale(currentTime - lastTime, velocity);
-        lastPosition = position;
-        lastTime = currentTime;
-
-        alSourceVec(sourceID, AL10.AL_POSITION, position);
-        alSourceVec(sourceID, AL10.AL_VELOCITY, velocity);
+    @Override
+    public void update() {
+        set(AL10.AL_POSITION, source.getPosition());
+        set(AL10.AL_VELOCITY, source.getVelocity());
+        super.update();
     }
 }

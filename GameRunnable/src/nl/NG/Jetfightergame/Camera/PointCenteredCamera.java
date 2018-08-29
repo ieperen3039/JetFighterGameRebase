@@ -148,6 +148,11 @@ public class PointCenteredCamera implements Camera, TrackerMoveListener, Tracker
         return DirVector.zVector();
     }
 
+    @Override
+    public DirVector getVelocity() {
+        return DirVector.zeroVector();
+    }
+
     public void cleanUp(){
         MouseTracker input = MouseTracker.getInstance();
         input.removeMotionListener(this);

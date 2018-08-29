@@ -14,6 +14,7 @@ import nl.NG.Jetfightergame.ScreenOverlay.HeadsUpDisplay;
 import nl.NG.Jetfightergame.ScreenOverlay.JetFighterMenu;
 import nl.NG.Jetfightergame.ScreenOverlay.ScreenOverlay;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Sound.SoundEngine;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -48,14 +49,17 @@ public class JetFighterRenderer extends AbstractGameLoop {
     private final String sessionName;
     private long frameNumber = 0;
     private Mode displayMode;
+    private final SoundEngine soundEngine;
     private boolean hudIsDisabled = false;
 
     public enum Mode {
         SHOW, RECORD_AND_SHOW, RECORD
     }
 
-    public JetFighterRenderer(JetFighterGame engine, Environment gameState, GLFWWindow window, Camera camera,
-                              ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> hudProvider, Mode displayMode
+    public JetFighterRenderer(
+            JetFighterGame engine, Environment gameState, GLFWWindow window, Camera camera,
+            ControllerManager controllerManager, Consumer<ScreenOverlay.Painter> hudProvider,
+            Mode displayMode, SoundEngine soundEngine
     ) throws IOException, ShaderException {
         super("Rendering", TARGET_FPS, false);
 
@@ -64,6 +68,7 @@ public class JetFighterRenderer extends AbstractGameLoop {
         this.activeCamera = camera;
         this.engine = engine;
         this.displayMode = displayMode;
+        this.soundEngine = soundEngine;
 
         Logger.printOnline(() -> {
             Float currentTime = engine.getTimer().getRenderTime().current();
@@ -104,6 +109,8 @@ public class JetFighterRenderer extends AbstractGameLoop {
         Float deltaRenderTime = timer.getRenderTime().difference();
 
         activeCamera.updatePosition(deltaRenderTime);
+        soundEngine.setListenerPosition(activeCamera.getEye(), activeCamera.getVelocity());
+        soundEngine.setListenerOrientation(activeCamera.vectorToFocus(), activeCamera.getUpVector());
         frameNumber++;
 
         // shader preparation and background

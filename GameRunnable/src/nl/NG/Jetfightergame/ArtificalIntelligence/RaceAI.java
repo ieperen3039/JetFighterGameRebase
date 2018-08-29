@@ -54,9 +54,9 @@ public class RaceAI extends RocketAI {
         pInd = race.getPlayerInd(player);
 
         if (target == null) {
-            xVec = projectile.relativeStateDirection(DirVector.xVector());
-            yVec = projectile.relativeStateDirection(DirVector.yVector());
-            zVec = projectile.relativeStateDirection(DirVector.zVector());
+            xVec = projectile.relativeDirection(DirVector.xVector());
+            yVec = projectile.relativeDirection(DirVector.yVector());
+            zVec = projectile.relativeDirection(DirVector.zVector());
             vecToTarget = xVec;
             return;
         }

@@ -78,4 +78,9 @@ public class SimpleKeyCamera implements Camera {
     public DirVector getUpVector() {
         return up;
     }
+
+    @Override
+    public DirVector getVelocity() {
+        return DirVector.zeroVector();
+    }
 }

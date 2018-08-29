@@ -1,42 +1,81 @@
 package nl.NG.Jetfightergame.Sound;
 
+import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 import org.lwjgl.openal.AL10;
+import org.lwjgl.system.MemoryUtil;
 
-import static org.lwjgl.openal.AL10.alSourcef;
-import static org.lwjgl.openal.AL10.alSourcei;
+import java.util.Collection;
+
+import static nl.NG.Jetfightergame.Sound.AudioFile.DATA_COULD_NOT_BE_LOADED;
+import static nl.NG.Jetfightergame.Sound.AudioFile.DATA_NOT_LOADED;
+import static org.lwjgl.openal.AL10.*;
 
 /**
  * @author Geert van Ieperen
  * created on 5-2-2018.
  */
 public class AudioSource {
-
     protected int sourceID;
+    private boolean isDisposed = false;
 
-    /** creates and plays the specified sound */
-    public AudioSource(AudioFile data, PosVector sourcePos, float pitch, float gain) {
-
+    protected AudioSource(AudioFile data) {
         int dataID = data.getID();
-        if (dataID == -1) throw new java.lang.NullPointerException("audio file " + data + " has not been loaded");
-        if (dataID == -2) return; // data could not be loaded, and this has already been reported
+        if (dataID == DATA_NOT_LOADED) throw new NullPointerException("Audio file " + data + " has not been loaded");
+        if (dataID == DATA_COULD_NOT_BE_LOADED) return; // data could not be loaded, and this has already been reported
 
         sourceID = AL10.alGenSources();
-        Toolbox.checkALError();
-
+        if (sourceID == MemoryUtil.NULL)
+            throw new RuntimeException("Could not generate buffer for sound"); // TODO replace all runtimeExceptions with others
         alSourcei(sourceID, AL10.AL_BUFFER, dataID);
-        alSourcef(sourceID, AL10.AL_PITCH, pitch);
-        alSourceVec(sourceID, AL10.AL_POSITION, sourcePos);
-        alSourceVec(sourceID, AL10.AL_VELOCITY, DirVector.zeroVector());
+        Toolbox.checkALError();
+    }
 
+    /** creates and plays the specified sound on the specified place */
+    public AudioSource(Sounds data, PosVector sourcePos, float gain) {
+        this(data, sourcePos, DirVector.zeroVector(), 1.0f, gain, false);
+    }
+
+    /** creates and plays the specified sound on the specified place */
+    public AudioSource(Sounds data, PosVector sourcePos, DirVector velocity, float pitch, float gain, boolean doLoop) {
+        this(data.get());
+        alSourcef(sourceID, AL10.AL_PITCH, pitch);
+        set(AL10.AL_POSITION, sourcePos);
+        set(AL10.AL_VELOCITY, velocity);
+        if (doLoop) alSourcei(sourceID, AL_LOOPING, AL_TRUE);
         setGain(gain);
 
+        AL10.alSourcePlay(sourceID);
         Toolbox.checkALError();
+    }
 
+    /** plays the given soundfile as background music */
+    public AudioSource(AudioFile file, float gain, boolean doLoop) {
+        this(file);
+
+        alSourcei(sourceID, AL_SOURCE_RELATIVE, AL_TRUE);
+        alSourcef(sourceID, AL_ROLLOFF_FACTOR, 0.0f);
+        if (doLoop) alSourcei(sourceID, AL_LOOPING, AL_TRUE);
+        setGain(gain);
+
+        AL10.alSourcePlay(sourceID);
+        Toolbox.checkALError();
+    }
+
+    private AudioSource() {
+        sourceID = 0;
+        isDisposed = true;
+    }
+
+    public void pause() {
+        AL10.alSourcePause(sourceID);
+    }
+
+    public void play() {
         AL10.alSourcePlay(sourceID);
     }
 
@@ -45,17 +84,50 @@ public class AudioSource {
     }
 
     /**
-     * remove this source from the soundcard
+     * remove this source off the soundcard
      */
     public void dispose(){
+        if (isDisposed) {
+            return;
+        }
         AL10.alDeleteSources(sourceID);
+        isDisposed = true;
     }
 
-    protected static void alSourceVec(int source, int mode, Vector p) {
-        AL10.alSource3f(source, mode, p.x(), p.y(), p.z());
+    public static void disposeAll(Collection<AudioSource> sources) {
+        int[] names = new int[sources.size()];
+        int i = 0;
+        for (AudioSource s : sources) {
+            names[i++] = s.sourceID;
+            s.isDisposed = true;
+        }
+        AL10.alDeleteSources(names);
     }
 
-    protected void setGain(float newValue){
+    public boolean isOverdue() {
+        return isDisposed;
+    }
+
+    public void set(int mode, Vector p) {
+        AL10.alSource3f(sourceID, mode, p.x, p.y, p.z);
+    }
+
+    public void setGain(float newValue){
         alSourcef(sourceID, AL10.AL_GAIN, newValue * ClientSettings.SOUND_MASTER_GAIN);
     }
+
+    /**
+     * updates the position of the source by interpolating position and velocity
+     */
+    public void update() {
+        if (AL10.alGetSourcei(sourceID, AL_SOURCE_STATE) == AL_STOPPED) {
+            dispose();
+        }
+    }
+
+    public void setPitch(float value) {
+        alSourcef(sourceID, AL10.AL_PITCH, value);
+    }
+
+    public static AudioSource empty = new AudioSource();
 }
