@@ -56,7 +56,6 @@ public enum PowerupType {
     public static final float STAR_BOOST_PUSH = 1_000f;
 
     public static final float SMOKE_LINGER_TIME = 30f;
-    public static final float SMOKE_LAUNCH_SPEED = 40f;
     public static final float SMOKE_SPREAD = 0.5f;
     public static final int SMOKE_DENSITY = 500;
     public static final int SMOKE_DISTRACTION_ELEMENTS = 5;
@@ -113,17 +112,16 @@ public enum PowerupType {
     }
 
     public static void launchSmokeCloud(AbstractJet jet, SpawnReceiver deposit) {
-        DirVector dir = jet.getForward();
-        dir.scale(-SMOKE_LAUNCH_SPEED).add(jet.getVelocity().scale(0.5f));
+        DirVector dir = DirVector.zeroVector();
         deposit.addExplosion(
                 jet.getPosition(), dir,
                 Color4f.BLACK, Color4f.GREY,
-                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 30f
+                SMOKE_SPREAD, SMOKE_DENSITY, SMOKE_LINGER_TIME, 20f
         );
         // distraction
         for (int i = 0; i < SMOKE_DISTRACTION_ELEMENTS; i++) {
             DirVector move = new DirVector(dir);
-            move.add(DirVector.random().scale(SMOKE_SPREAD / 10));
+            move.add(DirVector.random().scale(SMOKE_SPREAD));
             deposit.add(new InvisibleEntity.Factory(jet.getPosition(), move, SMOKE_LINGER_TIME));
         }
     }

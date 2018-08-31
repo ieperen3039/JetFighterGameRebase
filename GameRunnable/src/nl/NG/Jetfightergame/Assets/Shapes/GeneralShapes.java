@@ -25,11 +25,13 @@ public final class GeneralShapes {
     public static Shape ARROW;
     /** a 2*2*2 cube with center on (0, 0, 0) */
     public static Shape CUBE;
-
+    /** a quad with sides of 1 on the xy plane */
+    public static Shape QUAD;
     public static Shape ICOSAHEDRON;
 
     public static Shape LAB_CUBE;
     public static Shape INVERSE_CUBE;
+    public static Shape SEA;
     public static CheckpointRing CHECKPOINTRING;
 
     public static List<Shape> ISLAND1;
@@ -62,15 +64,23 @@ public final class GeneralShapes {
         INVERSE_CUBE = makeInverseCube(0, doLoadMesh);
         LAB_CUBE = makeInverseCube(3, doLoadMesh);
         CUBE = makeCube(doLoadMesh);
-        ISLAND1 = BasicShape.loadSplit(doLoadMesh, CONTAINER_SIZE, 50f, Resource.GLITCHMAP);
-        CHECKPOINTRING = new CheckpointRing(10, 0.03f, doLoadMesh);
         ICOSAHEDRON = makeIcosahedron(doLoadMesh);
+        CHECKPOINTRING = new CheckpointRing(10, 0.03f, doLoadMesh);
+        ISLAND1 = BasicShape.loadSplit(doLoadMesh, CONTAINER_SIZE, 50f, Resource.GLITCHMAP);
+        SEA = makeSeaTile(doLoadMesh);
+        QUAD = makeSingleQuad(doLoadMesh);
 
         Path toJet = Directory.meshes.getPath("ConceptBlueprint.obj");
         CustomJetShapes.BASIC = new BasicShape(new ShapeParameters(PosVector.zeroVector(), 0.5f, toJet, "Basic jet"), doLoadMesh);
         CustomJetShapes.SPITZ = CustomJetShapes.makeSpitzPlane(doLoadMesh);
 
         isLoaded = true;
+    }
+
+    private static Shape makeSingleQuad(boolean loadMesh) {
+        CustomShape frame = new CustomShape();
+        frame.addQuad(new PosVector(1, 1, 0), new PosVector(-1, 1, 0));
+        return frame.wrapUp(loadMesh);
     }
 
     private static Shape makeIcosahedron(boolean loadMesh) {
@@ -148,7 +158,8 @@ public final class GeneralShapes {
     }
 
     /**
-     * recursively split the given quad, and add all tiny components to frame. This results in {@code 2^splits} quads
+     * recursively split the given quad, and add all tiny components to frame. This results in {@code 2^splits} quads.
+     * The positions should be given in rotational order
      * @param normal the shared normal of the resulting quads
      * @param splits the number of split iterations. The resulting number of quads is (4 ^ splits)
      */
@@ -173,5 +184,17 @@ public final class GeneralShapes {
     public static void cleanAll() {
         isLoaded = false;
         Mesh.cleanAll();
+    }
+
+    private static Shape makeSeaTile(boolean doLoadMesh) {
+        CustomShape frame = new CustomShape();
+
+        PosVector PP = new PosVector(1, 1, 0);
+        PosVector PN = new PosVector(1, -1, 0);
+        PosVector NP = new PosVector(-1, 1, 0);
+        PosVector NN = new PosVector(-1, -1, 0);
+
+        frame.addQuad(PN, NN, NP, PP, DirVector.zVector());
+        return frame.wrapUp(doLoadMesh);
     }
 }

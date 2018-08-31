@@ -114,7 +114,7 @@ public final class LauncherSettings {
                 case "JET_TYPE":
                     JET_TYPE = result.textValue();
                     break;
-                case "LOGGER_PRINT_CALLSITES":
+                case "LOGGER_PRINT_CALLSITES": // always false
                     break;
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found

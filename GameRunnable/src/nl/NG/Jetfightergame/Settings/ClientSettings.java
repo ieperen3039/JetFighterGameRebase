@@ -75,7 +75,7 @@ public final class ClientSettings {
 
     /** miscellaneous */
     public static Material PORTAL_MATERIAL = Material.PLASTIC;
-    public static EntityClass JET_TYPE = EntityClass.JET_SPITZ;
+    public static EntityClass JET_TYPE = EntityClass.SPECTATOR_CAMERA;
     public static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
     public static File writeSettingsToFile(String fileName) throws IOException {

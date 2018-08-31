@@ -8,7 +8,8 @@ import java.nio.file.Paths;
  * @author Geert van Ieperen. Created on 22-8-2018.
  */
 public enum Resource {
-    GLITCHMAP(Directory.meshes, "maps", "GlitchIsland");
+    GLITCHMAP(Directory.meshes, "maps", "GlitchIsland"),
+    SEA(Directory.meshes, "background", "water.obj");
 
     private String localPath;
 

@@ -13,7 +13,7 @@ import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
 @SuppressWarnings("ConstantConditions")
 public final class ServerSettings {
     public static boolean DEBUG = true;
-    public static boolean SERVER_MAKE_REPLAY = true;
+    public static boolean SERVER_MAKE_REPLAY = false;
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
@@ -34,8 +34,8 @@ public final class ServerSettings {
     public static final float GENERAL_SPEED_FACTOR = 1f;
 
     public static final float PRINT_STATE_INTERVAL = 0;
-    public static final int NOF_FUN = 7;
+    public static final int NOF_FUN = 0;
 
     public static final int CUBE_SIZE_LARGE = 25;
-    public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.001f;
+    public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.1f;
 }

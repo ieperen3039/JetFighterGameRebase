@@ -167,8 +167,6 @@ public abstract class GameState implements Environment {
      * @return the entity with the given entityID, or null if no such entity exists
      */
     public MovingEntity getEntity(int entityID) {
-        if (entityID < 0) return null;
-
         for (MovingEntity entity : physicsEngine.getDynamicEntities()) {
             if (entity.idNumber() == entityID) {
                 return entity;

@@ -15,6 +15,7 @@ import nl.NG.Jetfightergame.GameState.RaceProgress.Checkpoint;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
+import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Resource;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -30,6 +31,8 @@ import java.util.List;
  */
 public class IslandMap extends GameState {
     private static final int FOG_DIST = 750;
+    private static final int WORLD_BOUND = 1000;
+    private static final int TILE_SIZE = 100;
     private PosVector nextSpawnPosition = new PosVector();
     private DirVector nextSpawnOffset = new DirVector();
 
@@ -42,6 +45,22 @@ public class IslandMap extends GameState {
         for (Shape s : GeneralShapes.ISLAND1) {
             entities.add(new StaticEntity(s, Material.GLASS, Color4f.BLACK));
         }
+        // sea
+        int nOfTiles = 2 * WORLD_BOUND / TILE_SIZE;
+        for (int x = 0; x < nOfTiles; x++) {
+            for (int y = 0; y < nOfTiles; y++) {
+                PosVector pos = new PosVector(x * TILE_SIZE - WORLD_BOUND, y * TILE_SIZE - WORLD_BOUND, -50);
+                entities.add(new StaticEntity(GeneralShapes.SEA, Material.GLASS, Color4f.BLUE, pos, TILE_SIZE));
+            }
+        }
+        // world boundary
+        float quart = (float) Math.PI / 2;
+        entities.add(borderPanel(new PosVector(WORLD_BOUND, 0, 0), new Quaternionf().rotateY(-quart)));
+        entities.add(borderPanel(new PosVector(-WORLD_BOUND, 0, 0), new Quaternionf().rotateY(quart)));
+        entities.add(borderPanel(new PosVector(0, WORLD_BOUND, 0), new Quaternionf().rotateX(-quart)));
+        entities.add(borderPanel(new PosVector(0, -WORLD_BOUND, 0), new Quaternionf().rotateX(quart)));
+        entities.add(borderPanel(new PosVector(0, 0, WORLD_BOUND), new Quaternionf()));
+        entities.add(borderPanel(new PosVector(0, 0, -WORLD_BOUND), new Quaternionf().rotateZ(quart * 2)));
 
         Pair<PosVector, DirVector> start = racePath.getFirstCheckpoint();
         nextSpawnPosition.set(start.left);
@@ -55,6 +74,13 @@ public class IslandMap extends GameState {
         }
 
         return entities;
+    }
+
+    private StaticEntity borderPanel(PosVector offSet, Quaternionf rotation) {
+        DirVector normal = DirVector.zVector();
+        normal.rotate(rotation);
+        Logger.DEBUG.print(offSet, normal);
+        return new StaticEntity(GeneralShapes.QUAD, Material.GLOWING, fogColor(), offSet, WORLD_BOUND, rotation);
     }
 
     @Override

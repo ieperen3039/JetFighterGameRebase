@@ -71,12 +71,13 @@ public class LauncherMain {
         Font lucidaConsole = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
         largeFont = lucidaConsole.deriveFont(LARGE_FONT_SIZE);
         names = new Tables(Directory.tables.getFile("tables.tb"));
+        LauncherSettings.readSettingsFromFile("settings.json");
         map = names.findWorld("ISLAND");
     }
 
     public void init() {
         frame = new JFrame();
-        frame.setTitle(LauncherSettings.GAME_NAME + " Launcher");
+        frame.setTitle("Launcher " + LauncherSettings.GAME_NAME);
         frame.setMinimumSize(MINIMUM_LAUNCHER_SIZE);
 
         imagePanel = SwingToolbox.getImagePanel(randomBackdrop());
@@ -230,6 +231,7 @@ public class LauncherMain {
         panel.add(cancelButton, SwingToolbox.getButtonConstraints(0, RELATIVE));
         cancelButton.addActionListener(e -> {
             settings.forEach(Setting::reset);
+            // this will activate the 'componentHidden' action
             select(null);
         });
 
@@ -363,18 +365,25 @@ public class LauncherMain {
         panel.setLayout(new GridBagLayout());
 
         JButton startLocal = SwingToolbox.getButton("Start Local Server");
+        startLocal.setToolTipText("Starts a server on this machine, and a client connected to it. " +
+                "\nThis is the most straightforward way to start a single-player");
         startLocal.addActionListener(e -> launchGame(null, null));
         panel.add(startLocal, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton searchInternet = SwingToolbox.getButton("Search Server");
+        searchInternet.setToolTipText("Try connecting with a given IP address, " +
+                "or try searching on the local network");
         searchInternet.addActionListener(e -> select(ipSearchPanel));
         panel.add(searchInternet, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton searchLocal = SwingToolbox.getButton("Replay file");
+        searchLocal.setToolTipText("Open and replay a race that has previously been recorded. " +
+                "\nDifferent camera options can be selected in the in-game menu");
         searchLocal.addActionListener(e -> select(replaySelectPanel));
         panel.add(searchLocal, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton changeLoadout = SwingToolbox.getButton("Change Loadout");
+        changeLoadout.setToolTipText("Select what jet you will use in your next game");
         changeLoadout.addActionListener(e -> select(loadoutPanel));
         panel.add(changeLoadout, SwingToolbox.getButtonConstraints(RELATIVE));
 
@@ -383,22 +392,29 @@ public class LauncherMain {
         panel.add(showDebug, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JButton checkUpdates = SwingToolbox.getButton("Check for Updates");
+        checkUpdates.setToolTipText("Opens your file explorer, where you can select an updated version of the GameRunnable jar. " +
+                "\nThe game will update the jar, and new options in maps / jets will be visible after running it once.");
         checkUpdates.addActionListener(e -> select(updatePanel));
         panel.add(checkUpdates, SwingToolbox.getButtonConstraints(RELATIVE));
+
+        JButton settingsButton = SwingToolbox.getButton("Settings");
+        settingsButton.setToolTipText("Different settings for both the launcher and the game. " +
+                "\nIf this screen is exited by using a menu button, the changes WILL be applied.");
+        settingsButton.addActionListener(e -> select(settingsPanel));
+        panel.add(settingsButton, SwingToolbox.getButtonConstraints(RELATIVE));
+
+        JButton keyBindingsButton = SwingToolbox.getButton("Key Bindings");
+        keyBindingsButton.setToolTipText("Change what keys map to the specified actions" +
+                "\nAny change is directly applied.");
+        keyBindingsButton.addActionListener(e -> select(keyBindingPanel));
+        panel.add(keyBindingsButton, SwingToolbox.getButtonConstraints(RELATIVE));
 
         JPanel filler = SwingToolbox.getFiller();
         filler.setMinimumSize(new Dimension(MAIN_BUTTON_DIM.width + 2 * BUTTON_BORDER, 1));
         panel.add(filler, SwingToolbox.getFillConstraints(1, RELATIVE));
 
-        JButton keyBindingsButton = SwingToolbox.getButton("Key Bindings");
-        keyBindingsButton.addActionListener(e -> select(keyBindingPanel));
-        panel.add(keyBindingsButton, SwingToolbox.getButtonConstraints(RELATIVE));
-
-        JButton settingsButton = SwingToolbox.getButton("Settings");
-        settingsButton.addActionListener(e -> select(settingsPanel));
-        panel.add(settingsButton, SwingToolbox.getButtonConstraints(RELATIVE));
-
         JButton exitGame = SwingToolbox.getButton("Exit Launcher");
+        exitGame.setToolTipText("Close the game. Settings will be saved.");
         exitGame.addActionListener(e -> this.close());
         panel.add(exitGame, SwingToolbox.getButtonConstraints(RELATIVE));
 
@@ -536,15 +552,7 @@ public class LauncherMain {
                 Logger.INFO.print("Game finished with exit code " + exitCode + ".");
 
             } catch (Exception e) {
-                StringBuilder stacktrace = new StringBuilder();
-                stacktrace.append(e);
-                if (LauncherSettings.DEBUG) {
-                    for (StackTraceElement elt : e.getStackTrace()) {
-                        stacktrace.append("\n\t").append(elt);
-                    }
-                }
-                Logger.ERROR.print(stacktrace.toString());
-
+                Logger.ERROR.print(e);
             } finally {
                 show();
             }
@@ -552,7 +560,14 @@ public class LauncherMain {
     }
 
     private void close() {
-        frame.dispose();
+        try {
+            LauncherSettings.writeSettingsToFile("settings.json");
+        } catch (IOException e) {
+            Logger.ERROR.print(e);
+        } finally {
+            frame.dispose();
+        }
+
     }
 
     private void show() {

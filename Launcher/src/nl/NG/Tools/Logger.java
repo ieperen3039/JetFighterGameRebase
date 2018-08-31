@@ -109,8 +109,6 @@ public enum Logger {
      * the given call depth
      */
     private synchronized void printSync(Object... s) {
-        if (!enabled) return;
-
         out.accept(codeName + ": " + concatenate(s));
     }
 
@@ -118,7 +116,23 @@ public enum Logger {
      * prints the toString method of the given objects to System.out, preceded with calling method
      */
     public void print(Object... s) {
-        printSync(s);
+        if (!enabled) return;
+        if (s.length > 0 && s[0] instanceof Exception) {
+            printException((Exception) s[0]);
+        } else {
+            printSync(s);
+        }
+    }
+
+    private void printException(Exception e) {
+        StringBuilder stacktrace = new StringBuilder();
+        stacktrace.append(e);
+        if (this == ERROR) {
+            for (StackTraceElement elt : e.getStackTrace()) {
+                stacktrace.append("\n\t").append(elt);
+            }
+        }
+        printSync(stacktrace.toString());
     }
 
     public void printf(String format, Object... arguments) {

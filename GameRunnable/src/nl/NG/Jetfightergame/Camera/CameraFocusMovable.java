@@ -86,7 +86,9 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
     public void update() {
         super.update();
         float time = gameTimer.time();
-        addStatePoint(time, position, rotation);
+        if (!entityDeposit.isHeadless()) {
+            addStatePoint(time, position, rotation);
+        }
     }
 
     @Override
