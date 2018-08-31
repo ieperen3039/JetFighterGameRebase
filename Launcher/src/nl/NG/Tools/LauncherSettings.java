@@ -38,7 +38,7 @@ public final class LauncherSettings {
 
     /** miscellaneous */
     public static String JET_TYPE = "JET_SPITZ";
-    public static boolean ALLOW_FLYING_TEXT = false;
+    public static boolean ALLOW_FLYING_TEXT = true;
 
     public static File writeSettingsToFile(String fileName) throws IOException {
         File file = Directory.settings.getFile(fileName);

@@ -194,7 +194,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
     @Override
     public void add(AudioSource source) {
         Logger.WARN.printSpamless("ServerLoop#addSoundSource",
-                "Tried playing a sound while running headless: " + source);
+                "Tried playing a sound while running headless: " + Logger.getCallingMethod(1));
     }
 
     @Override

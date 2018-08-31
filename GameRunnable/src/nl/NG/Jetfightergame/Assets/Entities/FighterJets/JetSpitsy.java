@@ -11,6 +11,8 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -33,8 +35,8 @@ public class JetSpitsy extends AbstractJet {
     public static final float ROLL_POWER = 3.5f;
     public static final float AIR_RESISTANCE_COEFFICIENT = 0.5f;
     public static final float ROTATION_REDUCTION_FACTOR = 0.7f;
-    public static final float Y_REDUCTION = 0.3f;
-    public static final float Z_REDUCTION = 0.8f;
+    public static final float Y_REDUCTION = 0.5f;
+    public static final float Z_REDUCTION = 0.6f;
 
     private final PosVector shapeMiddle;
     private final float shapeRange;
@@ -87,6 +89,11 @@ public class JetSpitsy extends AbstractJet {
     @Override
     public PosVector getExpectedMiddle() {
         return extraPosition.add(shapeMiddle, new PosVector());
+    }
+
+    @Override
+    protected MovingAudioSource getBoosterSound() {
+        return new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
     }
 
     public static class Factory extends EntityFactory {

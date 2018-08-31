@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
@@ -14,6 +13,8 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
 /**
@@ -25,6 +26,10 @@ public class OneHitShield extends AbstractShield {
 
     private OneHitShield(int id, AbstractJet jet, GameTimer time, SpawnReceiver deposit) {
         super(id, jet, time, PowerupType.OHSHIELD_DURATION, deposit);
+
+        if (!deposit.isHeadless()) {
+            deposit.add(new MovingAudioSource(Sounds.shield, this, 0.4f, 1.0f, true));
+        }
     }
 
     @Override

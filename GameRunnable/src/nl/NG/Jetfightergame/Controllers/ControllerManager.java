@@ -19,7 +19,7 @@ import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.
  */
 public class ControllerManager implements Controller, Manager<ControllerManager.ControllerImpl> {
 
-    private static final ControllerImpl[] SELECTABLE_CONTROLLERS = {MouseAbsolute, MouseAbsoluteActive, MouseRelative, XBoxController};
+    private static final ControllerImpl[] SELECTABLE_CONTROLLERS = {MouseAbsolute, MouseRelative, XBoxController};
     private final ClientConnection controlReceiver;
 
     private HeadsUpDisplay hud;

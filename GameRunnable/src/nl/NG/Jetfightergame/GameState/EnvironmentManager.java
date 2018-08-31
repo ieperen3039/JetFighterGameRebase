@@ -6,6 +6,7 @@ import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.ServerNetwork.EnvironmentClass;
+import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Tools.Manager;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -172,6 +173,11 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     @Override
     public PosVector rayTrace(PosVector from, PosVector to) {
         return instance.rayTrace(from, to);
+    }
+
+    @Override
+    public AudioFile backgroundMusic() {
+        return instance.backgroundMusic();
     }
 }
 

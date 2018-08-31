@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Camera.CameraFocusMovable;
 import nl.NG.Jetfightergame.Camera.CameraManager;
 import nl.NG.Jetfightergame.Controllers.ActionButtonHandler;
@@ -23,6 +22,7 @@ import nl.NG.Jetfightergame.ServerNetwork.*;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Sound.SoundEngine;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.StreamPipe;

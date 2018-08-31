@@ -13,6 +13,7 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import static java.awt.GridBagConstraints.*;
 import static nl.NG.Tools.KeyNameMapper.*;
@@ -144,7 +145,7 @@ public final class SwingToolbox {
         return jText;
     }
 
-    static Runnable getSliderSetting(JPanel parent, int col, String text, Consumer<Float> effect, float min, float max, float current) {
+    static Setting<Float> getSliderSetting(JPanel parent, int col, String text, Consumer<Float> effect, float min, float max, float current) {
         JPanel panel = getSettingPanel(text);
 
         JPanel combo = new JPanel(new BorderLayout());
@@ -154,60 +155,74 @@ public final class SwingToolbox {
         combo.add(userInput);
         JTextComponent valueDisplay = flyingText();
         userInput.addChangeListener(e -> valueDisplay.setText(
-                String.format("%5.1f", (userInput.getValue() / 100f) * diff + min)
+                String.format("%5.1f", sliderToValue(min, diff, userInput.getValue()))
         ));
-        userInput.setValue((int) (100 * (current - min) / diff));
+        userInput.setValue(valueToSlider(min, diff, current));
         combo.add(valueDisplay, BorderLayout.EAST);
         panel.add(combo);
 
         parent.add(panel, getButtonConstraints(col, RELATIVE));
 
-        return () -> effect.accept(((userInput.getValue() / 100f) * diff) + min);
+        return new Setting<>(
+                () -> sliderToValue(min, diff, userInput.getValue()),
+                effect,
+                (curr) -> userInput.setValue(valueToSlider(min, diff, curr))
+        );
     }
 
-    static Runnable getTextboxSetting(JPanel parent, int col, String text, String current, Consumer<String> effect) {
+    private static int valueToSlider(float min, float diff, float value) {
+        return (int) (100 * (value - min) / diff);
+    }
+
+    private static float sliderToValue(float min, float diff, int value) {
+        return ((value / 100f) * diff) + min;
+    }
+
+    static Setting<String> getTextboxSetting(JPanel parent, int col, String text, Object current, Consumer<String> effect) {
         JPanel panel = getSettingPanel(text);
 
         JTextField userInput = new JTextField();
         userInput.setMinimumSize(TEXTBOX_DIM);
-        userInput.setText(current);
+        userInput.setText(String.valueOf(current));
         panel.add(userInput);
 
         parent.add(panel, getButtonConstraints(col, RELATIVE));
 
-        return () -> effect.accept(userInput.getText());
+        return new Setting<>(userInput::getText, effect, userInput::setText);
     }
 
-    public static Runnable getBooleanSetting(JPanel parent, int col, String text, boolean current, Consumer<Boolean> effect) {
+    public static Setting<Boolean> getBooleanSetting(JPanel parent, int col, String text, boolean current, Consumer<Boolean> effect) {
         JPanel panel = getSettingPanel(text);
 
         JToggleButton button = new JToggleButton(current ? BUTTON_TRUE_TEXT : BUTTON_FALSE_TEXT);
-        button.addActionListener(e -> button.setText(button.isSelected() ? BUTTON_TRUE_TEXT : BUTTON_FALSE_TEXT));
+        button.addChangeListener(e -> button.setText(button.isSelected() ? BUTTON_TRUE_TEXT : BUTTON_FALSE_TEXT));
         button.setMinimumSize(SMALL_BUTTON_DIM);
         button.setSelected(current);
         panel.add(button);
 
         parent.add(panel, getButtonConstraints(col, RELATIVE));
 
-        return () -> effect.accept(button.isSelected());
+        return new Setting<>(button::isSelected, effect, button::setSelected);
     }
 
-    static <Type> Runnable getChoiceSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
+    static <Type> Setting<Type> getChoiceSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
         JPanel panel = getSettingPanel(text);
 
         JComboBox<Type> userInput = new JComboBox<>(values);
+        userInput.setEditable(false);
 
         userInput.setSelectedItem(current);
         panel.add(userInput);
 
         parent.add(panel, getButtonConstraints(col, RELATIVE));
 
-        return () -> effect.accept(userInput.getItemAt(userInput.getSelectedIndex()));
+        //noinspection unchecked // combobox is not editable
+        return new Setting<>(() -> (Type) userInput.getSelectedItem(), effect, userInput::setSelectedItem);
     }
 
     private static JPanel getSettingPanel(String text) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setOpaque(false);
+        panel.setBackground(Color.WHITE);
         panel.setBorder(new BevelBorder(BevelBorder.LOWERED));
         JTextComponent settingName = flyingText();
         settingName.setText(text);
@@ -385,6 +400,36 @@ public final class SwingToolbox {
             component.getRootPane().repaint(
                     component.getX(), component.getY(), component.getWidth(), component.getHeight()
             );
+        }
+    }
+
+    public static class Setting<T> {
+        private final Supplier<T> source;
+        private final Consumer<T> target;
+        private final Consumer<T> reset;
+        private T current;
+
+        public Setting(Supplier<T> source, Consumer<T> target, Consumer<T> reset) {
+            this.source = source;
+            this.target = target;
+            this.current = source.get();
+            this.reset = reset;
+        }
+
+        public void apply() {
+            T newValue = source.get();
+            if (!newValue.equals(current)) {
+                target.accept(newValue);
+                current = newValue;
+            }
+        }
+
+        public boolean isChanged() {
+            return !(source.get().equals(current));
+        }
+
+        public void reset() {
+            reset.accept(current);
         }
     }
 }

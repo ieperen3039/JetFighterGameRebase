@@ -46,8 +46,7 @@ public class FallingCube extends MovingEntity {
      * @param initialPosition position of spawining (of the origin) in world coordinates
      * @param initialVelocity the initial speed of this object in world coordinates
      * @param initialRotation the initial rotation of this object
-     * @param renderTimer     the timer of the rendering, in order to let {@link MovingEntity#interpolatedPosition()}
-     *                        return the interpolated position
+     * @param renderTimer     the timer of this game
      * @param entityDeposit   new entities are passed here, when this entity seizes control of it
      */
     protected FallingCube(int id, Material surfaceMaterial, float mass, float scale, PosVector initialPosition,

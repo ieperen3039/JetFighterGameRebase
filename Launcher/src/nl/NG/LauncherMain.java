@@ -10,6 +10,8 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -148,7 +150,7 @@ public class LauncherMain {
         panel.setLayout(new GridBagLayout());
 
         final int cols = (COLUMNS_OF_SETTINGS * 2) - 1;
-        ArrayList<Runnable> settings = new ArrayList<>();
+        ArrayList<Setting> settings = new ArrayList<>();
         boolean[] doReboot = new boolean[1];
 
         // for the title
@@ -161,13 +163,13 @@ public class LauncherMain {
 
         settings.add(getBooleanSetting(panel, column(1), "Debug mode",
                 LauncherSettings.DEBUG, (result) -> {
-                    if (result != LauncherSettings.DEBUG) doReboot[0] = true;
+                    doReboot[0] = true;
                     LauncherSettings.DEBUG = result;
                 }));
 
         settings.add(getBooleanSetting(panel, column(1), "Menu Transparency",
                 LauncherSettings.ALLOW_FLYING_TEXT, (result) -> {
-                    if (result != LauncherSettings.ALLOW_FLYING_TEXT) doReboot[0] = true;
+                    doReboot[0] = true;
                     LauncherSettings.ALLOW_FLYING_TEXT = result;
                 }));
 
@@ -180,10 +182,10 @@ public class LauncherMain {
         panel.add(getFiller(), getButtonConstraints(column(1), RELATIVE));
 
         settings.add(getTextboxSetting(panel, column(2), "Target FPS",
-                String.valueOf(LauncherSettings.TARGET_FPS), (s) -> LauncherSettings.TARGET_FPS = Integer.valueOf(s)));
+                LauncherSettings.TARGET_FPS, (s) -> LauncherSettings.TARGET_FPS = Integer.valueOf(s)));
 
         settings.add(getTextboxSetting(panel, column(2), "Render Delay (sec)",
-                String.valueOf(LauncherSettings.RENDER_DELAY), (s) -> LauncherSettings.RENDER_DELAY = Float.valueOf(s)));
+                LauncherSettings.RENDER_DELAY, (s) -> LauncherSettings.RENDER_DELAY = Float.valueOf(s)));
 
         settings.add(getSliderSetting(panel, column(2), "Field of View (deg)",
                 (f) -> LauncherSettings.FOV = f, 0.35f, 2.10f, LauncherSettings.FOV));
@@ -197,13 +199,13 @@ public class LauncherMain {
         panel.add(getFiller(), getButtonConstraints(column(2), RELATIVE));
 
         settings.add(getTextboxSetting(panel, column(3), "Server Port",
-                String.valueOf(LauncherSettings.SERVER_PORT), (s) -> LauncherSettings.SERVER_PORT = Integer.valueOf(s)));
+                LauncherSettings.SERVER_PORT, (s) -> LauncherSettings.SERVER_PORT = Integer.valueOf(s)));
 
         settings.add(getBooleanSetting(panel, column(3), "Save Replays",
                 LauncherSettings.MAKE_REPLAY, (result) -> LauncherSettings.MAKE_REPLAY = result));
 
         settings.add(getTextboxSetting(panel, column(3), "Server Ticks per second",
-                String.valueOf(LauncherSettings.TARGET_TPS), (s) -> LauncherSettings.TARGET_TPS = Integer.valueOf(s)));
+                LauncherSettings.TARGET_TPS, (s) -> LauncherSettings.TARGET_TPS = Integer.valueOf(s)));
 
         settings.add(getChoiceSetting(panel, column(3), "Race map",
                 names.getWorlds(), map, (m) -> map = m));
@@ -218,13 +220,27 @@ public class LauncherMain {
         JButton applyButton = SwingToolbox.getButton("Apply and close");
         panel.add(applyButton, SwingToolbox.getButtonConstraints(cols - 1, RELATIVE));
         applyButton.addActionListener(e -> {
-            settings.forEach(Runnable::run);
+            settings.forEach(Setting::apply);
             select(null);
             if (doReboot[0]) reboot();
             doReboot[0] = false;
         });
 
-        return scrollable(panel);
+        JButton cancelButton = SwingToolbox.getButton("Cancel");
+        panel.add(cancelButton, SwingToolbox.getButtonConstraints(0, RELATIVE));
+        cancelButton.addActionListener(e -> {
+            settings.forEach(Setting::reset);
+            select(null);
+        });
+
+        JScrollPane scrollable = scrollable(panel);
+        scrollable.addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                settings.forEach(Setting::apply); // reset is more logic, but in practise this is preferred
+            }
+        });
+        return scrollable;
     }
 
     private String getPlayerName() {

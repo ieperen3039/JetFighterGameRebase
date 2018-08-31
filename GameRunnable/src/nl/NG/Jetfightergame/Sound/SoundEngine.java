@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.Sound;
 
 import nl.NG.Jetfightergame.Rendering.GLException;
+import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -65,6 +66,9 @@ public class SoundEngine {
 //            if (!alCaps.) System.err.println("Warning: Sound system does not support ...");
         }
 
+//        AL10.alDistanceModel(AL_LINEAR_DISTANCE);
+        AL10.alListenerf(AL10.AL_GAIN, ClientSettings.MASTER_GAIN);
+        AL10.alDopplerFactor(0.2f);
         setListenerPosition(PosVector.zeroVector(), DirVector.zeroVector());
         setListenerOrientation(DirVector.xVector(), DirVector.yVector());
 

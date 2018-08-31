@@ -1,6 +1,5 @@
-package nl.NG.Jetfightergame.Assets;
+package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Sound.AudioFile;
 import nl.NG.Jetfightergame.Tools.Directory;
 
 import static nl.NG.Jetfightergame.Tools.Directory.music;
@@ -13,13 +12,22 @@ import static nl.NG.Jetfightergame.Tools.Directory.soundEffects;
 public enum Sounds {
     button(soundEffects, "toggle_button.ogg"),
     pulsePower(music, "Pulse Power.ogg"),
+    cosmicBlack(music, "Cosmic Black.ogg"),
 
-    explosion1(soundEffects, "explosion.ogg"),
-    shieldPop(soundEffects, "fizzle.ogg"),
-    booster(soundEffects, "loop_2.wav"),
-    shield(soundEffects, "powerfield.ogg"),
     powerupOne(soundEffects, "powerup_1.wav"),
     powerupTwo(soundEffects, "powerup_2.wav"),
+
+    jet_fire(soundEffects, "qubodupFireLoop.ogg"),
+    booster(soundEffects, "loop_2.wav"),
+    fizzle(soundEffects, "rocket_booster.ogg"),
+    shield(soundEffects, "powerfield.ogg"),
+    windOff(soundEffects, "qubodupFireLoop.ogg"),
+
+    explosionMC(soundEffects, "explosion.ogg"),
+    explosion2(soundEffects, "explosion_2.ogg"),
+    seekerPop(soundEffects, "seeker_pop.ogg"),
+    shieldPop(soundEffects, "fizzle.ogg"),
+    deathWarning(soundEffects, "explosion.ogg"),
 
     testSound(soundEffects, "fizzle.ogg");
 

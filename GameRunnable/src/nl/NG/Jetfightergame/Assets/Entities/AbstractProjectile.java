@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.*;
@@ -12,6 +11,7 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -65,8 +65,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
      * @param thrustPower       the power when full throttle is requested in Newton
      * @param rotationReduction the fraction that the rotation of this object is slowed down every second
      * @param particleDeposit   particles are passed here
-     * @param gameTimer         the timer that determines the "current rendering time" for {@link
-     *                          MovingEntity#interpolatedPosition()}
+     * @param gameTimer         the local gametimer
      * @param sourceEntity      the entity that launched this projectile
      */
     public AbstractProjectile(
@@ -167,7 +166,7 @@ public abstract class AbstractProjectile extends MovingEntity implements Tempora
         timeToLive = 0;
         PosVector pos = getPosition();
         DirVector vel = DirVector.zeroVector();
-        entityDeposit.add(new AudioSource(Sounds.explosion1, pos, 2f));
+        entityDeposit.add(new AudioSource(Sounds.explosion2, pos, 0.4f, 2f));
         return Particles.explosion(
                 pos, vel,
                 EXPLOSION_COLOR_1, EXPLOSION_COLOR_2,

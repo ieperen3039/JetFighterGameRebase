@@ -8,6 +8,7 @@ import nl.NG.Jetfightergame.GameState.Player;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.ServerNetwork.ClientConnection;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -127,6 +128,9 @@ public class StateReader extends ClientConnection {
                 focusJet.update();
                 break;
         }
+
+        soundSources.forEach(AudioSource::update);
+        soundSources.removeIf(AudioSource::isOverdue);
     }
 
     private void setJetToFirst() {
@@ -213,7 +217,7 @@ public class StateReader extends ClientConnection {
 
             case Roam_Paused:
                 super.jet().setController(null);
-                focusJet = new CameraFocusMovable(pos, rot, staticTimer, false);
+                focusJet = new CameraFocusMovable(pos, rot, staticTimer, false, this);
                 focusJet.setController(getInput());
                 camera.switchTo(FollowingCamera);
                 break;

@@ -488,17 +488,6 @@ public abstract class MovingEntity implements Touchable {
         float adjEnergy = (float) Math.sqrt(ServerSettings.BUMPOFF_ENERGY / this.mass);
         thisVel.add(otherToThis.mul(adjEnergy, temp));
 
-
-        //TODO remove this debug shit
-        if (Float.isNaN(thisVel.x) || Float.isNaN(thisVel.y) || Float.isNaN(thisVel.z)) {
-            throw new IllegalStateException(toString() + " has NaN velocity " + thisVel + " with other " + other + " has " + otherVel +
-                    "\n dot:" + dotProduct + " | sc le:" + scalarLeft + " | sc ri:" + scalarMiddle + " | added e:" + adjEnergy + " | " + otherToThis);
-        }
-        if (isInfinite(thisVel.x) || isInfinite(thisVel.y) || isInfinite(thisVel.z)) {
-            throw new IllegalStateException(toString() + " has Infinite velocity " + thisVel + " with other " + other + " has " + otherVel +
-                    "\n dot:" + dotProduct + " | sc le:" + scalarLeft + " | sc ri:" + scalarMiddle + " | added e:" + adjEnergy + " | " + otherToThis);
-        }
-
         return thisVel;
     }
 

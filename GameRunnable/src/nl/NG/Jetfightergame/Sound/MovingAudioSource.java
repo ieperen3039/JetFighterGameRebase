@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
+import nl.NG.Jetfightergame.EntityGeneral.TemporalEntity;
 import org.lwjgl.openal.AL10;
 
 /**
@@ -25,6 +25,11 @@ public class MovingAudioSource extends AudioSource {
     public void update() {
         set(AL10.AL_POSITION, source.getPosition());
         set(AL10.AL_VELOCITY, source.getVelocity());
-        super.update();
+
+        if (TemporalEntity.isOverdue(source)) {
+            dispose();
+        } else {
+            super.update();
+        }
     }
 }

@@ -122,11 +122,15 @@ public final class Toolbox {
 
 
     public static void checkALError() {
+        checkALError("");
+    }
+
+    public static void checkALError(String args) {
         if (!ServerSettings.DEBUG) return;
         int error;
         int i = 0;
         while ((error = alGetError()) != AL_NO_ERROR) {
-            Logger.WARN.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error));
+            Logger.WARN.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error), args);
             if (i == 0) Thread.dumpStack();
             if (++i == 10) {
                 throw new IllegalStateException("Context is probably not current for this thread");

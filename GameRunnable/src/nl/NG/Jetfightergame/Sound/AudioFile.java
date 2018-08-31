@@ -30,14 +30,27 @@ public class AudioFile {
      * @param filePath
      */
     public AudioFile(Directory dir, String filePath) {
-        audioData = dir.getFile(filePath);
+        this(dir.getFile(filePath));
+    }
 
-        if (filePath.endsWith(".ogg")) {
+    /**
+     * create an unloaded audio file handle
+     * @param file
+     */
+    public AudioFile(File file) {
+        audioData = file;
+        String fileName = file.getName();
+
+        if (fileName.endsWith(".ogg")) {
             type = FileType.ogg;
-        } else if (filePath.endsWith(".wav")) {
+        } else if (fileName.endsWith(".wav")) {
             type = FileType.wave;
+
+        } else if (!fileName.contains(".")) {
+            Logger.ERROR.print("File " + fileName + " lacks an extension");
+            type = null;
         } else {
-            Logger.ERROR.print("Filetype of '" + filePath + "' is not supported.");
+            Logger.ERROR.print("Filetype of '" + fileName + "' is not supported.");
             type = null;
         }
     }

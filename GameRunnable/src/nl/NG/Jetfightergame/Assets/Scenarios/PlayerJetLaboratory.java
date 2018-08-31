@@ -13,6 +13,8 @@ import nl.NG.Jetfightergame.EntityGeneral.Touchable;
 import nl.NG.Jetfightergame.GameState.GameState;
 import nl.NG.Jetfightergame.GameState.RaceProgress;
 import nl.NG.Jetfightergame.Rendering.Material;
+import nl.NG.Jetfightergame.Sound.AudioFile;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -86,6 +88,11 @@ public class PlayerJetLaboratory extends GameState {
     @Override
     public Color4f fogColor(){
         return new Color4f(0.8f, 0.8f, 0.8f, 0f);
+    }
+
+    @Override
+    public AudioFile backgroundMusic() {
+        return Sounds.cosmicBlack.get();
     }
 
     @Override

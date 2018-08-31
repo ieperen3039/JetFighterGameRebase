@@ -15,6 +15,8 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -31,15 +33,15 @@ import java.util.function.Consumer;
  */
 public class CameraFocusMovable extends AbstractJet implements Spectral {
     private static final float MOVE_FACTOR = 100f;
-    private static final float ROLL_FACTOR = 2f;
+    private static final float ROLL_FACTOR = 3f;
 
     private boolean didPrint = false;
     private boolean doDraw;
 
-    public CameraFocusMovable(PosVector position, Quaternionf rotation, GameTimer timer, boolean doDraw) {
+    public CameraFocusMovable(PosVector position, Quaternionf rotation, GameTimer timer, boolean doDraw, SpawnReceiver entityDeposit) {
         super(-1, position, rotation, Material.GLOWING,
                 1, 0, 0, 0, 0, 0, 0, 0,
-                timer, 0, 0, null, null);
+                timer, 0, 0, entityDeposit, null);
         this.doDraw = doDraw;
     }
 
@@ -52,7 +54,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
         controller.update();
 
         float forward = controller.throttle() * deltaTime * MOVE_FACTOR;
-        float toLeft = controller.yaw() * deltaTime * MOVE_FACTOR;
+        float toLeft = controller.yaw() * deltaTime * -MOVE_FACTOR;
 
         if (controller.primaryFire() && !didPrint) {
             PosVector pos = getPosition();
@@ -75,7 +77,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
         extraPosition.rotate(rotation);
 
         float rotLeft = controller.roll() * deltaTime * -ROLL_FACTOR;
-        float rotUp = controller.pitch() * deltaTime * -ROLL_FACTOR;
+        float rotUp = controller.pitch() * deltaTime * ROLL_FACTOR;
         extraRotation.rotate(0, rotUp, rotLeft);
         extraVelocity = DirVector.zeroVector();
     }
@@ -137,6 +139,11 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
         return gameTimer + " > " + this.getClass().getSimpleName();
     }
 
+    @Override
+    protected MovingAudioSource getBoosterSound() {
+        return new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
+    }
+
     public static class Factory extends EntityFactory {
         private boolean doDraw;
 
@@ -166,7 +173,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
-            return new CameraFocusMovable(position, rotation, game.getTimer(), doDraw);
+            return new CameraFocusMovable(position, rotation, game.getTimer(), doDraw, game);
         }
     }
 }

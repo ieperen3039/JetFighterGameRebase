@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.Assets.Entities;
 
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.AbstractJet;
 import nl.NG.Jetfightergame.Assets.Shapes.GeneralShapes;
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
@@ -19,6 +18,8 @@ import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -60,7 +61,10 @@ public class DeathIcosahedron extends AbstractProjectile {
         this.entities = entities;
         sparkTimeRemain = 0;
         seekerTimeRemain = 1f;
-        particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 5f, 100, 2f, 2f);
+        if (!particleDeposit.isHeadless()) {
+            particleDeposit.addExplosion(position, velocity, COLOR, Color4f.RED, 20f, 30, 2f, 2f);
+            particleDeposit.add(new MovingAudioSource(Sounds.jet_fire, this, 0.2f, 0.5f, true));
+        }
     }
 
     @Override
@@ -96,9 +100,9 @@ public class DeathIcosahedron extends AbstractProjectile {
 
     @Override
     public ParticleCloud explode() {
+        timeToLive = 0;
         PosVector pos = getPosition();
-        DirVector vel = DirVector.zeroVector();
-        entityDeposit.add(new AudioSource(Sounds.explosion1, pos, 3f));
+        entityDeposit.add(new AudioSource(Sounds.explosion2, pos, 0.5f, 2f));
         return Particles.explosion(
                 position, DirVector.zeroVector(), Color4f.YELLOW, Color4f.RED,
                 50, NOF_PARTICLES, 2, 6f

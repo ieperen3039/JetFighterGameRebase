@@ -18,7 +18,9 @@ import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
-import nl.NG.Jetfightergame.Tools.Logger;
+import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -57,23 +59,28 @@ public class Seeker extends AbstractProjectile {
                 MASS, AIR_RESIST, Toolbox.randomBetween(TIME_TO_LIVE * 0.7f, TIME_TO_LIVE), TURN_ACC, 0f, THRUST_POWER,
                 ROTATION_REDUCTION, game, timer, sourceJet
         );
+
         if (tgt != null) {
             this.target = tgt;
-            setController(new RocketAI(this, tgt, 100f, 0.1f));
+            setController(new RocketAI(this, tgt, 150f, 20f));
         }
-        Logger.printOnline(() -> String.valueOf(this.velocity.length()));
 
-        trail = new BoosterLine(
-                PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
-                TRAIL_PARTICLES_PER_SEC, ClientSettings.THRUST_PARTICLE_LINGER_TIME,
-                COLOR_1, COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE,
-                gameTimer);
+        if (!entityDeposit.isHeadless()) {
+            entityDeposit.add(new MovingAudioSource(Sounds.fizzle, this, 3.0f, 0.02f, true));
+            trail = new BoosterLine(
+                    PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
+                    TRAIL_PARTICLES_PER_SEC, ClientSettings.THRUST_PARTICLE_LINGER_TIME,
+                    COLOR_1, COLOR_2, ClientSettings.THRUST_PARTICLE_SIZE, gameTimer
+            );
+        }
     }
 
     @Override
     public ParticleCloud explode() {
+        timeToLive = 0;
+        entityDeposit.add(new AudioSource(Sounds.seekerPop, getPosition(), 0.3f, 0.5f));
         return Particles.explosion(
-                position, velocity, EXPLOSION_COLOR, EXPLOSION_COLOR, EXPLOSION_CLOUD_POWER,
+                getPosition(), velocity, EXPLOSION_COLOR, EXPLOSION_COLOR, EXPLOSION_CLOUD_POWER,
                 NOF_PARTICLES, 2f, EXPLOSION_PARTICLE_SIZE
         );
     }

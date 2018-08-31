@@ -28,6 +28,7 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -36,6 +37,7 @@ import java.util.function.Supplier;
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.AIController;
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.EmptyController;
 import static nl.NG.Jetfightergame.ServerNetwork.MessageType.*;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.BACKGROUND_MUSIC_GAIN;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.FIRE_PARTICLE_SIZE;
 
 /**
@@ -53,8 +55,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     private final CountDownTimer counter;
     private final String name;
 
-    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-    private final Collection<AudioSource> soundSources = new HashSet<>();
+    protected final Collection<AudioSource> soundSources = Collections.synchronizedSet(new HashSet<>());
 
     private Lock sendLock = new ReentrantLock();
     private RaceProgress raceProgress;
@@ -80,6 +81,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.isAdmin = pair.right;
         this.jet = pair.left;
         game.addEntity(jet);
+
+        soundSources.add(new AudioSource(game.backgroundMusic(), BACKGROUND_MUSIC_GAIN, true));
 
         Logger.printOnline(() -> jet.getPosition() + " | " + jet.getForward());
     }
@@ -214,7 +217,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     protected void worldSwitch() {
         AudioSource.disposeAll(soundSources);
         soundSources.clear();
-        soundSources.add(new AudioSource(getWorld().backgroundMusic(), ClientSettings.BACKGROUND_MUSIC_GAIN, true));
+        soundSources.add(new AudioSource(game.backgroundMusic(), BACKGROUND_MUSIC_GAIN, true));
 
         game.addEntity(jet);
         controlTeardown = false;

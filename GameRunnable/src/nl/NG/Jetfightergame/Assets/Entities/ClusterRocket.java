@@ -23,6 +23,9 @@ import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLE_MODIFIER;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.THRUST_PARTICLE_LINGER_TIME;
+
 /**
  * AKA the BUK rocket
  * @author Geert van Ieperen. Created on 24-7-2018.
@@ -32,13 +35,13 @@ public class ClusterRocket extends AbstractProjectile {
     public static final int NOF_PELLETS_LAUNCHED = 25;
     public static final float EXPLOSION_POWER = 12f;
     public static final int EXPLOSION_DENSITY = 200;
-    public static final float THRUST_POWER = 300f;
+    public static final float THRUST_POWER = 500f;
     public static final float TIME_TO_LIVE = 30f;
-    public static final float SHOOT_ACCURACY = 0.35f;
-    public static final float TURN_ACC = 0.6f;
-    public static final float AIR_RESIST = 0.05f;
-    public static final float MASS = 3f;
-    public static final float THRUST_PARTICLE_PER_SECOND = 15;
+    public static final float SHOOT_ACCURACY = 0.3f;
+    public static final float TURN_ACC = 0.7f;
+    public static final float AIR_RESIST = 0.02f;
+    public static final float MASS = 5f;
+    public static final float THRUST_PARTICLE_PER_SECOND = 200;
     private boolean hasExploded = false;
     private BoosterLine nuzzle;
 
@@ -48,8 +51,7 @@ public class ClusterRocket extends AbstractProjectile {
      * @param initialRotation the initial rotation of spawning
      * @param initialVelocity the initial velocity, that is the vector of movement per second in world-space
      * @param entityDeposit   particles are passed here
-     * @param gameTimer       the timer that determines the "current rendering time" for {@link
-     *                        MovingEntity#interpolatedPosition()}
+     * @param gameTimer       the local game timer
      * @param sourceEntity    the entity that launched this projectile
      * @param tgt             the target of this bomb
      */
@@ -66,7 +68,7 @@ public class ClusterRocket extends AbstractProjectile {
         if (tgt != null) {
             this.target = tgt;
 
-            RocketAI con = new RocketAI(this, tgt, 500f, 30f) {
+            RocketAI con = new RocketAI(this, tgt, 120f, 30f) {
                 @Override
                 public boolean primaryFire() {
                     float dot = getVelocity().normalize().dot(vecToTarget);
@@ -79,7 +81,8 @@ public class ClusterRocket extends AbstractProjectile {
 
         nuzzle = new BoosterLine(
                 PosVector.zeroVector(), PosVector.zeroVector(), DirVector.zeroVector(),
-                THRUST_PARTICLE_PER_SECOND, ClientSettings.THRUST_PARTICLE_LINGER_TIME, Color4f.ORANGE, Color4f.RED, ClientSettings.THRUST_PARTICLE_SIZE,
+                THRUST_PARTICLE_PER_SECOND * PARTICLE_MODIFIER, THRUST_PARTICLE_LINGER_TIME,
+                Color4f.ORANGE, Color4f.RED, ClientSettings.THRUST_PARTICLE_SIZE,
                 gameTimer);
     }
 
@@ -117,7 +120,6 @@ public class ClusterRocket extends AbstractProjectile {
             hasExploded = true;
         }
         timeToLive -= deltaTime;
-        // sparkles
     }
 
     @Override

@@ -13,6 +13,8 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.Rendering.Particles.Particles;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 
@@ -27,6 +29,10 @@ public class ReflectorShield extends AbstractShield {
     private ReflectorShield(int id, AbstractJet jet, GameTimer time, SpawnReceiver deposit, EntityMapping entities) {
         super(id, jet, time, PowerupType.REFLECTOR_DURATION, deposit);
         this.entities = entities;
+
+        if (!deposit.isHeadless()) {
+            deposit.add(new MovingAudioSource(Sounds.shield, this, 0.4f, 1.0f, true));
+        }
     }
 
     @Override

@@ -12,6 +12,8 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -32,26 +34,29 @@ public class BlackHole extends AbstractProjectile {
     public static final Color4f PARTICLE_COLOR_1 = Color4f.BLACK;
     public static final Color4f PARTICLE_COLOR_2 = new Color4f(0, 0, 0.3f);
     private static final float PARTICLE_REACH = 10f;
-    private static final float PARTICLE_SIZE = 1f;
+    private static final float PARTICLE_SIZE = 1.5f;
     private static final float TIME_TO_LIVE = 10f;
-    private static final float YOUR_PULL_FORCE = 800f;
+    private static final float YOUR_PULL_FORCE = 1_000f;
     private static final float OTHER_PULL_FORCE = 800f;
 
     private float sparkTimeRemain = 0;
 
     private BlackHole(
             int id, PosVector position, DirVector velocity,
-            SpawnReceiver particleDeposit, GameTimer gameTimer, AbstractJet sourceEntity
+            SpawnReceiver deposit, GameTimer gameTimer, AbstractJet sourceEntity
     ) {
         super(
                 id, position, Toolbox.xTo(velocity), velocity, 1f,
                 0f, TIME_TO_LIVE, 0f, 0f, 0f, 0f,
-                particleDeposit, gameTimer, sourceEntity
+                deposit, gameTimer, sourceEntity
         );
 
         sourceJet.addNetForce(TIME_TO_LIVE, () -> getPullForce(sourceJet));
+        deposit.addGravitySource(this::getPosition, OTHER_PULL_FORCE, TIME_TO_LIVE);
 
-        particleDeposit.addGravitySource(this::getPosition, OTHER_PULL_FORCE, TIME_TO_LIVE);
+        if (!deposit.isHeadless()) {
+            deposit.add(new MovingAudioSource(Sounds.jet_fire, this, 0.1f, 1.0f, true));
+        }
     }
 
     @Override

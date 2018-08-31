@@ -1,7 +1,6 @@
 package nl.NG.Jetfightergame.Assets.Entities.FighterJets;
 
-import nl.NG.Jetfightergame.Assets.Entities.*;
-import nl.NG.Jetfightergame.Assets.Sounds;
+import nl.NG.Jetfightergame.Assets.Entities.AbstractShield;
 import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
@@ -19,6 +18,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
 import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -34,7 +34,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
-import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType.*;
+import static nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType.NONE;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.*;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.GENERAL_SPEED_FACTOR;
 import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_SIZE;
@@ -43,9 +43,9 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.INTERPOLATION_QUEUE_S
  * @author Geert van Ieperen created on 30-10-2017.
  */
 public abstract class AbstractJet extends MovingEntity {
-    private static final float BOOSTER_PITCH = 5.0f;
+    private static final float BOOSTER_PITCH = 4f;
     private static final float PITCH_RAISE_FACTOR = 0.8f;
-    public static final float BOOSTER_GAIN = 3f;
+    public static final float BOOSTER_GAIN = 2f;
     protected final float airResistCoeff;
 
     protected final float throttlePower;
@@ -125,7 +125,7 @@ public abstract class AbstractJet extends MovingEntity {
         if (!entityDeposit.isHeadless()) {
             forwardInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, new DirVector(forward), time);
             velocityInterpolator = new VectorInterpolator(INTERPOLATION_QUEUE_SIZE, DirVector.zeroVector(), time);
-            boosterSound = new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
+            boosterSound = getBoosterSound();
             boostPitch = new ExponentialSmoothFloat(0.01f, PITCH_RAISE_FACTOR);
             entityDeposit.add(boosterSound);
         }
@@ -313,17 +313,21 @@ public abstract class AbstractJet extends MovingEntity {
                 entityDeposit.add(boosterLine.update(sm, trail, 0.1f, pps))), currPos, currRot
         );
 
-        boostPitch.updateFluent(Math.max(0.1f, thrust * thrust * BOOSTER_PITCH), gameTimer.getRenderTime().difference());
-        float boosterPitch = boostPitch.current();
+        float tgt = Math.max(0.1f, thrust * thrust * BOOSTER_PITCH);
+        boostPitch.updateFluent(tgt, gameTimer.getRenderTime().difference());
+
         if (boosterSound.isOverdue()) {
+            boostPitch.update(0.01f);
             Logger.DEBUG.print(boosterSound);
-            boosterSound = new MovingAudioSource(Sounds.booster, this, boosterPitch, BOOSTER_GAIN, true);
+            boosterSound = getBoosterSound();
             entityDeposit.add(boosterSound);
             Logger.DEBUG.print(boosterSound);
         } else {
-            boosterSound.setPitch(boosterPitch);
+            boosterSound.setPitch(boostPitch.current());
         }
     }
+
+    protected abstract MovingAudioSource getBoosterSound();
 
     public void set(EntityState spawn) {
         set(spawn.position(0), spawn.velocity(0), spawn.rotation(0), 0);
@@ -352,55 +356,27 @@ public abstract class AbstractJet extends MovingEntity {
     }
 
     public void setPowerup(PowerupType color) {
-        if (color != NONE && !entityDeposit.isHeadless()) {
-            if (currentPowerup == NONE) {
-                entityDeposit.add(new AudioSource(Sounds.powerupOne.get(), 0.5f, false));
-            } else {
-                entityDeposit.add(new AudioSource(Sounds.powerupTwo.get(), 0.5f, false));
+        if (!entityDeposit.isHeadless()) {
+            // powerup sound
+            if (color != NONE) {
+                Toolbox.checkALError();
+                if (currentPowerup == NONE) {
+                    entityDeposit.add(new AudioSource(Sounds.powerupOne.get(), 0.5f, false));
+
+                } else {
+                    entityDeposit.add(new AudioSource(Sounds.powerupTwo.get(), 0.5f, false));
+                }
+
+            } else if (currentPowerup != NONE) {
+                AudioSource sound = currentPowerup.launchSound(this);
+                if (sound != null) entityDeposit.add(sound);
             }
         }
         currentPowerup = color;
     }
 
     private void usePowerup() {
-        switch (currentPowerup) {
-            case NONE:
-                // honk
-                break;
-            case SPEED_BOOST:
-                addSpeedModifier(PowerupType.SPEED_BOOST_FACTOR, PowerupType.SPEED_BOOST_DURATION);
-                entityDeposit.boosterColorChange(this, Color4f.YELLOW, Color4f.WHITE, SPEED_BOOST_DURATION);
-                break;
-            case SHIELD:
-                entityDeposit.add(new OneHitShield.Factory(this));
-                break;
-            case ROCKET:
-                launchClusterRocket(this, getTarget(), entityDeposit);
-                break;
-            case SEEKERS:
-                launchSeekers(this, entityDeposit, this::getTarget);
-                break;
-            case BLACK_HOLE:
-                entityDeposit.add(new BlackHole.Factory(this));
-                break;
-            case SMOKE:
-                launchSmokeCloud(this, entityDeposit);
-                break;
-            case DEATHICOSAHEDRON:
-                entityDeposit.add(new DeathIcosahedron.Factory(this));
-                break;
-            case STAR_BOOST:
-                doStarBoost(this, this.entityDeposit);
-                break;
-            case REFLECTOR_SHIELD:
-                entityDeposit.add(new ReflectorShield.Factory(this));
-                break;
-            case GRAPPLING_HOOK:
-                entityDeposit.add(new GrapplingHook.Factory(this, getTarget()));
-                break;
-            default:
-                throw new UnsupportedOperationException("powerup not properly registered: " + currentPowerup);
-        }
+        currentPowerup.activate(this, entityDeposit);
 
         currentPowerup = PowerupType.NONE;
         entityDeposit.playerPowerupState(this, PowerupType.NONE);
@@ -410,7 +386,7 @@ public abstract class AbstractJet extends MovingEntity {
         nuzzle.forEach(n -> n.setColor(color1, color2, duration));
     }
 
-    private MovingEntity getTarget(EntityState s) {
+    public MovingEntity getTarget(EntityState s) {
         return getTarget(s.velocity(0), s.position(0), entityMapping);
     }
 

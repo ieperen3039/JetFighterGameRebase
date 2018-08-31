@@ -24,14 +24,14 @@ public final class ServerSettings {
 
     /** collision detection */
     public static final int MAX_COLLISION_ITERATIONS = 100 / TARGET_TPS;
-    private static final float BUMPOFF_SPEED = 10f;
+    private static final float BUMPOFF_SPEED = 15f;
     public static final float BUMPOFF_ENERGY = (0.5f * JetBasic.MASS * BUMPOFF_SPEED * BUMPOFF_SPEED); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
     public static final float COUNT_DOWN = 3f;
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final float POWERUP_COLLECTION_RANGE = 18f;
-    public static final float GENERAL_SPEED_FACTOR = 1.3f;
+    public static final float GENERAL_SPEED_FACTOR = 1f;
 
     public static final float PRINT_STATE_INTERVAL = 0;
     public static final int NOF_FUN = 7;

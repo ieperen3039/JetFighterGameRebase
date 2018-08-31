@@ -37,7 +37,7 @@ public final class ClientSettings {
     public static boolean INVERT_CAMERA_ROTATION = false;
     public static boolean V_SYNC = true;
     public static int ANTIALIAS = 1;
-    public static boolean SHOW_LIGHT_POSITIONS = DEBUG_SCREEN;
+    public static boolean SHOW_LIGHT_POSITIONS = false;
     public static float HIGHLIGHT_LINE_WIDTH = 1f;
     public static Color4f CHECKPOINT_ACTIVE_COLOR = Color4f.YELLOW;
     public static final int MAX_POINT_LIGHTS = 10;
@@ -50,9 +50,9 @@ public final class ClientSettings {
     public static int CONNECTION_SEND_FREQUENCY = ServerSettings.TARGET_TPS;
 
     /** sound */
+    public static float MASTER_GAIN = 2f;
     public static float BACKGROUND_MUSIC_GAIN = 0.2f;
-    public static float SOUND_MASTER_GAIN = 1f;
-    public static float MAX_VOLUME = 6f;
+    public static float MAX_VOLUME = 10f;
     public static float MIN_VOLUME = -20f;
 
     /** particle settings */

@@ -58,7 +58,7 @@ public class ParticleCloud {
      * @throws NullPointerException if {@link #writeToGL(float)} has been called before this method
      * @param position position of the middle of the particle
      * @param direction the direction where this particle moves to
-     * @param jitter a random speed at which this particle actual direction is offset to direction.
+     * @param jitter the random speed at which this particle actual direction is offset to direction.
 *               If direction is the zero vector, the actual speed will be random linear distributed between this and 0
      * @param maxTTL maximum time to live. Actual time will be random quadratic distributed between this and 0
      * @param color color of this particle
@@ -69,7 +69,7 @@ public class ParticleCloud {
         final DirVector random = DirVector.randomOrb();
 
         final float rotationSpeed = 2 + (2 / randFloat);
-        random.mul(randFloat * jitter * direction.length()).add(direction);
+        random.mul(randFloat * jitter).add(direction);
 
         addParticle(position, random, color, DirVector.random(), rotationSpeed, randFloat * randFloat * maxTTL, particleSize);
     }

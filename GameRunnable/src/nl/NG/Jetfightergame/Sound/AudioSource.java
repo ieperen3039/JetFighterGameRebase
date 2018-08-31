@@ -1,7 +1,5 @@
 package nl.NG.Jetfightergame.Sound;
 
-import nl.NG.Jetfightergame.Assets.Sounds;
-import nl.NG.Jetfightergame.Settings.ClientSettings;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
@@ -24,6 +22,7 @@ public class AudioSource {
     private boolean isDisposed = false;
 
     protected AudioSource(AudioFile data) {
+        Toolbox.checkALError();
         int dataID = data.getID();
         if (dataID == DATA_NOT_LOADED) throw new NullPointerException("Audio file " + data + " has not been loaded");
         if (dataID == DATA_COULD_NOT_BE_LOADED) return; // data could not be loaded, and this has already been reported
@@ -36,8 +35,8 @@ public class AudioSource {
     }
 
     /** creates and plays the specified sound on the specified place */
-    public AudioSource(Sounds data, PosVector sourcePos, float gain) {
-        this(data, sourcePos, DirVector.zeroVector(), 1.0f, gain, false);
+    public AudioSource(Sounds data, PosVector sourcePos, float pitch, float gain) {
+        this(data, sourcePos, DirVector.zeroVector(), pitch, gain, false);
     }
 
     /** creates and plays the specified sound on the specified place */
@@ -50,7 +49,6 @@ public class AudioSource {
         setGain(gain);
 
         AL10.alSourcePlay(sourceID);
-        Toolbox.checkALError();
     }
 
     /** plays the given soundfile as background music */
@@ -77,6 +75,7 @@ public class AudioSource {
 
     public void play() {
         AL10.alSourcePlay(sourceID);
+        Toolbox.checkALError();
     }
 
     public void interrupt(){
@@ -113,7 +112,8 @@ public class AudioSource {
     }
 
     public void setGain(float newValue){
-        alSourcef(sourceID, AL10.AL_GAIN, newValue * ClientSettings.SOUND_MASTER_GAIN);
+        alSourcef(sourceID, AL10.AL_GAIN, newValue);
+        Toolbox.checkALError("gain: " + newValue);
     }
 
     /**
@@ -127,6 +127,7 @@ public class AudioSource {
 
     public void setPitch(float value) {
         alSourcef(sourceID, AL10.AL_PITCH, value);
+        Toolbox.checkALError("pitch: " + value);
     }
 
     public static AudioSource empty = new AudioSource();

@@ -1,12 +1,12 @@
 package nl.NG.Jetfightergame.ScreenOverlay;
 
-import nl.NG.Jetfightergame.Assets.Sounds;
 import nl.NG.Jetfightergame.Controllers.InputHandling.MouseTracker;
 import nl.NG.Jetfightergame.Controllers.InputHandling.TrackerClickListener;
 import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuClickable;
 import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuPositioner;
 import nl.NG.Jetfightergame.ScreenOverlay.Userinterface.MenuPositionerCenter;
 import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 
 import java.util.Arrays;

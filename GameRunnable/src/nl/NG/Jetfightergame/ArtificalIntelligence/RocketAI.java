@@ -15,8 +15,7 @@ public class RocketAI implements Controller {
     private final float rollFactor;
     private final float pitchFactor;
     private final float yawFactor;
-    private static final float THROTTLE_DOT_IGNORE = (float) Math.cos(0.5f);
-    private static final float THROTTLE_MULTIPLIER = 1 / (1 - THROTTLE_DOT_IGNORE);
+    private static final float THROTTLE_DOT_IGNORE = (float) Math.toRadians(20);
 
     public final MovingEntity projectile;
 
@@ -49,8 +48,8 @@ public class RocketAI implements Controller {
         projectilePos = projectile.getPosition();
         targetPos = target.getExpectedMiddle();
         rollFactor = 0.1f;
-        pitchFactor = 2.5f;
-        yawFactor = 2.5f;
+        pitchFactor = 3f;
+        yawFactor = 3f;
     }
 
     /**
@@ -148,8 +147,8 @@ public class RocketAI implements Controller {
         }
 
         float dot = xVec.dot(vecToTarget);
-        dot -= THROTTLE_DOT_IGNORE;
-        return bound(dot * THROTTLE_MULTIPLIER, 0, 1);
+        dot += THROTTLE_DOT_IGNORE;
+        return bound(dot, 0, 1);
     }
 
     @Override

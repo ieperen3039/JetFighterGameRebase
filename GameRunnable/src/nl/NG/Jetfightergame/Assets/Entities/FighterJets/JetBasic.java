@@ -11,6 +11,8 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -84,6 +86,11 @@ public class JetBasic extends AbstractJet {
     @Override
     public PosVector getExpectedMiddle() {
         return extraPosition.add(shapeMiddle, new PosVector());
+    }
+
+    @Override
+    protected MovingAudioSource getBoosterSound() {
+        return new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
     }
 
     public static class Factory extends EntityFactory {

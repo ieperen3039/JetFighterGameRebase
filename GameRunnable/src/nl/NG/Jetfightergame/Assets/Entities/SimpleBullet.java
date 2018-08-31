@@ -13,12 +13,19 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.AudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
 import java.util.function.Consumer;
+
+import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_1;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.EXPLOSION_COLOR_2;
 
 /**
  * @author Geert van Ieperen
@@ -35,6 +42,19 @@ public class SimpleBullet extends AbstractProjectile {
         super(
                 id, initialPosition, initialRotation, initialVelocity, MASS,
                 AIR_RESIST_COEFF, TIME_TO_LIVE, 0, 0f, 0, 0.1f, entityDeposit, gameTimer, src
+        );
+    }
+
+    @Override
+    public ParticleCloud explode() {
+        timeToLive = 0;
+        PosVector pos = getPosition();
+        DirVector vel = DirVector.zeroVector();
+        entityDeposit.add(new AudioSource(Sounds.seekerPop, pos, 0.5f, 1f));
+        return Particles.explosion(
+                pos, vel,
+                EXPLOSION_COLOR_1, EXPLOSION_COLOR_2,
+                10f, 5, 1, 1f
         );
     }
 
