@@ -24,7 +24,7 @@ public final class ServerSettings {
 
     /** collision detection */
     public static final int MAX_COLLISION_ITERATIONS = 100 / TARGET_TPS;
-    private static final float BUMPOFF_SPEED = 15f;
+    public static final float BUMPOFF_SPEED = 15f;
     public static final float BUMPOFF_ENERGY = (0.5f * JetBasic.MASS * BUMPOFF_SPEED * BUMPOFF_SPEED); // e = 0.5*m*v*v in joule
 
     /** miscellaneous */
@@ -34,7 +34,7 @@ public final class ServerSettings {
     public static final float GENERAL_SPEED_FACTOR = 1.5f;
 
     public static final float PRINT_STATE_INTERVAL = 0;
-    public static final int NOF_FUN = 3;
+    public static int NOF_FUN = 3;
 
     public static final int CUBE_SIZE_LARGE = 25;
     public static final float CUBE_MASS_LARGE = CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * CUBE_SIZE_LARGE * 0.1f;

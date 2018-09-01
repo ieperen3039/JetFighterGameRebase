@@ -26,6 +26,7 @@ public final class LauncherSettings {
     public static int TARGET_TPS = 30;
     public static int CONNECTION_SEND_FREQUENCY = TARGET_TPS;
     public static boolean MAKE_REPLAY = true;
+    public static int NOF_OPPONENTS = 7;
 
     /** visual settings */
     public static int TARGET_FPS = 60;
@@ -59,6 +60,7 @@ public final class LauncherSettings {
             gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
             gen.writeStringField("JET_TYPE", JET_TYPE);
             gen.writeBooleanField("LOGGER_PRINT_CALLSITES", false);
+            gen.writeNumberField("NUMBER_OF_NPCS", NOF_OPPONENTS);
 //              gen.writeNumberField("",);
             // keybindings
             for (KeyBinding binding : KeyBinding.values()) {
@@ -79,7 +81,10 @@ public final class LauncherSettings {
     }
 
     public static void readSettingsFromFile(String filename) throws IOException {
-        ObjectNode src = new ObjectMapper().readValue(Directory.settings.getFile(filename), ObjectNode.class);
+        File file = Directory.settings.getFile(filename);
+        if (!file.exists()) return;
+
+        ObjectNode src = new ObjectMapper().readValue(file, ObjectNode.class);
         KeyBinding[] keyBindings = KeyBinding.values();
 
         Iterator<Map.Entry<String, JsonNode>> fields = src.fields();
@@ -116,6 +121,8 @@ public final class LauncherSettings {
                     break;
                 case "LOGGER_PRINT_CALLSITES": // always false
                     break;
+                case "NUMBER_OF_NPCS":
+                    NOF_OPPONENTS = result.intValue();
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found
                     for (KeyBinding target : keyBindings) {

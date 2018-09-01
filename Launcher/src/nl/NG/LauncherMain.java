@@ -211,6 +211,9 @@ public class LauncherMain {
         settings.add(getChoiceSetting(panel, column(3), "Race map",
                 names.getWorlds(), map, (m) -> map = m));
 
+        settings.add(getTextboxSetting(panel, column(3), "Number of NPC players",
+                LauncherSettings.NOF_OPPONENTS, (s) -> LauncherSettings.NOF_OPPONENTS = Integer.valueOf(s)));
+
         panel.add(getFiller(), getButtonConstraints(column(3), RELATIVE));
 
         for (int i = 0; i < COLUMNS_OF_SETTINGS - 1; i++) {

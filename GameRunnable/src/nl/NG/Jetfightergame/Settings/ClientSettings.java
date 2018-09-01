@@ -95,7 +95,7 @@ public final class ClientSettings {
             gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
             gen.writeStringField("JET_TYPE", JET_TYPE.toString());
             gen.writeBooleanField("LOGGER_PRINT_CALLSITES", Logger.doPrintCallsites);
-//              gen.writeNumberField("",);
+            gen.writeNumberField("NUMBER_OF_NPCS", ServerSettings.NOF_FUN);
             // keybindings
             for (KeyBinding binding : KeyBinding.values()) {
                 gen.writeArrayFieldStart(binding.name());
@@ -154,6 +154,8 @@ public final class ClientSettings {
                 case "LOGGER_PRINT_CALLSITES":
                     Logger.doPrintCallsites = result.booleanValue();
                     break;
+                case "NUMBER_OF_NPCS":
+                    ServerSettings.NOF_FUN = result.intValue();
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found
                     for (KeyBinding target : keyBindings) {

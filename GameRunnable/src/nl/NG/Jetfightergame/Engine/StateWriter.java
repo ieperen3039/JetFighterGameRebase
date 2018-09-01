@@ -72,8 +72,8 @@ public class StateWriter extends ServerConnection {
     @Override
     public void sendWorldSwitch(EnvironmentClass world, float countDown, int maxRounds) {
         worldSwitches++;
-        if (worldSwitches == 2) closeOutputStream();
         super.sendWorldSwitch(world, countDown, maxRounds);
+        if (worldSwitches == 2) closeOutputStream();
     }
 
     @Override

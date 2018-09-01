@@ -98,14 +98,13 @@ public class RaceAI extends RocketAI {
             Vector3f vel = jet.getVelocity();
             if (vel.lengthSquared() > 500) vel.normalize(20);
 
-            float maxOffsetLength = Math.max(CHECKPOINT_MARGIN * checkpoint.getRange(), 100);
+            float maxOffsetLength = Math.min(CHECKPOINT_MARGIN * checkpoint.getRange(), 75);
             if (proj < maxOffsetLength) {
                 offset.scale(proj);
                 offset.add(forward.scale(20));
             } else {
                 offset.scale(maxOffsetLength);
             }
-            offset.add(vel);
 
             return chPosition.add(offset, new PosVector());
         }
