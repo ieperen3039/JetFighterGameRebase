@@ -105,7 +105,6 @@ public class JetFighterGame {
             MouseTracker.getInstance().listenTo(window);
             KeyTracker.getInstance().listenTo(window);
 
-
             if (replayFile == null) {
                 OutputStream sendChannel;
                 InputStream receiveChannel;

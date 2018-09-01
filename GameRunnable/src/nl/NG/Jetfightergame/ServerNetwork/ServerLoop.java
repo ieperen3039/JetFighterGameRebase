@@ -321,6 +321,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         float countDown = maxRounds > 0 ? ServerSettings.COUNT_DOWN : 0;
 
         connections.forEach(conn -> conn.sendWorldSwitch(world, countDown, maxRounds));
+        connections.removeIf(ServerConnection::isClosed);
         raceProgress.setMaxRounds(maxRounds);
         // startup new world
         gameWorld.switchTo(world);

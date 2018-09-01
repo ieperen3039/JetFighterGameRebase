@@ -63,6 +63,7 @@ public class ReflectorShield extends AbstractShield {
 
     @Override
     public ParticleCloud explode() {
+        timeToLive = 0;
         return Particles.splitIntoParticles(this, BURST_FORCE, COLOR);
     }
 

@@ -77,11 +77,6 @@ public class StateWriter extends ServerConnection {
     }
 
     @Override
-    public void sendProgress(int pInd, int checkPointNr, int roundNr) {
-        super.sendProgress(pInd, checkPointNr, roundNr);
-    }
-
-    @Override
     protected void closeOutputStream() {
         try {
             super.closeOutputStream();

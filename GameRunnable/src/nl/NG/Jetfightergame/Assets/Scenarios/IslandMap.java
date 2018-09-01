@@ -49,18 +49,24 @@ public class IslandMap extends GameState {
         int nOfTiles = 2 * WORLD_BOUND / TILE_SIZE;
         for (int x = 0; x < nOfTiles; x++) {
             for (int y = 0; y < nOfTiles; y++) {
-                PosVector pos = new PosVector(x * TILE_SIZE - WORLD_BOUND, y * TILE_SIZE - WORLD_BOUND, -50);
-                entities.add(new StaticEntity(GeneralShapes.SEA, Material.GLASS, Color4f.BLUE, pos, TILE_SIZE));
+
+                int xCoord = x * TILE_SIZE - WORLD_BOUND;
+                int yCoord = y * TILE_SIZE - WORLD_BOUND;
+                if ((xCoord < -550 || xCoord > 710) || (yCoord < -730 || yCoord > 510)) {
+                    PosVector pos = new PosVector(xCoord, yCoord, -50);
+                    entities.add(new StaticEntity(GeneralShapes.SEA, Material.GLASS, Color4f.BLUE, pos, TILE_SIZE));
+                }
+
             }
         }
         // world boundary
-        float quart = (float) Math.PI / 2;
-        entities.add(borderPanel(new PosVector(WORLD_BOUND, 0, 0), new Quaternionf().rotateY(-quart)));
-        entities.add(borderPanel(new PosVector(-WORLD_BOUND, 0, 0), new Quaternionf().rotateY(quart)));
-        entities.add(borderPanel(new PosVector(0, WORLD_BOUND, 0), new Quaternionf().rotateX(-quart)));
-        entities.add(borderPanel(new PosVector(0, -WORLD_BOUND, 0), new Quaternionf().rotateX(quart)));
-        entities.add(borderPanel(new PosVector(0, 0, WORLD_BOUND), new Quaternionf()));
-        entities.add(borderPanel(new PosVector(0, 0, -WORLD_BOUND), new Quaternionf().rotateZ(quart * 2)));
+//        float quart = (float) Math.PI / 2;
+//        entities.add(borderPanel(new PosVector(WORLD_BOUND, 0, 0), new Quaternionf().rotateY(-quart)));
+//        entities.add(borderPanel(new PosVector(-WORLD_BOUND, 0, 0), new Quaternionf().rotateY(quart)));
+//        entities.add(borderPanel(new PosVector(0, WORLD_BOUND, 0), new Quaternionf().rotateX(quart)));
+//        entities.add(borderPanel(new PosVector(0, -WORLD_BOUND, 0), new Quaternionf().rotateX(-quart)));
+//        entities.add(borderPanel(new PosVector(0, 0, WORLD_BOUND), new Quaternionf()));
+//        entities.add(borderPanel(new PosVector(0, 0, -WORLD_BOUND), new Quaternionf().rotateX(quart * 2)));
 
         Pair<PosVector, DirVector> start = racePath.getFirstCheckpoint();
         nextSpawnPosition.set(start.left);

@@ -50,10 +50,8 @@ public final class ClientSettings {
     public static int CONNECTION_SEND_FREQUENCY = ServerSettings.TARGET_TPS;
 
     /** sound */
-    public static float MASTER_GAIN = 2f;
-    public static float BACKGROUND_MUSIC_GAIN = 0.2f;
-    public static float MAX_VOLUME = 10f;
-    public static float MIN_VOLUME = -20f;
+    public static float MASTER_GAIN = 0.5f;
+    public static float BACKGROUND_MUSIC_GAIN = 0.1f;
 
     /** particle settings */
     public static float PARTICLE_MODIFIER = 1f;

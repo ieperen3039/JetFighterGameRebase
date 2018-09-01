@@ -21,7 +21,7 @@ public class RaceAI extends RocketAI {
     private static final float POWERUP_COLLECT_BENDOUT = (float) (Math.PI / 16);
     private static final float OFF_TARGET_BENDOUT = (float) (Math.PI / 8);
     private static final int LOOK_AHEAD = 0;
-    private static final float CHECKPOINT_MARGIN = 0.5f; // [0, 1]
+    private static final float CHECKPOINT_MARGIN = 0.8f; // [0, 1]
     private static final float POWERUP_LOSE_ANGLE = 1f;
 
     private final RaceProgress race;
@@ -98,7 +98,7 @@ public class RaceAI extends RocketAI {
             Vector3f vel = jet.getVelocity();
             if (vel.lengthSquared() > 500) vel.normalize(20);
 
-            float maxOffsetLength = CHECKPOINT_MARGIN * checkpoint.getRange();
+            float maxOffsetLength = Math.max(CHECKPOINT_MARGIN * checkpoint.getRange(), 100);
             if (proj < maxOffsetLength) {
                 offset.scale(proj);
                 offset.add(forward.scale(20));

@@ -28,7 +28,7 @@ public class OneHitShield extends AbstractShield {
         super(id, jet, time, PowerupType.OHSHIELD_DURATION, deposit);
 
         if (!deposit.isHeadless()) {
-            deposit.add(new MovingAudioSource(Sounds.shield, this, 0.4f, 1.0f, true));
+            deposit.add(new MovingAudioSource(Sounds.shield, this, 2.0f, 0.2f, true));
         }
     }
 
@@ -54,6 +54,7 @@ public class OneHitShield extends AbstractShield {
 
     @Override
     public ParticleCloud explode() {
+        timeToLive = 0;
         entityDeposit.add(new AudioSource(Sounds.shieldPop, getPosition(), velocityAtRenderTime(), 0.4f, 1f, false));
         return Particles.splitIntoParticles(this, BURST_FORCE, COLOR);
     }

@@ -38,7 +38,7 @@ public abstract class AbstractGameLoop extends Thread {
         super(name);
         if (targetTps == 0) pauseBlock = new CountDownLatch(1);
         this.targetDeltaMillis = 1000f/targetTps;
-        this.notifyDelay = notifyDelay;
+        this.notifyDelay = false;
 
         avgTPS = new AveragingQueue(targetTps/2);
         avgPoss = new AveragingQueue(targetTps/10);
