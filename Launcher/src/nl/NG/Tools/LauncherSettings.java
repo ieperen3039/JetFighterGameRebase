@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -40,6 +41,7 @@ public final class LauncherSettings {
     /** miscellaneous */
     public static String JET_TYPE = "JET_SPITZ";
     public static boolean ALLOW_FLYING_TEXT = true;
+    public static Color JET_COLOR = Color.WHITE;
 
     public static File writeSettingsToFile(File file) throws IOException {
         FileOutputStream out = new FileOutputStream(file);
@@ -60,7 +62,14 @@ public final class LauncherSettings {
             gen.writeStringField("JET_TYPE", JET_TYPE);
             gen.writeBooleanField("LOGGER_PRINT_CALLSITES", false);
             gen.writeNumberField("NUMBER_OF_NPCS", NOF_OPPONENTS);
-//              gen.writeNumberField("",);
+            gen.writeArrayFieldStart("JET_COLOR");
+            {
+                gen.writeNumber(JET_COLOR.getRed());
+                gen.writeNumber(JET_COLOR.getGreen());
+                gen.writeNumber(JET_COLOR.getBlue());
+            }
+            gen.writeEndArray();
+
             // keybindings
             for (KeyBinding binding : KeyBinding.values()) {
                 gen.writeArrayFieldStart(binding.name());
@@ -121,12 +130,25 @@ public final class LauncherSettings {
                     break;
                 case "NUMBER_OF_NPCS":
                     NOF_OPPONENTS = result.intValue();
+                    break;
+                case "JET_COLOR":
+                    assert result.isArray();
+                    Iterator<JsonNode> values = result.elements();
+                    assert values.hasNext();
+                    JET_COLOR = new Color(
+                            values.next().intValue(),
+                            values.next().intValue(),
+                            values.next().intValue()
+                    );
+                    assert !values.hasNext();
+                    break;
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found
                     for (KeyBinding target : keyBindings) {
                         if (fieldName.equals(target.toString())) {
                             assert result.isArray();
                             Iterator<JsonNode> node = result.elements();
+                            assert node.hasNext();
                             target.installNew(node.next().intValue(), node.next().booleanValue(), false);
                             target.installNew(node.next().intValue(), node.next().booleanValue(), true);
                             assert !node.hasNext();

@@ -45,6 +45,7 @@ import java.util.function.Consumer;
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.FollowingCamera;
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.SpectatorFollowing;
 import static nl.NG.Jetfightergame.Rendering.JetFighterRenderer.Mode.*;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.JET_COLOR;
 
 /**
  * @author Geert van Ieperen created on 29-10-2017.
@@ -155,7 +156,7 @@ public class JetFighterGame {
                     receiveChannel = socket.getInputStream();
                 }
 
-                connection = new ClientConnection(playerName, sendChannel, receiveChannel, ClientSettings.JET_TYPE);
+                connection = new ClientConnection(playerName, sendChannel, receiveChannel, ClientSettings.JET_TYPE, JET_COLOR);
                 otherLoops.add(connection);
                 Logger.printOnline(() -> connection.getTimer().toString());
 

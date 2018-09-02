@@ -15,6 +15,7 @@ import nl.NG.Jetfightergame.Sound.MovingAudioSource;
 import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -45,7 +46,7 @@ public class JetBasic extends AbstractJet {
                 id, initialPosition, initialRotation,
                 MATERIAL, MASS, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                0.7f, renderTimer, 0.5f, 0.7f, entityDeposit, entities
+                0.7f, renderTimer, 0.5f, 0.7f, entityDeposit, entities, Color4f.WHITE
         );
 
         // SCALE IS 0.5
@@ -93,26 +94,21 @@ public class JetBasic extends AbstractJet {
         return new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
     }
 
-    public static class Factory extends EntityFactory {
+    public static class Factory extends JetFactory {
         public Factory() {
             super();
         }
 
-        public Factory(PosVector position, DirVector direction, DirVector velocity) {
-            super(EntityClass.JET_BASIC, position, Toolbox.xTo(direction), velocity);
+        public Factory(PosVector position, DirVector direction, DirVector velocity, Color4f color) {
+            super(EntityClass.JET_BASIC, position, Toolbox.xTo(direction), velocity, color);
         }
 
         public Factory(JetBasic jet) {
             super(EntityClass.JET_BASIC, jet);
         }
 
-        public Factory(EntityState spawnPosition, int timeFraction) {
-            super(
-                    EntityClass.JET_BASIC,
-                    spawnPosition.position(timeFraction),
-                    spawnPosition.rotation(timeFraction),
-                    spawnPosition.velocity(timeFraction)
-            );
+        public Factory(EntityState spawnPosition, int timeFraction, Color4f white) {
+            super(EntityClass.JET_BASIC, spawnPosition, timeFraction, white);
         }
 
         @Override

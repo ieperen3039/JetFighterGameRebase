@@ -79,7 +79,7 @@ public class ServerLoop extends AbstractGameLoop implements GameServer, RaceChan
         List<Player> npcs = new ArrayList<>();
         // add FUN
         for (int i = 0; i < nOfPlayers; i++) {
-            EntityFactory blueprint = new JetSpitsy.Factory(new EntityState(), 0);
+            EntityFactory blueprint = new JetSpitsy.Factory(new EntityState(), 0, Color4f.WHITE);
             AbstractJet jet = (AbstractJet) blueprint.construct(this, gameWorld);
 
             String name = "AI-" + i;

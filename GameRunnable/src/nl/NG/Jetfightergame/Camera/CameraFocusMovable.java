@@ -18,6 +18,7 @@ import nl.NG.Jetfightergame.ShapeCreation.Shape;
 import nl.NG.Jetfightergame.Sound.MovingAudioSource;
 import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -41,7 +42,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
     public CameraFocusMovable(PosVector position, Quaternionf rotation, GameTimer timer, boolean doDraw, SpawnReceiver entityDeposit) {
         super(-1, position, rotation, Material.GLOWING,
                 1, 0, 0, 0, 0, 0, 0, 0,
-                timer, 0, 0, entityDeposit, null);
+                timer, 0, 0, entityDeposit, null, Color4f.WHITE);
         this.doDraw = doDraw;
     }
 

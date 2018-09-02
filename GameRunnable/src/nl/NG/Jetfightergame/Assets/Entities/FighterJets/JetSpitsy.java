@@ -16,6 +16,7 @@ import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.DataStructures.PairList;
 import nl.NG.Jetfightergame.Tools.Toolbox;
+import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -43,13 +44,13 @@ public class JetSpitsy extends AbstractJet {
 
     private JetSpitsy(
             int id, PosVector initialPosition, Quaternionf initialRotation, GameTimer renderTimer,
-            SpawnReceiver entityDeposit, EntityMapping entities
+            SpawnReceiver entityDeposit, EntityMapping entities, Color4f color
     ) {
         super(
                 id, initialPosition, initialRotation,
                 MATERIAL, MASS, AIR_RESISTANCE_COEFFICIENT, THROTTLE_POWER, BRAKE_POWER,
                 YAW_POWER, PITCH_POWER, ROLL_POWER,
-                ROTATION_REDUCTION_FACTOR, renderTimer, Y_REDUCTION, Z_REDUCTION, entityDeposit, entities
+                ROTATION_REDUCTION_FACTOR, renderTimer, Y_REDUCTION, Z_REDUCTION, entityDeposit, entities, color
         );
 
         Pair<PosVector, Float> minimalCircle = CustomJetShapes.SPITZ.getMinimalCircle();
@@ -96,31 +97,28 @@ public class JetSpitsy extends AbstractJet {
         return new MovingAudioSource(Sounds.booster, this, 0.01f, BOOSTER_GAIN, true);
     }
 
-    public static class Factory extends EntityFactory {
+    public static class Factory extends JetFactory {
+
         public Factory() {
             super();
         }
 
-        public Factory(PosVector position, DirVector direction, DirVector velocity) {
-            super(EntityClass.JET_SPITZ, position, Toolbox.xTo(direction), velocity);
+        public Factory(PosVector position, DirVector direction, DirVector velocity, Color4f color) {
+            super(EntityClass.JET_SPITZ, position, Toolbox.xTo(direction), velocity, color);
         }
 
         public Factory(JetSpitsy jet) {
             super(EntityClass.JET_SPITZ, jet);
         }
 
-        public Factory(EntityState spawnPosition, int timeFraction) {
-            super(
-                    EntityClass.JET_SPITZ,
-                    spawnPosition.position(timeFraction),
-                    spawnPosition.rotation(timeFraction),
-                    spawnPosition.velocity(timeFraction)
-            );
+        public Factory(EntityState spawnPosition, int timeFraction, Color4f color) {
+            super(EntityClass.JET_SPITZ, spawnPosition, timeFraction, color);
         }
 
         @Override
         public MovingEntity construct(SpawnReceiver game, EntityMapping entities) {
-            return new JetSpitsy(id, position, rotation, game.getTimer(), game, entities);
+            return new JetSpitsy(id, position, rotation, game.getTimer(), game, entities, color);
         }
+
     }
 }

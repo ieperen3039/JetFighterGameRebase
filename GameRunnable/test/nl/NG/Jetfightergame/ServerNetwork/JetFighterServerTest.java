@@ -11,6 +11,8 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Objects;
 
+import static nl.NG.Jetfightergame.Settings.ClientSettings.JET_COLOR;
+
 /**
  * @author Geert van Ieperen created on 15-5-2018.
  */
@@ -33,7 +35,7 @@ public class JetFighterServerTest {
         try {
             client.connect(new InetSocketAddress(ServerSettings.SERVER_PORT));
             ClientConnection cc = new ClientConnection("TheLegend27",
-                    client.getOutputStream(), client.getInputStream(), EntityClass.JET_SPITZ
+                    client.getOutputStream(), client.getInputStream(), EntityClass.JET_SPITZ, JET_COLOR
             );
             Logger.DEBUG.print("received a " + cc);
         } catch (IOException e) {

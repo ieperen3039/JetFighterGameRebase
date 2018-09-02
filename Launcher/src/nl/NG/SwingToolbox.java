@@ -205,7 +205,7 @@ public final class SwingToolbox {
         return new Setting<>(button::isSelected, effect, button::setSelected);
     }
 
-    static <Type> Setting<Type> getChoiceSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
+    public static <Type> Setting<Type> getChoiceSetting(JPanel parent, int col, String text, Type[] values, Type current, Consumer<Type> effect) {
         JPanel panel = getSettingPanel(text);
 
         JComboBox<Type> userInput = new JComboBox<>(values);
@@ -218,6 +218,26 @@ public final class SwingToolbox {
 
         //noinspection unchecked // combobox is not editable
         return new Setting<>(() -> (Type) userInput.getSelectedItem(), effect, userInput::setSelectedItem);
+    }
+
+    public static Setting<Color> getColorSetting(JPanel parent, int col, String text, Color current, Consumer<Color> effect) {
+        JPanel panel = getSettingPanel(text);
+
+        JPanel sample = new JPanel();
+        sample.setBorder(new BevelBorder(BevelBorder.RAISED));
+        sample.setBackground(current);
+        sample.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Color result = JColorChooser.showDialog(parent, "Pick a color", sample.getBackground());
+                if (result != null) sample.setBackground(result);
+            }
+        });
+        panel.add(sample);
+
+        parent.add(panel, getButtonConstraints(col, RELATIVE));
+
+        return new Setting<>(sample::getBackground, effect, sample::setBackground);
     }
 
     private static JPanel getSettingPanel(String text) {
@@ -251,10 +271,21 @@ public final class SwingToolbox {
         return panel;
     }
 
+    /**
+     * must be newly generated when one should be opened
+     * @param key         the key to set
+     * @param parentFrame the frame where the setting is found on
+     * @param userInput   the button that caused this popup, being a child of parentFrame
+     */
     private static void getGetKeyDialog(KeyBinding key, Frame parentFrame, JButton userInput) {
         JDialog keyFetcherFrame = new JDialog(parentFrame, false);
         JTextArea keyFetcher = new JTextArea("Press any key");
         keyFetcher.setEditable(false);
+
+        Point mousePos = userInput.getLocationOnScreen();
+        mousePos.x += userInput.getWidth() / 2;
+        mousePos.y += userInput.getHeight() / 2;
+
         int xMid = parentFrame.getX() + (parentFrame.getWidth() / 2);
         int yMid = parentFrame.getY() + (parentFrame.getHeight() / 2);
         int x = xMid - (KEYFETCH_DIALOG_DIM.width / 2);
@@ -268,11 +299,7 @@ public final class SwingToolbox {
             parentFrame.setCursor(null);
             userInput.setText(key.keyName());
             keyFetcherFrame.dispose();
-            Point p = userInput.getLocationOnScreen();
-            moveMouseTo(
-                    p.x + userInput.getWidth() / 2,
-                    p.y + userInput.getHeight() / 2
-            );
+            moveMouseTo(mousePos.x, mousePos.y);
         };
 
         // move mouse and set/validate sizes before installing listeners

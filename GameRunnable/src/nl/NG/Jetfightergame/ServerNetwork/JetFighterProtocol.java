@@ -31,7 +31,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.PARTICLE_MODIFIER;
  * @author Geert van Ieperen created on 9-5-2018.
  */
 public class JetFighterProtocol {
-    public static final int versionNumber = 7;
+    public static final int versionNumber = 8;
     private static final byte TIMER_SYNC_PINGS = 10;
 
     private final DataInputStream input;
@@ -156,14 +156,16 @@ public class JetFighterProtocol {
      * @param controls   the controls used for the resulting jet
      * @param deposit    the deposit for new entities
      * @param entities
+     * @param jetColor
      * @return on left, the jet received from the server, not necessarily the one requested.
      * on right, true if this player is allowed to send control messages to the server
      */
     public Pair<AbstractJet, Boolean> playerSpawnRequest(
-            String playerName, EntityClass type, Controller controls, SpawnReceiver deposit, EntityMapping entities
+            String playerName, EntityClass type, Controller controls, SpawnReceiver deposit, EntityMapping entities, Color4f jetColor
     ) throws IOException {
         output.writeUTF(playerName);
         output.writeInt(type.ordinal());
+        DataIO.writeColor(output, jetColor);
         output.flush();
 
         AbstractJet jet = (AbstractJet) newEntityRead(deposit, entities);
@@ -175,7 +177,7 @@ public class JetFighterProtocol {
 
     /**
      * @return a pair with on left the name of this player, and on right the jet of this player
-     * @see #playerSpawnRequest(String, EntityClass, Controller, SpawnReceiver, EntityMapping)
+     * @see #playerSpawnRequest(String, EntityClass, Controller, SpawnReceiver, EntityMapping, Color4f)
      */
     public Pair<String, AbstractJet> playerSpawnAccept(
             EntityState spawnState, SpawnReceiver server, Controller controls,
@@ -184,14 +186,21 @@ public class JetFighterProtocol {
 
         String name = input.readUTF();
         EntityClass type = EntityClass.get(input.readInt());
+        Color4f color = DataIO.readColor(input);
         EntityFactory factory = EntityFactory.newFactoryOf(type, spawnState, 0);
 
         MovingEntity construct = factory.construct(server, entities);
-        assert construct instanceof AbstractJet : "player tried flying on something that is not a jet.";
+        if (!(construct instanceof AbstractJet)) {
+            Logger.ERROR.print("player tried flying on something that is not a jet.");
+            output.close();
+            return null;
+        }
+
         AbstractJet jet = (AbstractJet) construct;
         jet.setController(controls);
+        jet.setJetColor(color); // required for other players to see the color
 
-        newEntitySend(factory);
+        newEntitySend(jet.getFactory());
         output.writeBoolean(isAdmin);
         output.flush();
         return new Pair<>(name, jet);

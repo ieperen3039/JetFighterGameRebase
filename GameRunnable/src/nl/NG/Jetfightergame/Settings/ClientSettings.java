@@ -12,7 +12,6 @@ import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -21,6 +20,7 @@ import java.util.Map;
 /**
  * @author Geert van Ieperen created on 26-4-2018.
  */
+@SuppressWarnings("Duplicates")
 public final class ClientSettings {
     /** engine settings */
     public static boolean DEBUG_SCREEN = false;
@@ -74,11 +74,11 @@ public final class ClientSettings {
     /** miscellaneous */
     public static Material PORTAL_MATERIAL = Material.PLASTIC;
     public static EntityClass JET_TYPE = EntityClass.SPECTATOR_CAMERA;
+    public static Color4f JET_COLOR = Color4f.YELLOW;
     public static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
-    public static File writeSettingsToFile(String fileName) throws IOException {
-        File file = Directory.settings.getFile(fileName);
-        FileOutputStream out = new FileOutputStream(file);
+    public static void writeSettingsToFile(String filePath) throws IOException {
+        FileOutputStream out = new FileOutputStream(filePath);
         JsonGenerator gen = new JsonFactory().createGenerator(out);
         gen.useDefaultPrettyPrinter();
 
@@ -89,13 +89,21 @@ public final class ClientSettings {
             gen.writeNumberField("TARGET_FPS", TARGET_FPS);
             gen.writeNumberField("RENDER_DELAY", RENDER_DELAY);
             gen.writeNumberField("SERVER_PORT", ServerSettings.SERVER_PORT);
-            gen.writeBooleanField("SERVER_MAKE_REPLAY", ServerSettings.SERVER_MAKE_REPLAY);
+            gen.writeBooleanField("MAKE_REPLAY", ServerSettings.SERVER_MAKE_REPLAY);
             gen.writeNumberField("TARGET_TPS", ServerSettings.TARGET_TPS);
             gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
             gen.writeNumberField("CONNECTION_SEND_FREQUENCY", CONNECTION_SEND_FREQUENCY);
             gen.writeStringField("JET_TYPE", JET_TYPE.toString());
             gen.writeBooleanField("LOGGER_PRINT_CALLSITES", Logger.doPrintCallsites);
             gen.writeNumberField("NUMBER_OF_NPCS", ServerSettings.NOF_FUN);
+            gen.writeArrayFieldStart("JET_COLOR");
+            {
+                gen.writeNumber((int) (JET_COLOR.red * 255));
+                gen.writeNumber((int) (JET_COLOR.green * 255));
+                gen.writeNumber((int) (JET_COLOR.blue * 255));
+            }
+            gen.writeEndArray();
+
             // keybindings
             for (KeyBinding binding : KeyBinding.values()) {
                 gen.writeArrayFieldStart(binding.name());
@@ -111,7 +119,7 @@ public final class ClientSettings {
         gen.writeEndObject();
 
         gen.close();
-        return file;
+        out.close();
     }
 
     public static void readSettingsFromFile(String filename) throws IOException {
@@ -135,7 +143,7 @@ public final class ClientSettings {
                 case "SERVER_PORT":
                     ServerSettings.SERVER_PORT = result.intValue();
                     break;
-                case "SERVER_MAKE_REPLAY":
+                case "MAKE_REPLAY":
                     ServerSettings.SERVER_MAKE_REPLAY = result.booleanValue();
                     break;
                 case "TARGET_TPS":
@@ -156,12 +164,25 @@ public final class ClientSettings {
                     break;
                 case "NUMBER_OF_NPCS":
                     ServerSettings.NOF_FUN = result.intValue();
+                    break;
+                case "JET_COLOR":
+                    assert result.isArray();
+                    Iterator<JsonNode> values = result.elements();
+                    assert values.hasNext();
+                    JET_COLOR = new Color4f(
+                            values.next().intValue(),
+                            values.next().intValue(),
+                            values.next().intValue()
+                    );
+                    assert !values.hasNext();
+                    break;
 
                 default: // maybe not the fastest, but no exception is thrown when the string is not found
                     for (KeyBinding target : keyBindings) {
                         if (fieldName.equals(target.toString())) {
                             assert result.isArray();
                             Iterator<JsonNode> node = result.elements();
+                            assert node.hasNext();
                             target.installNew(node.next().intValue(), node.next().booleanValue(), false);
                             target.installNew(node.next().intValue(), node.next().booleanValue(), true);
                             assert !node.hasNext();

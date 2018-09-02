@@ -114,6 +114,7 @@ public class LauncherMain {
 
         frame.add(imagePanel);
 
+        frame.pack();
         frame.setSize(DEFAULT_LAUNCHER_SIZE);
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         Point centerPoint = ge.getCenterPoint();
@@ -122,9 +123,6 @@ public class LauncherMain {
         int dy = centerPoint.y - (frame.getHeight() / 2);
 
         frame.setLocation(dx, dy);
-        frame.pack();
-        frame.setSize(DEFAULT_LAUNCHER_SIZE);
-
         frame.addWindowListener(new WindowAdapter() {
 
             @Override
@@ -210,6 +208,9 @@ public class LauncherMain {
 
         settings.add(getTextboxSetting(panel, column(2), "Player Name",
                 getPlayerName(), (s) -> playerName = s));
+
+        settings.add(getColorSetting(panel, column(2), "Jet Color",
+                LauncherSettings.JET_COLOR, (c) -> LauncherSettings.JET_COLOR = c));
 
         panel.add(getFiller(), getButtonConstraints(column(2), RELATIVE));
 
@@ -578,14 +579,19 @@ public class LauncherMain {
             Logger.ERROR.print(e);
         }
 
+        boolean doReboot = !names.loadedSuccessful() || (!doReplay && LauncherSettings.MAKE_REPLAY);
+
         new Thread(() -> {
             try {
                 bindOutputToLogger(gameProc);
                 gameProc.waitFor();
                 Logger.INFO.print("Game finished with exit code " + gameProc.exitValue());
 
-                LauncherSettings.readSettingsFromFile(SETTINGS_FILE);
-                reboot();
+                if (doReboot) {
+                    LauncherSettings.readSettingsFromFile(SETTINGS_FILE);
+                    reboot();
+                    select(debugOutputPanel);
+                }
 
             } catch (Exception e) {
                 Logger.ERROR.print(e);

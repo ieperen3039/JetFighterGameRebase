@@ -62,7 +62,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     protected boolean controlTeardown = false;
     protected float maxServerTime = 0;
 
-    public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel, EntityClass jetType) throws IOException {
+    public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel, EntityClass jetType, Color4f jetColor) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
@@ -77,7 +77,7 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         this.counter = new CountDownTimer(0, gameTimer);
         protocol.worldSwitchRead(game, counter, gameTimer.time(), raceProgress);
 
-        Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, jetType, input, this, game);
+        Pair<AbstractJet, Boolean> pair = protocol.playerSpawnRequest(name, jetType, input, this, game, jetColor);
         this.isAdmin = pair.right;
         this.jet = pair.left;
         game.addEntity(jet);

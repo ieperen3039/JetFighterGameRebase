@@ -5,6 +5,8 @@ import nl.NG.Jetfightergame.Controllers.Controller;
 import nl.NG.Jetfightergame.Engine.GameTimer;
 import nl.NG.Jetfightergame.EntityGeneral.EntityMapping;
 import nl.NG.Jetfightergame.EntityGeneral.EntityState;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
+import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityFactory;
 import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor;
@@ -16,6 +18,7 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
+import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Sound.MovingAudioSource;
 import nl.NG.Jetfightergame.Sound.Sounds;
@@ -29,6 +32,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -72,6 +78,7 @@ public abstract class AbstractJet extends MovingEntity {
     private VectorInterpolator velocityInterpolator;
 
     private PowerupType currentPowerup = PowerupType.NONE;
+    protected Color4f color;
 
     /**
      * You are defining a complete Fighterjet here. good luck.
@@ -93,13 +100,14 @@ public abstract class AbstractJet extends MovingEntity {
      * @param entityDeposit           the class that allows new entityMapping and particles to be added to the
      *                                environment
      * @param entityMapping           a mapping that allows binding id's to entityMapping
+     * @param color
      */
     public AbstractJet(
             int id, PosVector initialPosition, Quaternionf initialRotation,
             Material material, float mass, float airResistanceCoeff,
             float throttlePower, float brakePower, float yawAcc, float pitchAcc, float rollAcc,
             float rotationReductionFactor, GameTimer gameTimer, float yReduction, float zReduction,
-            SpawnReceiver entityDeposit, EntityMapping entityMapping
+            SpawnReceiver entityDeposit, EntityMapping entityMapping, Color4f color
     ) {
         super(id, initialPosition, DirVector.zeroVector(), initialRotation, mass, gameTimer, entityDeposit);
 
@@ -115,6 +123,7 @@ public abstract class AbstractJet extends MovingEntity {
         this.surfaceMaterial = material;
         this.entityMapping = entityMapping;
         this.controller = Controller.EMPTY;
+        this.color = color;
 
         float time = gameTimer.time();
         forward = DirVector.xVector();
@@ -293,7 +302,7 @@ public abstract class AbstractJet extends MovingEntity {
 
     @Override
     public void preDraw(GL2 gl) {
-        gl.setMaterial(Material.ROUGH);
+        gl.setMaterial(Material.ROUGH, color);
 
         DirVector trail = getForward();
         trail.mul(-JET_THRUST_SPEED).add(getVelocity());
@@ -407,5 +416,48 @@ public abstract class AbstractJet extends MovingEntity {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+
+    public void setJetColor(Color4f color) {
+        this.color = color;
+    }
+
+    protected static abstract class JetFactory extends EntityFactory {
+        protected Color4f color;
+
+        public JetFactory(EntityClass type, PosVector pos, Quaternionf rot, DirVector vel, Color4f color) {
+            super(type, pos, rot, vel);
+            this.color = color;
+        }
+
+        public JetFactory(EntityClass type, AbstractJet jet) {
+            super(type, jet);
+            color = jet.color;
+        }
+
+        public JetFactory() {
+            color = Color4f.WHITE;
+        }
+
+        public JetFactory(EntityClass type, EntityState spawnPosition, int timeFraction, Color4f color) {
+            this(type,
+                    spawnPosition.position(timeFraction),
+                    spawnPosition.rotation(timeFraction),
+                    spawnPosition.velocity(timeFraction),
+                    color
+            );
+        }
+
+        @Override
+        protected void writeInternal(DataOutput out) throws IOException {
+            super.writeInternal(out);
+            DataIO.writeColor(out, color);
+        }
+
+        @Override
+        protected void readInternal(DataInput in) throws IOException {
+            super.readInternal(in);
+            color = DataIO.readColor(in);
+        }
     }
 }
