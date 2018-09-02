@@ -130,7 +130,7 @@ public final class ClientSettings {
                     TARGET_FPS = result.intValue();
                     break;
                 case "RENDER_DELAY":
-                    RENDER_DELAY = result.intValue();
+                    RENDER_DELAY = result.floatValue();
                     break;
                 case "SERVER_PORT":
                     ServerSettings.SERVER_PORT = result.intValue();

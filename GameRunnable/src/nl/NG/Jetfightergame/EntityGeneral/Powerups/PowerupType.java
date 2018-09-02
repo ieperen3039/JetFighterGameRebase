@@ -48,8 +48,8 @@ public enum PowerupType {
     public static final float SPEED_BOOST_DURATION = 2.5f;
     public static final float SPEED_BOOST_FACTOR = 2f;
 
-    public static final float OHSHIELD_DURATION = 10f;
-    public static final float REFLECTOR_DURATION = 5f;
+    public static final float OHSHIELD_DURATION = 15f;
+    public static final float REFLECTOR_DURATION = 15f;
 
     public static final float STAR_BOOST_DURATION = 15f;
     public static final float STAR_BOOST_FACTOR = 1.2f;
@@ -206,8 +206,6 @@ public enum PowerupType {
                 return new AudioSource(Sounds.button, position, 1.0f, 1.0f);
             case DEATHICOSAHEDRON:
                 return new AudioSource(Sounds.deathWarning, position, 1.0f, 1.0f);
-            case GRAPPLING_HOOK:
-                return new AudioSource(Sounds.windOff, position, 1.0f, 1.0f);
             case SEEKERS:
                 return new AudioSource(Sounds.seekerPop, position, 0.2f, 1.0f);
 //            case SHIELD:

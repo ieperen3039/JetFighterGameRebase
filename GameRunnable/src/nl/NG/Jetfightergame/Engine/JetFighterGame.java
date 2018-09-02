@@ -322,25 +322,27 @@ public class JetFighterGame {
      * The following flags are accepted
      * <dl>
      * <dt>-rebuild</dt>
-     * <dd>creates the tables.dt file for launchers</dd>
+     * <dd>Creates the tables.dt file for launchers</dd>
      * <dt>-local</dt>
-     * <dd>start a local server and connect with it (use for singleplayer)</dd>
+     * <dd>Start a local server and connect with it (use for singleplayer)</dd>
      * <dt>-debug</dt>
-     * <dd>allow debug output and possible other features for development</dd>
+     * <dd>Allow debug output and possible other features for development</dd>
      * <dt>-replay</dt>
-     * <dd>takes a replay file and plays the previously captured race again. Spectator camera options are added to the
+     * <dd>Takes a replay file and plays the previously captured race again. Spectator camera options are added to the
      * main menu</dd>
      * <dt>-store</dt>
-     * <dd>if a replay is provided, store a video of it to the map Recordings. System may become unresponsive while
+     * <dd>If a replay is provided, store a video of it to the map Recordings. System may become unresponsive while
      * doing so</dd>
      * <dt>-map</dt>
-     * <dd>if -local is set, the next argument will be selected as the map on which the server will run the race. This
+     * <dd>If -local is set, the next argument will be selected as the map on which the server will run the race. This
      * should be a name of EnvironmentClass</dd>
      * <dt>-name</dt>
-     * <dd>sets the player name for this session to the next argument. A random one is provided if this flag is
+     * <dd>Sets the player name for this session to the next argument. A random one is provided if this flag is
      * missing</dd>
      * <dt>-json</dt>
-     * <dd>loads the settings file provided by the next argument</dd>
+     * <dd>Loads the settings file provided by the next argument</dd>
+     * <dt>-stop</dt>
+     * <dd>Do not initialise nor start the game. All other flags are executed, and settings are written to the given json file if one is supplied.</dd>
      * </dl>
      * @param argArray The arguments of the program.
      * @throws Exception if anything goes terribly wrong
@@ -354,6 +356,7 @@ public class JetFighterGame {
         ServerSettings.DEBUG = args.contains("-debug");
         boolean playReplay = args.contains("-replay");
         boolean storeReplay = args.contains("-store");
+        boolean stopBeforeLaunch = args.contains("-stop");
 
         int mapNameArg = args.indexOf("-map") + 1;
         int playerNameArg = args.indexOf("-name") + 1;
@@ -393,11 +396,16 @@ public class JetFighterGame {
                 }
             }
         }
-        InetAddress localHost = makeLocalServer ? null : InetAddress.getLocalHost();
-
         Logger.setLoggingLevel(ServerSettings.DEBUG ? Logger.DEBUG : Logger.INFO);
-        boolean doShow = (file == null) || playReplay;
-        new JetFighterGame(doShow, storeReplay, file, serverMap, localHost, playerName).root();
+        InetAddress localHost = makeLocalServer ? null : InetAddress.getLocalHost();
+        boolean hide = (file != null) && storeReplay;
+
+        if (stopBeforeLaunch) {
+            if (jsonArg > 0) ClientSettings.writeSettingsToFile(args.get(jsonArg));
+            return;
+        }
+
+        new JetFighterGame(!hide, storeReplay, file, serverMap, localHost, playerName).root();
     }
 
     private static void buildTables() {

@@ -2,6 +2,7 @@ package nl.NG.Jetfightergame.EntityGeneral.Factory;
 
 import nl.NG.Jetfightergame.Assets.Entities.*;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetBasic;
+import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetNightHawk;
 import nl.NG.Jetfightergame.Assets.Entities.FighterJets.JetSpitsy;
 import nl.NG.Jetfightergame.Camera.CameraFocusMovable;
 import nl.NG.Jetfightergame.EntityGeneral.InvisibleEntity;
@@ -17,6 +18,7 @@ public enum EntityClass {
     SPECTATOR_CAMERA(CameraFocusMovable.Factory::new),
     JET_BASIC(JetBasic.Factory::new),
     JET_SPITZ(JetSpitsy.Factory::new),
+    JET_NIGHT_HAWK(JetNightHawk.Factory::new),
 
     FALLING_CUBE(FallingCube.Factory::new),
     SIMPLE_BULLET(SimpleBullet.Factory::new),
@@ -33,7 +35,7 @@ public enum EntityClass {
     GRAPPLING_HOOK(GrapplingHook.Factory::new);
 
     private static final EntityClass[] VALUES = values();
-    private static final EntityClass[] jets = new EntityClass[]{JET_BASIC, JET_SPITZ};
+    private static final EntityClass[] jets = new EntityClass[]{JET_BASIC, JET_SPITZ, JET_NIGHT_HAWK};
 
     private final Supplier<EntityFactory> constructor;
 

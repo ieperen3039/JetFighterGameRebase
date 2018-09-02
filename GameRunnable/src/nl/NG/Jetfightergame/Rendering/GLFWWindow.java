@@ -215,6 +215,7 @@ public class GLFWWindow {
     public void open() {
         // Show window
         glfwShowWindow(window);
+        glfwFocusWindow(window);
     }
 
     /**

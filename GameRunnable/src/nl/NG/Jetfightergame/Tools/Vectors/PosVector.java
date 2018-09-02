@@ -75,7 +75,7 @@ public class PosVector extends Vector {
     }
 
     /**
-     * @return vector to the middle of this vector and given vector as a new vector.
+     * @return new vector to the middle of this vector and given vector as a new vector.
      * equals (this.interpolateTo(that, 0.5f)) or the average of this and that
      */
     public PosVector middleTo(Vector that) {

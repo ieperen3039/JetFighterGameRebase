@@ -15,6 +15,8 @@ import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.MovingAudioSource;
+import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
@@ -27,7 +29,9 @@ import java.util.function.Consumer;
  */
 public class GrapplingHook extends AbstractProjectile {
     private static final float EIGHTSTH = (float) (Math.PI / 4);
+
     private static final float MAX_FLY_DURATION = 2f;
+    private static final float RATTLE_PITCH = 0.5f;
 
     private static final float LOCK_LENGTH = 5f;
     private static final float LOCK_WIDTH = 0.3f;
@@ -44,6 +48,8 @@ public class GrapplingHook extends AbstractProjectile {
                 0.01f, 0, MAX_FLY_DURATION, 20f, 0, 0, 0.95f,
                 particleDeposit, gameTimer, sourceEntity
         );
+
+        entityDeposit.add(getRattle(sourceEntity));
         this.target = target;
     }
 
@@ -139,6 +145,15 @@ public class GrapplingHook extends AbstractProjectile {
 
     @Override
     public void preDraw(GL2 gl) {
+    }
+
+    private MovingAudioSource getRattle(AbstractJet sourceEntity) {
+        return new MovingAudioSource(Sounds.windOff, sourceEntity, RATTLE_PITCH, 0.5f, false) {
+            @Override
+            public boolean isOverdue() {
+                return (hookedOther != null) && (GrapplingHook.this.timeToLive > 0);
+            }
+        };
     }
 
     public static class Factory extends RocketFactory {

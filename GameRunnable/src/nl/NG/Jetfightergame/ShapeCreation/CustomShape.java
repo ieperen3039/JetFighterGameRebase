@@ -190,6 +190,16 @@ public class CustomShape {
     }
 
     /**
+     * Adds a triangle which is mirrored in the XZ-plane, where the defined triangle has a normal in the given
+     * direction
+     */
+    public void addMirrorTriangle(PosVector A, PosVector B, PosVector C, DirVector normal) {
+        addTriangle(A, B, C, normal);
+        DirVector otherNormal = normal.negate(new DirVector());
+        addTriangle(A.mirrorY(new PosVector()), B.mirrorY(new PosVector()), C.mirrorY(new PosVector()), otherNormal);
+    }
+
+    /**
      * Adds a strip defined by a beziér curve the 1-vectors are the curve of one size, the 2-vectors are the curve of
      * the other side
      * @param slices number of fractions of the curve

@@ -12,6 +12,8 @@ import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -41,6 +43,8 @@ public class LauncherMain {
     private static final float LARGE_FONT_SIZE = 24f;
 
     private static final File fontFileLucidaConsole = Directory.fonts.getFile("LucidaConsole", "lucon.ttf");
+    private static final File TABLES_FILE = Directory.tables.getFile("tables.tb");
+    private static final File SETTINGS_FILE = Directory.settings.getFile("settings.json");
     private static final Random RANDOM = new Random();
     private final Tables names;
 
@@ -62,16 +66,19 @@ public class LauncherMain {
     private JComponent settingsPanel;
     private JComponent keyBindingPanel;
     private JComponent replaySelectPanel;
-    private JComponent debugOutputPanel;
     private JComponent updatePanel;
     private JComponent defaultPanel;
+    private JComponent debugOutputPanel = null;
     private JComponent[] mutexPanels;
+
+    /** game process, or null if no game has been started */
+    private Process gameProc = null;
 
     public LauncherMain() throws IOException, FontFormatException {
         Font lucidaConsole = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
         largeFont = lucidaConsole.deriveFont(LARGE_FONT_SIZE);
-        names = new Tables(Directory.tables.getFile("tables.tb"));
-        LauncherSettings.readSettingsFromFile("settings.json");
+        names = new Tables(TABLES_FILE);
+        LauncherSettings.readSettingsFromFile(Directory.settings.getFile("settings.json"));
         map = names.findWorld("ISLAND");
     }
 
@@ -91,7 +98,7 @@ public class LauncherMain {
         settingsPanel = getSettingsPanel();
         keyBindingPanel = getKeyBindingPanel();
         replaySelectPanel = getReplaySelectPanel(Directory.recordings);
-        debugOutputPanel = getConsolePanel();
+        if (debugOutputPanel == null) debugOutputPanel = getConsolePanel();
         updatePanel = getUpdatePanel(Directory.gameJar);
         defaultPanel = getDefaultPanel();
 
@@ -115,9 +122,16 @@ public class LauncherMain {
         int dy = centerPoint.y - (frame.getHeight() / 2);
 
         frame.setLocation(dx, dy);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.pack();
         frame.setSize(DEFAULT_LAUNCHER_SIZE);
+
+        frame.addWindowListener(new WindowAdapter() {
+
+            @Override
+            public void windowClosing(WindowEvent e) {
+                close();
+            }
+        });
     }
 
     private File randomBackdrop() {
@@ -390,16 +404,6 @@ public class LauncherMain {
         changeLoadout.addActionListener(e -> select(loadoutPanel));
         panel.add(changeLoadout, SwingToolbox.getButtonConstraints(RELATIVE));
 
-        JButton showDebug = SwingToolbox.getButton("Show Console");
-        showDebug.addActionListener(e -> select(debugOutputPanel));
-        panel.add(showDebug, SwingToolbox.getButtonConstraints(RELATIVE));
-
-        JButton checkUpdates = SwingToolbox.getButton("Check for Updates");
-        checkUpdates.setToolTipText("Opens your file explorer, where you can select an updated version of the GameRunnable jar. " +
-                "\nThe game will update the jar, and new options in maps / jets will be visible after running it once.");
-        checkUpdates.addActionListener(e -> select(updatePanel));
-        panel.add(checkUpdates, SwingToolbox.getButtonConstraints(RELATIVE));
-
         JButton settingsButton = SwingToolbox.getButton("Settings");
         settingsButton.setToolTipText("Different settings for both the launcher and the game. " +
                 "\nIf this screen is exited by using a menu button, the changes WILL be applied.");
@@ -416,6 +420,16 @@ public class LauncherMain {
         filler.setMinimumSize(new Dimension(MAIN_BUTTON_DIM.width + 2 * BUTTON_BORDER, 1));
         panel.add(filler, SwingToolbox.getFillConstraints(1, RELATIVE));
 
+        JButton checkUpdates = SwingToolbox.getButton("Check for Updates");
+        checkUpdates.setToolTipText("Opens your file explorer, where you can select an updated version of the GameRunnable jar. " +
+                "\nThe game will update the jar, and new options in maps / jets will be visible after running it once.");
+        checkUpdates.addActionListener(e -> select(updatePanel));
+        panel.add(checkUpdates, SwingToolbox.getButtonConstraints(RELATIVE));
+
+        JButton showDebug = SwingToolbox.getButton("Show Console");
+        showDebug.addActionListener(e -> select(debugOutputPanel));
+        panel.add(showDebug, SwingToolbox.getButtonConstraints(RELATIVE));
+
         JButton exitGame = SwingToolbox.getButton("Exit Launcher");
         exitGame.setToolTipText("Close the game. Settings will be saved.");
         exitGame.addActionListener(e -> this.close());
@@ -429,9 +443,11 @@ public class LauncherMain {
 
         JFileChooser dialog = new JFileChooser(dir.getFile(""));
         dialog.addActionListener(a -> {
-            File file = dialog.getSelectedFile();
             select(null);
-            if (file != null) launchGame(null, file);
+            if (a.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
+                File file = dialog.getSelectedFile();
+                launchGame(null, file);
+            }
         });
 
         panel.add(dialog, SwingToolbox.getFillConstraints(RELATIVE, RELATIVE));
@@ -451,16 +467,22 @@ public class LauncherMain {
         JFileChooser dialog = new JFileChooser(dir.getFile(""));
         dialog.addActionListener(a -> {
             try {
-                File file = dialog.getSelectedFile();
-                File original = jarName.toFile();
-                if (file != null && file != original) {
-                    Files.deleteIfExists(jarName);
-                    Files.move(file.toPath(), jarName);
+                if (a.getActionCommand().equals(JFileChooser.APPROVE_SELECTION)) {
+                    File file = dialog.getSelectedFile();
+                    File original = jarName.toFile();
+                    if (file.equals(original)) {
+                        Files.deleteIfExists(jarName);
+                        Files.move(file.toPath(), jarName);
+                    }
+                    String command = "java -jar \"" + jarName + "\" -rebuild -stop";
+                    Process proc = Runtime.getRuntime().exec(command);
+                    proc.waitFor();
+                    names.reload(TABLES_FILE);
+                    reboot();
                 }
-                select(null);
 
-            } catch (IOException e) {
-                Logger.ERROR.print(e);
+            } catch (IOException | InterruptedException ex) {
+                Logger.ERROR.print(ex);
                 select(debugOutputPanel);
             }
         });
@@ -530,47 +552,65 @@ public class LauncherMain {
             frame.setVisible(false);
         }
 
+        StringBuilder args = new StringBuilder();
+        try {
+            File str = LauncherSettings.writeSettingsToFile(SETTINGS_FILE);
+            args.append("-json \"").append(str.getPath()).append("\"");
+        } catch (IOException ex) {
+            Logger.WARN.print("Could not write settings:" + ex);
+        }
+
+        boolean doReplay = replayFile != null && replayFile.exists();
+        if (!names.loadedSuccessful()) args.append(" -rebuild");
+        if (!doReplay && address == null) args.append(" -local");
+        if (LauncherSettings.DEBUG) args.append(" -debug");
+        if (doReplay) args.append(" -replay ").append(replayFile.getName());
+        if (!doReplay && LauncherSettings.MAKE_REPLAY) args.append(" -store");
+        if (!doReplay) args.append(" -map ").append(map);
+        if (!doReplay) args.append(" -name ").append(getPlayerName());
+
+        String command = "java -jar \"" + jarName + "\" " + args;
+        Logger.DEBUG.print("Calling Command:\n" + command);
+
+        try {
+            gameProc = Runtime.getRuntime().exec(command);
+        } catch (IOException e) {
+            Logger.ERROR.print(e);
+        }
+
         new Thread(() -> {
             try {
-                StringBuilder args = new StringBuilder();
-                boolean doReplay = replayFile != null && replayFile.exists();
+                bindOutputToLogger(gameProc);
+                gameProc.waitFor();
+                Logger.INFO.print("Game finished with exit code " + gameProc.exitValue());
 
-                File str = LauncherSettings.writeSettingsToFile("settings.json");
-                args.append("-json \"").append(str.getPath()).append("\"");
-                if (!names.loadedSuccessful()) args.append(" -rebuild");
-                if (!doReplay && address == null) args.append(" -local");
-                if (LauncherSettings.DEBUG) args.append(" -debug");
-                if (doReplay) args.append(" -replay ").append(replayFile.getName());
-                if (!doReplay && LauncherSettings.MAKE_REPLAY) args.append(" -store");
-                if (!doReplay) args.append(" -map ").append(map);
-                if (!doReplay) args.append(" -name ").append(getPlayerName());
-
-                String command = "java -jar \"" + jarName + "\" " + args;
-                Logger.DEBUG.print("Calling Command:\n" + command);
-
-                Process proc = Runtime.getRuntime().exec(command);
-                bindOutputToLogger(proc);
-
-                int exitCode = proc.waitFor();
-                Logger.INFO.print("Game finished with exit code " + exitCode + ".");
+                LauncherSettings.readSettingsFromFile(SETTINGS_FILE);
+                reboot();
 
             } catch (Exception e) {
                 Logger.ERROR.print(e);
             } finally {
                 show();
             }
-        }, "Main Game Thread").start();
+        }).start();
     }
 
     private void close() {
         try {
-            LauncherSettings.writeSettingsToFile("settings.json");
+            if (gameProc != null && gameProc.isAlive()) {
+                gameProc.destroy();
+            }
+            LauncherSettings.writeSettingsToFile(Directory.settings.getFile("settings.json"));
+
         } catch (IOException e) {
             Logger.ERROR.print(e);
+
         } finally {
             frame.dispose();
+            if (gameProc != null && gameProc.isAlive()) {
+                gameProc.destroyForcibly();
+            }
         }
-
     }
 
     private void show() {

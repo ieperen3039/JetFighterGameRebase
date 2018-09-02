@@ -73,6 +73,7 @@ public final class GeneralShapes {
         Path toJet = Directory.meshes.getPath("ConceptBlueprint.obj");
         CustomJetShapes.BASIC = new BasicShape(new ShapeParameters(PosVector.zeroVector(), 0.5f, toJet, "Basic jet"), doLoadMesh);
         CustomJetShapes.SPITZ = CustomJetShapes.makeSpitzPlane(doLoadMesh);
+        CustomJetShapes.NIGHT_HAWK = CustomJetShapes.makeNightHawk(doLoadMesh);
 
         isLoaded = true;
     }

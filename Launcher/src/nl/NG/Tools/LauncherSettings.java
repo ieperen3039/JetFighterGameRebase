@@ -41,8 +41,7 @@ public final class LauncherSettings {
     public static String JET_TYPE = "JET_SPITZ";
     public static boolean ALLOW_FLYING_TEXT = true;
 
-    public static File writeSettingsToFile(String fileName) throws IOException {
-        File file = Directory.settings.getFile(fileName);
+    public static File writeSettingsToFile(File file) throws IOException {
         FileOutputStream out = new FileOutputStream(file);
         JsonGenerator gen = new JsonFactory().createGenerator(out);
         gen.useDefaultPrettyPrinter();
@@ -80,8 +79,7 @@ public final class LauncherSettings {
         return file;
     }
 
-    public static void readSettingsFromFile(String filename) throws IOException {
-        File file = Directory.settings.getFile(filename);
+    public static void readSettingsFromFile(File file) throws IOException {
         if (!file.exists()) return;
 
         ObjectNode src = new ObjectMapper().readValue(file, ObjectNode.class);
@@ -99,7 +97,7 @@ public final class LauncherSettings {
                     TARGET_FPS = result.intValue();
                     break;
                 case "RENDER_DELAY":
-                    RENDER_DELAY = result.intValue();
+                    RENDER_DELAY = result.floatValue();
                     break;
                 case "SERVER_PORT":
                     SERVER_PORT = result.intValue();

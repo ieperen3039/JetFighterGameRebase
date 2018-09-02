@@ -22,6 +22,7 @@ import java.util.List;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.FollowingCamera;
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.SpectatorFollowing;
+import static nl.NG.Jetfightergame.Settings.ClientSettings.BACKGROUND_MUSIC_GAIN;
 import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
 
 /**
@@ -182,7 +183,7 @@ public class StateReader extends ClientConnection {
 
     @Override
     protected void worldSwitch() {
-
+        soundSources.add(new AudioSource(getWorld().backgroundMusic(), BACKGROUND_MUSIC_GAIN, true));
     }
 
     @Override

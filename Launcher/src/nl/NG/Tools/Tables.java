@@ -100,4 +100,8 @@ public class Tables {
     public boolean loadedSuccessful() {
         return isLoaded;
     }
+
+    public void reload(File file) {
+
+    }
 }
