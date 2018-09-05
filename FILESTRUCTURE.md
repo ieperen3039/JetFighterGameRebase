@@ -45,7 +45,7 @@ These are used for transforming and mappings.\
 │ ├───Particles >>  Particle rendering and construction\
 │ └───Shaders >>  All shader implementations, excluding the particle shader\
 │\
-├───ScreenOverla >> y Everything that can be drawn on top of the 3D
+├───ScreenOverlay >> Everything that can be drawn on top of the 3D
 environment, including the implementation of the main menu and the HUD\
 │ ├───HUD >>  The actual heads-up display, including functionality for
 tracking objects in 3D\
@@ -62,10 +62,10 @@ collected\
 ├───Sound >> The sound engine. This doesn\'t work yet.\
 │\
 └───Tools >>  A whole bunch of utility classes\
-├───DataStructures >>  Some custom data structures for various purposes\
-├───Interpolation >>  Mostly used for rendering, these structures allow
-interpolating and extraposating on ANY list of objects (if the given
-implementation exists)\
-├───Tracked >>  A datastructure with a \'current\' and a \'previous\'. There
-are multiple levels of abstractions available\
-└───Vectors >>  All custom vectors and a color class
+  ├───DataStructures >>  Some custom data structures for various purposes\
+  ├───Interpolation >>  Mostly used for rendering, these structures allow
+  interpolating and extraposating on ANY list of objects (if the given
+  implementation exists)\
+  ├───Tracked >>  A datastructure with a \'current\' and a \'previous\'. There
+  are multiple levels of abstractions available\
+  └───Vectors >>  All custom vectors and a color class

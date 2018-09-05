@@ -251,7 +251,8 @@ public abstract class GameState implements Environment {
             PosVector srcPos = source.getPosition();
             DirVector toSource = entPos.to(srcPos, temp);
             float dist = toSource.length();
-            float pull = dist == 0 ? 0 : source.getMagnitude() / dist;
+            float pull = (dist == 0) ? 0 : (source.getMagnitude() / dist);
+            pull = Math.min(10000, pull);
             DirVector newGravity = toSource.reducedTo(pull, temp);
             force.add(newGravity);
         }

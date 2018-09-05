@@ -75,20 +75,22 @@ public class JetFighterGame {
      */
     public JetFighterGame(boolean doShow, boolean doStore, File replayFile, EnvironmentClass map, InetAddress hostAddress, String playerName) throws Exception {
         Logger.INFO.print("Starting the game...");
+
+        boolean doReplay = replayFile != null;
         Logger.DEBUG.print("General debug information: " +
                 "\n\tSystem OS:          " + System.getProperty("os.name") +
                 "\n\tJava VM:            " + System.getProperty("java.runtime.version") +
                 "\n\tWorking directory:  " + Directory.currentDirectory() +
                 "\n\tProtocol version:   " + JetFighterProtocol.versionNumber +
-                (hostAddress == null ? "\n\tLocal server enabled" : "") +
-                (replayFile == null ? "" : "\n\tReplay file:        " + replayFile.getName()) +
-                (replayFile != null && doStore ? "\n\tCreating video from replay" : "") +
-                (replayFile == null && doStore ? "\n\tStoring game state enabled" : "") +
+                (!doReplay && hostAddress == null ? "\n\tLocal server enabled" : "") +
+                (!doReplay ? "" : "\n\tReplay file:        " + replayFile.getName()) +
+                (doReplay && doStore ? "\n\tCreating video from replay" : "") +
+                (!doReplay && doStore ? "\n\tStoring game state enabled" : "") +
                 (doShow ? "" : "\n\tHeadless mode enabled")
         );
 
 
-        if (!doShow && replayFile == null) throw new IllegalArgumentException("No show without replay file");
+        if (!doShow && !doReplay) throw new IllegalArgumentException("No show without replay file");
 
         Splash splash = new Splash();
         splash.run();
@@ -106,7 +108,7 @@ public class JetFighterGame {
             MouseTracker.getInstance().listenTo(window);
             KeyTracker.getInstance().listenTo(window);
 
-            if (replayFile == null) {
+            if (doReplay) {
                 OutputStream sendChannel;
                 InputStream receiveChannel;
 

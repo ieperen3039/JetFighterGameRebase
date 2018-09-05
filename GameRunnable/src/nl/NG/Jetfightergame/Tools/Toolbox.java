@@ -131,7 +131,6 @@ public final class Toolbox {
         int i = 0;
         while ((error = alGetError()) != AL_NO_ERROR) {
             Logger.WARN.printFrom(2, "alError " + asHex(error) + ": " + alGetString(error), args);
-            if (i == 0) Thread.dumpStack();
             if (++i == 10) {
                 throw new IllegalStateException("Context is probably not current for this thread");
             }

@@ -60,13 +60,7 @@ public class SimpleBullet extends AbstractProjectile {
 
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
-        ms.pushMatrix();
-        {
-            ms.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
-            ms.translate(-0.5f, 0, 0);
-            action.accept(GeneralShapes.ARROW);
-        }
-        ms.popMatrix();
+        action.accept(GeneralShapes.ROCKET);
     }
 
     @Override

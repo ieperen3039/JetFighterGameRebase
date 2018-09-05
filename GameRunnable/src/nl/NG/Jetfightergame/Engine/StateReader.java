@@ -29,8 +29,8 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.RENDER_DELAY;
  * @author Geert van Ieperen. Created on 21-8-2018.
  */
 public class StateReader extends ClientConnection {
-    private static final float LOOK_AHEAD = RENDER_DELAY * 2;
     public static final int READER_TPS = 50;
+    private static final float LOOK_AHEAD = RENDER_DELAY * 2 + (1 / READER_TPS);
     private AbstractJet focusJet;
     private final CameraManager camera;
     private Runnable exitGame;
@@ -63,12 +63,6 @@ public class StateReader extends ClientConnection {
                 float currentTime = getTimer().getRenderTime().current();
                 float dt = maxServerTime - currentTime;
                 if (dt > LOOK_AHEAD) {
-                    float percent = getPercent();
-                    if (percent > 100) {
-                        System.out.printf("\r[INFO ]: Recorded %.1f sec (Aftermatch)", currentTime);
-                    } else {
-//                        System.out.printf("\r[INFO ]: Recorded %.1f sec (%3.1f%%)", currentTime, percent);
-                    }
                     int millis = (int) (500 * dt);
                     Toolbox.waitFor(millis);
                 }

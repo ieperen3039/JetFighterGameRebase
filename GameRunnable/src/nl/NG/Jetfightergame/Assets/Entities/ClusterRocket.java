@@ -34,13 +34,12 @@ public class ClusterRocket extends AbstractProjectile {
 
     public static final int NOF_PELLETS_LAUNCHED = 25;
     public static final float EXPLOSION_POWER = 12f;
-    public static final int EXPLOSION_DENSITY = 200;
-    public static final float THRUST_POWER = 500f;
+    public static final float THRUST_POWER = 600f;
     public static final float TIME_TO_LIVE = 30f;
-    public static final float SHOOT_ACCURACY = 0.3f;
-    public static final float TURN_ACC = 0.7f;
-    public static final float AIR_RESIST = 0.02f;
-    public static final float MASS = 5f;
+    public static final float SHOOT_ACCURACY = (float) Math.toRadians(30);
+    public static final float TURN_ACC = 2f;
+    public static final float AIR_RESIST = 0.05f;
+    public static final float MASS = 3f;
     public static final float THRUST_PARTICLE_PER_SECOND = 200;
     private boolean hasExploded = false;
     private BoosterLine nuzzle;
@@ -68,7 +67,7 @@ public class ClusterRocket extends AbstractProjectile {
         if (tgt != null) {
             this.target = tgt;
 
-            RocketAI con = new RocketAI(this, tgt, 120f, 30f) {
+            RocketAI con = new RocketAI(this, tgt, 150f, 50f) {
                 @Override
                 public boolean primaryFire() {
                     float dot = getVelocity().normalize().dot(vecToTarget);
@@ -88,13 +87,7 @@ public class ClusterRocket extends AbstractProjectile {
 
     @Override
     public void create(MatrixStack ms, Consumer<Shape> action) {
-        ms.pushMatrix();
-        {
-            ms.translate(-0.5f, 0, 0);
-            ms.rotate((float) Math.toRadians(90), 0f, 1f, 0f);
-            action.accept(GeneralShapes.ARROW);
-        }
-        ms.popMatrix();
+        action.accept(GeneralShapes.ROCKET);
     }
 
     @Override
@@ -113,8 +106,11 @@ public class ClusterRocket extends AbstractProjectile {
     protected void updateShape(float deltaTime) {
         if (!hasExploded && controller.primaryFire()) {
             timeToLive = 0;
+            DirVector launchDir = DirVector.xVector();
+            launchDir.rotate(rotation).mul(200);
+
             entityDeposit.add(AbstractProjectile.createCloud(
-                    getPosition(), getVelocity().scale(2f), NOF_PELLETS_LAUNCHED, EXPLOSION_POWER,
+                    getPosition(), launchDir, NOF_PELLETS_LAUNCHED, EXPLOSION_POWER,
                     SimpleBullet.Factory::new
             ));
             hasExploded = true;
@@ -139,7 +135,7 @@ public class ClusterRocket extends AbstractProjectile {
 
     @Override
     protected void collideWithOther(Touchable other) {
-        other.impact(1.5f, IMPACT_POWER);
+        other.impact(10, 2);
     }
 
     public static class Factory extends RocketFactory {

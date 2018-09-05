@@ -33,6 +33,7 @@ public final class GeneralShapes {
     public static Shape INVERSE_CUBE;
     public static Shape SEA;
     public static CheckpointRing CHECKPOINTRING;
+    public static Shape ROCKET;
 
     public static List<Shape> ISLAND1;
 
@@ -69,6 +70,7 @@ public final class GeneralShapes {
         ISLAND1 = BasicShape.loadSplit(doLoadMesh, CONTAINER_SIZE, 50f, Resource.GLITCHMAP);
         SEA = makeSeaTile(doLoadMesh);
         QUAD = makeSingleQuad(doLoadMesh);
+        ROCKET = makeWingedRocket(doLoadMesh);
 
         Path toJet = Directory.meshes.getPath("ConceptBlueprint.obj");
         CustomJetShapes.BASIC = new BasicShape(new ShapeParameters(PosVector.zeroVector(), 0.5f, toJet, "Basic jet"), doLoadMesh);
@@ -196,6 +198,35 @@ public final class GeneralShapes {
         PosVector NN = new PosVector(-1, -1, 0);
 
         frame.addQuad(PN, NN, NP, PP, DirVector.zVector());
+        return frame.wrapUp(doLoadMesh);
+    }
+
+    private static Shape makeWingedRocket(boolean doLoadMesh) {
+        CustomShape frame = new CustomShape();
+
+        final float length = 1.2f;
+        final float noseSize = 0.3f;
+        final float bodySize = 0.4f;
+
+        PosVector NF = new PosVector(length, noseSize, noseSize);
+        PosVector BF = new PosVector(1.0f, bodySize, bodySize);
+        PosVector NFZ = NF.mirrorZ(new PosVector());
+        PosVector BFZ = BF.mirrorZ(new PosVector());
+        PosVector BB = BF.mirrorX(new PosVector());
+        PosVector BBZ = BFZ.mirrorX(new PosVector());
+
+        frame.addQuad(NF, NFZ);
+
+        frame.addMirrorQuad(NF, NFZ, BFZ, BF);
+        frame.addQuad(NF, BF);
+        frame.addQuad(NFZ, BFZ);
+
+        frame.addMirrorQuad(BF, BFZ, BBZ, BB);
+        frame.addQuad(BF, BB);
+        frame.addQuad(BFZ, BBZ);
+
+        frame.addQuad(BB, BBZ);
+
         return frame.wrapUp(doLoadMesh);
     }
 }

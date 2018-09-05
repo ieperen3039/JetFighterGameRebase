@@ -33,6 +33,7 @@ public class IslandMap extends GameState {
     private static final int FOG_DIST = 750;
     private static final int WORLD_BOUND = 1000;
     private static final int TILE_SIZE = 100;
+    public static final int START_LINE_DIST = 100;
     private PosVector nextSpawnPosition = new PosVector();
     private DirVector nextSpawnOffset = new DirVector();
 
@@ -42,6 +43,7 @@ public class IslandMap extends GameState {
     protected Collection<Touchable> createWorld(RaceProgress raceProgress, GameTimer timer) {
         List<Touchable> entities = new ArrayList<>();
 
+        // land
         for (Shape s : GeneralShapes.ISLAND1) {
             entities.add(new StaticEntity(s, Material.GLASS, Color4f.BLACK));
         }
@@ -53,8 +55,7 @@ public class IslandMap extends GameState {
                 int xCoord = x * TILE_SIZE - WORLD_BOUND;
                 int yCoord = y * TILE_SIZE - WORLD_BOUND;
                 if ((xCoord < -550 || xCoord > 710) || (yCoord < -730 || yCoord > 510)) {
-                    PosVector pos = new PosVector(xCoord, yCoord, -50);
-                    entities.add(new StaticEntity(GeneralShapes.SEA, Material.GLASS, Color4f.BLUE, pos, TILE_SIZE));
+                    entities.add(getSeaTile(new PosVector(xCoord, yCoord, -50)));
                 }
 
             }
@@ -71,7 +72,7 @@ public class IslandMap extends GameState {
         Pair<PosVector, DirVector> start = racePath.getFirstCheckpoint();
         nextSpawnPosition.set(start.left);
         DirVector offset = DirVector.yVector();
-        DirVector backwait = new DirVector(start.right).scale(-100);
+        DirVector backwait = new DirVector(start.right).scale(-START_LINE_DIST);
         offset.cross(start.right).normalize(30).add(backwait);
         nextSpawnOffset = offset;
 
@@ -80,6 +81,15 @@ public class IslandMap extends GameState {
         }
 
         return entities;
+    }
+
+    private StaticEntity getSeaTile(PosVector pos) {
+        return new StaticEntity(GeneralShapes.SEA, Material.GLASS, Color4f.BLUE, pos, TILE_SIZE) {
+            @Override
+            public float getRange() {
+                return 0;
+            }
+        };
     }
 
     private StaticEntity borderPanel(PosVector offSet, Quaternionf rotation) {

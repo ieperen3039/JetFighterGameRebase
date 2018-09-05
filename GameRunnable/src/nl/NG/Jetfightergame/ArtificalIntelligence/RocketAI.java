@@ -97,7 +97,7 @@ public class RocketAI implements Controller {
         }
 
         PosVector tPos = target.getExpectedMiddle();
-        if (doExtrapolate && target instanceof MovingEntity && !arrivesWithin(tPos, 0.2f)) {
+        if (doExtrapolate && target instanceof MovingEntity) {
             MovingEntity entity = (MovingEntity) this.target;
 
             return extrapolateTarget(entity.getVelocity(), tPos, projectilePos, pSpeed);

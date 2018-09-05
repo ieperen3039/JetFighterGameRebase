@@ -14,7 +14,10 @@ import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
+import nl.NG.Jetfightergame.Rendering.Particles.ParticleCloud;
+import nl.NG.Jetfightergame.Rendering.Particles.Particles;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
+import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Sound.MovingAudioSource;
 import nl.NG.Jetfightergame.Sound.Sounds;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -49,7 +52,9 @@ public class GrapplingHook extends AbstractProjectile {
                 particleDeposit, gameTimer, sourceEntity
         );
 
-        entityDeposit.add(getRattle(sourceEntity));
+        if (!entityDeposit.isHeadless()) {
+            entityDeposit.add(getRattle(sourceEntity));
+        }
         this.target = target;
     }
 
@@ -135,6 +140,15 @@ public class GrapplingHook extends AbstractProjectile {
     }
 
     @Override
+    public ParticleCloud explode() {
+        timeToLive = 0;
+        PosVector pos = getPosition();
+        DirVector vel = DirVector.zeroVector();
+        entityDeposit.add(new AudioSource(Sounds.button, pos, 0.3f, 2f));
+        return Particles.explosion(pos, vel, Color4f.WHITE, 10);
+    }
+
+    @Override
     public EntityFactory getFactory() {
         return new Factory(this);
     }
@@ -148,10 +162,14 @@ public class GrapplingHook extends AbstractProjectile {
     }
 
     private MovingAudioSource getRattle(AbstractJet sourceEntity) {
-        return new MovingAudioSource(Sounds.windOff, sourceEntity, RATTLE_PITCH, 0.5f, false) {
+        return new MovingAudioSource(Sounds.windOff, sourceEntity, RATTLE_PITCH, 1.5f, true) {
+            private GrapplingHook hook = GrapplingHook.this;
+
             @Override
-            public boolean isOverdue() {
-                return (hookedOther != null) && (GrapplingHook.this.timeToLive > 0);
+            public void update() {
+                if ((hookedOther != null) || hook.isOverdue()) {
+                    dispose();
+                }
             }
         };
     }

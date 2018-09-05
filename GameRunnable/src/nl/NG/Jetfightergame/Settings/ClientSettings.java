@@ -89,6 +89,7 @@ public final class ClientSettings {
             gen.writeNumberField("TARGET_FPS", TARGET_FPS);
             gen.writeNumberField("RENDER_DELAY", RENDER_DELAY);
             gen.writeNumberField("SERVER_PORT", ServerSettings.SERVER_PORT);
+            gen.writeNumberField("SPEED_FACTOR", ServerSettings.GENERAL_SPEED_FACTOR);
             gen.writeBooleanField("MAKE_REPLAY", ServerSettings.SERVER_MAKE_REPLAY);
             gen.writeNumberField("TARGET_TPS", ServerSettings.TARGET_TPS);
             gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
@@ -143,6 +144,9 @@ public final class ClientSettings {
                 case "SERVER_PORT":
                     ServerSettings.SERVER_PORT = result.intValue();
                     break;
+                case "SPEED_FACTOR":
+                    ServerSettings.GENERAL_SPEED_FACTOR = result.floatValue();
+                    break;
                 case "MAKE_REPLAY":
                     ServerSettings.SERVER_MAKE_REPLAY = result.booleanValue();
                     break;
@@ -172,7 +176,8 @@ public final class ClientSettings {
                     JET_COLOR = new Color4f(
                             values.next().intValue(),
                             values.next().intValue(),
-                            values.next().intValue()
+                            values.next().intValue(),
+                            1
                     );
                     assert !values.hasNext();
                     break;

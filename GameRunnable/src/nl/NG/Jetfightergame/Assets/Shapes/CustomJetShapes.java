@@ -103,11 +103,11 @@ public final class CustomJetShapes {
         frame.addMirrorTriangle(K, J, M);
 
         nightHawkBoosters = new PairList<>(2);
-        PosVector DCMid = D.middleTo(C);
+        PosVector KLMid = K.middleTo(L);
         PosVector HIMid = H.middleTo(I);
-        PosVector DCMid2 = DCMid.mirrorY(new PosVector());
-        nightHawkBoosters.add(HIMid, DCMid);
-        nightHawkBoosters.add(HIMid, DCMid2);
+        PosVector KLMid2 = KLMid.mirrorY(new PosVector());
+        nightHawkBoosters.add(HIMid, KLMid);
+        nightHawkBoosters.add(HIMid, KLMid2);
 
         return frame.wrapUp(doLoadMesh);
     }

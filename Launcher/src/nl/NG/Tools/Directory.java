@@ -13,7 +13,7 @@ public enum Directory {
     fonts(Paths.get("res", "fonts")),
     shaders(Paths.get("res", "shaders")),
     meshes(Paths.get("res", "models")),
-    pictures(Paths.get("res", "pictures")),
+    backdrops(Paths.get("res", "pictures")),
     recordings(Paths.get("Recordings")),
     screenShots(Paths.get("ScreenShots")),
     settings(Paths.get("res")),
@@ -39,6 +39,10 @@ public enum Directory {
             dir = dir.resolve(p);
         }
         return dir;
+    }
+
+    public File[] getFiles() {
+        return getFile("").listFiles();
     }
 
     public static Path currentDirectory() {

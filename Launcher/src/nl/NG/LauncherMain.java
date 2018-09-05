@@ -73,6 +73,7 @@ public class LauncherMain {
 
     /** game process, or null if no game has been started */
     private Process gameProc = null;
+    private InetAddress localHost;
 
     public LauncherMain() throws IOException, FontFormatException {
         Font lucidaConsole = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
@@ -80,6 +81,13 @@ public class LauncherMain {
         names = new Tables(TABLES_FILE);
         LauncherSettings.readSettingsFromFile(Directory.settings.getFile("settings.json"));
         map = names.findWorld("ISLAND");
+
+        try {
+            localHost = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            Logger.WARN.print(e);
+            localHost = InetAddress.getLoopbackAddress();
+        }
     }
 
     public void init() {
@@ -133,11 +141,15 @@ public class LauncherMain {
     }
 
     private File randomBackdrop() {
-        File file;
-        while (true) {
-            int index = RANDOM.nextInt(BACKDROP_IMAGE.length);
-            String image = BACKDROP_IMAGE[index];
-            file = Directory.pictures.getFile(image);
+        File file = null;
+        File[] backdrops = Directory.backdrops.getFiles();
+        int nOfFiles = backdrops.length;
+        int choice = RANDOM.nextInt(nOfFiles);
+
+        for (int i = 0; i < nOfFiles; i++) {
+            int tgtIndex = (choice + i) % nOfFiles;
+            file = backdrops[tgtIndex];
+
             if (!file.exists()) {
                 Logger.WARN.print("Could not load " + file);
             } else break;
@@ -228,6 +240,9 @@ public class LauncherMain {
 
         settings.add(getTextboxSetting(panel, column(3), "Number of NPC players",
                 LauncherSettings.NOF_OPPONENTS, (s) -> LauncherSettings.NOF_OPPONENTS = Integer.valueOf(s)));
+
+        settings.add(getTextboxSetting(panel, column(3), "Jet Speed Multiplier",
+                LauncherSettings.SPEED_FACTOR, (s) -> LauncherSettings.SPEED_FACTOR = Float.valueOf(s)));
 
         panel.add(getFiller(), getButtonConstraints(column(3), RELATIVE));
 
@@ -360,8 +375,7 @@ public class LauncherMain {
 
         // implementation
         ipField.addActionListener(e -> connectButton.doClick()); // enter -> [connect]
-
-        searchLocal.addActionListener(e -> launchGame(InetAddress.getLoopbackAddress(), null));
+        searchLocal.addActionListener(e -> launchGame(localHost, null));
 
         connectButton.addActionListener(SwingToolbox.getActionWorker("Searching IP and connect", () -> {
             messageDisplay.setText("Searching...");
@@ -400,7 +414,7 @@ public class LauncherMain {
         searchLocal.addActionListener(e -> select(replaySelectPanel));
         panel.add(searchLocal, SwingToolbox.getButtonConstraints(RELATIVE));
 
-        JButton changeLoadout = SwingToolbox.getButton("Change Loadout");
+        JButton changeLoadout = SwingToolbox.getButton("Change Jet");
         changeLoadout.setToolTipText("Select what jet you will use in your next game");
         changeLoadout.addActionListener(e -> select(loadoutPanel));
         panel.add(changeLoadout, SwingToolbox.getButtonConstraints(RELATIVE));

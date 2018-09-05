@@ -28,6 +28,7 @@ public final class LauncherSettings {
     public static int CONNECTION_SEND_FREQUENCY = TARGET_TPS;
     public static boolean MAKE_REPLAY = true;
     public static int NOF_OPPONENTS = 7;
+    public static float SPEED_FACTOR = 1.0f;
 
     /** visual settings */
     public static int TARGET_FPS = 60;
@@ -55,6 +56,7 @@ public final class LauncherSettings {
             gen.writeNumberField("TARGET_FPS", TARGET_FPS);
             gen.writeNumberField("RENDER_DELAY", RENDER_DELAY);
             gen.writeNumberField("SERVER_PORT", SERVER_PORT);
+            gen.writeNumberField("SPEED_FACTOR", SPEED_FACTOR);
             gen.writeBooleanField("MAKE_REPLAY", MAKE_REPLAY);
             gen.writeNumberField("TARGET_TPS", TARGET_TPS);
             gen.writeNumberField("PARTICLE_MODIFIER", PARTICLE_MODIFIER);
@@ -110,6 +112,9 @@ public final class LauncherSettings {
                     break;
                 case "SERVER_PORT":
                     SERVER_PORT = result.intValue();
+                    break;
+                case "SPEED_FACTOR":
+                    SPEED_FACTOR = result.floatValue();
                     break;
                 case "MAKE_REPLAY":
                     MAKE_REPLAY = result.booleanValue();

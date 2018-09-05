@@ -31,7 +31,7 @@ public final class ServerSettings {
     public static final float COUNT_DOWN = 3f;
     public static final int INTERPOLATION_QUEUE_SIZE = 120 / TARGET_TPS + 10;
     public static final float POWERUP_COLLECTION_RANGE = 18f;
-    public static final float GENERAL_SPEED_FACTOR = 2.0f;
+    public static float GENERAL_SPEED_FACTOR = 1f;
 
     public static final float PRINT_STATE_INTERVAL = 0;
     public static int NOF_FUN = 3;
