@@ -318,11 +318,11 @@ public class CustomShape {
 
     /**
      * writes an object to the given filename
-     * @param filename a name of a (preferably non-existing) file without extension
      * @throws IOException if any problem occurs while creating the file
+     * @param filename
      */
     public void writeOBJFile(String filename) throws IOException {
-        PrintWriter writer = new PrintWriter(filename + ".obj", "UTF-8");
+        PrintWriter writer = new PrintWriter(filename, "UTF-8");
 
         writer.println("# created using a simple obj writer by Geert van Ieperen");
         writer.println("# calling method: " + Logger.getCallingMethod(2));
@@ -348,6 +348,7 @@ public class CustomShape {
             for (int i = 0; i < face.vert.length; i++) {
                 writer.print(" " + readVertex(face.vert[i], face.norm[i]));
             }
+            writer.println();
         }
 
         writer.close();

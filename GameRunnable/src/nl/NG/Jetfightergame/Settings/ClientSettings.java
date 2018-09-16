@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.Rendering.Material;
-import nl.NG.Jetfightergame.Tools.Directory;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -124,7 +123,7 @@ public final class ClientSettings {
     }
 
     public static void readSettingsFromFile(String filename) throws IOException {
-        ObjectNode src = new ObjectMapper().readValue(Directory.settings.getFile(filename), ObjectNode.class);
+        ObjectNode src = new ObjectMapper().readValue(filename, ObjectNode.class);
         KeyBinding[] keyBindings = KeyBinding.values();
 
         Iterator<Map.Entry<String, JsonNode>> fields = src.fields();

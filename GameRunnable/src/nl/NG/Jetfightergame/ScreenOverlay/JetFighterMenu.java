@@ -14,12 +14,19 @@ import java.util.function.Supplier;
  */
 public class JetFighterMenu extends HudMenu {
 
-    private final static String[] creditTextfield =
-            ("Main producer:\n" +
-                    "Geert van Ieperen\n" +
-                    "\n" +
-                    "A production of TU/entertainment"
-            ).split("\n");
+    private final static String[] creditTextfield = {
+            "Main producer:",
+            "Geert van Ieperen",
+            "",
+            "Map Models:",
+            "Huub van Rijn",
+            "",
+            "Jet Models",
+            "Yuri Pols",
+            "Geert van Ieperen",
+            "",
+            "A production of TU/entertainment"
+    };
 
     private static final int TEXTFIELD_WIDTH = 750;
 

@@ -76,7 +76,7 @@ public class JetFighterGame {
     public JetFighterGame(boolean doShow, boolean doStore, File replayFile, EnvironmentClass map, InetAddress hostAddress, String playerName) throws Exception {
         Logger.INFO.print("Starting the game...");
 
-        boolean doReplay = replayFile != null;
+        final boolean doReplay = replayFile != null;
         Logger.DEBUG.print("General debug information: " +
                 "\n\tSystem OS:          " + System.getProperty("os.name") +
                 "\n\tJava VM:            " + System.getProperty("java.runtime.version") +
@@ -108,7 +108,7 @@ public class JetFighterGame {
             MouseTracker.getInstance().listenTo(window);
             KeyTracker.getInstance().listenTo(window);
 
-            if (doReplay) {
+            if (!doReplay) {
                 OutputStream sendChannel;
                 InputStream receiveChannel;
 
@@ -343,7 +343,7 @@ public class JetFighterGame {
      * <dd>Sets the player name for this session to the next argument. A random one is provided if this flag is
      * missing</dd>
      * <dt>-json</dt>
-     * <dd>Loads the settings file provided by the next argument</dd>
+     * <dd>Loads the settings file given by the next argument. The next argument should be an absolute path to the json file</dd>
      * <dt>-stop</dt>
      * <dd>Do not initialise nor start the game. All other flags are executed, and settings are written to the given json file if one is supplied.</dd>
      * </dl>
@@ -412,7 +412,7 @@ public class JetFighterGame {
     }
 
     private static void buildTables() {
-        File tables = Directory.currentDirectory().resolve("tables.tb").toFile();
+        File tables = Directory.tables.getFile("tables.tb");
 
         try (FileOutputStream fileOut = new FileOutputStream(tables)) {
             DataOutputStream out = new DataOutputStream(fileOut);
@@ -435,7 +435,7 @@ public class JetFighterGame {
             out.close();
 
         } catch (IOException cause) {
-            IOException ex = new IOException("Could not build tables:", cause);
+            IOException ex = new IOException("Could not build tables", cause);
             Logger.ERROR.print(ex);
         }
     }
@@ -451,7 +451,7 @@ public class JetFighterGame {
             final String image = "SplashImage.png";
 
             try {
-                final BufferedImage splashImage = ImageIO.read(Directory.pictures.getFile(image));
+                final BufferedImage splashImage = ImageIO.read(Directory.splash.getFile(image));
                 setImage(this, splashImage);
             } catch (Exception e) {
                 Logger.ERROR.print("Could not load splash image " + Directory.pictures.getFile(image));

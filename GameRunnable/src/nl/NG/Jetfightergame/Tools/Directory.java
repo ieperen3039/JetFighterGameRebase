@@ -9,23 +9,33 @@ import java.nio.file.Paths;
  * created on 10-2-2018.
  */
 public enum Directory {
-    music(Paths.get("res", "music")),
-    soundEffects(Paths.get("res", "sounds")),
-    fonts(Paths.get("res", "fonts")),
-    shaders(Paths.get("res", "shaders")),
-    meshes(Paths.get("res", "models")),
-    pictures(Paths.get("res", "pictures")),
-    recordings(Paths.get("Recordings")),
-    screenShots(Paths.get("ScreenShots")),
-    settings(Paths.get("res")),
-    gameJar(Paths.get("jar")),
-    launcher(Paths.get("jar")),
-    soundAmbient(Paths.get("res", "sounds", "ambient"));
+    music("res", "music"),
+    soundEffects("res", "sounds"),
+    soundAmbient("res", "sounds", "ambient"),
+    fonts("res", "fonts"),
+    shaders("res", "shaders"),
+    meshes("res", "models"),
+    pictures("res", "pictures"),
+    recordings("Recordings"),
+    screenShots("ScreenShots"),
+    settings(),
+    gameJar("jar"),
+    launcher("jar"),
+    tables("res"),
+    splash("res");
 
     private final Path directory;
 
+    Directory() {
+        this.directory = currentDirectory();
+    }
+
     Directory(Path directory) {
         this.directory = directory;
+    }
+
+    Directory(String first, String... directory) {
+        this.directory = Paths.get(first, directory);
     }
 
     public File getFile(String... path) {
@@ -42,8 +52,11 @@ public enum Directory {
         return dir;
     }
 
+    public File[] getFiles() {
+        return getFile("").listFiles();
+    }
+
     public static Path currentDirectory() {
         return Paths.get("").toAbsolutePath();
     }
-
 }

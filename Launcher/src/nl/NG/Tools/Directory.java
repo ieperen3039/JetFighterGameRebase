@@ -9,22 +9,27 @@ import java.nio.file.Paths;
  */
 public enum Directory {
     music(Paths.get("res", "music")),
-    soundEffects(Paths.get("res", "sounds")),
     fonts(Paths.get("res", "fonts")),
-    shaders(Paths.get("res", "shaders")),
-    meshes(Paths.get("res", "models")),
     backdrops(Paths.get("res", "pictures")),
     recordings(Paths.get("Recordings")),
     screenShots(Paths.get("ScreenShots")),
     settings(Paths.get("res")),
     gameJar(Paths.get("jar")),
     launcher(Paths.get("jar")),
-    tables(currentDirectory());
+    tables("res");
 
     private final Path directory;
 
+    Directory() {
+        this.directory = currentDirectory();
+    }
+
     Directory(Path directory) {
         this.directory = directory;
+    }
+
+    Directory(String first, String... directory) {
+        this.directory = Paths.get(first, directory);
     }
 
     public File getFile(String... path) {

@@ -25,8 +25,7 @@ public class MenuTextField extends UIElement {
      */
     public MenuTextField(String[] content, int width, int textSize) {
         super(width, (textSize + TEXT_DIFF) * content.length + 2*INTERNAL_MARGIN);
-
-        this.content = content;
+        this.content = content.clone();
         this.textSize = textSize;
     }
 

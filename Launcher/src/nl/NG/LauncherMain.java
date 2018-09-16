@@ -159,11 +159,10 @@ public class LauncherMain {
     }
 
     private void reboot() {
-        boolean wasVisible = frame.isVisible();
         close();
         frame.dispose();
         init();
-        if (wasVisible) show();
+        show();
     }
 
     private JComponent getDefaultPanel() {
@@ -570,7 +569,7 @@ public class LauncherMain {
         StringBuilder args = new StringBuilder();
         try {
             File str = LauncherSettings.writeSettingsToFile(SETTINGS_FILE);
-            args.append("-json \"").append(str.getPath()).append("\"");
+            args.append("-json \"").append(str.getAbsolutePath()).append("\"");
         } catch (IOException ex) {
             Logger.WARN.print("Could not write settings:" + ex);
         }
