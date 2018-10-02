@@ -1,0 +1,120 @@
+{
+  "TARGET_FPS": 60,
+  "RENDER_DELAY": 0.06,
+  "SERVER_PORT": 3039,
+  "SPEED_FACTOR": 1.0,
+  "MAKE_REPLAY": true,
+  "TARGET_TPS": 20,
+  "PARTICLE_MODIFIER": 1.7332529,
+  "CONNECTION_SEND_FREQUENCY": 20,
+  "JET_TYPE": "JET SPITSY",
+  "LOGGER_PRINT_CALLSITES": false,
+  "NUMBER_OF_NPCS": 7,
+  "JET_COLOR": [
+    153,
+    153,
+    255
+  ],
+  "NO_ACTION": [
+    -1,
+    false,
+    -1,
+    false
+  ],
+  "START_GAME": [
+    257,
+    false,
+    7,
+    false
+  ],
+  "EXIT_GAME": [
+    256,
+    false,
+    2,
+    false
+  ],
+  "PRINT_SCREEN": [
+    283,
+    false,
+    10,
+    false
+  ],
+  "TOGGLE_FULLSCREEN": [
+    300,
+    false,
+    11,
+    false
+  ],
+  "TOGGLE_DEBUG_SCREEN": [
+    292,
+    false,
+    13,
+    false
+  ],
+  "DISABLE_HUD": [
+    72,
+    false,
+    12,
+    false
+  ],
+  "PITCH_UP": [
+    2,
+    true,
+    12,
+    true
+  ],
+  "PITCH_DOWN": [
+    1,
+    true,
+    12,
+    true
+  ],
+  "ROLL_RIGHT": [
+    4,
+    true,
+    13,
+    true
+  ],
+  "ROLL_LEFT": [
+    3,
+    true,
+    7,
+    true
+  ],
+  "THROTTLE": [
+    87,
+    false,
+    10,
+    true
+  ],
+  "BREAK": [
+    83,
+    false,
+    11,
+    true
+  ],
+  "YAW_LEFT": [
+    65,
+    false,
+    4,
+    false
+  ],
+  "YAW_RIGHT": [
+    68,
+    false,
+    5,
+    false
+  ],
+  "PRIMARY_FIRE": [
+    32,
+    false,
+    0,
+    false
+  ],
+  "SECONDARY_FIRE": [
+    340,
+    false,
+    1,
+    false
+  ]
+}

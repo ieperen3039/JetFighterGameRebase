@@ -4,13 +4,13 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.NG.Jetfightergame.EntityGeneral.Factory.EntityClass;
 import nl.NG.Jetfightergame.Rendering.Material;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
@@ -72,13 +72,13 @@ public final class ClientSettings {
 
     /** miscellaneous */
     public static Material PORTAL_MATERIAL = Material.PLASTIC;
-    public static EntityClass JET_TYPE = EntityClass.JET_SPITZ;
-    ;
+    public static EntityClass JET_TYPE = EntityClass.SPECTATOR_CAMERA;
+
     public static Color4f JET_COLOR = Color4f.YELLOW;
     public static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
-    public static void writeSettingsToFile(String filePath) throws IOException {
-        FileOutputStream out = new FileOutputStream(filePath);
+    public static void writeSettingsToFile(String file) throws IOException {
+        FileOutputStream out = new FileOutputStream(file);
         JsonGenerator gen = new JsonFactory().createGenerator(out);
         gen.useDefaultPrettyPrinter();
 
@@ -123,8 +123,11 @@ public final class ClientSettings {
         out.close();
     }
 
-    public static void readSettingsFromFile(String filename) throws IOException {
-        ObjectNode src = new ObjectMapper().readValue(filename, ObjectNode.class);
+    public static void readSettingsFromFile(String fileName) throws IOException {
+        File file = new File(fileName);
+        if (!file.exists()) return;
+
+        JsonNode src = new ObjectMapper().readTree(file);
         KeyBinding[] keyBindings = KeyBinding.values();
 
         Iterator<Map.Entry<String, JsonNode>> fields = src.fields();

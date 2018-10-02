@@ -373,7 +373,13 @@ public class JetFighterGame {
         if (jsonArg > 0) try {
             ClientSettings.readSettingsFromFile(args.get(jsonArg));
         } catch (IOException ex) {
-            Logger.ERROR.print("Could not read settings!", ex);
+            Logger.ERROR.print("Could not read settings file", ex);
+            if (!ServerSettings.DEBUG) return;
+
+            Scanner sc = new Scanner(new File(args.get(jsonArg)));
+            while (sc.hasNext()) {
+                Logger.DEBUG.print(sc.nextLine());
+            }
         }
 
         File file = null;

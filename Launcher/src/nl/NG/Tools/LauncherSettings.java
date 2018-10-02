@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.awt.*;
 import java.io.File;
@@ -87,13 +86,14 @@ public final class LauncherSettings {
         gen.writeEndObject();
 
         gen.close();
+        out.close();
         return file;
     }
 
     public static void readSettingsFromFile(File file) throws IOException {
         if (!file.exists()) return;
 
-        ObjectNode src = new ObjectMapper().readValue(file, ObjectNode.class);
+        JsonNode src = new ObjectMapper().readTree(file);
         KeyBinding[] keyBindings = KeyBinding.values();
 
         Iterator<Map.Entry<String, JsonNode>> fields = src.fields();
