@@ -229,4 +229,8 @@ public final class GeneralShapes {
 
         return frame.wrapUp(doLoadMesh);
     }
+
+    public static void main(String[] args) {
+        rebuildAll(false);
+    }
 }

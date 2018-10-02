@@ -17,7 +17,7 @@ public final class ServerSettings {
 
     /** general settings */
     public static final String GAME_NAME = "Jet Fighter Game"; // laaaame
-    public static int TARGET_TPS = 30;
+    public static int TARGET_TPS = 20;
 
     /** connection settings */
     public static int SERVER_PORT = 3039;

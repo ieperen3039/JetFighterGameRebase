@@ -370,7 +370,11 @@ public class JetFighterGame {
 
         if (mapNameArg > 0) serverMap = Toolbox.findClosest(args.get(mapNameArg), EnvironmentClass.values());
         if (playerNameArg > 0) playerName = args.get(playerNameArg);
-        if (jsonArg > 0) ClientSettings.readSettingsFromFile(args.get(jsonArg));
+        if (jsonArg > 0) try {
+            ClientSettings.readSettingsFromFile(args.get(jsonArg));
+        } catch (IOException ex) {
+            Logger.ERROR.print("Could not read settings!", ex);
+        }
 
         File file = null;
         if (playReplay) {

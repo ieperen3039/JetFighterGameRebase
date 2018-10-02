@@ -19,7 +19,7 @@ public class RaceAI extends RocketAI {
     private static final float SHOOT_ACCURACY = 0.05f;
     private static final float SAFE_DIST = 200f;
     private static final float POWERUP_COLLECT_BENDOUT = (float) (Math.PI / 16);
-    private static final float OFF_TARGET_BENDOUT = (float) (Math.PI / 8);
+    private static final float OFF_TARGET_BENDOUT = (float) (Math.PI / 6);
     private static final int LOOK_AHEAD = 0;
     private static final float CHECKPOINT_MARGIN = 0.8f; // [0, 1]
     private static final float POWERUP_LOSE_ANGLE = 1f;
@@ -63,7 +63,7 @@ public class RaceAI extends RocketAI {
 
         if (powerupTarget == null || powerupTarget.isCollected()) {
             if (pInd > 0) {
-                StaticEntity ety = race.nextCheckpointOf(pInd);
+                StaticEntity ety = race.nextCheckpointOf(pInd, 2);
                 powerupTarget = getPowerupOnPath(ety.getExpectedMiddle());
             }
         } else {

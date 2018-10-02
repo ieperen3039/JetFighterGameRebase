@@ -291,8 +291,9 @@ public class RaceProgress {
         return (nOfCheckpoints == 0) || (winners.size() == nOfPlayers);
     }
 
-    public Checkpoint nextCheckpointOf(int pInd) {
-        return allPoints.get(nextCheckpointIndOf(pInd));
+    public Checkpoint nextCheckpointOf(int pInd, int offset) {
+        int index = nextCheckpointIndOf(pInd) + offset;
+        return allPoints.get(index % nOfCheckpoints);
     }
 
     private int nextCheckpointIndOf(int pInd) {

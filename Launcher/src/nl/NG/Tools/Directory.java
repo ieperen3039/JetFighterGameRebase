@@ -13,7 +13,7 @@ public enum Directory {
     backdrops(Paths.get("res", "pictures")),
     recordings(Paths.get("Recordings")),
     screenShots(Paths.get("ScreenShots")),
-    settings(Paths.get("res")),
+    settings(Paths.get("")),
     gameJar(Paths.get("jar")),
     launcher(Paths.get("jar")),
     tables("res");

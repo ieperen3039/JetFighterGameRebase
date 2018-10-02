@@ -72,7 +72,8 @@ public final class ClientSettings {
 
     /** miscellaneous */
     public static Material PORTAL_MATERIAL = Material.PLASTIC;
-    public static EntityClass JET_TYPE = EntityClass.SPECTATOR_CAMERA;
+    public static EntityClass JET_TYPE = EntityClass.JET_SPITZ;
+    ;
     public static Color4f JET_COLOR = Color4f.YELLOW;
     public static final boolean USE_SOCKET_FOR_OFFLINE = false;
 
