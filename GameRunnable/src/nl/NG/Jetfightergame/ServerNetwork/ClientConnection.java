@@ -62,7 +62,9 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     protected boolean controlTeardown = false;
     protected float maxServerTime = 0;
 
-    public ClientConnection(String name, OutputStream sendChannel, InputStream receiveChannel, EntityClass jetType, Color4f jetColor) throws IOException {
+    public ClientConnection(
+            String name, OutputStream sendChannel, InputStream receiveChannel, EntityClass jetType, Color4f jetColor
+    ) throws IOException {
         super("Connection Controller", ClientSettings.CONNECTION_SEND_FREQUENCY, false);
         this.serverOut = new BufferedOutputStream(sendChannel);
         this.serverIn = receiveChannel;
@@ -87,7 +89,8 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
         Logger.printOnline(() -> jet.getPosition() + " | " + jet.getForward());
     }
 
-    protected ClientConnection(String name, File readFile, GameTimer timer, EntityFactory jetReplacement, int tps) throws IOException {
+    protected ClientConnection(String name, File readFile, GameTimer timer, EntityFactory jetReplacement, int tps)
+            throws IOException {
         super(name, tps, false);
 
         this.raceProgress = new RaceProgress();
@@ -337,7 +340,10 @@ public class ClientConnection extends AbstractGameLoop implements BlockingListen
     }
 
     @Override
-    public void addExplosion(PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density, float lingerTime, float particleSize) {
+    public void addExplosion(
+            PosVector position, DirVector direction, Color4f color1, Color4f color2, float power, int density,
+            float lingerTime, float particleSize
+    ) {
         game.addParticles(Particles.explosion(position, direction, color1, color2, power, density, lingerTime, FIRE_PARTICLE_SIZE));
     }
 

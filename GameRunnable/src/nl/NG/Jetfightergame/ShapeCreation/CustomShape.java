@@ -322,11 +322,13 @@ public class CustomShape {
      * @param filename
      */
     public void writeOBJFile(String filename) throws IOException {
+        if (!filename.endsWith(".obj")) {
+            filename += ".obj";
+        }
         PrintWriter writer = new PrintWriter(filename, "UTF-8");
 
         writer.println("# created using a simple obj writer by Geert van Ieperen");
         writer.println("# calling method: " + Logger.getCallingMethod(2));
-        writer.println("mtllib arrow.mtl"); // TODO is this necessary?
 
         PosVector[] sortedVertices = new PosVector[points.size()];
         points.forEach((v, i) -> sortedVertices[i] = v);

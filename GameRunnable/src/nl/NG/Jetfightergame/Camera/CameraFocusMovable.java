@@ -79,7 +79,7 @@ public class CameraFocusMovable extends AbstractJet implements Spectral {
 
         float rotLeft = controller.roll() * deltaTime * -ROLL_FACTOR;
         float rotUp = controller.pitch() * deltaTime * ROLL_FACTOR;
-        extraRotation.rotate(0, rotUp, rotLeft);
+        extraRotation.rotateXYZ(0, rotUp, rotLeft);
         extraVelocity = DirVector.zeroVector();
     }
 

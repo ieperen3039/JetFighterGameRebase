@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.Engine;
 
 import nl.NG.Jetfightergame.Assets.Entities.FallingCube;
-import nl.NG.Jetfightergame.GameState.CollisionDetection;
+import nl.NG.Jetfightergame.GameState.ProximityDetection;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
@@ -12,12 +12,11 @@ import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * @author Geert van Ieperen
- * created on 18-3-2018.
+ * @author Geert van Ieperen created on 18-3-2018.
  */
 @SuppressWarnings("unchecked")
-public class CollisionDetectionTest extends CollisionDetection {
-    public CollisionDetectionTest() {
+public class ProximityDetectionTest extends ProximityDetection {
+    public ProximityDetectionTest() {
         super(Collections.EMPTY_LIST);
     }
 

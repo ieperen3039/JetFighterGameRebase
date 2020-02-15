@@ -5,7 +5,7 @@ import nl.NG.Jetfightergame.EntityGeneral.EntityState;
 import nl.NG.Jetfightergame.EntityGeneral.MovingEntity;
 import nl.NG.Jetfightergame.GameState.SpawnReceiver;
 import nl.NG.Jetfightergame.Identity;
-import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
+import nl.NG.Jetfightergame.Tools.DataIO;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import org.joml.Quaternionf;
@@ -18,7 +18,7 @@ import java.io.*;
 public abstract class EntityFactory implements Externalizable {
     protected EntityClass type;
     protected int id;
-    protected PosVector position;
+    public PosVector position;
     protected Quaternionf rotation;
     protected DirVector velocity;
 

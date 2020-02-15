@@ -20,7 +20,7 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
 
     @Override
     public CameraImpl[] implementations() {
-        return VALUES;
+        return CameraImpl.values();
     }
 
     public enum CameraImpl {
@@ -30,7 +30,17 @@ public class CameraManager implements Camera, Manager<CameraManager.CameraImpl> 
         MountedCamera
     }
 
-    public void switchTo(CameraImpl camera){
+    @Override
+    public void switchTo(int n) {
+        switchTo(VALUES[n]);
+    }
+
+    @Override
+    public int nrOfImplementations() {
+        return VALUES.length;
+    }
+
+    public void switchTo(CameraImpl camera) {
         final PosVector thisEye = instance.getEye();
         final DirVector thisUp = instance.getUpVector();
         final DirVector up = thisUp.isScalable() ? thisUp : DirVector.zVector();

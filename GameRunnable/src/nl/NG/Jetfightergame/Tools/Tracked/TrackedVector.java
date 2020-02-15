@@ -4,10 +4,9 @@ import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.Vector;
 
 /**
- * @author Geert van Ieperen
- *         created on 30-10-2017.
+ * @author Geert van Ieperen created on 30-10-2017.
  */
-public class TrackedVector<V extends Vector> extends TrackedObject<V> implements nl.NG.Jetfightergame.Tools.Differable {
+public class TrackedVector<V extends Vector> extends TrackedObject<V> implements Differable {
     public TrackedVector(V initial) {
         super(initial);
     }

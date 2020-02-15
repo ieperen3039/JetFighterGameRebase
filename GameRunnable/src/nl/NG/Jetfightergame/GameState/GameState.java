@@ -58,7 +58,7 @@ public abstract class GameState implements Environment {
         final Collection<Touchable> staticEntities = createWorld(raceProgress, gameTimer);
 
         if (doCollDet) {
-            physicsEngine = new CollisionDetection(staticEntities);
+            physicsEngine = new ProximityDetection(staticEntities);
 
         } else {
             physicsEngine = new EntityList(staticEntities);

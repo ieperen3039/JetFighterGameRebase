@@ -26,13 +26,20 @@ public interface Manager<E extends Enum> {
      * @param n the ordinal of the required enum.
      * @throws IllegalArgumentException if there are less than n implementations
      */
-    default void switchTo(int n){
+    default void switchTo(int n) {
         switchTo(implementations()[n]);
     }
 
-     /**
-      * change the behaviour of this manager to that of the implementation represented by E.
-      */
+    /**
+     * @return the number of implementations available
+     */
+    default int nrOfImplementations() {
+        return implementations().length;
+    }
+
+    /**
+     * change the behaviour of this manager to that of the implementation represented by E.
+     */
     void switchTo(E implementation);
 
     /**

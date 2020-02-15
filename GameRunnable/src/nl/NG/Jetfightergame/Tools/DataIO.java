@@ -1,4 +1,4 @@
-package nl.NG.Jetfightergame.Rendering.Particles;
+package nl.NG.Jetfightergame.Tools;
 
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;

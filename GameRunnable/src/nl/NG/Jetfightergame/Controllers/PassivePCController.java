@@ -57,12 +57,12 @@ public abstract class PassivePCController implements TrackerMoveListener, Contro
 
     @Override
     public boolean primaryFire() {
-        return readKey(KeyBinding.PRIMARY_FIRE, KeyBinding.NO_ACTION, 1 / GLFW_PRESS) > 0.5f; // support for stupid decisions?
+        return readKey(KeyBinding.PRIMARY_FIRE, KeyBinding.NO_ACTION, 1f / GLFW_PRESS) > 0.5f; // support for stupid decisions?
     }
 
     @Override
     public boolean secondaryFire() {
-        return readKey(KeyBinding.SECONDARY_FIRE, KeyBinding.NO_ACTION, 1 / GLFW_PRESS) > 0.5f; // support for stupid decisions?
+        return readKey(KeyBinding.SECONDARY_FIRE, KeyBinding.NO_ACTION, 1f / GLFW_PRESS) > 0.5f; // support for stupid decisions?
     }
 
     @Override

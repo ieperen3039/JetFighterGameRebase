@@ -43,7 +43,7 @@ public class MenuToggleMultiple extends MenuClickable {
 
     @Override
     public void onClick(int x, int y) {
-        value = (value += 1)%names.length;
+        value = (value += 1) % names.length;
 
         handler.accept(value);
     }

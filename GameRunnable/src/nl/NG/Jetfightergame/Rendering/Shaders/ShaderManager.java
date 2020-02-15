@@ -16,6 +16,7 @@ import java.io.IOException;
  * created on 7-1-2018.
  */
 public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderProgram {
+    private static final ShaderImpl[] VALUES = ShaderImpl.values();
     private ShaderProgram instance;
 
     public ShaderManager() throws IOException {
@@ -31,6 +32,16 @@ public class ShaderManager implements Manager<ShaderManager.ShaderImpl>, ShaderP
     @Override
     public ShaderImpl[] implementations() {
         return ShaderImpl.values();
+    }
+
+    @Override
+    public void switchTo(int n) {
+        switchTo(VALUES[n]);
+    }
+
+    @Override
+    public int nrOfImplementations() {
+        return VALUES.length;
     }
 
     @Override

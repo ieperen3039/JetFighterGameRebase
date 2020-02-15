@@ -9,6 +9,7 @@ import java.nio.file.Paths;
  */
 public enum Resource {
     GLITCHMAP(Directory.meshes, "maps", "GlitchIsland"),
+    CUBEMAP(Directory.meshes, "maps", "map_cube"),
     SEA(Directory.meshes, "background", "water.obj");
 
     private String localPath;

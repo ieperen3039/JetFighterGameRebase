@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class IslandMap extends GameState {
     private static final int FOG_DIST = 750;
-    private static final int WORLD_BOUND = 1000;
+    private static final int WORLD_BOUND = 1500;
     private static final int TILE_SIZE = 100;
     public static final int START_LINE_DIST = 100;
     private PosVector nextSpawnPosition = new PosVector();
@@ -60,14 +60,6 @@ public class IslandMap extends GameState {
 
             }
         }
-        // world boundary
-//        float quart = (float) Math.PI / 2;
-//        entities.add(borderPanel(new PosVector(WORLD_BOUND, 0, 0), new Quaternionf().rotateY(-quart)));
-//        entities.add(borderPanel(new PosVector(-WORLD_BOUND, 0, 0), new Quaternionf().rotateY(quart)));
-//        entities.add(borderPanel(new PosVector(0, WORLD_BOUND, 0), new Quaternionf().rotateX(quart)));
-//        entities.add(borderPanel(new PosVector(0, -WORLD_BOUND, 0), new Quaternionf().rotateX(-quart)));
-//        entities.add(borderPanel(new PosVector(0, 0, WORLD_BOUND), new Quaternionf()));
-//        entities.add(borderPanel(new PosVector(0, 0, -WORLD_BOUND), new Quaternionf().rotateX(quart * 2)));
 
         Pair<PosVector, DirVector> start = racePath.getFirstCheckpoint();
         nextSpawnPosition.set(start.left);

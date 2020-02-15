@@ -9,8 +9,8 @@ import nl.NG.Jetfightergame.Tools.Manager;
 
 import java.util.function.Consumer;
 
-import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.*;
 import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.XBoxController;
+import static nl.NG.Jetfightergame.Controllers.ControllerManager.ControllerImpl.*;
 
 /**
  * a controller decorator that manages the current controller for the player, implementing overriding control.
@@ -44,16 +44,25 @@ public class ControllerManager implements Controller, Manager<ControllerManager.
         AIController,
     }
 
-    @SuppressWarnings("AssignmentOrReturnOfFieldWithMutableType")
     @Override
     public ControllerImpl[] implementations() {
-        return SELECTABLE_CONTROLLERS;
+        return SELECTABLE_CONTROLLERS.clone();
     }
 
-    public void switchTo(ControllerImpl type){
+    @Override
+    public void switchTo(int n) {
+        switchTo(SELECTABLE_CONTROLLERS[n]);
+    }
+
+    @Override
+    public int nrOfImplementations() {
+        return SELECTABLE_CONTROLLERS.length;
+    }
+
+    public void switchTo(ControllerImpl type) {
         Controller newInst;
 
-        switch (type){
+        switch (type) {
             case MouseAbsolute:
                 newInst = new PassivePCControllerAbsolute();
                 break;

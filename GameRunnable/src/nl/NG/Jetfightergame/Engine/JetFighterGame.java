@@ -38,8 +38,8 @@ import java.io.*;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static nl.NG.Jetfightergame.Camera.CameraManager.CameraImpl.FollowingCamera;
@@ -372,6 +372,7 @@ public class JetFighterGame {
         if (playerNameArg > 0) playerName = args.get(playerNameArg);
         if (jsonArg > 0) try {
             ClientSettings.readSettingsFromFile(args.get(jsonArg));
+
         } catch (IOException ex) {
             Logger.ERROR.print("Could not read settings file", ex);
             if (!ServerSettings.DEBUG) return;
@@ -453,8 +454,7 @@ public class JetFighterGame {
     /**
      * a splash image that can be shown and disposed.
      */
-    private class Splash extends Frame implements Runnable {
-
+    private static class Splash extends Frame implements Runnable {
         Splash() {
             setTitle("Loading " + ServerSettings.GAME_NAME);
             // TODO better splash image

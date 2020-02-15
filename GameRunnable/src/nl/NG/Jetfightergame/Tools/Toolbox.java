@@ -89,6 +89,7 @@ public final class Toolbox {
     }
 
     public static void checkGLError() {
+        if (true) return;
         if (!ServerSettings.DEBUG) return;
         int error;
         int i = 0;

@@ -1,6 +1,7 @@
 package nl.NG.Jetfightergame.EntityGeneral;
 
 import nl.NG.Jetfightergame.EntityGeneral.Hitbox.Collision;
+import nl.NG.Jetfightergame.GameState.ProximityDetection;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.ShapeCreation.Shape;
@@ -64,7 +65,7 @@ public interface Touchable extends Drawable {
 
     /**
      * @return the position of this object in the next timestamp. This value is bound to change after calls to
-     *         {@link nl.NG.Jetfightergame.GameState.CollisionDetection}
+     *         {@link ProximityDetection}
      */
     PosVector getExpectedMiddle();
 }

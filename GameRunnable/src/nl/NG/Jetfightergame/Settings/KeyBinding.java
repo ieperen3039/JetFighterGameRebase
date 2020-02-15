@@ -19,15 +19,15 @@ public enum KeyBinding {
     DISABLE_HUD(GLFW_KEY_H, false, XBOX_BUTTON_DOWN, false),
 
     PITCH_UP(MOUSE_DOWN, true, XBOX_AXIS_LS_DOWN, true),
-    PITCH_DOWN(MOUSE_UP, true, XBOX_AXIS_LS_DOWN, true),
+    PITCH_DOWN(MOUSE_UP, true, XBOX_AXIS_LS_UP, true),
     ROLL_RIGHT(MOUSE_RIGHT, true, XBOX_AXIS_LS_RIGHT, true),
     ROLL_LEFT(MOUSE_LEFT, true, XBOX_AXIS_LS_LEFT, true),
     THROTTLE(GLFW_KEY_W, false, XBOX_AXIS_LT_UP, true),
     BREAK(GLFW_KEY_S, false, XBOX_AXIS_RT_UP, true),
     YAW_LEFT(GLFW_KEY_A, false, XBOX_BUTTON_LB, false),
     YAW_RIGHT(GLFW_KEY_D, false, XBOX_BUTTON_RB, false),
-    PRIMARY_FIRE(GLFW_MOUSE_BUTTON_LEFT, false, XBOX_BUTTON_A, false),
-    SECONDARY_FIRE(GLFW_MOUSE_BUTTON_RIGHT, false, XBOX_BUTTON_B, false);
+    PRIMARY_FIRE(GLFW_KEY_SPACE, false, XBOX_BUTTON_A, false),
+    SECONDARY_FIRE(GLFW_KEY_LEFT_SHIFT, false, XBOX_BUTTON_B, false);
 
     private static EnumSet<KeyBinding> actionButtons = EnumSet.of(
             EXIT_GAME, TOGGLE_FULLSCREEN, PRINT_SCREEN, START_GAME, TOGGLE_DEBUG_SCREEN, DISABLE_HUD);

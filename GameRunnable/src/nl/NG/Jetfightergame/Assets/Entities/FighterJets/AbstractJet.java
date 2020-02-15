@@ -18,13 +18,12 @@ import nl.NG.Jetfightergame.Rendering.MatrixStack.GL2;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.MatrixStack;
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
 import nl.NG.Jetfightergame.Rendering.Particles.BoosterLine;
-import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
 import nl.NG.Jetfightergame.Sound.AudioSource;
 import nl.NG.Jetfightergame.Sound.MovingAudioSource;
 import nl.NG.Jetfightergame.Sound.Sounds;
+import nl.NG.Jetfightergame.Tools.DataIO;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Interpolation.VectorInterpolator;
-import nl.NG.Jetfightergame.Tools.Logger;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Tracked.ExponentialSmoothFloat;
 import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
@@ -181,8 +180,8 @@ public abstract class AbstractJet extends MovingEntity {
 
         // thrust forces
         float throttle = controller.throttle();
-        float thrust = (throttle > 0) ? ((throttle * throttlePower) + (float) 0) : ((throttle + 1) * (float) 0);
-        thrust = thrust > throttlePower ? throttlePower : thrust;
+        float thrust = (throttle > 0) ? ((throttle * throttlePower)) : 0;
+        thrust = Math.min(thrust, throttlePower);
 
         // apply speed modifiers
         for (Pair<Float, Float> modifier : speedModifiers) {
@@ -233,7 +232,7 @@ public abstract class AbstractJet extends MovingEntity {
 
         // collect extrapolated variables
         position.add(extraVelocity.scale(deltaTime, temp), extraPosition);
-        rotation.rotate(rollSpeed * deltaTime, -pitchSpeed * deltaTime, -yawSpeed * deltaTime, extraRotation);
+        rotation.rotateXYZ(rollSpeed * deltaTime, -pitchSpeed * deltaTime, -yawSpeed * deltaTime, extraRotation);
     }
 
     @Override
@@ -327,10 +326,8 @@ public abstract class AbstractJet extends MovingEntity {
 
         if (boosterSound.isOverdue()) {
             boostPitch.update(0.01f);
-            Logger.DEBUG.print(boosterSound);
             boosterSound = getBoosterSound();
             entityDeposit.add(boosterSound);
-            Logger.DEBUG.print(boosterSound);
         } else {
             boosterSound.setPitch(boostPitch.current());
         }

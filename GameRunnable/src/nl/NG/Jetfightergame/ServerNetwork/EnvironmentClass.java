@@ -1,5 +1,6 @@
 package nl.NG.Jetfightergame.ServerNetwork;
 
+import nl.NG.Jetfightergame.Assets.Scenarios.CubeWorld;
 import nl.NG.Jetfightergame.Assets.Scenarios.IslandMap;
 import nl.NG.Jetfightergame.Assets.Scenarios.PlayerJetLaboratory;
 import nl.NG.Jetfightergame.GameState.Environment;
@@ -10,17 +11,17 @@ import nl.NG.Jetfightergame.GameState.GameState;
  */
 public enum EnvironmentClass {
     LOBBY, VOID,
-    PLAYERJET_LABORATORY, ISLAND_MAP;
+    CUBE_MAP, ISLAND_MAP;
 
     private static final EnvironmentClass[] VALUES = values();
-    public static EnvironmentClass[] raceWorlds = {ISLAND_MAP};
+    public static EnvironmentClass[] raceWorlds = {ISLAND_MAP, CUBE_MAP};
 
     public GameState create() {
         switch (this) {
             case LOBBY:
                 return new PlayerJetLaboratory();
-            case PLAYERJET_LABORATORY:
-                return new PlayerJetLaboratory();
+            case CUBE_MAP:
+                return new CubeWorld();
             case ISLAND_MAP:
                 return new IslandMap();
             default:

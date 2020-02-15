@@ -31,7 +31,6 @@ import static nl.NG.SwingToolbox.*;
  * @author Geert van Ieperen. Created on 23-8-2018.
  */
 public class LauncherMain {
-    private static final String[] BACKDROP_IMAGE = {"Backdrop.png", "Passage1.png", "Passage2.png", "Seekers.png", "Seekers2.png", "Seekers3.png"};
     private static final Path jarName = Directory.gameJar.getPath("GameRunnable.jar");
 
     private static final Dimension MINIMUM_LAUNCHER_SIZE = new Dimension(900, 600);
@@ -638,11 +637,21 @@ public class LauncherMain {
         Logger.INFO.print("Opened Launcher");
     }
 
-    public static void main(String[] args) throws IOException, FontFormatException {
-        Font font = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
-        setLookAndFeel(font.deriveFont(LauncherMain.BASE_FONT_SIZE));
+    public static void main(String[] args) {
+        System.out.println("Launching...");
+        LauncherMain launcher;
 
-        LauncherMain launcher = new LauncherMain();
+        try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, fontFileLucidaConsole);
+            setLookAndFeel(font.deriveFont(LauncherMain.BASE_FONT_SIZE));
+
+            launcher = new LauncherMain();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
         launcher.init();
         launcher.show();
     }

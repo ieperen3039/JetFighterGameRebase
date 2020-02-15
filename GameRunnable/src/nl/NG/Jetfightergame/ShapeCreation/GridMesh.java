@@ -44,10 +44,10 @@ public class GridMesh implements Shape {
         ySize = grid[0].length - 1;
 
         // the absolute minimum of all vectors
-        minimumTranspose = new Vector3f(grid[0][0]).add(-1f, -1f, 0).mul(1, 1, 0).toImmutable();
+        minimumTranspose = new Vector3f(grid[0][0]).add(-1f, -1f, 0).mul(1, 1, 0);
         // the absolute maximum of all vectors
         final Vector3f maxVector = new Vector3f(grid[xSize][ySize]).add(1f, 1f, 0);
-        normalizingScalar = new Vector3f(1, 1, 1).div(maxVector.mul(xSize, ySize, 0)).toImmutable();
+        normalizingScalar = new Vector3f(1, 1, 1).div(maxVector.mul(xSize, ySize, 0));
 
         planeGrid = new Quad[xSize][ySize];
         CustomShape frame = new CustomShape(new PosVector(0, 0, Float.NEGATIVE_INFINITY));

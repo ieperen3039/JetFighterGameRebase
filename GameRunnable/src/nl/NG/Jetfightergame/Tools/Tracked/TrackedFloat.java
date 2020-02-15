@@ -3,7 +3,7 @@ package nl.NG.Jetfightergame.Tools.Tracked;
 /**
  * Created by Geert van Ieperen on 4-5-2017.
  */
-public class TrackedFloat extends TrackedObject<Float> implements nl.NG.Jetfightergame.Tools.Differable {
+public class TrackedFloat extends TrackedObject<Float> implements Differable {
 
     public TrackedFloat(Float previous, Float current) {
         super(previous, current);

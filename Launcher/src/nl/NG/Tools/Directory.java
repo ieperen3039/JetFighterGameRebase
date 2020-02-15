@@ -14,8 +14,8 @@ public enum Directory {
     recordings(Paths.get("Recordings")),
     screenShots(Paths.get("ScreenShots")),
     settings(Paths.get("")),
-    gameJar(Paths.get("jar")),
-    launcher(Paths.get("jar")),
+    gameJar(Paths.get("")),
+    launcher(Paths.get("")),
     tables("res");
 
     private final Path directory;

@@ -11,6 +11,10 @@ public class PosVector extends Vector {
         super();
     }
 
+    public PosVector(double x, double y, double z) {
+        this((float) x, (float) y, (float) z);
+    }
+
     public static PosVector zeroVector() {
         return new PosVector(0.0f, 0.0f, 0.0f);
     }

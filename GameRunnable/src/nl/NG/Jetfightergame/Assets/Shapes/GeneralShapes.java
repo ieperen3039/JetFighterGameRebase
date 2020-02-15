@@ -36,6 +36,7 @@ public final class GeneralShapes {
     public static Shape ROCKET;
 
     public static List<Shape> ISLAND1;
+    public static List<Shape> CUBE_ISLAND;
 
     /**
      * loads the shapes into memory. This method may be split into several selections of models
@@ -68,6 +69,7 @@ public final class GeneralShapes {
         ICOSAHEDRON = makeIcosahedron(doLoadMesh);
         CHECKPOINTRING = new CheckpointRing(10, 0.03f, doLoadMesh);
         ISLAND1 = BasicShape.loadSplit(doLoadMesh, CONTAINER_SIZE, 50f, Resource.GLITCHMAP);
+        CUBE_ISLAND = BasicShape.loadSplit(doLoadMesh, CONTAINER_SIZE, 10f, Resource.CUBEMAP);
         SEA = makeSeaTile(doLoadMesh);
         QUAD = makeSingleQuad(doLoadMesh);
         ROCKET = makeWingedRocket(doLoadMesh);

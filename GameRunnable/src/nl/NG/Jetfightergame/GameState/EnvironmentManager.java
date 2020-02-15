@@ -24,6 +24,7 @@ import java.util.function.Supplier;
  *         instances.
  */
 public class EnvironmentManager implements Environment, Manager<EnvironmentClass> {
+    private static final EnvironmentClass[] VALUES = EnvironmentClass.values();
     private final boolean loadDynamic;
 
     private GameState instance;
@@ -138,6 +139,16 @@ public class EnvironmentManager implements Environment, Manager<EnvironmentClass
     @Override
     public EnvironmentClass[] implementations() {
         return EnvironmentClass.values();
+    }
+
+    @Override
+    public void switchTo(int n) {
+        switchTo(VALUES[n]);
+    }
+
+    @Override
+    public int nrOfImplementations() {
+        return VALUES.length;
     }
 
     @Override

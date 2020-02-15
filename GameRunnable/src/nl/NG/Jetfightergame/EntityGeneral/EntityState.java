@@ -1,7 +1,7 @@
 package nl.NG.Jetfightergame.EntityGeneral;
 
 import nl.NG.Jetfightergame.Rendering.MatrixStack.ShadowMatrix;
-import nl.NG.Jetfightergame.Rendering.Particles.DataIO;
+import nl.NG.Jetfightergame.Tools.DataIO;
 import nl.NG.Jetfightergame.Tools.Toolbox;
 import nl.NG.Jetfightergame.Tools.Vectors.DirVector;
 import nl.NG.Jetfightergame.Tools.Vectors.PosVector;

@@ -27,7 +27,7 @@ import static nl.NG.Jetfightergame.Settings.ServerSettings.MAX_COLLISION_ITERATI
 /**
  * @author Geert van Ieperen created on 10-3-2018.
  */
-public class CollisionDetection implements EntityManagement {
+public class ProximityDetection implements EntityManagement {
     private CollisionEntity[] xLowerSorted;
     private CollisionEntity[] yLowerSorted;
     private CollisionEntity[] zLowerSorted;
@@ -43,11 +43,11 @@ public class CollisionDetection implements EntityManagement {
 
     /**
      * Collects the given entities and allows collision and phisics calculations to influence these entities
-     * @param staticEntities  a list of fixed entities. Entities in this collection should not move, but if they do,
-     *                        dynamic objects might phase through when moving in opposite direction. Apart from this
-     *                        case, the collision detection still functions.
+     * @param staticEntities a list of fixed entities. Entities in this collection should not move, but if they do,
+     *                       dynamic objects might phase through when moving in opposite direction. Apart from this
+     *                       case, the collision detection still functions.
      */
-    public CollisionDetection(Collection<Touchable> staticEntities) {
+    public ProximityDetection(Collection<Touchable> staticEntities) {
         this.staticEntities = Collections.unmodifiableCollection(staticEntities);
         this.dynamicEntities = new CopyOnWriteArrayList<>();
         this.newEntities = new ConcurrentArrayList<>();

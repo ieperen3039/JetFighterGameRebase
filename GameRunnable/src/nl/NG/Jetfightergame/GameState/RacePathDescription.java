@@ -2,7 +2,6 @@ package nl.NG.Jetfightergame.GameState;
 
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupColor;
 import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupEntity;
-import nl.NG.Jetfightergame.EntityGeneral.Powerups.PowerupType;
 import nl.NG.Jetfightergame.Settings.ServerSettings;
 import nl.NG.Jetfightergame.Tools.DataStructures.Pair;
 import nl.NG.Jetfightergame.Tools.Logger;
@@ -14,8 +13,6 @@ import nl.NG.Jetfightergame.Tools.Vectors.PosVector;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-
-import static java.lang.Float.valueOf;
 
 /**
  * @author Geert van Ieperen. Created on 22-8-2018.
@@ -76,7 +73,7 @@ public class RacePathDescription {
         );
     }
 
-    public static void printPowerupData(PosVector pos, PowerupType color) {
+    public static void printPowerupData(PosVector pos, String color) {
         System.out.printf(Locale.US,
                 "p %.0f %.0f %.0f %s\n",
                 pos.x, pos.y, pos.z, color
@@ -93,7 +90,7 @@ public class RacePathDescription {
 
     private PowerupEntity.Factory readPowerup(int startIndex, String... parts) {
         int i = startIndex;
-        PosVector pos = new PosVector(valueOf(parts[i++]), valueOf(parts[i++]), valueOf(parts[i++]));
+        PosVector pos = new PosVector(Float.parseFloat(parts[i++]), Float.parseFloat(parts[i++]), Float.parseFloat(parts[i++]));
         PowerupColor color = PowerupColor.valueOf(parts[i]);
         return new PowerupEntity.Factory(pos, color);
     }
@@ -111,9 +108,9 @@ public class RacePathDescription {
 
         private CheckpointDescription(boolean isRoadpoint, int startIndex, String... ch) {
             int i = startIndex;
-            this.position = new PosVector(valueOf(ch[i++]), valueOf(ch[i++]), valueOf(ch[i++]));
-            this.direction = new DirVector(valueOf(ch[i++]), valueOf(ch[i++]), valueOf(ch[i++]));
-            this.radius = valueOf(ch[i]);
+            this.position = new PosVector(Float.parseFloat(ch[i++]), Float.parseFloat(ch[i++]), Float.parseFloat(ch[i++]));
+            this.direction = new DirVector(Float.parseFloat(ch[i++]), Float.parseFloat(ch[i++]), Float.parseFloat(ch[i++]));
+            this.radius = Float.parseFloat(ch[i]);
             this.isRoadpoint = isRoadpoint;
         }
 
