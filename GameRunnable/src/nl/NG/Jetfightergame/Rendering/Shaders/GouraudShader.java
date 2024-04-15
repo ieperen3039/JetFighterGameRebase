@@ -6,6 +6,7 @@ import org.joml.Vector3f;
 import java.io.IOException;
 
 import static nl.NG.Jetfightergame.Settings.ClientSettings.MAX_POINT_LIGHTS;
+import static nl.NG.Jetfightergame.Tools.Directory.shaders;
 
 /**
  * @author Geert van Ieperen
@@ -35,14 +36,15 @@ public class GouraudShader extends AbstractShader {
     }
 
     /**
-     * set the maximum vision radius to the specified range. Fog will become thicker and take the color of ambientlight
+     * set the maximum vision radius to the specified range. Fog will become thicker
+     * and take the color of ambientlight
      * inversely to the range.
      */
-    public void setFog(float range){
+    public void setFog(float range) {
         setUniform("fogRange", range);
     }
 
-    public void setCameraPosition(Vector3f mPosition){
+    public void setCameraPosition(Vector3f mPosition) {
         setUniform("cameraPosition", mPosition);
     }
 

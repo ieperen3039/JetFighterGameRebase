@@ -12,13 +12,14 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.file.Path;
 
 import static nl.NG.Jetfightergame.Tools.Directory.shaders;
 import static org.lwjgl.opengl.GL20.*;
 
 /**
- *  @author Yoeri Poels
- *  @author Geert van Ieperen
+ * @author Yoeri Poels
+ * @author Geert van Ieperen
  */
 public abstract class AbstractShader implements ShaderProgram {
 
@@ -30,11 +31,14 @@ public abstract class AbstractShader implements ShaderProgram {
 
     /**
      * create a shader and manages the interaction of its uniforms
-     * @param vertexPath the vertex shader file in the shader directory
+     * 
+     * @param vertexPath   the vertex shader file in the shader directory
      * @param fragmentPath the fragment shader file in the shader directory
-     * @throws ShaderException if a new shader could not be created by some opengl reason
-     * @throws IOException if the defined files could not be found
-     * (the file is searched for in the shader folder itself, and should exclude any first slash)
+     * @throws ShaderException if a new shader could not be created by some opengl
+     *                         reason
+     * @throws IOException     if the defined files could not be found
+     *                         (the file is searched for in the shader folder
+     *                         itself, and should exclude any first slash)
      */
     public AbstractShader(Path vertexPath, Path fragmentPath) throws ShaderException, IOException {
         uniforms = new HashMap<>();
@@ -105,7 +109,8 @@ public abstract class AbstractShader implements ShaderProgram {
      * Create a new uniform and get its memory location.
      *
      * @param uniformName The name of the uniform.
-     * @throws ShaderException If an error occurs while fetching the memory location.
+     * @throws ShaderException If an error occurs while fetching the memory
+     *                         location.
      */
     protected void createUniform(String uniformName) throws ShaderException {
         int uniformLocation = glGetUniformLocation(programId, uniformName);
@@ -119,7 +124,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a 4x4 matrix shader uniform.
      *
      * @param uniformName The name of the uniform.
-     * @param value The new value of the uniform.
+     * @param value       The new value of the uniform.
      */
     protected void setUniform(String uniformName, Matrix4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -134,7 +139,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a 3x3 matrix shader uniform.
      *
      * @param uniformName The name of the uniform.
-     * @param value The new value of the uniform.
+     * @param value       The new value of the uniform.
      */
     protected void setUniform(String uniformName, Matrix3f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -149,7 +154,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a certain integer shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param value The new value of the uniform.
+     * @param value       The new value of the uniform.
      */
     protected void setUniform(String uniformName, int value) {
         glUniform1i(uniforms.get(uniformName), value);
@@ -159,7 +164,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a certain float shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param value The new value of the uniform.
+     * @param value       The new value of the uniform.
      */
     protected void setUniform(String uniformName, float value) {
         glUniform1f(uniforms.get(uniformName), value);
@@ -169,13 +174,13 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a certain 3D Vector shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param value The new value of the uniform.
+     * @param value       The new value of the uniform.
      */
     protected void setUniform(String uniformName, Vector3f value) {
         glUniform3f(uniforms.get(uniformName), value.x, value.y, value.z);
     }
 
-    protected void setUniform(String uniformName, float[] value){
+    protected void setUniform(String uniformName, float[] value) {
         glUniform4f(uniforms.get(uniformName), value[0], value[1], value[2], value[3]);
     }
 
@@ -183,7 +188,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a certain 4D Vector shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param value The new value of the uniform.
+     * @param value       The new value of the uniform.
      */
     protected void setUniform(String uniformName, Vector4f value) {
         glUniform4f(uniforms.get(uniformName), value.x, value.y, value.z, value.w);
@@ -193,8 +198,8 @@ public abstract class AbstractShader implements ShaderProgram {
      * Set the value of a certain PointLight shader uniform
      *
      * @param uniformName The name of the uniform.
-     * @param mPosition position in modelSpace
-     * @param color the light color with its intensity as alpha value
+     * @param mPosition   position in modelSpace
+     * @param color       the light color with its intensity as alpha value
      */
     protected void setPointLightUniform(String uniformName, Vector3f mPosition, Color4f color) {
         setUniform(uniformName + ".color", color.rawVector3f());
@@ -248,7 +253,7 @@ public abstract class AbstractShader implements ShaderProgram {
     }
 
     @Override
-    public void setNormalMatrix(Matrix3f normalMatrix){
+    public void setNormalMatrix(Matrix3f normalMatrix) {
         setUniform("normalMatrix", normalMatrix);
     }
 

@@ -4,10 +4,11 @@ import nl.NG.Jetfightergame.Tools.Vectors.Color4f;
 import org.joml.Vector3f;
 
 import java.io.IOException;
+import static nl.NG.Jetfightergame.Tools.Directory.shaders;
 
 /**
  * @author Geert van Ieperen
- * created on 7-1-2018.
+ *         created on 7-1-2018.
  */
 public class HeightShader extends AbstractShader {
 
@@ -21,7 +22,7 @@ public class HeightShader extends AbstractShader {
 
     }
 
-    public void setCameraPosition(Vector3f mPosition){
+    public void setCameraPosition(Vector3f mPosition) {
         setUniform("cameraPosition", mPosition);
     }
 
