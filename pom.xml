@@ -17,6 +17,11 @@
         <skipTests>true</skipTests>
     </properties>
 
+    <modules>
+        <module>Launcher</module>
+        <module>GameRunnable</module>
+    </modules>
+
     <build>
         <defaultGoal>package</defaultGoal>
         <sourceDirectory>${project.basedir}/src</sourceDirectory>
