@@ -52,7 +52,7 @@ vec3 calculateLighting(vec3 P, vec3 N, vec3 eye, PointLight light){
 	// specular component
     float shine = pow( max(0.0, dot(virtualLightPosition, normalize(eye))), material.reflectance);
     //float shine = pow( max(0.0, dot(N, HalfAngle) ), mat.shininess );
-    result += pow(shine, specularPower) * light.color;
+    result += pow(shine, specularPower) * light.color * material.specular.xyz;
 
 	return result;
 }
