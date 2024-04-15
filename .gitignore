@@ -1,6 +1,7 @@
 
-/* intellij */
+/* editors */
 .idea
+.vscode
 
 /* project */
 JetFighterGameRebase.iml
@@ -10,8 +11,12 @@ README.md
 Unused Sources/
 ScreenShots/
 lib
+jar
 /doc/
 /JetFighterGame/
 /tables.tb
 /packNew.bat
 /Recordings/
+
+/* maven */
+**/target/**

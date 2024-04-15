@@ -487,7 +487,7 @@ public class LauncherMain {
                         Files.deleteIfExists(jarName);
                         Files.move(file.toPath(), jarName);
                     }
-                    String command = "java -jar \"" + jarName + "\" -rebuild -stop";
+                    String command = "java -jar -cp \\libs \"" + jarName + "\" -rebuild -stop";
                     Process proc = Runtime.getRuntime().exec(command);
                     proc.waitFor();
                     names.reload(TABLES_FILE);

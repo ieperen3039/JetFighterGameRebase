@@ -1,0 +1,1 @@
+start javaw -jar jar/Launcher.jar
