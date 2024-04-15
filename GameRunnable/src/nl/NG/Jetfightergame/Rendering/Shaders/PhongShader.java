@@ -6,6 +6,7 @@ import org.joml.Vector3f;
 import java.io.IOException;
 
 import static nl.NG.Jetfightergame.Settings.ClientSettings.MAX_POINT_LIGHTS;
+import static nl.NG.Jetfightergame.Tools.Directory.shaders;
 
 /**
  * @author Geert van Ieperen
@@ -15,7 +16,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.MAX_POINT_LIGHTS;
 public class PhongShader extends AbstractShader {
 
     public PhongShader() throws ShaderException, IOException {
-        super("Phong/vertex.vert", "Phong/fragment.frag");
+        super(shaders.getPath("Phong", "vertex.vert"), shaders.getPath("Phong", "fragment.frag"));
 
         // Create the Material uniform
         createUniform("material.ambient");
@@ -40,14 +41,15 @@ public class PhongShader extends AbstractShader {
     }
 
     /**
-     * set the maximum vision radius to the specified range. Fog will become thicker and take the color of ambientlight
+     * set the maximum vision radius to the specified range. Fog will become thicker
+     * and take the color of ambientlight
      * inversely to the range.
      */
     public void setFogRange(float range) {
         setUniform("fogRange", range);
     }
 
-    public void setCameraPosition(Vector3f mPosition){
+    public void setCameraPosition(Vector3f mPosition) {
         setUniform("cameraPosition", mPosition);
     }
 
@@ -55,7 +57,8 @@ public class PhongShader extends AbstractShader {
      * Create an uniform for a pointslight array.
      *
      * @param size The size of the array.
-     * @throws ShaderException If an error occurs while fetching the memory location.
+     * @throws ShaderException If an error occurs while fetching the memory
+     *                         location.
      */
     private void createPointLightsUniform(int size) throws ShaderException {
         for (int i = 0; i < size; i++) {

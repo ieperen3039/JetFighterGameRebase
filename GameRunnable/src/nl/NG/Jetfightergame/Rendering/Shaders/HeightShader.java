@@ -12,7 +12,7 @@ import java.io.IOException;
 public class HeightShader extends AbstractShader {
 
     public HeightShader() throws ShaderException, IOException {
-        super("Phong/vertex.vert", "Height/fragment.frag");
+        super(shaders.getPath("Phong", "vertex.vert"), shaders.getPath("Height", "fragment.frag"));
         createUniform("cameraPosition");
     }
 

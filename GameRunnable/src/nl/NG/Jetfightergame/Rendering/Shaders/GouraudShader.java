@@ -15,7 +15,7 @@ import static nl.NG.Jetfightergame.Settings.ClientSettings.MAX_POINT_LIGHTS;
 public class GouraudShader extends AbstractShader {
 
     public GouraudShader() throws IOException {
-        super("Gouraud/vertex.vert", "Gouraud/fragment.frag");
+        super(shaders.getPath("Gouraud", "vertex.vert"), shaders.getPath("Gouraud", "fragment.frag"));
 
         // Create the Material uniform
         createUniform("material.ambient");

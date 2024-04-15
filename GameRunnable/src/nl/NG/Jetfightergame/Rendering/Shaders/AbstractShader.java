@@ -36,7 +36,7 @@ public abstract class AbstractShader implements ShaderProgram {
      * @throws IOException if the defined files could not be found
      * (the file is searched for in the shader folder itself, and should exclude any first slash)
      */
-    public AbstractShader(String vertexPath, String fragmentPath) throws ShaderException, IOException {
+    public AbstractShader(Path vertexPath, Path fragmentPath) throws ShaderException, IOException {
         uniforms = new HashMap<>();
 
         programId = glCreateProgram();
@@ -45,12 +45,12 @@ public abstract class AbstractShader implements ShaderProgram {
         }
 
         if (vertexPath != null) {
-            final String shaderCode = Resources.loadText(shaders.getPath(vertexPath));
+            final String shaderCode = Resources.loadText(vertexPath);
             vertexShaderId = createShader(programId, GL_VERTEX_SHADER, shaderCode);
         }
 
         if (fragmentPath != null) {
-            final String shaderCode = Resources.loadText(shaders.getPath(fragmentPath));
+            final String shaderCode = Resources.loadText(fragmentPath);
             fragmentShaderId = createShader(programId, GL_FRAGMENT_SHADER, shaderCode);
         }
 
